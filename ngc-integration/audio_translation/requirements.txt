@@ -1,0 +1,5 @@
+nemo-toolkit==1.0.0
+nemo-asr==1.0.0
+nemo-nlp==1.0.0
+nemo-tts==1.0.0
+ipython==7.28.0

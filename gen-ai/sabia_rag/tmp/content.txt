@@ -1,0 +1,199 @@
+The Assistant have the following informations to reply about the data science platform:
+<information>
+```"3. Select Uninstall to remove Phoenix from your machine. 
+Note: The uninstaller does NOT remove the wsl distro and some associated 
+Phoenix files. To remove them from your machine, manually select the files and 
+move them to your recycle bin. 
+Contacting Support 
+Phoenix users can rely on a dedicated support team to help resolve conflicts in a pinch. 
+To contact support: 
+1. Click on the Support tile at the bottom of the utility bar. 
+2. Specify the operating system in use when you encountered the problem. 
+3. Provide the Case ID (if applicable) for your ticket. 
+4. Enter a brief description of the problem, what you were doing when it occurred, 
+and how the observed behavior differs from what is expected. 
+5. Attach any files (if applicable), screenshots, or other documents to provide 
+support agents with as much context as possible. 
+6. Click on Submit to reach out to support. 
+One of our support agents will reach out to you via email to help resolve your problem. 
+Resolution usually only takes a few hours, but wait at least a business day for support 
+before reaching out about the same problem again. 
+Navigating the Projects Page 
+If you’re a returning Phoenix user, you can find and manage your teams' projects on a 
+single pane of glass, directly from the Projects Page. 
+To find the project you're looking for: 
+ 
+The In Progress tab displays all projects that haven’t yet been marked as 
+completed. 
+ 
+The Favorited tab displays projects you highlight, so you can easily access the 
+higher priority projects you monitor frequently. 
+ 
+The Archived tab displays all the completed projects you're listed as a team 
+member for. 
+Clicking the icon in the upper-right corner of a project tile triggers the project options 
+dropdown box to appear. Each project tile gives you the option to duplicate it, save the 
+project as a template, archive it, or to directly share it with other stakeholders. 
+Connecting Data to a Project 
+When you finish adding details, use your AWS credentials to connect to your existing 
+projects. This page lets you connect to remote storage and create a new dataset with 
+your data from AWS."
+"Note: You’ll get a warning if your machine can’t optimally run your selection. 
+2. Name your new workspace. 
+3. Click on Start Workspace to start working on your project. 
+Creating a Custom Workspace 
+For projects that need more nuanced customization, you can set up your own 
+workspace from scratch. 
+To choose your environment: 
+1. Select an image from the options in the dropdown menu. 
+2. Add any custom libraries you want to use in your workspace, then click Save. 
+Phoenix recommends a configuration based on the specifications outlined in previous 
+steps, but you can always adjust them to better suit your needs. 
+To manually configure your environment: 
+1. Enter the number of cores your project requires. 
+2. Specify the amount of memory your project requires. 
+3. Toggle the GPU on / off to satisfy your project's graphical requirements. 
+4. Name your workspace. 
+5. Click on Start Workspace to begin working on your project. 
+Reusing a Workspace 
+To reuse a workspace: 
+1. Select the Reuse a Workspace page at the top of your screen. 
+2. Scroll to view previously used workspaces, or find a specific one using the search 
+bar. You can search by workspace name, library name, or task type. 
+o 
+Click on the checkbox beside the workspace you want to select. 
+3. Name your workspace. 
+4. Click on Start Workspace to begin working on your project. 
+You can also view the memory, cores, and GPU required for each workspace to run 
+optimally to help determine which workstation best suits your needs. 
+Using the Monitoring Page 
+Phoenix runs the tools you select natively, so you can use all your favorite DS 
+applications directly from the application. 
+To start monitoring: 
+1. Click on Add a Tool to connect the monitoring tool you want to use for your 
+project. 
+o 
+Phoenix currently only supports ML Flow and Tensorboard, but will support more 
+DS applications in the coming releases. 
+ 
+list the supported applications users can refer to here 
+2. Click the icon in the upper-right corner of the DS tool panel to enter fullscreen"
+"Connecting Data to a Project 
+When you finish adding details, use your AWS credentials to connect to your existing 
+projects. This page lets you connect to remote storage and create a new dataset with 
+your data from AWS. 
+To connect your data: 
+1. Enter your Connection Name, AWS Account, and the name of the bucket(s) you 
+want to connect. 
+2. Enter your IAM role ARN. Then, click on Connect to Remote Storage to create a 
+new connection. 
+3. Name your dataset, select your connection, and set a dataset path. Then, click 
+on Create Dataset to save your new dataset. 
+Now that your dataset is up and running, add your collaborators to get started on your 
+new project. 
+Inviting Team Members 
+After you connect your AWS data to Phoenix, you’re ready to start collaborating. 
+To invite more team members: 
+1. Enter their email address in the provided field. 
+2. Enter their role to delegate responsibility among collaborators. 
+3. Click Add more team members to increase your team's size, then repeat steps 1 
+and 2 until your team is complete. 
+4. Click on Create Project to get started. 
+During EAP, you can invite up to ten (10) teammates to collaborate on a project. You 
+can add or remove team members at any time from the project details page. Starting 
+with the controlled launch, the maximum number of collaborators permitted on a team 
+will depend on your specific license agreement. 
+Using a Predefined Workspace 
+Using one the predefined Phoenix workspaces is as easy as following three simple steps: 
+1. Choose the workspace size that is most compatible with your machine(s). 
+o Small: For basic libraries, small workspaces offer lightning-fast startup 
+times, but sacrifice compute and power to do so. 
+o Medium: The recommended setup for most users. Medium workspaces 
+have the most balance of power and speed. 
+o Large: For the most complex experiments, this is the most powerful 
+workspace Phoenix can offer. 
+Note: You’ll get a warning if your machine can’t optimally run your selection. 
+2. Name your new workspace. 
+3. Click on Start Workspace to start working on your project."
+"you previously downloaded. 
+Note: Datasets are also viewable and can be managed from the Notebooks tab on your 
+project’s home page. 
+Team Settings 
+You can view and search for current members of your team under the My team tab. 
+Pending invitations appear under the Pending tab until invitees accept or decline the 
+invitation sent to their email address. 
+You can also use the Pending tab to view the date an invite was sent, or you can resend 
+an invitation to pending invitees by clicking on Remind. Uninvited users who request 
+access to your team will appear under the Requests tab. 
+To manually add users to an existing team: 
+1. From the Team Settings page in the Account tile, click on Invite team member. 
+2. Enter their email address and choose their role from the dropdown. 
+3. Click on Add more team members and repeat step 2 for each user you want to 
+add. 
+4. When you’re finished adding members, click on Invite to add them to your team. 
+Phoenix sends each new member an invitation to join the team via email. You can 
+remove users from your team or edit individual user policies at any time by clicking on 
+the more options icon [icon screenshot]. 
+Billing 
+The billing tab lets admin users view and manage their Phoenix subscription 
+information, view the status and date of past invoices, and see how many remaining 
+seats are included in their license. 
+Manage team members 
+Manage subscription 
+Generate a PO 
+Speak with an expert 
+Company Details 
+The company details page is functionally the admin home page, where admin users can 
+view and change the company name, billing email, and company logo. 
+Admins can also use the company details page to delete the Phoenix account associated 
+with their team and related projects. After deleting your account, you will lose access to 
+your projects, team information, and other associated data."
+"DS applications in the coming releases. 
+ 
+list the supported applications users can refer to here 
+2. Click the icon in the upper-right corner of the DS tool panel to enter fullscreen 
+mode. Or, simply use the application as you normally would from the default 
+panel if you. 
+The Monitor panel gives you real-time access to your project’s GPU, CPU, and Memory 
+consumption, and Phoenix AI recommends configuration improvements based on your 
+usage trends. 
+Using the Notebooks Page 
+Each tab on the Notebooks page represents a different notebook and you can have up 
+to __ running simultaneously. 
+To create a new service: 
+1. Click on Create a Service. 
+2. Select a model from the dropdown. 
+3. Name the service. 
+4. Click on Browse a local file in the Bento ML panel to find a container to run your service 
+in. 
+5. Click on Create Service to save your settings and create a new service. 
+Your project’s GPU, CPU, and memory consumption appear in the corner of the screen, 
+so you can visualize the effects of the tests you run in real-time. When you create a new 
+service, it automatically becomes viewable from the Published Services tab. 
+Data Fabric 
+In Phoenix data directories are mounted in the container so users can use the data to 
+train machine learning models and run other high-velocity tests. 
+To create a new dataset: 
+1. Navigate to the Data Fabric page, then click on Add new dataset. 
+2. Enter a name, description, and the storage type for your dataset. 
+3. Specify your provider and complete the corresponding fields that populate. 
+Currently, Phoenix only supports AWS S3. 
+4. Specify the download and upload settings that apply to your dataset. 
+5. When you’re finished, click Save to create the new dataset. 
+From the Datasets home page, you can use the upload feature to copy local datasets 
+into a cloud provider. The home page also lets you upload changes to a local dataset 
+you previously downloaded. 
+Note: Datasets are also viewable and can be managed from the Notebooks tab on your 
+project’s home page. 
+Team Settings"```
+</information>
+
+The following conversation is from the Assistant especialist in data science and an user from a data science platform. Complete what the Assistant would reply without ask anything or any other comments.
+<conversation>
+<Assistant>Hi!</Assistant>
+
+</conversation>
+<question>
+<User>Hello, my dear friend</User>
+</question>
+Answer: <answer>

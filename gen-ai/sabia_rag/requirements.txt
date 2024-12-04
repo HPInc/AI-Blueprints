@@ -1,0 +1,6 @@
+transformers
+tiktoken
+langchain
+chromadb
+PyMuPDF
+llama-cpp-python
