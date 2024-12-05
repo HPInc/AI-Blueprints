@@ -32,17 +32,21 @@ Go to [Catalogue repository](https://github.azc.ext.hp.com/phoenix/ds-experiment
   * Third model perfors text to speech, generating an audio from the text in Spanish:
   * 	tts_es_multispeaker_fastpitchhifigan-1.15.0 (to be added as an assed named FastPitch-HiFiGAN)
 
-  After selecting the NGC models, select and download the NGC NeMO image.
+   After selecting the NGC models, select and download the NGC NeMO image.
+   As the workspace container is created, navigate to 'Asset's and ensure your models have downloaded. Download them if they have not.
+   Open the workspace and confirm models are in the 'datafabric' folder in Jupyter.
  ---
 
  ## 2. How to use the experiment
  ---
-     This experiment consists of the notebook [english_to_spanish.ipynb ](english_to_spanish.ipynb). In the experiment, third cell loads the models from the assets downloaded from NGC - if the assets were named differently of the suggestion, you should fix it here. Also, this cell might take some time to run and, if you have 4GB or less of GPU memory available, an error might appear.
+   This experiment consists of the notebook [english_to_spanish.ipynb ](english_to_spanish.ipynb). In the experiment, third cell loads the models from the assets downloaded from NGC - if the assets were named differently of the suggestion, you should fix it here. Also, this cell might take some time to run and, if you have 4GB or less of GPU memory available, an error might appear.
 	 
-	 Following cells will show an example, where a local audio in English is converted to text, than translated into a text in Spanish, to be then converted back into Audio (in Spanish). The last 2 cells will use MLFlow to log and register the composite execution as a new Model, to be used as a model service.
+   Following cells will show an example, where a local audio in English is converted to text, than translated into a text in Spanish, to be then converted back into Audio (in Spanish). The last 2 cells will use MLFlow to log and register the composite execution as a new Model, to be used as a model service.
+
+   Run code or use terminal to run deploy_ms.py script.
  ---
 
  ## 3. Local deployment on AI Studio
-   fill in later
+   Check that model has registered to MLFlow by navigating to the Monitor tab. With the model registered, navigate to Deployment and deploy the service.
 
  ---
