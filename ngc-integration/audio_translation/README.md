@@ -25,10 +25,14 @@ Go to [Catalogue repository](https://github.azc.ext.hp.com/phoenix/ds-experiment
 
  ### Setting up models
  Three different models from NGC are necessary to be downloaded for this example. To add these models in your project, you can do it when setting up the project - using the add assets option - or you can go through the Setup & Documentation tab. When clicking add assets, you should select NGC models than search for the following models on NGC repository. To make it easy, add the asset with the given name, so the destination folder is properly linked in the notebook.
-  * First model performs Speech to Text, to be applied to english audio and convert to English text: stt_en_citrinet_1024_gamma_0_25-1.0.0 (to be added as an asset named STT-Citrinet)
-  * Second model translate the text in English into Spanish: nmt_en_es_transformer12x2-1.0.0rc1 (to be added as an asset named en-es-transformer)
-  * Third model perfors text to speech, generating an audio from the text in Spanish: tts_es_multispeaker_fastpitchhifigan-1.15.0 (to be added as an assed named FastPitch-HiFiGAN)
+  * First model performs Speech to Text, to be applied to english audio and convert to English text:
+  * 	stt_en_citrinet_1024_gamma_0_25-1.0.0 (to be added as an asset named STT-Citrinet)
+  * Second model translate the text in English into Spanish:
+  * 	nmt_en_es_transformer12x2-1.0.0rc1 (to be added as an asset named en-es-transformer)
+  * Third model perfors text to speech, generating an audio from the text in Spanish:
+  * 	tts_es_multispeaker_fastpitchhifigan-1.15.0 (to be added as an assed named FastPitch-HiFiGAN)
 
+  After selecting the NGC models, select and download the NGC NeMO image.
  ---
 
  ## 2. How to use the experiment
