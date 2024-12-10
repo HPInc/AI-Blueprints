@@ -8,17 +8,7 @@ import torch
 import json
 import os
 
-dir = os.path.dirname(__file__)
-demoPath = os.path.join(dir, 'demo')
-print("demoPath:", demoPath)
-
 class DistilBERTModel(mlflow.pyfunc.PythonModel):
-    def __init__(self):
-        self.MODEL = "morgana-rodrigues/bert_qa"
-        self.qa = pipeline('question-answering',
-            model=self.MODEL,
-            device=-1 #-1 means running on CPU
-            )        
     def _preprocess(self, inputs):
         context = inputs['context'][0]
         question = inputs['question'][0]
@@ -29,7 +19,7 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
         self.model = pipeline(
             'question-answering',
              model=context.artifacts["model"],
-             device=-1
+             device=0
         )
         
     def predict(self, context, model_input, params):
@@ -38,7 +28,8 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
         return output
 
     @classmethod
-    def log_model(cls, model_name, trainer = None, pipeline = None, demo_folder="demo"): #eg (model, '', 'my_model')
+    def log_model(cls, model_name, source_trainer = None, source_pipeline = None, demo_folder="demo"): 
+        import shutil
         input_schema = Schema(
             [
                 ColSpec("string", "context"),
@@ -58,16 +49,14 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
         )
       
         signature = ModelSignature(inputs=input_schema, outputs=output_schema, params=params_schema)
-        if trainer is not None:
-            trainer.save_model(model_name)
-        elif pipeline is not None:
-            pipeline.save_pretrained(model_name)
+        if source_trainer is not None:
+            source_trainer.save_model(model_name)
+        elif source_pipeline is not None:
+            source_pipeline.save_pretrained(model_name)
              
         requirements = [
-            "transformers==4.37.0",
-            "numpy==1.24.3",
-            "torch==2.0.0",
-            "tqdm==4.65.0",
+            "transformers==4.47.0",
+            "tf_keras"
         ]
         mlflow.pyfunc.log_model(
             model_name,
@@ -76,25 +65,20 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
             signature=signature,
             pip_requirements=requirements
         )
+        shutil.rmtree(model_name)
        
-    def execute(self, **kwargs):
-        mlflow.set_experiment(experiment_name='BERT for Q&A')
-
-        with mlflow.start_run(run_name='BERT_QA') as run:
-            print(f"Run's Artifact URI: {run.info.artifact_uri}")
-            DistilBERTModel.log_model(model_name='BERT_QA', pipeline=self.qa, demo_folder=demoPath)
-            mlflow.register_model(model_uri = f"runs:/{run.info.run_id}/BERT_QA", name='BERT_QA')
-
-        client = mlflow.MlflowClient()
-        model_metadata = client.get_latest_versions("BERT_QA", stages=["None"])
-        latest_model_version = model_metadata[0].version
-        print(latest_model_version, mlflow.models.get_model_info(f"models:/BERT_QA/{latest_model_version}").signature)
-
-        model = mlflow.pyfunc.load_model(model_uri=f"models:/BERT_QA/{latest_model_version}")
-        context = "Marta is mother of John and Amanda"
-        question = "what is the name of Marta's daugther?"
-        model.predict({"context": [context], "question":[question]})
-
 if __name__ == "__main__":
-    DistilBERTModel().execute()
+    model_name = "morgana-rodrigues/bert_qa"
+
+    qa_pipeline = pipeline(
+      'question-answering',
+      model=model_name,
+      device=0 # -1 means running on CPU
+    )
     
+    mlflow.set_experiment(experiment_name='BERT Model for Q&A')
+    with mlflow.start_run(run_name='BERT_QA') as run:
+        print(f"Run's Artifact URI: {run.info.artifact_uri}")
+        DistilBERTModel.log_model(model_name='BERT_QA', source_pipeline=qa_pipeline)
+        mlflow.register_model(model_uri = f"runs:/{run.info.run_id}/BERT_QA", name='BERT_QA')
+

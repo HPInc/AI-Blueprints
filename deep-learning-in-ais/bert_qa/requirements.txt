@@ -1,5 +1,5 @@
-transformers
-accelerate
-datasets
-tqdm
-tf-keras
+"transformers==4.47.0",
+"numpy==1.26.4",
+"torch==2.4.1+cu124",
+"tqdm==4.66.3",
+"tf_keras==2.18.0"
