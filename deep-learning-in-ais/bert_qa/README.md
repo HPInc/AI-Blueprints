@@ -2,54 +2,25 @@
 
  [1. Project Setup on AI Studio](#1-project-setup-on-ai-studio)
 
- [2. How to use the experiment](#2-how-to-use-the-experiment)
+ [2. Structure of the experiment](#2-structure-of-the-experiment)
  
  ---
 
  ## 1. Project Setup on AI Studio
  ---
- ### Workspace
- For this experiment, **create a custom workspace on AI Studio using the Deep Learning GPU-based image**. 
-
- For extra libraries and specific versions, you can download our [requirements.txt](requirements.txt) and direclty upload it on the Add Python Libraries field.
  
- For the memory configurations, we recommend 16 GB for Memory and 7 GB for VRAM
+ For this experiment, **create a custom workspace on AI Studio using the Deep Learning GPU-based image**. Libraries in the requirements.txt must be available to run the experiment. We highly recommend setting up a custom workspace with the libraries present on the requirements.txt file.
  
----
- ### Accessing Jupyter Notebooks
+ For the memory configurations, we recommend 16 GB of RAM and 8 GB for VRAM for training the model. For inference in GPU, 4 GB of VRAM are sufficient.
+ 
+## 2. Structure of the experiment
 
+   ### Running inference and deploying models
 
-Go to [Catalogue repository](https://github.azc.ext.hp.com/phoenix/ds-experiments/tree/draft/demo_catalogue) and copy the HTTPS URL. Next, go to your Project > Setup & Documentation > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project.
+   Deployment.ipynb notebook has all the necessary code to download the available model from Hugging Face and running the model for inference inside the notebook. This notebook also contains the code to log and register the model in ML Flow, for deploying the model locally. 
 
- ---
+   The same deployment can be achieved by running the deploy.py fila
 
- ### How to access the trained model
- ---
- #### Hugging Face
+   ### Retraining the model
 
- ```python
- # Use a pipeline as a high-level helper
-from transformers import pipeline
-
-pipe = pipeline("question-answering", model="morgana-rodrigues/bert_qa")
- ```
-```python
-# Load model directly
-from transformers import AutoTokenizer, AutoModelForQuestionAnswering
-
-tokenizer = AutoTokenizer.from_pretrained("morgana-rodrigues/bert_qa")
-model = AutoModelForQuestionAnswering.from_pretrained("morgana-rodrigues/bert_qa")
-```
-
-
----
-
- ## 2. How to use the experiment
----
-Since we provide you the trained model and the mlruns from the training part of the experiment, you can just show the Training.ipynb and the MLFlow on the Monitor tab for showing the results.
-
-For deploying the model, you have to run the Deployment.ipynb notebook for registering the model using MLFlow. Then, you go to Published Servicies, create a new deploy, select the model and the (latest) version and start it.
-
-After the container builds, you can click on the URL and access the Swagger UI for sending a context and a question about this context to the trained model. Click on POST/invocations > Try it out and edit the request body with a simple text for being your 'context' string key and a question about this context in the 'question' string key as the image shows below. Then, press 'Execute' and check the model response on the 'Server response'
-
----
+   For those interested in retraining the model and understand deeply how to work with deep learning, the Training.ipynb notebook provides the code for that.
