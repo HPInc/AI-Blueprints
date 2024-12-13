@@ -1,2 +1,2 @@
-"transformers==4.47.0",
-"tf_keras"
+transformers==4.47.0
+tf_keras
