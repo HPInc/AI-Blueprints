@@ -2,10 +2,6 @@
 
 This is a proposal for an initial structure of public repositories for educational material and demos. The main idea here is to make available a set of 15+ notebooks with end-to-end experiments split into subjects according to different topics. This way, we would have smaller repos (with no more than 5 experiments) - avoiding the current scenario of having to download a single big repo to run any experiment, but also without having too many different repos to give maintenance.
 
-```
-Notebooks on the gen_ai and unsupported_examples folders are not officially released 
-Some of them will be reviewed for including in the repository, some of then will be removed for being redundant
-```
 
 1. [Using AI Studio in 6 Steps](#first-course)
    1. [Projects, Workspaces and Github](#section1-1)
