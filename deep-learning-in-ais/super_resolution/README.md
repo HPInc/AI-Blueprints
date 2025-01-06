@@ -10,10 +10,10 @@
  ## 1. Project Setup on AI Studio
  ---
  For this experiment, **we highly recommend yo to create a custom workspace on AI Studio using the Deep Learning GPU-based image**. 
-
- For extra libraries and specific versions, you can download our [requirements.txt](requirements.txt) and direclty upload it on the Add Python Libraries field.
  
- For the memory configurations, you should set **at least 4GB for GPU RAM and 2 for GPU VRAM.**
+ For the memory requirements, we suggest to have **at least 4GB of RAM, as well as 4GB for GPU dedicated RAM.**
+
+ Similar configurations for a CPU-only experiment will work, but we do not recommend due to the excessive training time.
 
 This experiment requires the DIV2K dataset to run, that should be downloaded from s3://dsp-demo-bucket/div2k-data into an assset called DIV2K.
  <!-- ![alt](../../../images/BERT_QA_WORKSPACE_CONFIG.png) -->
