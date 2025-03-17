@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/jovyan/aistudio-samples/myenv"
+set -gx VIRTUAL_ENV "/home/jovyan/aistudio-samples/deep-learning-in-ais/super_resolution/myenv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

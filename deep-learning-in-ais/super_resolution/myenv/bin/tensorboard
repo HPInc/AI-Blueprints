@@ -1,4 +1,4 @@
-#!/home/jovyan/aistudio-samples/myenv/bin/python
+#!/home/jovyan/aistudio-samples/deep-learning-in-ais/super_resolution/myenv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
