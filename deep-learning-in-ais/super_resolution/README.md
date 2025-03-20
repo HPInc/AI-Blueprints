@@ -16,7 +16,7 @@ In this template, our objective is to increase the resolution of images, that is
 
  Similar configurations for a CPU-only experiment will work, but we do not recommend due to the excessive training time.
 
-This experiment requires the DIV2K dataset to run, that should be downloaded from s3://dsp-demo-bucket/div2k-data into an assset called DIV2K.
+ This experiment requires the **DIV2K dataset** to run, that should be downloaded from s3://dsp-demo-bucket/div2k-data into an assset called DIV2K.
 
 
 ---
