@@ -1,8 +1,7 @@
 # Shakespeare text generation with RNN
 
- [1. Project Setup on AI Studio](#1-project-setup-on-ai-studio)
+In this template we will show how to create a simple text generation, one character per time using a dataset of Shakespeare's texts.
 
- [2. How to use the experiment](#2-how-to-use-the-experiment)
  
  ---
 
@@ -13,6 +12,11 @@
 
 
  For the memory configurations, we recommend 40 GB for Memory and 4 GB for VRAM
+
+ 
+ [1. Project Setup on AI Studio](#1-project-setup-on-ai-studio)
+
+ [2. How to use the experiment](#2-how-to-use-the-experiment)
 
 ---
  ### Accessing Jupyter Notebooks
