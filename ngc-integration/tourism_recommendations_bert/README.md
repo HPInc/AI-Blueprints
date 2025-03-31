@@ -15,7 +15,7 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
 ├── README.md
 ├── data
 │   ├── processed
-│   │   └── embeddings.csv (will be created by running the '00_Word_Embeddings_Creation.ipynb' notebook)
+│   │   └── embeddings.csv (will be created by running the '00_Word_Embeddings_Generation.ipynb' notebook)
 │   └── raw
 │       └── corpus.csv
 ├── demo
@@ -24,7 +24,7 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
 │   ├── architecture.md
 │   └── ui_tourism.png
 ├── notebooks
-│   ├── 00_Word_Embeddings_Creation.ipynb
+│   ├── 00_Word_Embeddings_Generation.ipynb
 │   └── 01_Bert_Model_Registration.ipynb
 └── requirements.txt
 ```  
@@ -52,7 +52,7 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings:  
-- `00_Word_Embeddings_Creation.ipynb` (creates `embeddings.csv`).  
+- `00_Word_Embeddings_Generation.ipynb` (creates `embeddings.csv`).  
 
 ### Step 2: Deploy the Service  
 1. Execute `01_Bert_Model_Registration.ipynb` to register the BERT model in MLflow and create the API logic.  
