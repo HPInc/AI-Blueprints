@@ -34,19 +34,23 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
 2. (Optional) Add a description and relevant tags.  
-3. Click **Continue** to proceed.  
 
 ### Step 2: Create a Workspace  
-1. Select **NeMo Framework** as the base image.  
-2. Click **Create Project** to initialize the workspace.  
-3. Select the **AI Studio Kernel** for Jupyter notebooks.  
+1. Select **NeMo Framework** as the base image.    
 
 ### Step 3: Verify Project Files  
 1. Clone the GitHub repository:  
    ```
    git clone https://github.com/HPInc/aistudio-samples.git
    ```  
-2. Navigate to `ngc-integration/tourism_recommendations_bert` to ensure all files are cloned correctly.  
+2. Navigate to `ngc-integration/tourism_recommendations_bert` to ensure all files are cloned correctly after workspace creation.  
+
+### Step 4: Verify Project Files  
+1. Add the **Bertlargeuncased** model from the NGC model catalog to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
+
+### Step 5: Use a Custom Kernel for Notebooks  
+1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
+
 
 ## Usage  
 
