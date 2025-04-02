@@ -2,6 +2,8 @@
 <!-- ![alt](../../../images/BERT_QA_image.png) -->
 <!-- colocar uma imagem aqui -->
 
+ ## Overview
+
 In this template, our objective is to increase the resolution of images, that is, to increase the number of pixels, using the FSRCNN model, a convolutional neural network model that offers greater run time speed, which receives a low-resolution image and returns a higher-resolution image that is x times larger.
 
  ---
@@ -18,6 +20,7 @@ In this template, our objective is to increase the resolution of images, that is
 
  This experiment requires the **DIV2K dataset** to run, that should be downloaded from s3://dsp-demo-bucket/div2k-data into an assset called DIV2K.
 
+ To use the sample for this template go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project. You can do this part when first creating the project too, just click on more options.
 
 ---
 
