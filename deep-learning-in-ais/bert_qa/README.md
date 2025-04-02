@@ -8,7 +8,11 @@
  ## 1. Project Setup on AI Studio
   ### Workspace
 
-  For this experiment, **create a custom workspace on AI Studio using the Deep Learning GPU-based image**. Libraries in the requirements.txt (Make sure you install the requirements file) must be available to run the experiment. We highly recommend setting up a custom workspace with the libraries present on the requirements.txt file.
+  For this experiment, **create a custom workspace on AI Studio using the Deep Learning GPU-based image**. Libraries in the requirements.txt must be available to run the experiment. We highly recommend setting up a custom workspace with the libraries present on the requirements.txt file.
+  Make sure you're installing the libraries in the requirements.txt using:
+  ```sh
+      pip install -r requirements.txt 
+```
  
   For the memory configurations, we **recommend 16 GB of RAM and 8 GB for VRAM** for training the model. For inference in GPU, 4 GB of VRAM are sufficient.
 
@@ -17,7 +21,7 @@
 
   ### Accessing Jupyter Notebooks
   
-  Go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup & Documentation > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project.
+  Go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project. You can do this part when first creating the project too, just click on more options.
  
 ## 2. Structure of the experiment
 

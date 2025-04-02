@@ -8,10 +8,10 @@ In this template we will show how to create a simple text generation, one charac
  ## 1. Project Setup on AI Studio
 
  ### Workspace
- For this experiment, **we highly recommend yo to create a custom workspace on AI Studio using the Deep Learning GPU-based image**. 
+ For this experiment, **we highly recommend you to create a custom workspace on AI Studio using the Deep Learning GPU-based image**. 
 
 
- For the memory configurations, we recommend 40 GB for Memory and 4 GB for VRAM
+ For the memory configurations, **we recommend 40 GB for Memory and 4 GB for VRAM**
 
  
  [1. Project Setup on AI Studio](#1-project-setup-on-ai-studio)
@@ -21,7 +21,7 @@ In this template we will show how to create a simple text generation, one charac
 ---
  ### Accessing Jupyter Notebooks
 
-Go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup & Documentation > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project.
+Go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project. You can do this part when first creating the project too, just click on more options.
 
  ---
 
