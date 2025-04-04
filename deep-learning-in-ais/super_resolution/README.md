@@ -46,7 +46,7 @@ In this template, our objective is to increase the resolution of images, that is
 
 ## Usage
 
-Run the following notebook `FSRCNN_DIV2K_AISTUDIO.        ipynb`:
+Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 1. Model:
 - Run the model arquiteture, where its gonna do the feature extraction, shrinking, non-linear mapping, expanding and decovolution
 2. Dataloader / preprocessing:
