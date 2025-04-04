@@ -1,53 +1,99 @@
 # Shakespeare text generation with RNN
 
-In this template we will show how to create a simple text generation, one character per time using a dataset of Shakespeare's texts.
+### Content
+- Overview
+- Project Structure
+- Setup
+- Usage
+- Contact and support
 
- 
+## Overview
+In this template we will show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
+
  ---
 
- ## 1. Project Setup on AI Studio
+ ## Project Structure
+```
+├── code/                                        # Demo code
+│
+├── demo/                                        # Compiled Interface Folder
+│ 
+├── models/
+│   ├── decoder.pt                               # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
+│   ├── dict_torch_rnn_model.pt                  # Trained model for RNN_for_text_generation_Torch.ipynb
+│   ├── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
+│   ├── tf_rnn_model.h5                          # Trained model for the RNN_for_text_generation_TF.ipynb
+│
+├── Deployment.ipynb                             # Notebook for registering the model using MLFlow
+│   
+├── README.md                                    # Project documentation
+│                         
+├── RNN_for_text_generation_TF.ipynb             # Notebook for the TensorFlow trained model
+│                         
+├── RNN_for_text_generation_Torch.ipynb          # Notebook for the Torch trained model
+│                         
+├── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
+                                    
+```
+## Setup
 
- ### Workspace
- For this experiment, **we highly recommend you to create a custom workspace on AI Studio using the Deep Learning GPU-based image**. 
+ For the memory requirements, we suggest to have **we recommend 40 GB for Memory and 4 GB for VRAM**
 
+ We highly recommend you to create a custom workspace on AI Studio using GPU-based image.
 
- For the memory configurations, **we recommend 40 GB for Memory and 4 GB for VRAM**
+### Step 1: Create an AI Studio Project  
+1. Create a **New Project** in AI Studio.   
+2. (Optional) Add a description and relevant tags. 
 
- 
- [1. Project Setup on AI Studio](#1-project-setup-on-ai-studio)
+### Step 2: Create a Workspace  
+1. Select **Deep Learning** as the base image.
 
- [2. How to use the experiment](#2-how-to-use-the-experiment)
+### Step 3: Verify Project Files 
+1. Clone the GitHub repository:  
+   ```
+   git clone https://github.com/HPInc/aistudio-samples.git
+   ```  
+2. Make sure the folder `deep-learning-in-ais/text_generation` is present inside your workspace.
 
 ---
- ### Accessing Jupyter Notebooks
 
-Go to [Catalogue repository](https://github.com/HPInc/aistudio-samples) and copy the HTTPS URL. Next, go to your Project > Setup > GitHub Repository and hit the CLONE GIT REPOSITORY button. Paste the URL, choose a local folder for the repository to be located and add it to the project. You can do this part when first creating the project too, just click on more options.
+## Usage
 
- ---
+### Optional:
+Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
+1. Get Text Data from the shakespeare.txt.
+2. Prepare the textual data. We need to encode our data to give the model a proper numerical representation of our text.
+3. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
+4. Create the GRU Model.
+5. Train the model.
+- Train the model with the selected epochs
+6. Generate the Predictions with the words 'Confidence' and 'Love'. You can change the words.
 
- ### How to access the trained model
- ---
- #### Hugging Face
+### Optional:
+Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
+1. Get Text Data from the shakespeare.txt.
+2. Prepare the textual data. We need to encode our data to give the model a proper numerical representation of our text.
+3. One Hot Encoding to convert categorical data into a fixed-size vector of numerical values.
+4. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
+5. Creating the LSTM Model with the decoder and encoder files
+6. Train the Network to do the Predictions
+7. Generate the Predictions with the words 'Confidence' and 'Love'. You can change the words.
 
-The models are available at the [models](models/) folder, where:
-
-- `tf_rnn_model.h5` is the trained model for the [Tensorflow Jupyter Notebook](RNN_for_text_generation_TF.ipynb)
-
-- `dict_torch_rnn_model.pt` is the trained model for [PyTorch Jupyter Notebook](RNN_for_text_generation_Torch.ipynb) and also includes the `decoder.pt` and `encoder.pt`
-
+### Step 1:
+Run the following notebook `/Deployment.ipynb` for registering the model using MLFlow:
+1. Go to Published Servicies.
+2. Create a new deploy.
+3. Select the model and the (latest) version and start it.
+4. Click on the URL and access the Swagger UI for sending a initial word for the model and the size of the text.
+5. Click on POST/invocations > Try it out and edit the request body.
 
 ---
+
 #### Download from SharePoint (Private Group - AIS Team only)
 
 ##### [RNN models on SharePoint](https://hp.sharepoint.com/:f:/r/teams/HPDataSciencePlatform/Shared%20Documents/QA/%5BiUAT%5D%20Data%20sources/Models/RNNs?csf=1&web=1&e=1hgHAx)
----
 
 ---
-
- ## 2. How to use the experiment
-
-Since we provide you the trained model from the training part of the experiment, there's no need for you to run it again. You can just show the training notebooks and the MLFlow on the Monitor tab for showing the results.
-
-For deploying the model, you have to run the Deployment.ipynb notebook for registering the model using MLFlow. Then, you go to Published Servicies, create a new deploy, select the model and the (latest) version and start it. After a while, you can click on the URL and access the Swagger UI for sending a initial word for the model and the size of the text. Click on POST/invocations > Try it out and edit the request body. 
-
----
+ ## Contact and Support  
+- If you encounter issues, report them via GitHub by opening a new issue.  
+- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
