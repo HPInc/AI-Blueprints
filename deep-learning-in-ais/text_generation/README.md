@@ -79,7 +79,7 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 6. Train the Network to do the Predictions
 7. Generate the Predictions with the words 'Confidence' and 'Love'. You can change the words.
 
-### Step 1:
+### Deploy:
 Run the following notebook `/Deployment.ipynb` for registering the model using MLFlow:
 1. Go to Published Servicies.
 2. Create a new deploy.
