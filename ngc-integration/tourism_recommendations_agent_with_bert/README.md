@@ -76,3 +76,7 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 ## Contact and Support  
 - If you encounter issues, report them via GitHub by opening a new issue.  
 - Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.  
+
+---
+
+> Built with ❤️ using Z by HP AI Studio.
