@@ -56,7 +56,7 @@ if st.button("🔍 Get Recommendations"):
         st.warning("⚠️ Please enter a vacation preference!")
     else:
         # API Configuration
-        api_url = "https://localhost:61743/invocations"  # Update this URL accordingly
+        api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update this URL accordingly
         payload = {
             "inputs": {"query": [query]},
             "params": {"show_score": True}
