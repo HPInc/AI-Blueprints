@@ -21,7 +21,7 @@ In this template, our objective is to increase the resolution of images, that is
 ```
  ## Setup
 
- For the memory requirements, we suggest to have **at least 4GB of RAM, as well as 4GB for GPU dedicated RAM.**
+ For memory requirements, we recommend **at least 4GB of RAM and 4GB of dedicated GPU RAM**.
 
  Similar configurations for a CPU-only experiment will work, but we do not recommend due to the excessive training time.
 
@@ -33,7 +33,8 @@ In this template, our objective is to increase the resolution of images, that is
 1. Select **Deep Learning** as the base image.
 
 ### Step 3: Download the Dataset
-1. This experiment requires the **DIV2K dataset** to run, that should be downloaded from s3://dsp-demo-bucket/div2k-data into an assset called DIV2K.
+1. This experiment requires the **DIV2K dataset** to run.
+2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K.
 
 ### Step 4: Verify Project Files 
 1. Clone the GitHub repository:  
@@ -66,5 +67,5 @@ The local deployment should be done through the Deployments tab in AIStudio. Sim
  ---
 
  ## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
+- For issues, please report them by opening a new issue on GitHub.  
 - Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
