@@ -1,0 +1,2 @@
+# Create the workspace using the RAPIDS Base or RAPIDS Notebooks Framework image and select the AI Studio kernel for Jupyter notebooks. 
+# This image includes all the required libraries to run the sample project.
