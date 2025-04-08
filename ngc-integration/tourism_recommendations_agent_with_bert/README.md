@@ -43,7 +43,7 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
    ```
    git clone https://github.com/HPInc/aistudio-samples.git
    ```  
-2. Navigate to `ngc-integration/tourism_recommendations_bert` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `ngc-integration/tourism_recommendations_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Verify Project Files  
 1. Add the **Bertlargeuncased** model from the NGC model catalog to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
@@ -61,7 +61,7 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 ### Step 2: Deploy the Service  
 1. Execute `01_Bert_Model_Registration.ipynb` to register the BERT model in MLflow and create the API logic.  
 2. Navigate to **Deployments > New Service** in AI Studio.  
-3. Name the service and select the **BERT_Tourism** model.  
+3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
 5. Start the deployment.  
 6. Once deployed, click on the **Service URL** to access the Swagger API page.  
