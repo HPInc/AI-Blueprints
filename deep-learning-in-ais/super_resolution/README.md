@@ -15,7 +15,8 @@ In this template, our objective is to increase the resolution of images, that is
  ## Project Structure
 
  ```
-├── FSRCNN_DIV2K_AISTUDIO.ipynb                   # Main notebook for running image super resolution
+├── notebooks
+│   ├── FSRCNN_DIV2K_AISTUDIO.ipynb               # Main notebook for running image super resolution
 │
 ├── README.md                                     # Project documentation
 ```
@@ -34,7 +35,7 @@ In this template, our objective is to increase the resolution of images, that is
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **DIV2K dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K.
+2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K and aws region should be selected as **us-west-2**.
 
 ### Step 4: Verify Project Files 
 1. Clone the GitHub repository:  
@@ -49,7 +50,7 @@ In this template, our objective is to increase the resolution of images, that is
 
 Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 1. Model:
-- Run the model arquiteture, where its gonna do the feature extraction, shrinking, non-linear mapping, expanding and decovolution
+- Run the model architecture, where it will do the feature extraction, shrinking, non-linear mapping, expanding and decovolution
 2. Dataloader / preprocessing:
 - Its gonna do the preprocessing of the DIV2K dataset
 3. Training and Validation:
@@ -57,8 +58,8 @@ Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 - Monitor metrics using the **Monitor tab**, MLflow, and TensorBoard.
 4. Inference:
 - Save the model and do the inference of the predicted image and of the high resolution image.
-5. HR and LR image comparasion:
-- It does the comparasion of the low resolution and of the high resolution image after the training.
+5. HR and LR image comparison:
+- It does the comparison of the low resolution and of the high resolution image after the training.
 
  ## Local deployment on AI Studio
 
@@ -69,3 +70,7 @@ The local deployment should be done through the Deployments tab in AIStudio. Sim
  ## Contact and Support  
 - For issues, please report them by opening a new issue on GitHub.  
 - Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+
+---
+
+> Built with ❤️ using Z by HP AI Studio.
