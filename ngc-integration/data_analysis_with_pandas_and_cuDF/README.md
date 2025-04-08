@@ -13,10 +13,9 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 - **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **Datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ## Project Structure  
-
 ```
 ├── README.md
 ├── notebooks
@@ -43,13 +42,12 @@ In this project, we provide notebooks to compare the execution time of dataset o
 2. Navigate to `ngc-integration/data_analysis_with_pandas_and_cuDF` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Add the Dataset to Workspace
-
-- Download the **USA_Stocks** dataset from AWS S3:
+1.  Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
   - **Dataset Name**: `USA_Stocks`
   - **Dataset Source**: `AWS S3`
   - **S3 URI**: `s3://dsp-demo-bucket/rapids-data`
   - **Bucket Region**: `us-west-2`
-- Make sure that the dataset is in the `datafabric` folder inside your workspace.
+2. Make sure that the dataset is in the `datafabric` folder inside your workspace.
 
 ### Step 5: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
