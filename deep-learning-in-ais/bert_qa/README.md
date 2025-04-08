@@ -18,16 +18,14 @@
 │
 ├── demo/                                        # Compiled Interface Folder
 │
-├── Deployment.ipynb                             # Notebook for registering the model using MLFlow
+├── notebooks
+│   ├── Deployment.ipynb                         # Notebook for registering the model using MLFlow
+│   ├── Testing Mlflow Server.ipynb              # Notebook for testing the Mlflow server
+│   ├── Training.ipynb                           # Notebook for the trained model
+│   ├── deploy.py                                # Code to deploy                          
 │
 ├── README.md                                    # Project documentation
-│    
-├── Testing Mlflow Server.ipynb                  # Notebook for testing the Mlflow server
-│               
-├── Training.ipynb                               # Notebook for the trained model
-│                         
-├── deploy.py                                    # Code to deploy
-│                         
+│                                        
 ├── requirements.txt                             # Dependency file for installing required packages
                                     
 ```
@@ -45,10 +43,6 @@ We highly recommend you to create a custom workspace on AI Studio using GPU-base
 ### Step 2: Create a Workspace  
 1. Select **Deep Learning** as the base image.
 - Libraries in the requirements.txt must be available to run the experiment. We highly recommend setting up a       custom workspace with the libraries present on the requirements.txt file.
-  Make sure you're installing the libraries in the requirements.txt using:
-  ```sh
-      pip install -r requirements.txt --quiet
-  ```
 
 ### Step 3: Verify Project Files 
 1. Clone the GitHub repository:  
@@ -80,6 +74,10 @@ Run the following notebook `/Deployment.ipynb`(The same deployment can be achiev
 2. Register the model.
 3. Test the model that was registred.
 
-## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
+ ## Contact and Support  
+- For issues, please report them by opening a new issue on GitHub.  
 - Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+
+---
+
+> Built with ❤️ using Z by HP AI Studio.
