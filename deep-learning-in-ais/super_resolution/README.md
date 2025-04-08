@@ -9,14 +9,14 @@
 
  ## Overview
 
-In this template, our objective is to increase the resolution of images, that is, to increase the number of pixels, using the FSRCNN model, a convolutional neural network model that offers greater run time speed, which receives a low-resolution image and returns a higher-resolution image that is x times larger.
+In this template, our objective is to increase the resolution of images, that is, to increase the number of pixels, using the FSRCNN model, a convolutional neural network model that offers faster runtime, which receives a low-resolution image and returns a higher-resolution image that is X times larger.
 
  ---
  ## Project Structure
 
  ```
 ├── notebooks
-│   ├── FSRCNN_DIV2K_AISTUDIO.ipynb               # Main notebook for running image super resolution
+│   ├── FSRCNN_DIV2K_AISTUDIO.ipynb               # Main notebook for running image super-resolution
 │
 ├── README.md                                     # Project documentation
 ```
@@ -24,7 +24,7 @@ In this template, our objective is to increase the resolution of images, that is
 
  For memory requirements, we recommend **at least 4GB of RAM and 4GB of dedicated GPU RAM**.
 
- Similar configurations for a CPU-only experiment will work, but we do not recommend due to the excessive training time.
+ Similar configurations for a CPU-only experiment will work, but we do not recommend this due to the excessive training time.
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
@@ -35,7 +35,7 @@ In this template, our objective is to increase the resolution of images, that is
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **DIV2K dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K and aws region should be selected as **us-west-2**.
+2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K and ensure that the AWS region is set to ```us-west-2```.
 
 ### Step 4: Verify Project Files 
 1. Clone the GitHub repository:  
@@ -50,16 +50,16 @@ In this template, our objective is to increase the resolution of images, that is
 
 Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 1. Model:
-- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding and decovolution.
+- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding and deconvolution.
 2. Dataloader / preprocessing:
-- It will do the preprocessing of the DIV2K dataset.
+- The preprocessing of the DIV2K dataset will be done here.
 3. Training and Validation:
 - Train your FSRCNN model.
 - Monitor metrics using the **Monitor tab**, MLflow, and TensorBoard.
 4. Inference:
-- Save the model and do the inference of the predicted image and of the high resolution image.
+- Save the model and perform inference on the predicted image and the high-resolution image.
 5. HR and LR image comparison:
-- Performs comparison of the low resolution and of the high resolution image after the training.
+- Compare the low-resolution and high-resolution images after training.
 
  ## Local deployment on AI Studio
 
