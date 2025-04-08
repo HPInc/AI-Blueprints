@@ -24,13 +24,12 @@ In this template we will show how to create a simple text generation with traine
 │   ├── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
 │   ├── tf_rnn_model.h5                          # Trained model for the RNN_for_text_generation_TF.ipynb
 │
-├── Deployment.ipynb                             # Notebook for registering the model using MLFlow
-│   
+├── notebooks
+│   ├── Deployment.ipynb                         # Notebook for registering the model using MLFlow
+│   ├── RNN_for_text_generation_TF.ipynb         # Notebook for the TensorFlow trained model
+│   ├── RNN_for_text_generation_Torch.ipynb      # Notebook for the Torch trained model
+│   ├── deploy.py                                # Code to deploy        
 ├── README.md                                    # Project documentation
-│                         
-├── RNN_for_text_generation_TF.ipynb             # Notebook for the TensorFlow trained model
-│                         
-├── RNN_for_text_generation_Torch.ipynb          # Notebook for the Torch trained model
 │                         
 ├── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
                                     
@@ -97,3 +96,7 @@ Run the following notebook `/Deployment.ipynb` for registering the model using M
  ## Contact and Support  
 - If you encounter issues, report them via GitHub by opening a new issue.  
 - Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+
+---
+
+> Built with ❤️ using Z by HP AI Studio.
