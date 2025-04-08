@@ -1,0 +1,12 @@
+numpy<2
+pandas<2
+pyarrow
+pydantic<2
+langchain
+chromadb==0.3.29
+llama-cpp-python
+langchain_huggingface
+mlflow
+scikit-learn
+torch
+transformers
