@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Content Finder</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #141414; color: white; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .result { border: 1px solid #333; padding: 15px; margin: 15px 0; border-radius: 5px; background-color: #222; }
+        input, button { padding: 10px; margin: 5px 0; }
+        #query { width: 80%; background-color: #333; color: white; border: 1px solid #555; }
+        button { cursor: pointer; background-color: #e50914; color: white; border: none; font-weight: bold; }
+        h1 { color: #e50914; }
+        .content-title { margin-top: 0; }
+        .loading { text-align: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Netflix Content Finder</h1>
+        <div>
+            <input type="text" id="query" placeholder="What would you like to watch?">
+            <button id="search">Search</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Add a log function to write to our error box
+            function log(message) {
+                console.log(message);
+            }
+            
+            log("Page loaded, jQuery version: " + $.fn.jquery);
+            log("API endpoint: " + window.location.origin + "/invocations");
+            
+            $("#search").click(function() {
+                var query = $("#query").val();
+                if (!query) {
+                    alert("Please enter a search query");
+                    return;
+                }
+                
+                log("Search button clicked, query: " + query);
+                $("#results").html('<div class="loading">Searching Netflix content...</div>');
+                
+                // Prepare the request payload
+                var payload = {
+                    inputs: { query: [query] },
+                    params: { show_score: true, top_n: 5 }
+                };
+                
+                log("Request payload: " + JSON.stringify(payload, null, 2));
+                
+                $.ajax({
+                    url: window.location.origin + "/invocations",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+                    success: function(response) {
+                        log("Received response: " + JSON.stringify(response, null, 2));
+                        
+                        $("#results").empty();
+                        
+                        // FIX: Handle double-nested predictions
+                        var predictions = [];
+                        
+                        // Check if response has double-nested structure
+                        if (response.predictions && response.predictions.predictions) {
+                            predictions = response.predictions.predictions;
+                            log("Found double-nested predictions structure");
+                        } else if (response.predictions && Array.isArray(response.predictions)) {
+                            predictions = response.predictions;
+                            log("Found standard predictions structure");
+                        } else {
+                            log("Could not find valid predictions array");
+                        }
+                        
+                        // Process predictions if any were found
+                        if (predictions && predictions.length > 0) {
+                            log("Processing " + predictions.length + " predictions");
+                            
+                            predictions.forEach(function(item, index) {
+                                log("Processing item " + index);
+                                
+                                // Use the Content field which contains the formatted content
+                                var content = item.Content || "Unknown Content";
+                                
+                                // Extract a title for the heading (first part of content)
+                                var titleMatch = content.match(/^(.*?)\s*[\(:|]/);
+                                var title = titleMatch ? titleMatch[1].trim() : "Netflix Content";
+                                
+                                $("#results").append(`
+                                    <div class="result">
+                                        <h3 class="content-title">${title}</h3>
+                                        <p>${content}</p>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            log("No predictions found to display");
+                            $("#results").html(`
+                                <div class="result">
+                                    <h3>No results found</h3>
+                                    <p>The model did not return any predictions.</p>
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        log("ERROR: " + error);
+                        log("Status: " + status);
+                        log("Status code: " + (xhr.status || "unknown"));
+                        log("Response text: " + (xhr.responseText || "none"));
+                        
+                        $("#results").html(`
+                            <div class="result">
+                                <h3>Error</h3>
+                                <p>Error fetching results: ${error}</p>
+                                <p>Status: ${status}</p>
+                            </div>
+                        `);
+                    }
+                });
+            });
+            
+            // Allow pressing Enter to search
+            $("#query").keypress(function(e) {
+                if (e.which == 13) { // Enter key
+                    $("#search").click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
