@@ -45,7 +45,7 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
    ```  
 2. Navigate to `ngc-integration/tourism_recommendations_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
 
-### Step 4: Verify Project Assets  
+### Step 4: Add Project Assets  
 1. Add the **Bertlargeuncased** model from the NGC model catalog to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
 
 ### Step 5: Use a Custom Kernel for Notebooks  
