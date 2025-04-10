@@ -6,6 +6,7 @@ import shutil
 
 # MLflow for Experiment Tracking and Model Management
 import mlflow
+from mlflow import MlflowClient
 from mlflow.types.schema import Schema, ColSpec
 from mlflow.types import ParamSchema, ParamSpec
 from mlflow.models import ModelSignature
@@ -20,7 +21,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-# Define global experiment and run names to be used throughout the notebook
+# Configurations
 MODEL_PERSONAL_NAME = "morgana-rodrigues/bert_qa"
 EXPERIMENT_NAME = "BERT model for Q&A"
 MODEL_NAME = "BERT_QA"
@@ -70,7 +71,7 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
         except Exception as e:
             logger.error(f"Error loading the question-answering pipeline: {str(e)}")     
         
-    def predict(self, context, model_input):
+    def predict(self, context, model_input, params):
         """
         Runs inference using the loaded model and input data.
 
@@ -90,7 +91,7 @@ class DistilBERTModel(mlflow.pyfunc.PythonModel):
             logger.error(f"Error running inference: {str(e)}")
 
     @classmethod
-    def log_model(cls, model_name, source_trainer = None, source_pipeline = None, demo_folder="demo"): 
+    def log_model(cls, model_name, source_trainer = None, source_pipeline = None, demo_folder="../demo"): 
         """
         Logs the model to MLflow, including artifacts, dependencies, and input/output signatures.
 
