@@ -16,7 +16,7 @@ This project implements an AI-powered system for banking relationship managers t
 - Custom workspace configuration allows tailoring resources to specific banking model needs
 - Connect to multiple data stores across local and cloud networks, essential for accessing sensitive banking data from different secure sources
 - Local computation capabilities support processing large financial datasets without network vulnerabilities
-- Scalable workspace options (Small/Medium/Large) accommodate different banking model requirements, from simple reporting to complex risk analysis
+- Flexible image options accommodate different banking model requirements, from simple reporting to complex risk analysis
 - Team collaboration features enable a range of contributors from data scientists, to UI designers and executives to work as a team
 - Monitoring capabilities allow tracking model performance for regulatory compliance
 - Service creation functionality enables deployment of models for real-time banking decisions
@@ -31,10 +31,14 @@ The system follows this general flow:
 3. Query processing and semantic similarity matching
 4. Result presentation through the web interface
 
+The diagram below illustrates this architecture and the data flow between components:
+
 <img src="images/banking_flowchart.png" alt="Banking Customer Similarity Flow" width="600"/>
+
 
 ## Project Structure
 
+The repository is organized as follows, with dedicated directories for data, model artifacts, demo interface components, and supporting scripts:
 ```
 /
 ├── data/

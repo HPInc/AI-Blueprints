@@ -1,67 +1,56 @@
-# Tech Adoption Similarity System
+# Technology Adoption Similarity System
 
 ## Overview
-This project implements an AI-powered system for marketers and IT managers to identify potential customers based on their technology adoption patterns. The system uses natural language processing to match user profiles with specific queries, enabling targeted marketing and product recommendations based on tech adoption behaviors.
+This project implements an AI-powered system for marketers and IT managers to identify potential customers based on their technologynology adoption patterns. The system uses natural language processing to match user profiles with specific queries, enabling targeted marketing and product recommendations based on technology adoption behaviors.
 
 ## Features
-- Natural language query interface for finding similar tech users
+- Natural language query interface for finding similar technology users
 - Semantic search using sentence transformers
 - MLflow integration for model versioning and deployment
 - Interactive demo interface with visual gauge indicators
-- Comprehensive tech user profile analysis
-- Support for filtering based on adopter categories and tech preferences
+- Comprehensive technology user profile analysis
+- Support for filtering based on adopter categories and technology preferences
 
-## AI Studio Benefits for Tech Adoption Projects
+## AI Studio Benefits for Technology Adoption Projects
 
-- Custom workspace configuration allows tailoring resources to specific tech adoption model needs
+- Custom workspace configuration allows tailoring resources to specific technology adoption model needs
 - Connect to multiple data stores across local and cloud networks, essential for accessing user behavior data from different sources
 - Local computation capabilities support processing large datasets without network vulnerabilities
-- Scalable workspace options (Small/Medium/Large) accommodate different model requirements, from simple user categorization to complex adoption pattern analysis
+- Scalable workspace options accommodate different model requirements, from simple user categorization to complex adoption pattern analysis
 - Team collaboration features enable product managers, marketers, and data scientists to work together seamlessly
 - Monitoring capabilities allow tracking model performance for marketing campaign effectiveness
-- Service creation functionality enables deployment of models for real-time tech adoption analysis
+- Service creation functionality enables deployment of models for real-time technologynology adoption analysis
 
-The platform provides an end-to-end solution for developing, testing, and deploying tech adoption models while maintaining the flexibility, performance, and collaboration features required in the technology sector.
+The platform provides an end-to-end solution for developing, testing, and deploying technology adoption models while maintaining the flexibility, performance, and collaboration features required in the technologynology sector.
 
 ## System Architecture
 
 The system follows this general flow:
-1. Tech user data processing and embedding generation
+1. technology user data processing and embedding generation
 2. MLflow model packaging and deployment
 3. Query processing and semantic similarity matching
 4. Result presentation through the web interface with visual gauges
 
-```mermaid
-flowchart TD
-    A[Tech User Data Collection] --> B[Data Processing]
-    B --> C[Generate User Embeddings]
-    C --> D[Store Embeddings]
-    D --> E[MLflow Model Packaging]
-    E --> F[Model Deployment]
-    F --> G[Web Interface]
-    G --> H[User Query Input]
-    H --> I[Query Processing]
-    I --> J[Semantic Matching]
-    J --> K[Calculate Similarity Scores]
-    K --> L[Apply Adopter Category Filters]
-    L --> M[Results Visualization]
-    M --> N[Gauge Display]
-    M --> O[Color-coded Categories]
-    M --> P[User Details]
-```
+The diagram below illustrates this architecture and the data flow between components:
+
+<img src="images/flowchart.png" alt="technologynology Customer Similarity Flow" width="600"/>
+
 
 ## Project Structure
+
+The repository is organized as follows, with dedicated directories for data, model artifacts, demo interface components, and supporting scripts:
+
 
 ```
 /
 ├── data/
-│   ├── tech_adoption_dataset.csv
-│   └── tech_embeddings.npy
+│   ├── technology_adoption_dataset.csv
+│   └── technology_embeddings.npy
 ├── demo/
 │   ├── index.html
 │   └── styles.css
 ├── images/
-│   ├── tech_flowchart.png
+│   ├── technology_flowchart.png
 │   ├── deployment1.png
 │   ├── deployment2.png
 │   ├── deployment3.png
@@ -85,7 +74,7 @@ flowchart TD
 ├── .venv/
 ├── 00_generate_data.py
 ├── 01_embed_data.py
-├── 02_nb_deploy_tech_model.ipynb
+├── 02_nb_deploy_technology_model.ipynb
 ├── README.md
 └── requirements.txt
 ```
@@ -114,21 +103,21 @@ pip install -r requirements.txt
 ## Usage
 
 ### 1. Generate Sample Data
-Run the data generation script to create synthetic tech adoption user data:
+Run the data generation script to create synthetic technology adoption user data:
 ```bash
-python 00_generate_tech_adoption_data.py
+python 00_generate_technology_adoption_data.py
 ```
 
 ### 2. Create User Embeddings
-Generate embeddings for the tech user profiles:
+Generate embeddings for the technology user profiles:
 ```bash
-python 01_embed_tech_data.py
+python 01_embed_technology_data.py
 ```
 
 ### 3. Deploy Model
 Open and run the Jupyter notebook:
 ```bash
-02_nb_deploy_tech_model.ipynb
+02_nb_deploy_technology_model.ipynb
 ```
 
 ### 4. Create Service
@@ -172,31 +161,31 @@ Open and run the Jupyter notebook:
 
 ### 5. Query Examples
 Once deployed and started, you can query the system with natural language, for example:
-- "Find early adopters with high technical proficiency"
+- "Find early adopters with high technologynical proficiency"
 - "Users interested in AI and machine learning with high budget"
-- "High budget users from tech sector"
-- "Moderate tech interest users in healthcare"
+- "High budget users from technology sector"
+- "Moderate technology interest users in healthcare"
 
 ## Model Details
 
-The system uses the `sentence-transformers/all-MiniLM-L6-v2` model for generating semantic embeddings of tech user profiles and queries. This allows for nuanced matching based on meaning rather than exact keyword matches.
+The system uses the `sentence-transformers/all-MiniLM-L6-v2` model for generating semantic embeddings of technology user profiles and queries. This allows for nuanced matching based on meaning rather than exact keyword matches.
 
 ## Development
 
 To extend or modify the system:
 
-1. Data Generation `00_generate_tech_adoption_data.py`:
-   - Modify the user attributes and tech categories
+1. Data Generation `00_generate_technology_adoption_data.py`:
+   - Modify the user attributes and technology categories
    - Adjust the data generation parameters
 
-2. Embedding Creation `01_embed_tech_data.py`:
+2. Embedding Creation `01_embed_technology_data.py`:
    - Change the embedding model
    - Modify the user description format
 
-3. Model Deployment `02_nb_deploy_tech_model.ipynb`:
+3. Model Deployment `02_nb_deploy_technology_model.ipynb`:
    - Adjust the similarity matching logic
    - Modify the result presentation format
-   - Add new filtering capabilities based on tech adoption patterns
+   - Add new filtering capabilities based on technology adoption patterns
 
 4. Visual Interface `demo/index.html` and `demo/styles.css`:
    - Customize the gauge visualization

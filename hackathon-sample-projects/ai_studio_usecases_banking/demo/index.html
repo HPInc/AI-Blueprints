@@ -353,7 +353,7 @@
                                 // Extract customer details using regex
                                 var customerId = customerInfo.match(/Customer ID: (\d+)/) ? customerInfo.match(/Customer ID: (\d+)/)[1] : "Unknown";
                                 var age = customerInfo.match(/Age: (\d+)/) ? customerInfo.match(/Age: (\d+)/)[1] : "N/A";
-                                var income = customerInfo.match(/Income: \$([\d,.]+)/) ? customerInfo.match(/Income: \$([\d,.]+)/)[1] : "N/A";
+                                var income = customerInfo.match(/Income: \$([\d,.]+),/) ? customerInfo.match(/Income: \$([\d,.]+),/)[1] : "N/A";
                                 var creditScore = customerInfo.match(/Credit Score: (\d+)/) ? customerInfo.match(/Credit Score: (\d+)/)[1] : "N/A";
                                 var segment = customerInfo.match(/Segment: (\w+)/) ? customerInfo.match(/Segment: (\w+)/)[1] : "N/A";
                                 var risk = customerInfo.match(/Risk(?: Profile)?: (\w+)/) ? customerInfo.match(/Risk(?: Profile)?: (\w+)/)[1] : "N/A";
