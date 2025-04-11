@@ -17,14 +17,13 @@ In this template we will show how to create a simple text generation with traine
 ├── code/                                        # Demo code
 │
 ├── demo/                                        # Compiled Interface Folder
-│ 
-├── models/
-│   ├── decoder.pt                               # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
-│   ├── dict_torch_rnn_model.pt                  # Trained model for RNN_for_text_generation_Torch.ipynb
-│   ├── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
-│   ├── tf_rnn_model.h5                          # Trained model for the RNN_for_text_generation_TF.ipynb
 │
 ├── notebooks
+    └── models/
+│        └── decoder.pt                               # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
+│        └── dict_torch_rnn_model.pt                  # Trained model for RNN_for_text_generation_Torch.ipynb
+│        └── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
+│        └── tf_rnn_model.h5                          # Trained model for the RNN_for_text_generation_TF.ipynb
 │   ├── Deployment.ipynb                         # Notebook for registering the model using MLFlow
 │   ├── RNN_for_text_generation_TF.ipynb         # Notebook for the TensorFlow trained model
 │   ├── RNN_for_text_generation_Torch.ipynb      # Notebook for the Torch trained model
