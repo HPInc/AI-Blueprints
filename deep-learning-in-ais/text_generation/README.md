@@ -62,7 +62,8 @@ Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
 3. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
 4. Create the GRU Model.
 5. Train the model.
-- Train the model with the selected epochs
+- Train the model with the selected epochs.
+  
 6. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### Optional:
