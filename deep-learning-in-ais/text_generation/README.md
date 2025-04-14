@@ -42,7 +42,7 @@ The objective of this template is to show how to create a simple text generation
 2. (Optional) Add a description and relevant tags. 
 
 ### Step 2: Create a Workspace  
-1. Select **Deep Learning** as the base image.
+1. Select **Deep Learning with GPU** as the base image.
 
 ### Step 3: Verify Project Files 
 1. Clone the GitHub repository:  
