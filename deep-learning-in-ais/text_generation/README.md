@@ -8,7 +8,7 @@
 - Contact and support
 
 ## Overview
-In this template we will show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
+The objective of this template is to show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
 
  ---
 
@@ -35,9 +35,7 @@ In this template we will show how to create a simple text generation with traine
 ```
 ## Setup
 
- For the memory requirements, we suggest to have **we recommend 40 GB for Memory and 4 GB for VRAM**
-
- We highly recommend you to create a custom workspace on AI Studio using GPU-based image.
+ For the memory requirements, it's **recommended 40 GB for Memory and 4 GB for VRAM**
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
@@ -59,37 +57,30 @@ In this template we will show how to create a simple text generation with traine
 
 ### Optional:
 Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
-1. Get Text Data from the shakespeare.txt.
-2. Prepare the textual data. We need to encode our data to give the model a proper numerical representation of our text.
+1. Obtain Text Data from the shakespeare.txt.
+2. Prepare the textual data. It's needed to encode the data to provide the model a proper numerical representation of the text.
 3. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
 4. Create the GRU Model.
 5. Train the model.
 - Train the model with the selected epochs
-6. Generate the Predictions with the words 'Confidence' and 'Love'. You can change the words.
+6. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### Optional:
 Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
-1. Get Text Data from the shakespeare.txt.
-2. Prepare the textual data. We need to encode our data to give the model a proper numerical representation of our text.
+1. Obtain Text Data from the shakespeare.txt.
+2. Prepare the textual data. It's needed to decode and encode the data to give the model a proper numerical representation of the text.
 3. One Hot Encoding to convert categorical data into a fixed-size vector of numerical values.
 4. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
-5. Creating the LSTM Model with the decoder and encoder files
+5. Create the LSTM Model with the decoder and encoder files
 6. Train the Network to do the Predictions
-7. Generate the Predictions with the words 'Confidence' and 'Love'. You can change the words.
+7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### Deploy:
 Run the following notebook `/Deployment.ipynb` for registering the model using MLFlow:
-1. Go to Published Servicies.
-2. Create a new deploy.
-3. Select the model and the (latest) version and start it.
-4. Click on the URL and access the Swagger UI for sending a initial word for the model and the size of the text.
-5. Click on POST/invocations > Try it out and edit the request body.
-
----
-
-#### Download from SharePoint (Private Group - AIS Team only)
-
-##### [RNN models on SharePoint](https://hp.sharepoint.com/:f:/r/teams/HPDataSciencePlatform/Shared%20Documents/QA/%5BiUAT%5D%20Data%20sources/Models/RNNs?csf=1&web=1&e=1hgHAx)
+1. Obtain Text Data from the shakespeare.txt.
+2. Load the model.
+3. Register the model on MlFlow.
+4. Test registered model
 
 ---
  ## Contact and Support  

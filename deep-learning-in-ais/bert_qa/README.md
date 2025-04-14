@@ -8,7 +8,7 @@
 - Contact and support
 
 ## Overview
- What Question Answering (QA) models does is return the answer to a question in a given text or document. In this template we use Bidirectional Encoder Representations from Transformers (BERT), which is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection.
+ The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be finetuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial taskspecific architecture modifications.
   
  ---
 
@@ -32,9 +32,7 @@
 
 ## Setup
 
-For the memory configurations, we **recommend 16 GB of RAM and 8 GB for VRAM** for training the model. For inference in GPU, 4 GB of VRAM are sufficient.
-
-We highly recommend you to create a custom workspace on AI Studio using GPU-based image.
+For the memory configurations, it's **recommend 16 GB of RAM and 8 GB for VRAM** for training the model. For inference in GPU, 4 GB of VRAM are sufficient.
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
@@ -42,7 +40,7 @@ We highly recommend you to create a custom workspace on AI Studio using GPU-base
 
 ### Step 2: Create a Workspace  
 1. Select **Deep Learning** as the base image.
-- Libraries in the requirements.txt must be available to run the experiment. We highly recommend setting up a       custom workspace with the libraries present on the requirements.txt file.
+- Libraries in the requirements.txt must be available to run the experiment.
 
 ### Step 3: Verify Project Files 
 1. Clone the GitHub repository:  
@@ -56,21 +54,20 @@ We highly recommend you to create a custom workspace on AI Studio using GPU-base
 ## Usage
 ### Optional:
 Run the following notebook `/Training.ipynb`:
-On this notebook we have a step by step explaining what its happening in which cell.Where we:
 1. Download the dataset from the HuggingFace datasets repository.
-2. Tokenize, which means that we prepare the inputs for a model.
+2. Tokenize, preparing the inputs for the model.
 3. Load metrics and transforms the output model(Logits) to numbers.
 4. Train, using the model:
 ```
 model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 
 ```
-5. Do the training evaluation of the model.
-6. Create a question-answering pipeline from transformers and pass our model to it.
+5. Complete the training evaluation of the model.
+6. Create a question-answering pipeline from transformers and pass the model to it.
 
 ### Deploy:
 Run the following notebook `/Deployment.ipynb`(The same deployment can be achieved by running the deploy.py file):
-1. In the Model part, load a Transformer model saved on Hugging Face to use it locally.
+1. In the Model section, load a Transformer model saved on Hugging Face to use it locally.
 2. Register the model.
 3. Test the model that was registred.
 
