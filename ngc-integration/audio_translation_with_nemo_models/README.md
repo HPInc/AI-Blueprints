@@ -74,7 +74,7 @@ From the **Models** tab, add the following models from the **NVIDIA NGC Catalog*
 
 1. **Speech-to-Text (STT)**  
    - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`  
-   - Asset Name: `STT En Citrinet 1024`
+   - Asset Name: `STT En Citrinet 1024 Gamma 0.25`
 
 2. **Neural Machine Translation (NMT)**  
    - Model: `nmt_en_es_transformer12x2-1.0.0rc1`  
