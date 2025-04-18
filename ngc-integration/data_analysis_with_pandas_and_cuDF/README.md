@@ -67,4 +67,4 @@ For the two data analysis notebooks, results are available both **within the not
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).

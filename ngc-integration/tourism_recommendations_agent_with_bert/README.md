@@ -79,4 +79,4 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).

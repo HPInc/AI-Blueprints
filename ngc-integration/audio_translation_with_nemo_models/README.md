@@ -15,7 +15,7 @@
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
 1. **Speech-to-Text (STT)** conversion using Citrinet  
-2. **Text Translation** from English to Spanish using NMT  
+2. **Text Translation (TT)** from English to Spanish using NMT  
 3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
 
 All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
@@ -106,7 +106,7 @@ This will:
 - Synthesize spoken Spanish audio from the translated text  
 - Log the entire workflow as a composite model in **MLflow**
 
-> Note: If your asset names differ from the recommended ones, update the notebook accordingly. Model loading may take time and can fail on GPUs with <4GB VRAM.
+> Note: If your asset names differ from the recommended ones, update the notebook accordingly. Model loading may take time and can fail on GPUs with <8GB VRAM.
 
 ### Step 2: Register and Deploy the Model
 
@@ -132,4 +132,4 @@ or
 
 ---
 
-> Built with ❤️ using **Z by HP AI Studio**  
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).

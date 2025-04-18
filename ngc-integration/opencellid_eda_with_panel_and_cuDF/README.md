@@ -99,4 +99,4 @@ The notebook launches an embedded interactive dashboard featuring:
 
 ---
 
-> Built with ❤️ using **Z by HP AI Studio**
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
