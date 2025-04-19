@@ -1,4 +1,4 @@
-# Data Analysis with Pandas and cuDF  
+# 📈 Stock Analysis with Pandas and cuDF  
 
 ## Content  
 - Overview  
@@ -19,8 +19,8 @@ In this project, we provide notebooks to compare the execution time of dataset o
 ```
 ├── README.md
 ├── notebooks
-│   ├── data_analysis_with_pandas.ipynb
-│   ├── data_analysis_with_pandas_and_cuDF.ipynb
+│   ├── stock_analysis_with_pandas.ipynb
+│   ├── stock_analysis_with_pandas_and_cuDF.ipynb
 │   └── original_example.ipynb
 └── requirements.txt
 ```  
@@ -29,7 +29,6 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
-2. (Optional) Add a description and relevant tags.  
 
 ### Step 2: Create a Workspace  
 1. Select **RAPIDS Notebooks** as the base image.    
@@ -39,7 +38,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
    ```
    git clone https://github.com/HPInc/aistudio-samples.git
    ```  
-2. Navigate to `ngc-integration/data_analysis_with_pandas_and_cuDF` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `ngc-integration/stock_analysis_with_pandas_and_cuDF` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Add the Dataset to Workspace
 1.  Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
@@ -67,4 +66,4 @@ For the two data analysis notebooks, results are available both **within the not
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
