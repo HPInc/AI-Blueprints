@@ -1,4 +1,4 @@
-# 🌍 Tourism Recommendation Agent  
+# 🌍 Vacation Recommendation Agent  
 
 ## Content  
 - Overview  
@@ -8,14 +8,12 @@
 - Contact and Support  
 
 ## Overview  
-The **Tourism Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
 ## Project Structure  
 ```
 ├── README.md
 ├── data
-│   ├── processed
-│   │   └── embeddings.csv (will be created by running the '00_Word_Embeddings_Generation.ipynb' notebook)
 │   └── raw
 │       └── corpus.csv
 ├── demo
@@ -33,7 +31,6 @@ The **Tourism Recommendation Agent** is an AI-powered system designed to provide
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
-2. (Optional) Add a description and relevant tags.  
 
 ### Step 2: Create a Workspace  
 1. Select **NeMo Framework** as the base image.    
@@ -71,7 +68,7 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ### Successful Demonstration of the User Interface  
 
-![Tourism Recommendation Demo UI](docs/ui_tourism.png)  
+![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
 
 ## Contact and Support  
 - If you encounter issues, report them via GitHub by opening a new issue.  
