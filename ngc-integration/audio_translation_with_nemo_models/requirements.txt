@@ -1,0 +1,8 @@
+# Create the workspace using the RAPIDS Notebooks image within Z by HP AI Studio.
+# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
+
+nemo-toolkit==1.6.0
+nemo-asr==1.0.0
+nemo-nlp==1.0.0
+nemo-tts==1.0.0
+ipython==8.10.0

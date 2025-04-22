@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Customer Finder</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e4b94;
+            --secondary-color: #3b82f6;
+            --accent-color: #e9f0fe;
+            --text-color: #333;
+            --light-text: #6b7280;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            background-color: #f8fafc; 
+            color: var(--text-color); 
+            line-height: 1.6;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+        
+        .search-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin: 20px auto;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input, button { 
+            padding: 12px 15px; 
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+        
+        #query { 
+            flex-grow: 1;
+            background-color: white; 
+            color: var(--text-color);
+            transition: border-color 0.3s;
+        }
+        
+        #query:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        button { 
+            cursor: pointer; 
+            background-color: var(--secondary-color); 
+            color: white; 
+            border: none; 
+            font-weight: 500;
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        h1 { 
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .subheader {
+            color: var(--light-text);
+            margin-top: 10px;
+            font-size: 14px;
+            max-width: 600px;
+        }
+        
+        .results-container {
+            margin-top: 30px;
+        }
+        
+        .result { 
+            border: 1px solid #e5e7eb; 
+            padding: 20px 25px; 
+            margin-bottom: 20px; 
+            border-radius: var(--border-radius); 
+            background-color: white; 
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s;
+        }
+        
+        .result:hover {
+            transform: translateY(-3px);
+        }
+        
+        .customer-title { 
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color); 
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .customer-title i {
+            font-size: 16px;
+        }
+        
+        .loading { 
+            text-align: center; 
+            margin: 40px 0;
+            color: var(--light-text);
+        }
+        
+        .loading i {
+            font-size: 30px;
+            animation: spin 1.5s linear infinite;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .similarity-score { 
+            font-size: 14px; 
+            color: var(--light-text); 
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .score-value { 
+            font-weight: 600; 
+            color: var(--secondary-color); 
+        }
+        
+        .customer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .detail-item {
+            background-color: var(--accent-color);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 3px;
+        }
+        
+        .detail-value {
+            color: var(--text-color);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--light-text);
+        }
+        
+        .no-results i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        
+        .footer {
+            text-align: center;
+            margin: 30px 0;
+            color: var(--light-text);
+            font-size: 14px;
+        }
+        
+        .query-examples {
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        .example-chip {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            margin: 5px 5px 5px 0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .example-chip:hover {
+            background-color: #d4e3fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-university"></i>
+                    <h1>Banking Customer Finder</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-container">
+            <p class="subheader">Use natural language to find banking customers that match specific profiles or financial needs.</p>
+            <div class="search-box">
+                <input type="text" id="query" placeholder="Describe the type of customers you're looking for...">
+                <button id="search"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div class="query-examples">
+                <span>Try:</span>
+                <span class="example-chip">high income professionals nearing retirement</span>
+                <span class="example-chip">credit score over 750</span>
+                <span class="example-chip">young professionals with high risk tolerance</span>
+                <span class="example-chip">mid-career individuals with moderate income</span>
+            </div>
+        </div>
+        
+        <div class="results-container" id="results"></div>
+    </div>
+
+    <div class="footer">
+        <p>First National Bank &copy; 2025 | Customer Similarity Matching System</p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Add a log function to write to console
+            function log(message) {
+                console.log(message);
+            }
+            
+            log("Page loaded, jQuery version: " + $.fn.jquery);
+            log("API endpoint: " + window.location.origin + "/invocations");
+            
+            // Function to handle the search
+            function performSearch() {
+                var query = $("#query").val();
+                if (!query) {
+                    alert("Please enter a search query");
+                    return;
+                }
+                
+                log("Search initiated, query: " + query);
+                $("#results").html('<div class="loading"><i class="fas fa-circle-notch"></i><p>Searching for matching customers...</p></div>');
+                
+                // Prepare the request payload
+                var payload = {
+                    inputs: { query: [query] },
+                    params: { show_score: true, top_n: 5 }
+                };
+                
+                log("Request payload: " + JSON.stringify(payload, null, 2));
+                
+                $.ajax({
+                    url: window.location.origin + "/invocations",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+                    success: function(response) {
+                        log("Received response: " + JSON.stringify(response, null, 2));
+                        
+                        $("#results").empty();
+                        
+                        // Handle different prediction structures
+                        var predictions = [];
+                        
+                        // Check if response has double-nested structure
+                        if (response.predictions && response.predictions.predictions) {
+                            predictions = response.predictions.predictions;
+                            log("Found double-nested predictions structure");
+                        } else if (response.predictions && Array.isArray(response.predictions)) {
+                            predictions = response.predictions;
+                            log("Found standard predictions structure");
+                        } else {
+                            log("Could not find valid predictions array");
+                        }
+                        
+                        // Process predictions if any were found
+                        if (predictions && predictions.length > 0) {
+                            log("Processing " + predictions.length + " predictions");
+                            
+                            predictions.forEach(function(item, index) {
+                                log("Processing item " + index);
+                                
+                                // Use the Customer field which contains the formatted customer info
+                                var customerInfo = item.Customer || "Unknown Customer";
+                                
+                                // Extract customer details using regex
+                                var customerId = customerInfo.match(/Customer ID: (\d+)/) ? customerInfo.match(/Customer ID: (\d+)/)[1] : "Unknown";
+                                var age = customerInfo.match(/Age: (\d+)/) ? customerInfo.match(/Age: (\d+)/)[1] : "N/A";
+                                var income = customerInfo.match(/Income: \$([\d,.]+),/) ? customerInfo.match(/Income: \$([\d,.]+),/)[1] : "N/A";
+                                var creditScore = customerInfo.match(/Credit Score: (\d+)/) ? customerInfo.match(/Credit Score: (\d+)/)[1] : "N/A";
+                                var segment = customerInfo.match(/Segment: (\w+)/) ? customerInfo.match(/Segment: (\w+)/)[1] : "N/A";
+                                var risk = customerInfo.match(/Risk(?: Profile)?: (\w+)/) ? customerInfo.match(/Risk(?: Profile)?: (\w+)/)[1] : "N/A";
+                                
+                                // Format similarity score as percentage
+                                var similarityScore = item.Similarity ? (item.Similarity * 100).toFixed(1) + "%" : "N/A";
+                                
+                                // Choose icon based on customer segment
+                                var segmentIcon = "fa-user";
+                                if (segment.toLowerCase().includes("affluent")) segmentIcon = "fa-gem";
+                                else if (segment.toLowerCase().includes("mass")) segmentIcon = "fa-users";
+                                else if (segment.toLowerCase().includes("premium")) segmentIcon = "fa-star";
+                                else if (segment.toLowerCase().includes("young")) segmentIcon = "fa-graduation-cap";
+                                
+                                $("#results").append(`
+                                    <div class="result">
+                                        <h3 class="customer-title"><i class="fas ${segmentIcon}"></i> Customer ${customerId}</h3>
+                                        <div class="customer-details">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Age</div>
+                                                <div class="detail-value">${age} years</div>
+                                            </div>
+                                            <div class="detail-item">
+                                                <div class="detail-label">Income</div>
+                                                <div class="detail-value">$${income}</div>
+                                            </div>
+                                            <div class="detail-item">
+                                                <div class="detail-label">Credit Score</div>
+                                                <div class="detail-value">${creditScore}</div>
+                                            </div>
+                                            <div class="detail-item">
+                                                <div class="detail-label">Segment</div>
+                                                <div class="detail-value">${segment}</div>
+                                            </div>
+                                            <div class="detail-item">
+                                                <div class="detail-label">Risk Profile</div>
+                                                <div class="detail-value">${risk}</div>
+                                            </div>
+                                        </div>
+                                        <div class="similarity-score">
+                                            <i class="fas fa-percentage"></i> Match Score: <span class="score-value">${similarityScore}</span>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            log("No predictions found to display");
+                            $("#results").html(`
+                                <div class="no-results">
+                                    <i class="fas fa-search"></i>
+                                    <h3>No matching customers found</h3>
+                                    <p>Try adjusting your search query to find different customer profiles.</p>
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        log("ERROR: " + error);
+                        log("Status: " + status);
+                        log("Status code: " + (xhr.status || "unknown"));
+                        log("Response text: " + (xhr.responseText || "none"));
+                        
+                        $("#results").html(`
+                            <div class="no-results">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>Error</h3>
+                                <p>Error fetching results: ${error}</p>
+                                <p>Status: ${status}</p>
+                            </div>
+                        `);
+                    }
+                });
+            }
+            
+            // Handle search button click
+            $("#search").click(performSearch);
+            
+            // Allow pressing Enter to search
+            $("#query").keypress(function(e) {
+                if (e.which == 13) { // Enter key
+                    performSearch();
+                }
+            });
+            
+            // Handle example query chips
+            $(".example-chip").click(function() {
+                $("#query").val($(this).text());
+                performSearch();
+            });
+        });
+    </script>
+</body>
+</html>
