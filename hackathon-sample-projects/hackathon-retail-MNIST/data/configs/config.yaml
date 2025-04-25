@@ -1,0 +1,10 @@
+
+random_seed: 42
+batch_size: 64
+epochs: 10
+learning_rate: 0.001
+model1_name: "SimpleCNN"
+model2_name: "ResNet18"
+num_classes: 10
+img_size: 224  # For ImageNet models
+log_level: "INFO"
