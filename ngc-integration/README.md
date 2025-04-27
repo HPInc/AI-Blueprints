@@ -30,7 +30,8 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 # 🌍 Vacation Recommendation Agent
 
-The Vacation Recommendation Agent is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the NVIDIA NeMo Framework and BERT embeddings to generate relevant suggestions tailored to user preferences.
+The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+
 
 # Contact and Support  
 - If you encounter issues, report them via GitHub by opening a new issue.  
