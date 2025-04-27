@@ -31,9 +31,7 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 ├── demo
 │   └── ...
 ├── notebooks
-│   └── english_to_chinese.ipynb
 │   └── english_to_spanish.ipynb
-│   └── french_to_english.ipynb
 ├── src
 │   └── deploy_ms.py
 ├── README.md
