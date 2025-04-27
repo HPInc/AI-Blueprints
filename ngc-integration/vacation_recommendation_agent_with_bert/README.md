@@ -20,7 +20,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 │   └── index.html
 ├── docs
 │   ├── architecture.md
-│   └── ui_tourism.png
+│   └── ui_vacation.png
 ├── notebooks
 │   ├── 00_Word_Embeddings_Generation.ipynb
 │   └── 01_Bert_Model_Registration.ipynb
@@ -40,7 +40,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
    ```
    git clone https://github.com/HPInc/aistudio-samples.git
    ```  
-2. Navigate to `ngc-integration/tourism_recommendations_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `ngc-integration/vacation_recommendation_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Add Project Assets  
 1. Add the **Bertlargeuncased** model from the NGC model catalog to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
