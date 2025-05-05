@@ -32,9 +32,7 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
-- **GPU**: NVIDIA GPU
+- **RAM**: 4 GB  
 
 ### Step 1: Create an AI Studio Project
 
@@ -46,7 +44,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called DIV2K and ensure that the AWS region is set to ```us-west-2```.
+2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called tutorial and ensure that the AWS region is set to ```us-west-2```.
 
 ### Step 4: Clone the Repository
 

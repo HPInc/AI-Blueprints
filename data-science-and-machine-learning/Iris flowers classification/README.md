@@ -12,8 +12,7 @@
 
 ## 🧠 Overview
 
-This Project shows how to do machine learning classification using a Iris Flower dataset. <br>
-The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor) 
+This Project shows how to do machine learning classification using a Iris Flower dataset. The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor).
 
 ---
 
@@ -33,9 +32,7 @@ The goal is to create a model that classifies the categorical variable (setosa, 
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
-- **GPU**: NVIDIA GPU
+- **RAM**: 4 GB  
 
 ### Step 1: Create an AI Studio Project
 
@@ -68,9 +65,9 @@ notebooks/Iris flowers classification.ipynb
 This will:
 
 - Load and prepare the data
-- Create the model architecture  
-- Train the model
-- Make inference  
+- Summarize the Dataset, doing a overview.
+- Visualize the data
+- Build the Model and Measure Model.
 
 
 ---

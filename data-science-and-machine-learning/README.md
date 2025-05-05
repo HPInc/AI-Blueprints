@@ -1,24 +1,45 @@
-# Description
+<h1 style="text-align: center; font-size: 40px;"> Data Science and Machine Learning for Z by HP AI Studio </h1>
 
-In this folder, we have 5 different experiments, to illustrate different aspects of Data Science and Machine Learning using AI Studio. In order to run the experiments in this folder, specific resources need to be installed.
+The sample projects in this folder demonstrate how to perform **Data Science and Machine Learning projects**
 
-## Resources
+We provide **five distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
 
-The notebooks in this folder require Data Science or Deep Learning workspaces, as specified below. Also, most of the experiments require adding the asset [s3://dsp-demo-bucket/tutorial_data/] as an dataset called **tutorial **
+# 😷 A tale of two cities analyzing trends
 
+This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
-## Iris Flower classification
+1. **Speech-to-Text (STT)** conversion using Citrinet  
+2. **Text Translation (TT)** from English to Spanish using NMT  
+3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
 
-This is a simple classification experiment for classification. It runs on the Data Science workspace
+All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
 
-## MNist Classification
-Simple image classification using TensorFlow. Runs on the Deep Learning workspace
+# 🌷 Iris flowers classification 
 
-## A Tale of Two Cities
-Regression experiment in mobility data durin COVID pandemic. Runs on Data Science Workspace
+This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)** dashboard for the [OpenCellID](https://www.opencellid.org/) dataset. It uses **Panel** and **cuDF** to deliver lightning-fast geospatial analysis and visualization.
 
-## Recommender System
-Movie recommendation using Tensorflow. Requires Deep Learning workspace
+You can explore cell tower distributions by radio type, operator, country, and time window — rendered live on an interactive map with full GPU acceleration.
 
-## Spam Detection
-Simle text classification system, requires Deep Learning workspace
+# 🎥 Recommender Systems
+
+In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
+
+- **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
+
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+
+# 🚫 Spam Detection and NLP
+
+The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. 
+
+It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+
+# ✍️ MNIST with Keras
+
+# Contact and Support  
+- If you encounter issues, report them via GitHub by opening a new issue.  
+- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.  
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
