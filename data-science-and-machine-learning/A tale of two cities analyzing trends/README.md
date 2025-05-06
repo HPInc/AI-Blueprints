@@ -44,7 +44,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called tutorial and ensure that the AWS region is set to ```us-west-2```.
+2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
 ### Step 4: Clone the Repository
 
@@ -69,9 +69,17 @@ notebooks/a-tale-of-two-cities-analyzing-trends.ipynb
 This will:
 
 - Load and prepare the data
-- Create the model architecture  
-- Train the model
-- Make inference  
+- Analyze the data Univariately and Bivariately
+- Analyze the correlations between the features
+- Decompose Time-Series
+- Perform Exponential Smoothing Prediction Methods
+- Perform Vector Autoregression (VAR)
+- Test Cointegration
+- Analyze Stationarity of a Time-Series
+- Train the VAR model
+- Analyze Autocorrelation of Residuals
+- Forecast
+- Evaluate the model
 
 
 ---

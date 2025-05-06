@@ -46,7 +46,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called tutorial and ensure that the AWS region is set to ```us-west-2```.
+2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
 ### Step 4: Clone the Repository
 

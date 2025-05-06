@@ -46,7 +46,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 3: Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called tutorial and ensure that the AWS region is set to ```us-west-2```.
+2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
 ### Step 4: Clone the Repositoryy
 
@@ -71,10 +71,12 @@ notebooks/Spam Detection and NLP.ipynb
 This will:
 
 - Load and prepare the data
-- Create the model architecture  
-- Train the model
-- Make inference  
-
+- Peform a Exploratory Data Analysis
+- Preprocess the Text and Vectorize
+- Train a Model
+- Evaluate the Model
+- Train Test Split
+- Create a Data Pipeline
 
 ---
 
