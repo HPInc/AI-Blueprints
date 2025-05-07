@@ -56,7 +56,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 ### Step 2: Set Up a Workspace
 
-- Choose the **NeMo Framework** image from the **NVIDIA NGC Catalog** during workspace setup.
+- Choose the **NeMo Framework** image from the **NVIDIA NGC Catalog** in AI Studio during workspace setup.
 
 ### Step 3: Clone the Repository
 
@@ -68,7 +68,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 ### Step 4: Add Required NeMo Models
 
-From the **Models** tab, add the following models from the **NVIDIA NGC Catalog**:
+From the **Models** tab, add the following models from the model catalog in AI Studio:
 
 1. **Speech-to-Text (STT)**  
    - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`  
