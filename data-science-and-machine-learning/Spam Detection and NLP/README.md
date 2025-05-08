@@ -12,7 +12,7 @@
 
 ## 🧠 Overview
 
-Simle text classification system.
+Simple text, more specifically spam, classification using Natural Language Processing (NPL).
 
 ---
 
@@ -20,8 +20,8 @@ Simle text classification system.
 
 ```
 ├── notebooks
-│   └── Spam Detection and NLP.ipynb              
-├── README.md
+│   └── Spam Detection and NLP.ipynb             # Main notebook for the project              
+├── README.md                                    # Project documentation
 ```
 
 ---

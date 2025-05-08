@@ -20,8 +20,8 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 ```
 ├── notebooks
-│   └── a-tale-of-two-cities-analyzing-trends.ipynb              
-├── README.md
+│   └── a-tale-of-two-cities-analyzing-trends.ipynb             # Main notebook for the project              
+├── README.md                                                   # Project documentation
 ```
 
 ---

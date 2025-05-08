@@ -20,8 +20,8 @@ This project shows how to do a image classification, specifically digits of hand
 
 ```
 ├── notebooks
-│   └── [MLFlow] MNIST with Keras.ipynb              
-├── README.md
+│   └── [MLFlow] MNIST with Keras.ipynb             # Main notebook for the project  
+├── README.md                                       # Project documentation
 ```
 
 ---

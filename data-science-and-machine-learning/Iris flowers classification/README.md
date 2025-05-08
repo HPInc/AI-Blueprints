@@ -20,8 +20,8 @@ This Project shows how to do machine learning classification using a Iris Flower
 
 ```
 ├── notebooks
-│   └── Iris flowers classification.ipynb              
-├── README.md
+│   └── Iris flowers classification.ipynb             # Main notebook for the project              
+├── README.md                                         # Project documentation
 ```
 
 ---
