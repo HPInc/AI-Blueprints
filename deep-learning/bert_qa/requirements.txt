@@ -1,0 +1,5 @@
+transformers==4.48.0
+tf_keras==2.19.0
+evaluate==0.4.3
+accelerate==1.5.2
+datasets==3.4.0
