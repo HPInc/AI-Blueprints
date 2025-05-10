@@ -7,14 +7,8 @@ assets:
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
   minimal: "0.14.5"
-  #datascience: "0.13.6"
   deeplearning: "0.13.6"
-  #minimalgpu: "0.11.4"
-  datasciencegpu: "0.11.4"
-  #deeplearninggpu: "0.11.5"
-  #tensorboard: "0.6.4"
-  #mlflow: "0.5.6"
-  #modelservice: "0.6.2"
-  #localgenai: "0.4.5"
+  deeplearninggpu: "0.11.5"
 ngcconfig:
   rapidsbaseversionpin: "25.04-cuda11.8-py3.10"
+    

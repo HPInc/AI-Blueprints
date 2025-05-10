@@ -17,11 +17,12 @@ if __name__ == "__main__":
                         help="Text file with list of expressions to be ignored",
                         default=os.path.join(os.path.dirname(__file__), "ignore_list.txt"))
     args = parser.parse_args()        
-    logger.info("Parsed the arguments")
+    logger.info(f"Parsed the arguments: output: {args.output}, workspace: {args.workspace}")
     test_preprocessor = TestPreprocessor(args.script, args.output, workspace=args.workspace, logger=logger)
     test_preprocessor.run()
     logger.info("Preprocessed the tests")
     code_preprocessor = CodePreprocessor(test_preprocessor.metadata, args.output, logger=logger)
     logger.info("Preprocessed the code")
+    
     
         

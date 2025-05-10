@@ -44,6 +44,7 @@ class TestPreprocessor:
             import_line = f"from {self.fnu.get_module(notebook_path)} import {class_name} \n"
             lines.insert(next_line, import_line)
         with open(os.path.join(self.target_folder, file_name), "w") as outfile:
+            self.logger.info(os.path.join(self.target_folder, file_name))
             outfile.write("".join(lines))
         self.metadata["code"][file_name] = file_metadata
         
