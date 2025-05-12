@@ -26,7 +26,7 @@ NERDCTL_FILE="nerdctl-full-${NERDCTL_VERSION}-linux-amd64.tar.gz"
 NERDCTL_URL="https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/${NERDCTL_FILE}"
 if ! command -v nerdctl; then
   wget ${NERDCTL_URL}
-  tar Cxzvvf /usr/local ${NERDCTL_FILE}
+  sudo tar Cxzvvf /usr/local ${NERDCTL_FILE}
   rm ${NERDCTL_FILE}
 fi
 

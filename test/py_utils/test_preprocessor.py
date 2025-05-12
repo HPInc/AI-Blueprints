@@ -14,6 +14,9 @@ class TestPreprocessor:
         self.target_folder = target_folder
         self.workspace = workspace
         self.fnu.create_empty_folder(target_folder)
+        self.logger.info("---------------------------")
+        self.logger.info(target_folder)
+        self.logger.info("---------------------------")
         with open(os.path.join(target_folder, "__init__"), "w") as init_file:
             init_file.write("")
                 

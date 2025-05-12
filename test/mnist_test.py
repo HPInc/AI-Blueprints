@@ -8,7 +8,7 @@
 #  - model
 #workspaces:
 #  - deeplearning
-#  - deeplearning-gpu
+#  - deeplearninggpu
 # ******
 
 import unittest
