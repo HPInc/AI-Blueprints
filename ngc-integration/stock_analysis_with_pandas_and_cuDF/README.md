@@ -11,8 +11,6 @@
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
-- **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
-
 - **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ## Project Structure  
@@ -20,8 +18,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 ├── README.md
 ├── notebooks
 │   ├── stock_analysis_with_pandas.ipynb
-│   ├── stock_analysis_with_pandas_and_cuDF.ipynb
-│   └── original_example.ipynb
+│   └── stock_analysis_with_pandas_and_cuDF.ipynb
 └── requirements.txt
 ```  
 
@@ -56,7 +53,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 ### Step 1: Run the Notebooks
 
-You can choose to run the **original example notebook** or the **two data analysis notebooks** located in the `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
+You can choose to run the **two data analysis notebooks** located in the `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
 
 For the two data analysis notebooks, results are available both **within the notebook** and through **MLflow tracking**.
 

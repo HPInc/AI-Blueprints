@@ -1,11 +1,12 @@
 # 🤖 Agentic RAG  
 
-# Content  
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Setup](#setup)
-- [Usage](#usage)
-- [Contact and Support](#contact-and-support)
+# 📚 Contents
+
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 # Overview  
 This Agentic RAG project presents two different notebooks, each demonstrating a distinct architecture:
@@ -46,7 +47,7 @@ The solution is primarily built using the **LangChain** and **SmolAgents** libra
    ```
    git clone https://github.com/HPInc/aistudio-samples.git
    ```  
-2. Navigate to `gen-ai/agentic_rag_with_langchain_and_smolagents` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `generative-ai/agentic_rag_with_langchain_and_smolagents` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Add the Model to Workspace
 
