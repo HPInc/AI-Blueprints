@@ -43,7 +43,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 2. Navigate to `ngc-integration/vacation_recommendation_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
 
 ### Step 4: Add Project Assets  
-1. Add the **Bertlargeuncased** model from the model catalog in AI Studio to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
+1. Add the **Bertlargeuncased** (not **BertLargeUncasedForNemo**) model from the model catalog in AI Studio to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
 
 ### Step 5: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
