@@ -12,7 +12,7 @@
 
 # Overview
 
-**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑3** model into an MLflow‑served scorer that rates any batch of texts (e.g., ISEF abstracts) against arbitrary rubric criteria.
+**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 The pipeline:
 
 * Generates scores locally via `llama.cpp` (no data leaves your machine)
@@ -25,18 +25,15 @@ The pipeline:
 # Project Structure
 
 ```
-├── core
-│   └── llama_evaluator
-│       ├── model.py               # LlamaEvaluatorModel class (MLflow)
-│       └── streamlit_app.py       # Streamlit UI
 ├── demo
 │   ├── index.html                 # Lightweight HTML/JS UI
-│   └── assets/
-├── notebooks
-│   └── build_and_register.ipynb   # One‑click notebook to train & log model
-├── datafabric/Meta‑Llama‑3‑8B‑…   # Quantized GGUF model
+│   └── streamlit-webapp/          # Streamlit UI
 ├── docs/
 │   └── ui_llamascore.png          # UI screenshot
+├── notebooks
+│   └── automated_evaluation_with_structured_outputs.ipynb   # One‑click notebook to to setup the pipeline and create the api
+│   └── isef_evaluation_with_llama.ipynb   # One‑click notebook to evaluate isef projects with local Llama model
+│   └── isef_evaluation_with_openai.ipynb   # One‑click notebook to evaluate isef projects with openAI model
 ├── README.md
 └── requirements.txt
 ```
@@ -47,8 +44,8 @@ The pipeline:
 
 ### 0 ▪ Minimum hardware
 
-* **RAM:** 32 GB
-* **VRAM:** 10 GB (16 GB+ for fastest latency)
+* **RAM:** 64 GB
+* **VRAM:** 12 GB
 * **GPU:** NVIDIA (CUDA)
 
 ### 1 ▪ Create an AI Studio project
@@ -58,17 +55,19 @@ Log into [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistu
 ### 2 ▪ Clone the repo
 
 ```bash
-git clone https://github.com/<your‑org>/automated‑evaluation‑structured‑outs.git
+git clone https://github.com/HPInc/aistudio-samples.git
 ```
 
 ### 3 ▪ Add the Llama‑3 model
 
-Download the 8‑B‑Instruct GGUF via Models tab:
+- Download the 7-B‑Instruct GGUF via Models tab:
 
-* **Model name:** `Meta‑Llama‑3‑8B‑Instruct‑Q8_0`
-* **Source:** AWS S3 → `s3://…/Meta-Llama-3-8B-Instruct-Q8_0.gguf`
+  * **Model Name**: `llama2-7b`
+  * **Model Source**: `AWS S3`
+  * **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
+  * **Bucket Region**: `us-west-2`
 
-Place it under `datafabric/`.
+- Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
 ### 4 ▪ Configure secrets (optional)
 
@@ -80,35 +79,20 @@ Edit `configs/secrets.yaml` if you plan to call external APIs; not required for 
 
 ### 1 ▪ Run the notebook
 
-Open **`notebooks/build_and_register.ipynb`**, run all cells.
+Open **`notebooks/automated_evaluation_with_structured_outputs.ipynb`**, run all cells.
 This will:
 
 1. Load the GGUF model
 2. Log **`LlamaEvaluatorModel`** to MLflow
-3. Serve it locally on port **5000**
+3. Serve it locally.
 
-### 2 ▪ Launch the Streamlit UI
 
-```bash
-python core/llama_evaluator/streamlit_app.py
-# or
-streamlit run core/llama_evaluator/streamlit_app.py
-```
 
-Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
 
-### 3 ▪ Use the HTML UI
+### 3 ▪ Swagger / raw API
 
-Serve `demo/index.html` from the same origin as your MLflow service (e.g. drop it in the model‑serve folder).
-The page auto‑detects the host and calls **`/invocations`**.
+After deploying the model, open Swagger clicking the URL of the local deployment.
 
-### 4 ▪ Swagger / raw API
-
-If you enabled **MLflow deployments**, open Swagger at
-
-```
-http://<host>:5000/docs#/default/invocations_invocations_post
-```
 
 Paste a payload like:
 
@@ -130,16 +114,31 @@ Paste a payload like:
 }
 ```
 
+### 4 ▪ Use the HTML UI
+
+After deploying the model, click the link at the top of the swagger API page to access HTML UI.
+
+### 5 ▪ Launch the Streamlit UI
+
+You can use the readme in demo/streamlit-webapp folder to launch the Streamlit UI.
+
+Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
+
+
 ### Successful UI demo
 
-![LlamaScore UI](docs/ui_llamascore.png)
+![Automated Evaluation HTML UI](docs/html_ui_for_automated_evaluation.png)  
+
+![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_automated_evaluation.png)  
+
+
 
 ---
 
 # Contact and Support
 
-* 💬 Open an [issue](https://github.com/<your‑org>/automated‑evaluation‑structured‑outs/issues) for bugs or questions.
-* 📘 See [AI Studio Docs](https://zdocs.datascience.hp.com/docs/aistudio/overview) for workspace help.
+* 💬 Open an [issue](https://github.com/HPInc/aistudio-samples/issues) for bugs or questions.
+* 📘 See [AI Studio Docs](https://zdocs.datascience.hp.com/docs/aistudio/overview) for help.
 
 ---
 
