@@ -29,7 +29,10 @@ The pipeline:
 │   ├── index.html                 # Lightweight HTML/JS UI
 │   └── streamlit-webapp/          # Streamlit UI
 ├── docs/
-│   └── ui_llamascore.png          # UI screenshot
+│   └── html_ui_for_automated_evaluation.png          # UI screenshot
+│   └── streamlit_ui_for_automated_evaluation.png          # UI screenshot
+│   └── successful html ui result for automated evaluation.pdf          # UI pdf
+│   └── successful streamlit ui result for automated evaluation.pdf          # UI pdf
 ├── notebooks
 │   └── automated_evaluation_with_structured_outputs.ipynb   # One‑click notebook to to setup the pipeline and create the api
 │   └── isef_evaluation_with_llama.ipynb   # One‑click notebook to evaluate isef projects with local Llama model
@@ -83,15 +86,19 @@ Open **`notebooks/automated_evaluation_with_structured_outputs.ipynb`**, run all
 This will:
 
 1. Load the GGUF model
-2. Log **`LlamaEvaluatorModel`** to MLflow
-3. Serve it locally.
+2. Setup the pipeline
+3. Log **`LlamaEvaluatorModel`** to MLflow
 
+### 2 ▪ Deploy the LlamaEvaluator Service
 
-
+- Go to **Deployments > New Service** in AI Studio.
+- Name the service and select the registered model.
+- Choose a model version and enable **GPU acceleration**.
+- Start the deployment.
 
 ### 3 ▪ Swagger / raw API
 
-After deploying the model, open Swagger clicking the URL of the local deployment.
+Once deployed, access the **Swagger UI** via the Service URL.
 
 
 Paste a payload like:
@@ -116,7 +123,7 @@ Paste a payload like:
 
 ### 4 ▪ Use the HTML UI
 
-After deploying the model, click the link at the top of the swagger API page to access HTML UI.
+ From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
 
 ### 5 ▪ Launch the Streamlit UI
 
