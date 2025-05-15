@@ -19,9 +19,6 @@ This Project shows how to do a movie recommendation system using Tensorflow.
 ## 🗂 Project Structure
 
 ```
-├── model_artifacts/
-│   └── movie_titles.csv
-│
 ├── notebooks
 │   └── Recommender Systems.ipynb             # Main notebook for the project              
 ├── README.md                                 # Project documentation
