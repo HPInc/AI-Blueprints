@@ -1,4 +1,4 @@
-# 🎥 Recommender Systems
+# 🎥 Recommender Systems with Tensorflow
 
 ## 📚 Contents
 
@@ -12,7 +12,8 @@
 
 ## 🧠 Overview
 
-This Project shows how to do a movie recommendation system using Tensorflow.
+This project builds a simple **recommender system** for movies using **TensorFlow**.  
+It trains on user-item interaction data to predict movie preferences with Model-based Collaborative Filtering.
 
 ---
 
@@ -20,8 +21,8 @@ This Project shows how to do a movie recommendation system using Tensorflow.
 
 ```
 ├── notebooks
-│   └── Recommender Systems.ipynb             # Main notebook for the project              
-├── README.md                                 # Project documentation
+│   └── recommender_systems_with_tensorflow.ipynb             # Main notebook for the project              
+├── README.md                                                 # Project documentation
 ```
 
 ---
@@ -65,7 +66,7 @@ https://github.com/HPInc/aistudio-samples.git
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/Recommender Systems.ipynb
+notebooks/recommender_systems_with_tensorflow.ipynb
 ```
 
 This will:

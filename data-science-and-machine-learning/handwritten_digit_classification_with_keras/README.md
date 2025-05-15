@@ -1,4 +1,4 @@
-# 😷 A tale of two cities analyzing trends
+# ✍️ Handwritten digit classification with keras
 
 ## 📚 Contents
 
@@ -12,7 +12,7 @@
 
 ## 🧠 Overview
 
-This project shows an visual data analysis of the effects of COVID-19 in two different cities: New York and London. 
+This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9. 
 
 ---
 
@@ -20,8 +20,8 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 ```
 ├── notebooks
-│   └── a-tale-of-two-cities-analyzing-trends.ipynb             # Main notebook for the project              
-├── README.md                                                   # Project documentation
+│   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
+├── README.md                                                         # Project documentation
 ```
 
 ---
@@ -32,7 +32,9 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 4 GB  
+- **RAM**: 16 GB  
+- **VRAM**: 4 GB  
+- **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
 
@@ -40,13 +42,9 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 2: Set Up a Workspace
 
-- Choose **Data Science** as the base image.
+- Choose **Deep Learning** as the base image.
 
-### Step 3: Download the Dataset
-1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
-
-### Step 4: Clone the Repository
+### Step 3: Clone the Repository
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -63,23 +61,15 @@ https://github.com/HPInc/aistudio-samples.git
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/a-tale-of-two-cities-analyzing-trends.ipynb
+notebooks/handwritten_digit_classification_with_keras.ipynb
 ```
 
 This will:
 
-- Load and prepare the data
-- Analyze the data Univariately and Bivariately
-- Analyze the correlations between the features
-- Decompose Time-Series
-- Perform Exponential Smoothing Prediction Methods
-- Perform Vector Autoregression (VAR)
-- Test Cointegration
-- Analyze Stationarity of a Time-Series
-- Train the VAR model
-- Analyze Autocorrelation of Residuals
-- Forecast
-- Evaluate the model
+- Load and preprocess the MNIST data 
+- Create the model architecture  
+- Train the model
+- Make inference  
 
 
 ---

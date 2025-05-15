@@ -1,4 +1,4 @@
-# 🌷 Iris flowers classification
+# 🚫 Spam Detection with NLP
 
 ## 📚 Contents
 
@@ -12,7 +12,7 @@
 
 ## 🧠 Overview
 
-This Project shows how to do machine learning classification using a Iris Flower dataset. The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor).
+Simple text, specifically spam, classification using Natural Language Processing (NPL).
 
 ---
 
@@ -20,8 +20,8 @@ This Project shows how to do machine learning classification using a Iris Flower
 
 ```
 ├── notebooks
-│   └── Iris flowers classification.ipynb             # Main notebook for the project              
-├── README.md                                         # Project documentation
+│   └── spam_detection_with_NLP.ipynb             # Main notebook for the project              
+├── README.md                                    # Project documentation
 ```
 
 ---
@@ -32,7 +32,9 @@ This Project shows how to do machine learning classification using a Iris Flower
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 4 GB  
+- **RAM**: 16 GB  
+- **VRAM**: 4 GB  
+- **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
 
@@ -40,9 +42,13 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 2: Set Up a Workspace
 
-- Choose **Data Science** as the base image.
+- Choose **Deep Learning** as the base image.
 
-### Step 3: Clone the Repository
+### Step 3: Download the Dataset
+1. This experiment requires the **tutorial_data dataset** to run.
+2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
+
+### Step 4: Clone the Repositoryy
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -59,16 +65,18 @@ https://github.com/HPInc/aistudio-samples.git
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/Iris flowers classification.ipynb
+notebooks/spam_detection_with_NLP.ipynb
 ```
 
 This will:
 
 - Load and prepare the data
-- Summarize the Dataset, doing a overview.
-- Visualize the data
-- Build the Model and Measure Model.
-
+- Peform a Exploratory Data Analysis
+- Preprocess the Text and Vectorize
+- Train a Model
+- Evaluate the Model
+- Train Test Split
+- Create a Data Pipeline
 
 ---
 

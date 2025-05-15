@@ -1,4 +1,4 @@
-# 🚫 Spam Detection and NLP
+# 🌷 Iris flowers classification with SVM
 
 ## 📚 Contents
 
@@ -12,7 +12,7 @@
 
 ## 🧠 Overview
 
-Simple text, more specifically spam, classification using Natural Language Processing (NPL).
+This Project shows how to do machine learning classification using a Iris Flower dataset. The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor).
 
 ---
 
@@ -20,8 +20,8 @@ Simple text, more specifically spam, classification using Natural Language Proce
 
 ```
 ├── notebooks
-│   └── Spam Detection and NLP.ipynb             # Main notebook for the project              
-├── README.md                                    # Project documentation
+│   └── iris_flowers_classification_with_svm.ipynb             # Main notebook for the project              
+├── README.md                                                  # Project documentation
 ```
 
 ---
@@ -32,9 +32,7 @@ Simple text, more specifically spam, classification using Natural Language Proce
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
-- **GPU**: NVIDIA GPU
+- **RAM**: 4 GB  
 
 ### Step 1: Create an AI Studio Project
 
@@ -42,13 +40,9 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 2: Set Up a Workspace
 
-- Choose **Deep Learning** as the base image.
+- Choose **Data Science** as the base image.
 
-### Step 3: Download the Dataset
-1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
-
-### Step 4: Clone the Repositoryy
+### Step 3: Clone the Repository
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -65,18 +59,16 @@ https://github.com/HPInc/aistudio-samples.git
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/Spam Detection and NLP.ipynb
+notebooks/iris_flowers_classification_with_svm.ipynb
 ```
 
 This will:
 
 - Load and prepare the data
-- Peform a Exploratory Data Analysis
-- Preprocess the Text and Vectorize
-- Train a Model
-- Evaluate the Model
-- Train Test Split
-- Create a Data Pipeline
+- Summarize the Dataset, doing a overview.
+- Visualize the data
+- Build the Model and Measure Model.
+
 
 ---
 
