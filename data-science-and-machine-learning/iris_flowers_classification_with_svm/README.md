@@ -68,6 +68,7 @@ This will:
 - Summarize the Dataset, doing a overview.
 - Visualize the data
 - Build the Model and Measure Model.
+- Integrate MLflow
 
 
 ---

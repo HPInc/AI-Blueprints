@@ -69,7 +69,8 @@ This will:
 - Load and preprocess the MNIST data 
 - Create the model architecture  
 - Train the model
-- Make inference  
+- Make inference
+- Integrate MLflow 
 
 
 ---

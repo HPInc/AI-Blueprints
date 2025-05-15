@@ -77,6 +77,7 @@ This will:
 - Evaluate the Model
 - Train Test Split
 - Create a Data Pipeline
+- Integrate MLflow
 
 ---
 

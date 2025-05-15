@@ -80,6 +80,7 @@ This will:
 - Analyze Autocorrelation of Residuals
 - Forecast
 - Evaluate the model
+- Integrate MLflow 
 
 
 ---

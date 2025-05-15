@@ -74,7 +74,8 @@ This will:
 - Load and prepare the data
 - Create the model architecture  
 - Train the model
-- Make inference  
+- Make inference
+- Integrate MLflow  
 
 
 ---
