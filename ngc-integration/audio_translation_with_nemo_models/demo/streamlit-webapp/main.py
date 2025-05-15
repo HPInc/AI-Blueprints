@@ -1,158 +1,151 @@
-# app.py
-import json
-import io
-import requests
-import pandas as pd
 import streamlit as st
+import requests
 
+# ─── Page Configuration ───────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="⚙️📊🦙 Automated Evaluation with Structured Outputs",
-    page_icon="🦙",
-    layout="wide"
+    page_title="Nemo Text Translation",
+    page_icon="📝",
+    layout="centered",
 )
 
-# ─────────────────────────────────────────────────────────────
-# 1 ▸ Sidebar – server settings & runtime params
-# ─────────────────────────────────────────────────────────────
-st.sidebar.header("⚙️  Model API Settings")
+# ─── Custom CSS ───────────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+/* Header styling */
+.header {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(90deg, #76B900, #3A5F00);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+.header h1 {
+    color: white !important;
+    margin: 0;
+    font-size: 2.5rem;
+}
+.header p {
+    color: #E0F2F1 !important;
+    margin: 0;
+    font-size: 1.1rem;
+}
 
-api_url = st.sidebar.text_input(
-    "MLflow /invocations URL",
-    value="https://localhost:5000/invocations",
-    help="Endpoint where the MLflow model is served."
-)
+/* Button styling */
+.stButton>button {
+    background-color: #76B900;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+.stButton>button:hover {
+    background-color: #5A8A00;
+}
 
-st.sidebar.markdown("---")
-st.sidebar.header("📄 Runtime parameters")
+/* Result box styling */
+.result-box {
+    background: #E8F5E9;
+    border-left: 6px solid #76B900;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+</style>
+""", unsafe_allow_html=True)
 
-key_column   = st.sidebar.text_input("Key column", value="BoothNumber")
-eval_column  = st.sidebar.text_input("Text column", value="AbstractText")
-
-criteria_default = [
-    "Originality", "ScientificRigor", "Clarity",
-    "Relevance", "Feasibility", "Brevity"
-]
-criteria_str = st.sidebar.text_area(
-    "Criteria (JSON list)",
-    value=json.dumps(criteria_default, indent=2),
-    height=120,
-)
-batch_size = st.sidebar.number_input(
-    "Batch size", min_value=1, max_value=100, value=5, step=1
-)
-
-# Validate criteria JSON
-try:
-    criteria_list = json.loads(criteria_str)
-    assert isinstance(criteria_list, list) and all(isinstance(c, str) for c in criteria_list)
-    crit_valid = True
-except Exception as e:
-    crit_valid = False
-    st.sidebar.error(f"Invalid criteria JSON → {e}")
-
-# ─────────────────────────────────────────────────────────────
-# 2 ▸ Main – data input
-# ─────────────────────────────────────────────────────────────
-st.title("⚙️📊🦙 Automated Evaluation with Structured Outputs")
-
+# ─── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
-"""
-Upload a **CSV** (or paste table) containing at least the chosen  
-*key column* and *text column*. Adjust the parameters in the sidebar, then press **Evaluate**.
-"""
+    """
+    <div class="header">
+        <h1>📝 Nemo Text Translation</h1>
+        <p>Enter text below and get its translation via our MLflow model</p>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
-uploaded = st.file_uploader("Upload CSV", type=["csv"])
-raw_text = st.text_area("…or paste CSV/TSV content here", height=150)
+# ─── Sidebar Instructions ────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("How to Use")
+    st.markdown("""
+    1. Make sure your local deployment is up and running.
+                
+    2. Enter the full `/invocations` URL.
+                
+    3. Type or paste the text to translate.
+                
+    4. Click **Translate** to see the result.
+    """)
 
-df: pd.DataFrame | None = None
-if uploaded:
-    df = pd.read_csv(uploaded)
-elif raw_text.strip():
-    try:
-        df = pd.read_csv(io.StringIO(raw_text))
-    except Exception as e:
-        st.error(f"Could not parse pasted data: {e}")
+# ─── Endpoint URL ─────────────────────────────────────────────────────────────
+api_url = st.text_input(
+    "🔗 MLflow `/invocations` URL",
+    value="https://localhost:5000/invocations"
+)
 
-if df is not None:
-    st.subheader("Preview of input data")
-    st.dataframe(df.head(), use_container_width=True)
+# ─── Text Input ───────────────────────────────────────────────────────────────
+text_to_translate = st.text_area(
+    "✏️ Enter text to translate",
+    height=200,
+    placeholder="Type your source text here..."
+)
 
-# ─────────────────────────────────────────────────────────────
-# 3 ▸ Call the model
-# ─────────────────────────────────────────────────────────────
-if st.button("🚀 Evaluate", disabled=df is None or not crit_valid):
-    if df is None:
-        st.error("Please upload or paste a dataset.")
-    elif key_column not in df.columns or eval_column not in df.columns:
-        st.error(f"Dataset must contain columns **{key_column}** and **{eval_column}**.")
+# ─── Translate Button ─────────────────────────────────────────────────────────
+translate = st.button("🚀 Translate")
+
+if translate:
+    # — Validate inputs —
+    if not api_url.lower().startswith(("http://", "https://")):
+        st.error("Please enter a valid URL starting with http:// or https://")
+    elif not text_to_translate.strip():
+        st.warning("Please enter some text to translate.")
     else:
-        with st.spinner("Scoring with Llama…"):
-            payload = {
-                "dataframe_split": df.to_dict(orient="split"),
-                "params": {
-                    "key_column":  key_column,
-                    "eval_column": eval_column,
-                    "criteria":    json.dumps(criteria_list),
-                    "batch_size":  batch_size
+        # — Build MLflow payload —
+        payload = {
+            "dataframe_records": [
+                {
+                    "source_text": text_to_translate,
+                    "source_serialized_audio": ""
                 }
-            }
-            try:
-                res = requests.post(api_url, json=payload, timeout=600, verify=False)
-                res.raise_for_status()
-                # MLflow returns a JSON list of dicts by default
+            ],
+            "parameters": {"use_audio": False}
+        }
 
-                raw = res.json()
-                st.session_state["raw"] = raw
+        try:
+            # — Send request —
+            with st.spinner("Translating…"):
+                resp = requests.post(api_url, json=payload, verify=False, timeout=30)
+                resp.raise_for_status()
+                result = resp.json()
 
-                # ── NEW robust unpacking ─────────────────────────────
-                if isinstance(raw, dict) and "predictions" in raw:
-                    records = raw["predictions"]            # MLflow's default wrapper
-                elif isinstance(raw, list):
-                    records = raw                           # already a list of dicts
-                else:
-                    st.error("Unexpected response format"); st.json(raw); st.stop()
+            # — Extract response record —
+            rec = (
+                result.get("predictions")
+                or result.get("dataframe_records")
+                or result.get("data")
+            )
+            if isinstance(rec, list):
+                rec = rec[0]
 
-                result_df = pd.json_normalize(records)      # flattens dicts into columns
+            original = rec.get("original_text", "")
+            translated = rec.get("translated_text", "")
 
-                st.session_state["last_results_df"] = result_df
-                # ─────────────────────────────────────────────────────
+            # — Display results —
+            st.markdown(f"""
+            <div class="result-box">
+                <strong>🔍 Original:</strong><br>{original}
+            </div>
+            """, unsafe_allow_html=True)
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Request failed:\n```\n{e}\n```")
-            except ValueError as e:
-                st.error(f"Could not decode response:\n{e}")
+            st.markdown(f"""
+            <div class="result-box">
+                <strong>💡 Translation:</strong><br>{translated}
+            </div>
+            """, unsafe_allow_html=True)
 
-# Offer download
-if "last_results_df" in st.session_state:
-    st.success("Scoring complete!")
-    st.subheader("Results")
-    st.dataframe(st.session_state["last_results_df"], use_container_width=True)
-
-    with st.expander("🔍 Raw JSON response"):
-        st.json(st.session_state["raw"], expanded=False)
-
-    csv_bytes = st.session_state["last_results_df"].to_csv(index=False).encode()
-
-    st.download_button(
-        label="📥 Download CSV",
-        data=csv_bytes,
-        file_name="llamascore_results.csv",
-        mime="text/csv",
-        key="download-results"          # stable key prevents widget rebuild issues
-    )
-
-
-
-# ─────────────────────────────────────────────────────────────
-# 4 ▸ Footer
-# ─────────────────────────────────────────────────────────────
-st.markdown(
-"""
-*⚙️📊🦙 Automated Evaluation with Structured Outputs © 2025* – local, private, reproducible text evaluation with LLaMA + MLflow.
-
----
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
-""",
-unsafe_allow_html=True,
-)
+        except Exception as e:
+            st.error(f"Translation request failed: {e}")

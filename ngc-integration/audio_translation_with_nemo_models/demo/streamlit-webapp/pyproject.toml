@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "automated-evaluation-streamlit-webapp"
+name = "audio-translation-streamlit-webapp"
 version = "0.1.0"
 description = ""
 authors = ["ata-turhan <ata.turhan@hp.com>"]
