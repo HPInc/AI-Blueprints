@@ -1,4 +1,4 @@
-<h1 style="text-align: center; font-size: 45px;"> Sample Projects for Z by HP AI Studio 🚀 </h1>
+<h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for Z by HP AI Studio 🚀 </h1>
 
 # Content  
 - [Overview](#overview)
