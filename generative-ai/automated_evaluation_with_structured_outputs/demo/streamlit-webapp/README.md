@@ -2,8 +2,8 @@
 
 ## 1. Install Required Versions
 Ensure that the following are installed on your machine:
-- **Python** version **≥ 3.11**
-- **Poetry** version **≥ 2.0.0 and < 3.0.0**
+- **Python** version **≥ 3.11** (https://www.python.org/downloads/)
+- **Poetry** version **≥ 2.0.0 and < 3.0.0** (https://python-poetry.org/docs/)
 
 ## 2. Set Up the Virtual Environment and Install Dependencies
 Navigate to the project's root directory and run the following command to set up a virtual environment using Poetry and install all required packages:

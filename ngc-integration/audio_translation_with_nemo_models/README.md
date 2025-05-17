@@ -1,16 +1,16 @@
 # 🎙️ Audio Translation with NeMo Models
 
-## 📚 Contents
+# 📚 Contents
 
-- Overview  
-- Project Structure  
-- Setup  
-- Usage  
-- Contact & Support
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+# 🧠 Overview
 
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
@@ -22,27 +22,30 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 
 ---
 
-## 🗂 Project Structure
+# 🗂 Project Structure
 
 ```
 ├── data
-│   └── ForrestGump.mp3
+│   ├── ForrestGump.mp3
 │   └── June18.mp3
 ├── demo
 │   └── ...
+├── docs
+│   ├── react_ui_for_audio_translation.png
+│   ├── streamlit_ui_for_audio_translation.png
+│   ├── successful react ui result for audio translation.pdf
+│   └── successful streamlit ui result for audio translation.pdf
 ├── notebooks
 │   └── english_to_spanish.ipynb
-├── src
-│   └── deploy_ms.py
 ├── README.md
 └── requirements.txt
 ```
 
 ---
 
-## ⚙️ Setup
+# ⚙️ Setup
 
-### Step 0: Minimum Hardware Requirements
+### 0 ▪ Minimum Hardware Requirements
 
 Ensure your environment meets the minimum hardware requirements for smooth model inference:
 
@@ -50,15 +53,15 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 - VRAM: 8 GB  
 - GPU: NVIDIA GPU
 
-### Step 1: Create an AI Studio Project
+### 1 ▪ Create an AI Studio Project
 
 - Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-### Step 2: Set Up a Workspace
+### 2 ▪ Set Up a Workspace
 
 - Choose the **NeMo Framework** image from the **NVIDIA NGC Catalog** in AI Studio during workspace setup.
 
-### Step 3: Clone the Repository
+### 3 ▪ Clone the Repository
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -66,7 +69,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 - Ensure all files are available after workspace creation.
 
-### Step 4: Add Required NeMo Models
+### 4 ▪ Add Required NeMo Models
 
 From the **Models** tab, add the following models from the model catalog in AI Studio:
 
@@ -86,9 +89,9 @@ Make sure these models are downloaded and available in the `datafabric` folder i
 
 ---
 
-## 🚀 Usage
+# 🚀 Usage
 
-### Step 1: Run the Notebook
+### 1 ▪ Run the Notebook
 
 Open and run the notebook located at:
 
@@ -104,29 +107,63 @@ This will:
 - Synthesize spoken Spanish audio from the translated text  
 - Log the entire workflow as a composite model in **MLflow**
 
-> Note: If your asset names differ from the recommended ones, update the notebook accordingly. Model loading may take time and can fail on GPUs with <8GB VRAM.
+### 2 ▪ Deploy the Nemo Translation Service
 
-### Step 2: Register and Deploy the Model
+- In AI Studio, navigate to **Deployments > New Service**.  
+- Give your service a name (e.g. “NemoTranslation”), then select the registered NemoTranslationModel.  
+- Pick the desired model version and enable **GPU acceleration** for best performance.  
+- Click **Deploy** to launch the service.
 
-- After running the notebook, the composite model will be registered in **MLflow**.  
-- To deploy the service, run the following script in the terminal:
+### 3 ▪ Swagger / Raw API
 
-```bash
-python src/deploy_ms.py
-```
-or
+Once your service is running, open the **Swagger UI** from its Service URL.  
 
-- Confirm that the model is registered in `Monitor > MlFlow > Models`  
-- Go to `Deployments > New Service`  
-- Select the registered model and enable GPU acceleration  
-- Once deployed, click the **Play** button to launch the Swagger UI for inference
+#### Example payload for text-only translation:
+```jsonc
+{
+  "dataframe_records": [
+    {
+      "source_text": "Hello, world!",
+      "source_serialized_audio": ""
+    }
+  ],
+  "parameters": {
+    "use_audio": false
+  }
+}
+````
+
+Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
+
+### 4 ▪ Use the HTML Demo
+
+From the Swagger page, click the **“Demo”** link to interact via a simple web form:
+
+* Enter your source text.
+* Click **Translate**.
+* View the translated text right in the browser.
+
+### 5 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+2. Enter text to translate, hit **Translate**, and enjoy the live results!
+
+
+
+### Successful UI demo
+
+- React
+![Automated Evaluation React UI](docs/react_ui_for_audio_translation.png)  
+
+- Streamlit
+![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_audio_translation.png)  
 
 ---
 
-## 📞 Contact & Support
+# 📞 Contact & Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).  
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for setup and troubleshooting guidance.
+* 💬 Open an [issue](https://github.com/HPInc/aistudio-samples/issues) for bugs or questions.
+* 📘 See [AI Studio Docs](https://zdocs.datascience.hp.com/docs/aistudio/overview) for help.
 
 ---
 
