@@ -20,6 +20,8 @@ It trains on user-item interaction data to predict movie preferences with Model-
 ## 🗂 Project Structure
 
 ```
+├── demo
+│   └── streamlit-webapp/                                     # Streamlit UI
 ├── notebooks
 │   └── recommender_systems_with_tensorflow.ipynb             # Main notebook for the project              
 ├── README.md                                                 # Project documentation
@@ -77,6 +79,11 @@ This will:
 - Make inference
 - Integrate MLflow  
 
+### Step 2 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+
+2. Navigate to the shown URL and view the predicted movies recommendations.
 
 ---
 
