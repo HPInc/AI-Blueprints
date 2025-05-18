@@ -127,15 +127,17 @@ Paste a payload like:
 
 ### 5 ▪ Launch the Streamlit UI
 
-You can use the readme in demo/streamlit-webapp folder to launch the Streamlit UI.
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 
-Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
+2. Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
 
 
 ### Successful UI demo
 
+- HTML
 ![Automated Evaluation HTML UI](docs/html_ui_for_automated_evaluation.png)  
 
+- Streamlit
 ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_automated_evaluation.png)  
 
 
