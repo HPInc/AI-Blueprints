@@ -1,8 +1,8 @@
 import streamlit as st
 import os
 import requests
-# import mlflow.pyfunc
 
+os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
     page_title="Handwritten Digit Classification",
@@ -48,7 +48,14 @@ st.markdown("<h1 style='text-align: center; color: #2C3E50;'>✍️ Handwritten 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ Server Settings
 # ─────────────────────────────────────────────────────────────
-api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update this URL accordingly
+st.sidebar.header("⚙️ Model API Settings")
+
+api_url = st.sidebar.text_input(
+    "MLflow /invocations URL",
+    value="https://localhost:5000/invocations",
+    help="Endpoint where the MLflow model is served."
+)
+
     
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – data input
@@ -66,33 +73,32 @@ if st.button("🖊️ Get Classification"):
     if not digit_image:
         st.warning("⚠️ Please enter a image!")
     else:
+        file = {"files":digit_image}
         # --- Loading Spinner ---
         with st.spinner("Fetching recommendations..."):
             payload = {
                 "inputs": {"digit_image": [digit_image]},
             }
             try:
-                response = requests.post(api_url, json=payload, verify=False)
+                response = requests.post(api_url, payload, verify=False)
                 response.raise_for_status()
-                data = response.json()
+                data = response()
 
                 # --- Display Results ---
                 if "predictions" in data:
                         st.success("✅ Here are your vacation recommendations!")
-                        for item in data["predictions"]:
-                            st.markdown(f"""
-                                <div style="
-                                    background-color: #ffffff;
-                                    padding: 15px;
-                                    border-radius: 10px;
-                                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                                    margin: 10px 0px;
-                                    border-left: 8px solid #4CAF50;
-                                ">
-                                    <h4 style="color: #2C3E50;">🍿 {item['movie_title']}</h4>
-                                    <p><strong>Similarity Score:</strong> <span style="color: #4CAF50;">{item['prediction']:.4f}</span></p>
-                                </div>
-                            """, unsafe_allow_html=True)
+                        st.markdown(f"""
+                            <div style="
+                                background-color: #ffffff;
+                                padding: 15px;
+                                border-radius: 10px;
+                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                margin: 10px 0px;
+                                border-left: 8px solid #4CAF50;
+                            ">
+                                <h4 style="color: #2C3E50;">{data}</h4>
+                            </div>
+                        """, unsafe_allow_html=True)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
 

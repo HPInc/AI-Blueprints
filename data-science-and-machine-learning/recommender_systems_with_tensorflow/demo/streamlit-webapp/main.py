@@ -1,8 +1,8 @@
 import streamlit as st
 import os
 import requests
-# import mlflow.pyfunc
 
+os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
     page_title="Movie Recommendation Agent",
@@ -51,7 +51,7 @@ st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommen
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ Server Settings
 # ─────────────────────────────────────────────────────────────
-st.sidebar.header("⚙️  Model API Settings")
+st.sidebar.header("⚙️ Model API Settings")
 
 api_url = st.sidebar.text_input(
     "MLflow /invocations URL",
@@ -90,24 +90,22 @@ if st.button("🍿 Get Recommendations"):
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-
+                
                 # --- Display Results ---
                 if "predictions" in data:
                         st.success("✅ Here are your vacation recommendations!")
-                        for item in data["predictions"]:
-                            st.markdown(f"""
-                                <div style="
-                                    background-color: #ffffff;
-                                    padding: 15px;
-                                    border-radius: 10px;
-                                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                                    margin: 10px 0px;
-                                    border-left: 8px solid #4CAF50;
-                                ">
-                                    <h4 style="color: #2C3E50;">🍿 {item['movie_title']}</h4>
-                                    <p><strong>Similarity Score:</strong> <span style="color: #4CAF50;">{item['prediction']:.4f}</span></p>
-                                </div>
-                            """, unsafe_allow_html=True)
+                        st.markdown(f"""
+                            <div style="
+                                background-color: #ffffff;
+                                padding: 15px;
+                                border-radius: 10px;
+                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                margin: 10px 0px;
+                                border-left: 8px solid #4CAF50;
+                            ">
+                                <h4 style="color: #2C3E50;">🍿{data}</h4>
+                            </div>
+                        """, unsafe_allow_html=True)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
 
