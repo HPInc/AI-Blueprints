@@ -51,17 +51,24 @@ st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommen
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ Server Settings
 # ─────────────────────────────────────────────────────────────
-api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update this URL accordingly
+st.sidebar.header("⚙️  Model API Settings")
+
+api_url = st.sidebar.text_input(
+    "MLflow /invocations URL",
+    value="https://localhost:5000/invocations",
+    help="Endpoint where the MLflow model is served."
+)
+
     
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
-user_id = st.number_input(
-    "Enter your User ID:",
+movie_id = st.number_input(
+    "Enter a movie ID:",
      min_value = 0
 )
-movie_id = st.number_input(
-    "Enter a movie ID", 
+rating = st.number_input(
+    "Enter a rating", 
     min_value = 0
 )
 
@@ -69,15 +76,15 @@ movie_id = st.number_input(
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
 if st.button("🍿 Get Recommendations"):
-    if not user_id:
-        st.warning("⚠️ Please enter your User ID!")
-    elif not movie_id:
+    if not movie_id:
         st.warning("⚠️ Please enter a Movie ID!")
+    elif not rating:
+        st.warning("⚠️ Please enter a rating!")
     else:
         # --- Loading Spinner ---
         with st.spinner("Fetching recommendations..."):
             payload = {
-                "inputs": {"user_id": [user_id], "movie_id":[movie_id]},
+                "inputs": {"movie_id": [movie_id], "rating":[rating]},
             }
             try:
                 response = requests.post(api_url, json=payload, verify=False)
