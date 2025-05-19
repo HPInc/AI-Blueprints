@@ -104,7 +104,7 @@ if st.button("🖊️ Get Classification"):
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*🎥🍿Recommender Movies System © 2025* local, private, recommender system + MLflow.
+*✍️1️⃣Handwritten Digit Classification © 2025* local, private, handwritten classification + MLflow.
 
 ---
 > Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
