@@ -1,33 +1,116 @@
 import streamlit as st
-import pandas as pd
+import os
+import requests
 # import mlflow.pyfunc
 
+# --- Streamlit Page Configuration ---
+st.set_page_config(
+    page_title="Movie Recommendation Agent",
+    page_icon="🎬",
+    layout="centered"
+)
 
-st.title("🎥 Movies Recommender")
+# --- Custom Styling ---
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 0 !important;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .stButton>button {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            font-size: 18px !important;
+            border-radius: 8px !important;
+            padding: 10px 24px !important;
+            border: none !important;
+        }
+        .stTextInput>div>div>input {
+            font-size: 16px !important;
+            padding: 10px !important;
+        }
+        .stMarkdown {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px 0px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-@st.cache_resource
-def load_model():
-    model_path = ""
-    # return mlflow.pyfunc.load_model(model_path)
+# --- Header ---
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🎥 Movie Recommendation Agent</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #555;'> Have a movie recommendation based on your movie review.</h3>", unsafe_allow_html=True)
 
-model = load_model()
+# ─────────────────────────────────────────────────────────────
+# 1 ▸ Main – data input
+# ─────────────────────────────────────────────────────────────
+user_id= st.number_input(
+    "Enter your User ID:",
+     min_value=0
+)
+movie_id = st.number_input(
+    "Enter a movie ID", 
+    min_value=0
+)
 
-user_id= st.number_input("Enter your ID", min_value=1, step=1)
-movie_id = st.number_input("Enter movie ID", min_value=0, step=1)
+# ─────────────────────────────────────────────────────────────
+# 2 ▸ Call the model
+# ─────────────────────────────────────────────────────────────
+if st.button("🍿 Get Recommendations"):
+    if not user_id:
+        st.warning("⚠️ Please enter your User ID!")
+    if not movie_id:
+        st.warning("⚠️ Please enter a Movie ID!")
+    else:
+        # API Configuration
+        api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update this URL accordingly
+        payload = {
+            "inputs": {"user_id": [user_id], "movie_id":[movie_id]},
+        }
+        # --- Loading Spinner ---
+        with st.spinner("Fetching recommendations..."):
+            try:
+                response = requests.post(api_url, json=payload, verify=False)
+                response.raise_for_status()
+                data = response.json()
 
-if st.button("🍿 Recommend movies"):
-    input_data = pd.DataFrame({
-        "user_id": [int(user_id)],
-        "movie_id": [int(movie_id)]
-    })
-    
-    try:
-        prediction = model.predict(input_data)
-        movie_title = prediction[0]["movie_title"]
-        score = prediction[0]["prediction"]
+                # --- Display Results ---
+                if "predictions" in data:
+                        st.success("✅ Here are your vacation recommendations!")
+                        for item in data["predictions"]:
+                            st.markdown(f"""
+                                <div style="
+                                    background-color: #ffffff;
+                                    padding: 15px;
+                                    border-radius: 10px;
+                                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                    margin: 10px 0px;
+                                    border-left: 8px solid #4CAF50;
+                                ">
+                                    <h4 style="color: #2C3E50;">🍿 {item['movie_title']}</h4>
+                                    <p><strong>Similarity Score:</strong> <span style="color: #4CAF50;">{item['prediction']:.4f}</span></p>
+                                </div>
+                            """, unsafe_allow_html=True)
+                else:
+                    st.error("❌ Unexpected response format. Please try again.")
 
-        st.success("Recommended films:")
-        st.write(f"Title:{movie_title}")
-        st.write(f"Rating:{score}")
-    except Exception as e:
-        st.error(f"Error in making prediction: {e}")
+            except requests.exceptions.RequestException as e:
+                st.error("❌ Error fetching recommendations. Please check your connection.")
+                st.error(str(e))
+# ─────────────────────────────────────────────────────────────
+# 3 ▸ Footer
+# ─────────────────────────────────────────────────────────────
+st.markdown(
+"""
+*🎥🍿Recommender Movies System © 2025* local, private, recommender system + MLflow.
+
+---
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+""",
+unsafe_allow_html=True,
+)
