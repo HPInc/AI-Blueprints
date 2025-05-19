@@ -5,8 +5,8 @@ import requests
 
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Movie Recommendation Agent",
-    page_icon = "🎬",
+    page_title="Handwritten Digit Classification",
+    page_icon = "1️⃣",
     layout="centered"
 )
 
@@ -43,10 +43,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Header ---
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🎥 Movie Recommendation Agent</h1>", unsafe_allow_html=True)
-
-st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommendation based on your movie review.</h3>", unsafe_allow_html=True)
-
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>✍️ Handwritten Digit Classification</h1>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ Server Settings
@@ -56,28 +53,23 @@ api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update 
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
-user_id = st.number_input(
-    "Enter your User ID:",
-     min_value = 0
+digit_image = st.file_uploader(
+    "Choose a image:",
+     type = ["jpg", "jpeg", "png"]
 )
-movie_id = st.number_input(
-    "Enter a movie ID", 
-    min_value = 0
-)
+
 
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
-if st.button("🍿 Get Recommendations"):
-    if not user_id:
-        st.warning("⚠️ Please enter your User ID!")
-    elif not movie_id:
-        st.warning("⚠️ Please enter a Movie ID!")
+if st.button("🖊️ Get Classification"):
+    if not digit_image:
+        st.warning("⚠️ Please enter a image!")
     else:
         # --- Loading Spinner ---
         with st.spinner("Fetching recommendations..."):
             payload = {
-                "inputs": {"user_id": [user_id], "movie_id":[movie_id]},
+                "inputs": {"digit_image": [digit_image]},
             }
             try:
                 response = requests.post(api_url, json=payload, verify=False)

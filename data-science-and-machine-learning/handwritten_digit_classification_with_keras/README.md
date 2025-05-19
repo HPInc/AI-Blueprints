@@ -19,6 +19,8 @@ This project shows how to do a image classification, specifically digits of hand
 ## 🗂 Project Structure
 
 ```
+├── demo
+│   └── streamlit-webapp/                                             # Streamlit UI
 ├── notebooks
 │   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
 ├── README.md                                                         # Project documentation
@@ -72,6 +74,11 @@ This will:
 - Make inference
 - Integrate MLflow 
 
+### Step 2 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+
+2. Navigate to the shown URL and view the handwritten classification.
 
 ---
 
