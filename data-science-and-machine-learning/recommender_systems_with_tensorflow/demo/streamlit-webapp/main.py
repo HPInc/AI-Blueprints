@@ -94,8 +94,10 @@ if st.button("🍿 Get Recommendations"):
                 
                 # --- Display Results ---
                 if "predictions" in data:
-                    st.success("✅ Here are your movies recomendations!")
+                    st.success("✅ Here are your vacation recommendations!")
                     for i, movie in enumerate(data['predictions'], 1):
+                        title = movie[0]
+                        score = movie[1]
                         st.markdown(f"""
                             <div style="
                                 background-color: #ffffff;
@@ -105,7 +107,8 @@ if st.button("🍿 Get Recommendations"):
                                 margin: 10px 0px;
                                 border-left: 8px solid #4CAF50;
                             ">
-                                <h4 style="color: #2C3E50;">🍿{movie}</h4>
+                                <h4 style="color: #2C3E50;">🍿{title}</h4>
+                                <p><strong>Score:</strong> <span style="color: #4CAF50;">{score:.4f}</span></p>
                             </div>
                         """, unsafe_allow_html=True)
                 else:
