@@ -95,6 +95,7 @@ This will:
 - Name the service and select the registered model.
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
+- Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
 ### 3 ▪ Swagger / raw API
 
