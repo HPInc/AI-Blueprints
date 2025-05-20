@@ -20,6 +20,8 @@ It trains on user-item interaction data to predict movie preferences with Model-
 ## 🗂 Project Structure
 
 ```
+├── docs/      
+│   └── streamlit_ui_for_recommender_system.pdf               # UI screenshot
 ├── demo
 │   └── streamlit-webapp/                                     # Streamlit UI
 ├── notebooks
