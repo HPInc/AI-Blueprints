@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import requests
+# import mlflow.pyfunc
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
@@ -93,7 +94,8 @@ if st.button("🍿 Get Recommendations"):
                 
                 # --- Display Results ---
                 if "predictions" in data:
-                        st.success("✅ Here are your vacation recommendations!")
+                    st.success("✅ Here are your movies recomendations!")
+                    for i, movie in enumerate(data['predictions'], 1):
                         st.markdown(f"""
                             <div style="
                                 background-color: #ffffff;
@@ -103,7 +105,7 @@ if st.button("🍿 Get Recommendations"):
                                 margin: 10px 0px;
                                 border-left: 8px solid #4CAF50;
                             ">
-                                <h4 style="color: #2C3E50;">🍿{data}</h4>
+                                <h4 style="color: #2C3E50;">🍿{movie}</h4>
                             </div>
                         """, unsafe_allow_html=True)
                 else:
