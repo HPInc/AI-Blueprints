@@ -46,7 +46,7 @@ st.markdown("""
 # --- Header ---
 st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🎥 Movie Recommendation Agent</h1>", unsafe_allow_html=True)
 
-st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommendation based on your movie review.</h3>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommendation based on your movie rating.</h3>", unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -70,7 +70,8 @@ movie_id = st.number_input(
 )
 rating = st.number_input(
     "Enter a rating", 
-    min_value = 0
+    min_value = 0,
+    max_value = 5
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -94,7 +95,7 @@ if st.button("🍿 Get Recommendations"):
                 
                 # --- Display Results ---
                 if "predictions" in data:
-                    st.success("✅ Here are your vacation recommendations!")
+                    st.success("✅ Here are your movie recommendations!")
                     for i, movie in enumerate(data['predictions'], 1):
                         title = movie[0]
                         score = movie[1]
