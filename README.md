@@ -25,11 +25,11 @@ We are continuously expanding this collection with new projects. If you have sug
   - Spam Detection and NLP.ipynb
   - [MLFlow] MNIST with Keras.ipynb
   - a-tale-of-two-cities-analyzing-trends.ipynb
-- deep-learning-in-ais
+- deep-learning
   - bert_qa
   - super_resolution
   - text_generation
-- gen-ai
+- generative-ai
   - agentic_rag_llama
 - ngc-integration
   - audio_translation_with_nemo_models
