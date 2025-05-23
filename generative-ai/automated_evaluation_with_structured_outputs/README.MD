@@ -76,6 +76,10 @@ git clone https://github.com/HPInc/aistudio-samples.git
 
 Edit `configs/secrets.yaml` if you plan to call external APIs; not required for pure local inference.
 
+### 5 ▪ Input File
+
+You need to setup your input files in the 5th cell to work with your input csv files and configuration.
+
 ---
 
 # Usage
