@@ -1,6 +1,9 @@
 import streamlit as st
 import os
+import base64
 import requests
+from io import BytesIO
+import numpy as np
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
@@ -65,6 +68,13 @@ digit_image = st.file_uploader(
      type = ["jpg", "jpeg", "png"]
 )
 
+if digit_image is not None:
+    st.image(digit_image)
+    encoded_string = base64.b64encode(digit_image.read()).decode("utf-8")
+    st.text_area("BASE", encoded_string, height = 200)
+else:
+    st.text("Upload image")
+    
 
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
@@ -75,9 +85,9 @@ if st.button("🖊️ Get Classification"):
     else:
         file = {"files":digit_image}
         # --- Loading Spinner ---
-        with st.spinner("Fetching recommendations..."):
+        with st.spinner("Classifying..."):
             payload = {
-                "inputs": {"digit_image": [digit_image]},
+                "inputs": {f'image: [encoded_string]'},
             }
             try:
                 response = requests.post(api_url, payload, verify=False)
@@ -103,7 +113,7 @@ if st.button("🖊️ Get Classification"):
                     st.error("❌ Unexpected response format. Please try again.")
 
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching recommendations.")
+                st.error("❌ Error fetching classification.")
                 st.error(str(e))
 # ─────────────────────────────────────────────────────────────
 # 4 ▸ Footer
@@ -117,3 +127,4 @@ st.markdown(
 """,
 unsafe_allow_html=True,
 )
+

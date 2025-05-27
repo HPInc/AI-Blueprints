@@ -22,3 +22,10 @@ When interacting with the app:
 - **Choose the exact and correct API URL** to connect to your deployed model.
 - **Important:** The MLflow endpoint **must** use **HTTPS** (not HTTP).
 - **Note:** In **Z by HP AI Studio**, the **port number** for your MLflow API **changes with each deployment**, so always verify the correct URL and port before starting a session.
+
+## 5. Choose a MNIST Dataset Image to Upload on Streamlit
+- The images can be found at https://huggingface.co/datasets/ylecun/mnist
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
