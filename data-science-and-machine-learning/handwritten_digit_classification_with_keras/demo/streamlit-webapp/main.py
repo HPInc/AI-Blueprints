@@ -69,9 +69,8 @@ digit_image = st.file_uploader(
 )
 
 if digit_image is not None:
-    st.image(digit_image)
+    st.image(digit_image, width = 300)
     encoded_string = base64.b64encode(digit_image.read()).decode("utf-8")
-    st.text_area("BASE", encoded_string, height = 200)
 else:
     st.text("Upload image")
     
@@ -87,16 +86,17 @@ if st.button("🖊️ Get Classification"):
         # --- Loading Spinner ---
         with st.spinner("Classifying..."):
             payload = {
-                "inputs": {f'image: [encoded_string]'},
+                "inputs": {"digit": [encoded_string]},
             }
             try:
-                response = requests.post(api_url, payload, verify=False)
+                response = requests.post(api_url, json = payload, verify=False)
                 response.raise_for_status()
-                data = response()
+                data = response.json()
+                class_digit = data.get("predictions")
 
                 # --- Display Results ---
                 if "predictions" in data:
-                        st.success("✅ Here are your vacation recommendations!")
+                        st.success("✅ Here are your classified digit!")
                         st.markdown(f"""
                             <div style="
                                 background-color: #ffffff;
@@ -106,7 +106,7 @@ if st.button("🖊️ Get Classification"):
                                 margin: 10px 0px;
                                 border-left: 8px solid #4CAF50;
                             ">
-                                <h4 style="color: #2C3E50;">{data}</h4>
+                                <h4 style="color: #2C3E50;">{class_digit}</h4>
                             </div>
                         """, unsafe_allow_html=True)
                 else:
