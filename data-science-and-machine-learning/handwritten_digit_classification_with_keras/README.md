@@ -23,6 +23,7 @@ This project shows how to do a image classification, specifically digits of hand
 │   └── streamlit-webapp/                                             # Streamlit UI
 ├── docs/
 │   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
+│   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
 ├── notebooks
 │   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
 ├── README.md                                                         # Project documentation
@@ -112,7 +113,7 @@ Paste a payload like:
 ### Successful UI demo
 
 - Streamlit
-![Handwritten Digit Classification Streamlit UI](image.png)
+![Handwritten Digit Classification Streamlit UI](docs/streamlit_ui_handwritten_digit_classification.png)
 
 ---
 

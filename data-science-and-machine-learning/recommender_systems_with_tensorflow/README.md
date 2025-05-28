@@ -22,6 +22,7 @@ It trains on user-item interaction data to predict movie preferences with Model-
 ```
 ├── docs/      
 │   └── streamlit_ui_for_recommender_system.pdf               # UI screenshot
+│   └── streamlit_ui_for_recommender_system.png               # UI screenshot
 ├── demo
 │   └── streamlit-webapp/                                     # Streamlit UI
 ├── notebooks
@@ -120,7 +121,7 @@ Paste a payload like:
 ### Successful UI demo
 
 - Streamlit
-![Recommender System Streamlit UI](image.png)
+![Recommender System Streamlit UI](docs/streamlit_ui_recommender_system.png)
 
 
 ---
