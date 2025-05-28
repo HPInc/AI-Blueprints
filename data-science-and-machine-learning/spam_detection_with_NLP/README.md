@@ -28,7 +28,7 @@ Simple text, specifically spam, classification using Natural Language Processing
 
 ## ⚙️ Setup
 
-### Step 0: Minimum Hardware Requirements
+### 0 ▪ Minimum Hardware Requirements
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
@@ -36,19 +36,19 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - **VRAM**: 4 GB  
 - **GPU**: NVIDIA GPU
 
-### Step 1: Create an AI Studio Project
+### 1 ▪ Create an AI Studio Project
 
 - Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-### Step 2: Set Up a Workspace
+### 2 ▪ Set Up a Workspace
 
 - Choose **Deep Learning** as the base image.
 
-### Step 3: Download the Dataset
+### 3 ▪ Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
 2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
-### Step 4: Clone the Repositoryy
+### 4 ▪ Clone the Repositoryy
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -60,7 +60,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 ## 🚀 Usage
 
-### Step 1: Run the Notebook
+### 1 ▪ Run the Notebook
 
 Execute the notebook inside the `notebooks` folder:
 

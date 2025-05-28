@@ -33,7 +33,7 @@ It trains on user-item interaction data to predict movie preferences with Model-
 
 ## ⚙️ Setup
 
-### Step 0: Minimum Hardware Requirements
+### Step 0 ▪ Minimum Hardware Requirements
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
@@ -41,15 +41,15 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - **VRAM**: 4 GB  
 - **GPU**: NVIDIA GPU
 
-### Step 1: Create an AI Studio Project
+### Step 1 ▪ Create an AI Studio Project
 
 - Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-### Step 2: Set Up a Workspace
+### Step 2 ▪ Set Up a Workspace
 
 - Choose **Deep Learning** as the base image.
 
-### Step 3: Download the Dataset
+### Step 3 ▪ Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
 2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
@@ -65,7 +65,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 ## 🚀 Usage
 
-### Step 1: Run the Notebook
+### 1 ▪ Run the Notebook
 
 Execute the notebook inside the `notebooks` folder:
 
@@ -81,11 +81,47 @@ This will:
 - Make inference
 - Integrate MLflow  
 
-### Step 2 ▪ Launch the Streamlit UI
+### 2 ▪ Deploy the Movie Recommendation Agent Service
+
+- Go to **Deployments > New Service** in AI Studio.
+- Name the service and select the registered model.
+- Choose a model version and **GPU** it's **not necessary**.
+- Choose the workspace.
+- Start the deployment.
+- Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
+
+### 3 ▪ Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "movie_id": [
+      5
+    ],
+    "rating": [
+      3.5
+    ]
+  },
+  "params": {}
+}
+```
+
+### 4 ▪ Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 
-2. Navigate to the shown URL and view the predicted movies recommendations.
+2. Navigate to the shown URL and view the handwritten classification.
+
+### Successful UI demo
+
+- Streamlit
+![Recommender System Streamlit UI](image.png)
+
 
 ---
 

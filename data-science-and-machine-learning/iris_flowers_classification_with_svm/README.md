@@ -28,21 +28,21 @@ This Project shows how to do machine learning classification using a Iris Flower
 
 ## ⚙️ Setup
 
-### Step 0: Minimum Hardware Requirements
+### 0 ▪ Minimum Hardware Requirements
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
 - **RAM**: 4 GB  
 
-### Step 1: Create an AI Studio Project
+### 1 ▪ Create an AI Studio Project
 
 - Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-### Step 2: Set Up a Workspace
+### 2 ▪ Set Up a Workspace
 
 - Choose **Data Science** as the base image.
 
-### Step 3: Clone the Repository
+### 3 ▪ Clone the Repository
 
 ```bash
 https://github.com/HPInc/aistudio-samples.git
@@ -54,7 +54,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 ## 🚀 Usage
 
-### Step 1: Run the Notebook
+### 1 ▪ Run the Notebook
 
 Execute the notebook inside the `notebooks` folder:
 
