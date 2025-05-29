@@ -19,18 +19,19 @@ We are continuously expanding this collection with new projects. If you have sug
 
 # Repository Structure 
 
-- ai-studio-fundamentals
-  - Iris flowers classification.ipynb
-  - Recommender Systems.ipynb
-  - Spam Detection and NLP.ipynb
-  - [MLFlow] MNIST with Keras.ipynb
-  - a-tale-of-two-cities-analyzing-trends.ipynb
+- data-science-and-machine-learning
+  - covid_movement_patterns_with_var
+  - handwritten_digit_classification_with_keras
+  - iris_flowers_classification_with_svm
+  - recommender_systems_with_tensorflow
+  - spam_detection_with_NLP
 - deep-learning
   - bert_qa
   - super_resolution
   - text_generation
 - generative-ai
-  - agentic_rag_llama
+  - agentic_rag_with_langgraph
+  - automated_evaluation_with_structured_outputs
 - ngc-integration
   - audio_translation_with_nemo_models
   - opencellid_eda_with_panel_and_cuDF
@@ -43,19 +44,19 @@ The sample projects in this folder demonstrate how to build data science and mac
 
 We provide **5 sample projects**, each designed for quick and easy use to help you get started efficiently.
 
-### 🌸 Iris Flower Classification
+### 🌸 Iris Flowers Classification with SVM
 
 This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.  
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
-### 🖌️ MNIST Handwritten Digit Classification
+### 🖌️ Handwritten Digit Classification with Keras
 
 This project performs basic **image classification** using the **TensorFlow** framework.  
 
 It trains a model to classify handwritten digits from the **MNIST** dataset and runs on the **Deep Learning Workspace**.
 
-### 🏙️ A Tale of Two Cities: Mobility Regression During COVID-19
+### 🏙️ COVID Movement Patterns with VAR
 
 This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.  
 
@@ -67,7 +68,7 @@ This project builds a simple **recommender system** for movies using **TensorFlo
 
 It trains on user-item interaction data to predict movie preferences and runs on the **Deep Learning Workspace**.
 
-### 🚫 Spam Detection with Deep Learning
+### 🚫 Spam Detection with NLP
 
 This project implements a **text classification** system to detect **spam** messages.  
 
@@ -98,17 +99,28 @@ This project illustrates how to build a simple **character-by-character text gen
 
 It trains on a dataset containing **Shakespeare's texts**, demonstrating the fundamentals of text generation by predicting one character at a time.
 
+
+
 # Generative AI
 
 The sample projects in this folder demonstrate how to build generative AI applications with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-We provide **1 sample project**, each designed for quick and easy use to help you get started efficiently.
+We provide **2 sample projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 🤖 Agentic RAG Notebook with Llama 2 and ChromaDB
 
 This project implements an **Agentic Retrieval-Augmented Generation (RAG)** pipeline combining **Llama 2** and **ChromaDB**.  
 
 It features an intelligent question-answering system where the model dynamically decides whether external document context is needed before responding, ensuring highly accurate and contextually relevant answers through an agentic workflow.
+
+### 📊 Automated Evaluation with Structured Outputs
+
+**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
+
+* Generates scores locally via `llama.cpp` (no data leaves your machine)
+* Registers the evaluator as a **pyfunc** model in MLflow
+* Exposes a REST `/invocations` endpoint
+* Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
 
 
 # NVIDIA GPU Cloud
