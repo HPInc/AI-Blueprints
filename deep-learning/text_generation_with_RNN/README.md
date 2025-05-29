@@ -1,13 +1,15 @@
-# Shakespeare text generation with RNN
+# 📜💬 Shakespeare text generation with RNN
 
-### Content
+### 📚 Content
+
 - Overview
 - Project Structure
 - Setup
 - Usage
 - Contact and support
 
-## Overview
+ ## 🧠 Overview
+
 The objective of this template is to show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
 
  ---
@@ -21,41 +23,49 @@ The objective of this template is to show how to create a simple text generation
 ├── notebooks
     └── models/
 │        └── decoder.pt                               # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
-│        └── dict_torch_rnn_model.pt                  # Trained model for RNN_for_text_generation_Torch.ipynb
+│        └── dict_torch_rnn_model.pt                  # Trained model for text_generation_with_RNN__Torch.ipynb
 │        └── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
-│        └── tf_rnn_model.h5                          # Trained model for the RNN_for_text_generation_TF.ipynb
+│        └── tf_rnn_model.h5                          # Trained model for the text_generation_with_RNN_TF.ipynb
 │   ├── Deployment.ipynb                         # Notebook for registering the model using MLFlow
-│   ├── RNN_for_text_generation_TF.ipynb         # Notebook for the TensorFlow trained model
-│   ├── RNN_for_text_generation_Torch.ipynb      # Notebook for the Torch trained model
+│   ├── text_generation_with_RNN_TF.ipynb         # Notebook for the TensorFlow trained model
+│   ├── text_generation_with_RNN_Torch.ipynb      # Notebook for the Torch trained model
 │   ├── deploy.py                                # Code to deploy        
 ├── README.md                                    # Project documentation
 │                         
 ├── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
                                     
 ```
-## Setup
+## ⚙️ Setup
 
- For the memory requirements, it's **recommended 40 GB for Memory and 4 GB for VRAM**
+### 0 ▪ Minimum Hardware Requirements
 
-### Step 1: Create an AI Studio Project  
-1. Create a **New Project** in AI Studio.   
-2. (Optional) Add a description and relevant tags. 
+Ensure your environment meets the minimum compute requirements for smooth performance:
 
-### Step 2: Create a Workspace  
-1. Select **Deep Learning with GPU** as the base image.
+- **RAM**: 16 GB  
+- **VRAM**: 4 GB  
+- **GPU**: NVIDIA GPU
 
-### Step 3: Verify Project Files 
-1. Clone the GitHub repository:  
-   ```
-   git clone https://github.com/HPInc/aistudio-samples.git
-   ```  
-2. Make sure the folder `deep-learning-in-ais/text_generation` is present inside your workspace.
+### 1 ▪ Create an AI Studio Project
+
+- Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+### 2 ▪ Set Up a Workspace
+
+- Choose **Deep Learning** as the base image.
+
+### 3 ▪ Clone the Repository
+
+```bash
+https://github.com/HPInc/AI-Blueprints.git
+```
+
+- Ensure all files are available after workspace creation.
 
 ---
 
-## Usage
+## 🚀 Usage
 
-### Optional:
+### 1.1 ▪ Run the Notebook (Optional):
 Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
 1. Obtain Text Data from the shakespeare.txt.
 2. Prepare the textual data. It's needed to encode the data to provide the model a proper numerical representation of the text.
@@ -66,7 +76,7 @@ Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
   
 6. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
-### Optional:
+### 1.2 ▪ Run the Notebook (Optional):
 Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 1. Obtain Text Data from the shakespeare.txt.
 2. Prepare the textual data. It's needed to decode and encode the data to give the model a proper numerical representation of the text.
@@ -76,7 +86,7 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 6. Train the Network to do the Predictions
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
-### Deploy:
+### 2 ▪ Deploy
 Run the following notebook `/Deployment.ipynb` for registering the model using MLFlow:
 1. Obtain Text Data from the shakespeare.txt.
 2. Load the model.
@@ -90,4 +100,11 @@ Run the following notebook `/Deployment.ipynb` for registering the model using M
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+## 📞 Contact & Support
+
+- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
+- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
