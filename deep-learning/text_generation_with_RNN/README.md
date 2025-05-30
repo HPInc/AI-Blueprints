@@ -85,18 +85,7 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 5. Create the LSTM Model with the decoder and encoder files
 6. Train the Network to do the Predictions
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
-
-### 2 ▪ Deploy
-Run the following notebook `/Deployment.ipynb` for registering the model using MLFlow:
-1. Obtain Text Data from the shakespeare.txt.
-2. Load the model.
-3. Register the model on MlFlow.
-4. Test registered model
-
----
- ## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+8. Integrate MLflow 
 
 ---
 

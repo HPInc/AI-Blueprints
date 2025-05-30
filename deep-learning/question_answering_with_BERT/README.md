@@ -73,9 +73,10 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 ```
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
+7. Integrate MLflow 
 
 ### 2 ▪ Deploy
-Run the following notebook `/Deployment.ipynb`(The same deployment can be achieved by running the deploy.py file):
+Run the following notebook `/deploy.ipynb`:
 1. In the Model section, load a Transformer model saved on Hugging Face to use it locally.
 2. Register the model.
 3. Test the model that was registred.
