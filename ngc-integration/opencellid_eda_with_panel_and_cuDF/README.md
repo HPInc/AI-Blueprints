@@ -22,13 +22,13 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ```
 ├── docs
-│   └── ui_opencellid.png 
+│   └── ui_opencellid.png                                      # opencellid UI screenshot
 ├── notebooks
-│   └── opencellid_eda_with_panel_and_cuDF.ipynb 
-├── src
+│   └── opencellid_eda_with_panel_and_cuDF.ipynb               # Main notebook for the project
+├── src                                                        # Core Python modules
 │   └── opencellid_downloader.py               
-├── README.md
-└── requirements.txt
+├── README.md                                                  # Project documentation
+└── requirements.txt                                           # Python dependencies (used with pip install)
 ```
 
 ---
@@ -54,7 +54,7 @@ Ensure your environment meets the minimum compute requirements for smooth dashbo
 ### Step 3: Clone the Repository
 
 ```bash
-https://github.com/HPInc/aistudio-samples.git
+https://github.com/HPInc/AI-Blueprints.git
 ```
 
 - Ensure all files are available after workspace creation.

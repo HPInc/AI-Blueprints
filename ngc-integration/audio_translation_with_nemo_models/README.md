@@ -25,20 +25,20 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 # 🗂 Project Structure
 
 ```
-├── data
+├── data                                                                    # Data assets used in the project
 │   ├── ForrestGump.mp3
 │   └── June18.mp3
-├── demo
+├── demo                                                                    # UI-related files
 │   └── ...
 ├── docs
-│   ├── react_ui_for_audio_translation.png
-│   ├── streamlit_ui_for_audio_translation.png
-│   ├── successful react ui result for audio translation.pdf
-│   └── successful streamlit ui result for audio translation.pdf
+│   ├── react_ui_for_audio_translation.png                                  # React UI screenshot 
+│   ├── streamlit_ui_for_audio_translation.png                              # Streamlit UI screenshot screenshot    
+│   ├── successful react ui result for audio translation.pdf                # React UI screenshot 
+│   └── successful streamlit ui result for audio translation. pdf           # Streamlit UI screenshot
 ├── notebooks
-│   └── english_to_spanish.ipynb
-├── README.md
-└── requirements.txt
+│   └── english_to_spanish.ipynb                                            # Main notebook for the project
+├── README.md                                                               # Project documentation
+└── requirements.txt                                                        # Python dependencies (used with pip install)
 ```
 
 ---
@@ -64,7 +64,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### 3 ▪ Clone the Repository
 
 ```bash
-https://github.com/HPInc/aistudio-samples.git
+https://github.com/HPInc/AI-Blueprints.git
 ```
 
 - Ensure all files are available after workspace creation.
