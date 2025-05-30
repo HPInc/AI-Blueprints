@@ -87,6 +87,15 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 8. Integrate MLflow 
 
+### Step 2: Deploy the Service  
+1. Execute `/RNN_for_text_generation_Torch.ipynb` to register the model in MLflow and create the API logic.  
+2. Navigate to **Deployments > New Service** in AI Studio.  
+3. Name the service and select the registered model.  
+4. Choose an available model version and configure it with **GPU acceleration**.  
+5. Start the deployment.  
+6. Once deployed, click on the **Service URL** to access the Swagger API page.  
+7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
+
 ---
 
 ## 📞 Contact & Support

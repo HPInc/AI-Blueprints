@@ -76,10 +76,14 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 7. Integrate MLflow 
 
 ### 2 ▪ Deploy
-Run the following notebook `/deploy.ipynb`:
-1. In the Model section, load a Transformer model saved on Hugging Face to use it locally.
-2. Register the model.
-3. Test the model that was registred.
+1. Run the following notebook `/question_answering_with_BERT.ipynb`(The same deployment can be achieved by running the deploy.py file): 
+2. Navigate to **Deployments > New Service** in AI Studio.  
+3. Name the service and select the registered model.  
+4. Choose an available model version and configure it with **GPU acceleration**.  
+5. Start the deployment.  
+6. Once deployed, click on the **Service URL** to access the Swagger API page.  
+7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
+
 
 ---
 
