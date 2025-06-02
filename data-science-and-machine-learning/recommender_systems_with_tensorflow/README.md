@@ -10,14 +10,14 @@
 
 ---
 
-## 🧠 Overview
+# Overview
 
 This project builds a simple **recommender system** for movies using **TensorFlow**.  
 It trains on user-item interaction data to predict movie preferences with Model-based Collaborative Filtering.
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
 ├── docs/      
@@ -32,7 +32,7 @@ It trains on user-item interaction data to predict movie preferences with Model-
 
 ---
 
-## ⚙️ Setup
+# Setup
 
 ### Step 0 ▪ Minimum Hardware Requirements
 
@@ -65,7 +65,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -127,7 +127,7 @@ Paste a payload like:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

@@ -10,13 +10,13 @@
 
 ---
 
-## 🧠 Overview
+# Overview
 
 This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9. 
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
 ├── demo
@@ -31,7 +31,7 @@ This project shows how to do a image classification, specifically digits of hand
 
 ---
 
-## ⚙️ Setup
+# Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -60,7 +60,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -118,7 +118,7 @@ Paste a payload like:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

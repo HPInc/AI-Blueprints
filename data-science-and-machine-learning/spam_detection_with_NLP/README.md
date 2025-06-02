@@ -10,13 +10,13 @@
 
 ---
 
-## 🧠 Overview
+# Overview
 
 Simple text, specifically spam, classification using Natural Language Processing (NPL).
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
 ├── notebooks
@@ -26,7 +26,7 @@ Simple text, specifically spam, classification using Natural Language Processing
 
 ---
 
-## ⚙️ Setup
+# Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -59,7 +59,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -82,7 +82,7 @@ This will:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

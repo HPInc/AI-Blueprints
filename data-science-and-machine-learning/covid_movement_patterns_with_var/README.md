@@ -9,13 +9,13 @@
 - [📞 Contact and Support](#contact-and-support)
 ---
 
-## 🧠 Overview
+# Overview
 
 This project shows an visual data analysis of the effects of COVID-19 in two different cities: New York and London, using Vector Autoregression (VAR)
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
 ├── notebooks
@@ -25,7 +25,7 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 ---
 
-## ⚙️ Setup
+# Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -56,7 +56,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -85,7 +85,7 @@ This will:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
