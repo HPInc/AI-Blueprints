@@ -10,38 +10,38 @@
 
 ---
 
-# Overview
+# 🧠 Overview
 
 This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
-#  Project Structure
+#  🗂 Project Structure
 
 ```
 ├── core
 │   └── chatbot_service
 │       ├── __init__.py
 │       └── chatbot_service.py
-├── data
+├── data                                                                # Data assets 
 │   └── AIStudioDoc.pdf
-├── demo
+├── demo                                                                # UI-related files
 │   ├── assets
 │   ├── index.html
 │   └── source
 ├── docs
-│   ├── html_ui_for_vanilla_rag.png
-│   ├── streamlit_ui_for_vanilla_rag.png.png
+│   ├── html_ui_for_vanilla_rag.png                                     # HTML UI Screenshot
+│   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
 │   └── successful streamlit ui result for vanilla rag.pdf
 ├── notebooks
-│   └── vanilla-rag-with-langchain-and-galileo.ipynb
-├── README.md
-└── requirements.txt
+│   └── vanilla-rag-with-langchain-and-galileo.ipynb                    # Main notebook for the project
+├── README.md                                                           # Project documentation
+└── requirements.txt                                                    # Python dependencies
 ```
 
 ---
 
-# Setup
+# ⚙️ Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
@@ -84,7 +84,7 @@ https://github.com/HPInc/aistudio-galileo-templates.git
 
 ---
 
-# Usage
+# 🚀 Usage
 
 ### Step 1: Run the Notebook
 
@@ -117,7 +117,7 @@ This will:
 
 ---
 
-# Contact and Support
+# 📞 Contact and Support
 
 - 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-galileo-templates/issues).
 - 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
