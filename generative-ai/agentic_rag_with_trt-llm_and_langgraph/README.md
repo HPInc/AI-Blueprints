@@ -57,13 +57,20 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 2: Create a Workspace  
 1. Select **NeMo Framework (version 25.04)** as the base image.    
-
+2. To use this specific image version in AI Studio, add the following two lines to your `config.yaml` file located in `C:\Users\<user-name>\AppData\Local\HP\AIStudio` on Windows (or the corresponding directory on Ubuntu):
+   
+   ```
+   ngcconfig:
+	   nemoversionpin: "25.04"
+   ```  
+   
 ### Step 3: Verify Project Files  
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+   
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-2. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
+3. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
 
 ---
 
