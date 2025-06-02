@@ -12,35 +12,47 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 
 ## Project Structure  
 ```
-├── README.md
-├── data
+├── README.md                                            # Project documentation
+├── data                                                 # Data assets used in the project
 │   └── raw
 │       └── corpus.csv
-├── demo
+├── demo                                                 # UI-related files
 │   └── index.html
 ├── docs
-│   ├── architecture.md
-│   └── ui_vacation.png
-├── notebooks
+│   ├── architecture.md                                  # Model Details and API Endpoints
+│   └── ui_vacation.png                                  # UI screenshot
+├── notebooks                                            # Main notebooks for the projects
 │   ├── 00_Word_Embeddings_Generation.ipynb
 │   └── 01_Bert_Model_Registration.ipynb
-└── requirements.txt
+└── requirements.txt                                     # Python dependencies (used with pip install)
 ```  
 
-## Setup  
+## ⚙️ Setup 
 
-### Step 1: Create an AI Studio Project  
-1. Create a **New Project** in AI Studio.   
+### Step 0: Minimum Hardware Requirements
 
-### Step 2: Create a Workspace  
-1. Select **NeMo Framework** as the base image.    
+Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
-### Step 3: Verify Project Files  
-1. Clone the GitHub repository:  
-   ```
-   git clone https://github.com/HPInc/aistudio-samples.git
-   ```  
-2. Navigate to `ngc-integration/vacation_recommendation_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
+- **RAM**: ≥ 64 GB system memory  
+- **VRAM**: 32 GB VRAM  
+- **GPU**: NVIDIA GPU
+- **Disk**: ≥ 32 GB free
+- **CUDA**: Compatible CUDA toolkit (11.8 or 12.x) installed on your system
+
+### Step 1: Create an AI Studio Project
+
+- Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+### Step 2: Set Up a Workspace 
+- Choose **NeMo Framework** as the base image.    
+
+### Step 3: Clone the Repository
+
+```bash
+https://github.com/HPInc/AI-Blueprints.git
+```
+
+- Ensure all files are available after workspace creation.
 
 ### Step 4: Add Project Assets  
 1. Add the **Bertlargeuncased** (not **BertLargeUncasedForNemo**) model from the model catalog in AI Studio to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
@@ -49,7 +61,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 
-## Usage  
+## 🚀 Usage 
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings and save the tokenizer:  
@@ -70,10 +82,12 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
 
-## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.  
+## 📞 Contact & Support
+
+- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
+- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
 
 ---
 
 > Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+

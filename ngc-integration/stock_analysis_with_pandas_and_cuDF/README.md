@@ -16,7 +16,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 ## Project Structure  
 ```
 ├── README.md                                             # Project documentation
-├── notebooks                                             # Main notebooks for the projects
+├── notebooks                                             # Main notebooks for the project
 │   ├── stock_analysis_with_pandas.ipynb
 │   └── stock_analysis_with_pandas_and_cuDF.ipynb
 └── requirements.txt                                      # Python dependencies (used with pip install)
