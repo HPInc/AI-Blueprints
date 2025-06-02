@@ -26,49 +26,49 @@ The solution is primarily built using the **LangChain** and **SmolAgents** libra
 # Project Structure  
 ```
 ├── data/                 
-│   ├── AIStudioDoc.pdf  
+│   ├── context
+│   │   └── aistudio
 ├── notebooks
-│   ├── agentic_rag.ipynb
-│   └── rag_with_agentic_workflow.ipynb
+│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb
+├── src
+│   ├── __init__.py
+│   └── trt_llm_langchain.py
 ├── README.md
 └── requirements.txt
 ```  
 
 # Setup  
 
+### Step 0: Minimum Hardware Requirements
+To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
+
+- RAM: 64 GB 
+- VRAM: 32 GB 
+- GPU: NVIDIA GPU 
+- Disk: 32 GB Free Space
+
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
 
 ### Step 2: Create a Workspace  
-1. Select **Local GenAI** as the base image.    
+1. Select **NeMo Framework (version 25.04)** as the base image.    
 
 ### Step 3: Verify Project Files  
 1. Clone the GitHub repository:  
    ```
-   git clone https://github.com/HPInc/aistudio-samples.git
+   git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-2. Navigate to `generative-ai/agentic_rag_with_langchain_and_smolagents` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
 
-### Step 4: Add the Model to Workspace
-
-- Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Model Name**: `llama2-7b`
-  - **Model Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
-  - **Bucket Region**: `us-west-2`
-- Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
 # Usage  
 
 ### Step 1: Use the Agentic Workflow
 
 Run the following notebook to see the Agentic Workflow in action:  
-- **`rag_with_agentic_workflow.ipynb`**
+- **`Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb`**
 
-### Step 2: Use the Agent with Retriever Tool
 
-Run the following notebook to see the agent enhanced with a retriever tool in action:  
-- **`agentic_rag.ipynb`**
 
 # Contact and Support  
 - If you encounter issues, report them via GitHub by opening a new issue.  
