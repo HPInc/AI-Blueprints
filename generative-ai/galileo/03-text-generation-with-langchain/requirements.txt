@@ -1,0 +1,4 @@
+PyMuPDF==1.25.4
+feedparser==6.0.11
+newspaper3k==0.2.8
+listparser==0.20
