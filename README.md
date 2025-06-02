@@ -30,7 +30,7 @@ We are continuously expanding this collection with new projects. If you have sug
   - super_resolution
   - text_generation
 - generative-ai
-  - agentic_rag_with_langgraph
+  - agentic_rag_with_trt-llm_and_langgraph
   - automated_evaluation_with_structured_outputs
 - ngc-integration
   - audio_translation_with_nemo_models
