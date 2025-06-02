@@ -87,4 +87,4 @@ Run the following notebook to see the Agentic Workflow in action:
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
