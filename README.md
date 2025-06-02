@@ -9,6 +9,8 @@
 - [NVIDIA GPU Cloud](#nvidia-gpu-cloud)
 - [Contact and Support](#contact-and-support)
 
+---
+
 # Overview 
 
 This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.  
@@ -16,6 +18,8 @@ This repository contains a collection of sample projects that you can run quickl
 The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **CitriNet** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.  
 
 We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview), please feel free to open a new issue in this repository — we welcome your feedback!
+
+---
 
 # Repository Structure 
 
@@ -37,6 +41,8 @@ We are continuously expanding this collection with new projects. If you have sug
   - opencellid_eda_with_panel_and_cuDF
   - stock_analysis_with_pandas_and_cuDF
   - vacation_recommendation_agent_with_bert
+
+---
 
 # Data Science and Machine Learning
 
@@ -74,8 +80,7 @@ This project implements a **text classification** system to detect **spam** mess
 
 It uses deep learning techniques and requires the **Deep Learning Workspace** for training and inference.
 
-
-
+---
 
 # Deep Learning
 
@@ -99,7 +104,7 @@ This project illustrates how to build a simple **character-by-character text gen
 
 It trains on a dataset containing **Shakespeare's texts**, demonstrating the fundamentals of text generation by predicting one character at a time.
 
-
+---
 
 # Generative AI
 
@@ -122,6 +127,7 @@ It features an intelligent question-answering system where the model dynamically
 * Exposes a REST `/invocations` endpoint
 * Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
 
+---
 
 # NVIDIA GPU Cloud
 
@@ -159,7 +165,7 @@ This project implements an **AI-powered recommendation agent** that delivers per
 
 It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand user intent and generate highly relevant, tailored vacation recommendations.
 
-
+---
 
 # Contact and Support  
 
