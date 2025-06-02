@@ -1,4 +1,6 @@
-# 🤖 Agentic RAG  
+# 🤖 Agentic RAG for AI Studio with TRT-LLM and LangGraph
+
+
 
 # 📚 Contents
 
@@ -8,71 +10,80 @@
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
+---
+
 # Overview  
-This Agentic RAG project presents two different notebooks, each demonstrating a distinct architecture:
+This repository contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
 
-### RAG with Agentic Workflow
+- **TensorRT-backed Llama-3.1-Nano (TRT-LLM)**: for fast, GPU-accelerated inference.
+- **LangGraph**: to orchestrate an agentic, multi-step decision flow (relevance check, memory lookup, query rewriting, retrieval, answer generation, and memory update).
+- **ChromaDB**: as a local vector store over Markdown context files (about AI Studio).
+- **SimpleKVMemory**: a lightweight on-disk key-value store to cache query-answer pairs.
 
-This notebook implements a **Retrieval-Augmented Generation (RAG)** pipeline with an **Agentic Workflow**, using a local **Llama 2** model and **ChromaDB** for intelligent question-answering.  
-
-The system dynamically determines whether additional context is needed before generating responses, ensuring higher accuracy and relevance.
-
-### Agentic RAG
-
-This notebook showcases a **Hugging Face** model integrated with a **retriever tool**, enabling it to fetch and use relevant context dynamically when answering questions about **Z by HP AI Studio**.  
-
-The solution is primarily built using the **LangChain** and **SmolAgents** libraries, creating an agent capable of context-aware retrieval and response generation.
+---
 
 # Project Structure  
 ```
-├── data/                 
-│   ├── AIStudioDoc.pdf  
-├── notebooks
-│   ├── agentic_rag.ipynb
-│   └── rag_with_agentic_workflow.ipynb
+agentic_rag_with_trt-llm_and_langgraph/
+├── data/
+│   └── context/
+│       └── aistudio
+├── notebooks/
+│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb
+├── src/
+│   ├── __init__.py
+│   └── trt_llm_langchain.py
 ├── README.md
 └── requirements.txt
 ```  
 
+---
+
 # Setup  
+
+### Step 0: Minimum Hardware Requirements
+To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
+
+- GPU: NVIDIA GPU with at least 32 GB VRAM (for TensorRT-LLM engine)
+
+- RAM: ≥ 64 GB system memory
+
+- Disk: ≥ 32 GB free
+
+- CUDA: Compatible CUDA toolkit (11.8 or 12.x) installed on your system
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
 
 ### Step 2: Create a Workspace  
-1. Select **Local GenAI** as the base image.    
+1. Select **NeMo Framework (version 25.04)** as the base image.    
 
 ### Step 3: Verify Project Files  
 1. Clone the GitHub repository:  
    ```
-   git clone https://github.com/HPInc/aistudio-samples.git
+   git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-2. Navigate to `generative-ai/agentic_rag_with_langchain_and_smolagents` to ensure all files are cloned correctly after workspace creation.  
+2. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
 
-### Step 4: Add the Model to Workspace
-
-- Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Model Name**: `llama2-7b`
-  - **Model Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
-  - **Bucket Region**: `us-west-2`
-- Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
+---
 
 # Usage  
 
 ### Step 1: Use the Agentic Workflow
 
 Run the following notebook to see the Agentic Workflow in action:  
-- **`rag_with_agentic_workflow.ipynb`**
+- **`Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb`**
 
-### Step 2: Use the Agent with Retriever Tool
-
-Run the following notebook to see the agent enhanced with a retriever tool in action:  
-- **`agentic_rag.ipynb`**
+---
 
 # Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.  
+
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**Z by HP AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
 
 ---
 
