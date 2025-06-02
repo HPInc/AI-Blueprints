@@ -1,16 +1,16 @@
 # 🌍 Vacation Recommendation Agent  
 
 ## Content  
-- Overview  
-- Project Structure  
-- Setup  
-- Usage  
-- Contact and Support  
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
-## Overview  
+# Overview  
 The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
-## Project Structure  
+# Project Structure  
 ```
 ├── README.md                                            # Project documentation
 ├── data                                                 # Data assets used in the project
@@ -27,7 +27,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 └── requirements.txt                                     # Python dependencies (used with pip install)
 ```  
 
-## ⚙️ Setup 
+# Setup 
 
 ### Step 0: Minimum Hardware Requirements
 
@@ -60,8 +60,7 @@ https://github.com/HPInc/AI-Blueprints.git
 ### Step 5: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-
-## 🚀 Usage 
+# Usage 
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings and save the tokenizer:  
@@ -82,12 +81,11 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
 
-## 📞 Contact & Support
+# Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
----
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
