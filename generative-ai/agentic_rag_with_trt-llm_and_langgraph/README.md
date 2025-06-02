@@ -80,7 +80,7 @@ Run the following notebook to see the Agentic Workflow in action:
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: [**Z by HP AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
