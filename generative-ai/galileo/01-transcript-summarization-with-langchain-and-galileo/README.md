@@ -2,39 +2,46 @@
 
 ## 📚 Contents
 
-- Overview
-- Project Structure
-- Setup
-- Usage
-- Contact & Support
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+# Overview
 
 This project demonstrates how to build a semantic chunking and summarization pipeline for transcripts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate concise and contextually accurate summaries from transcript data.
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
-├── README.md
+├── README.md                                                               # Project documentation
 ├── core
-│   └── service
+│   └── service                     
 │       ├── __init__.py
-│       └── text_summarization_service.py
-├── data
+│       └── text_summarization_service.py                                   # Code for chatbot service  
+├── data                                                                    # Data assets used in the project
 │   ├── I_have_a_dream.txt
 │   └── I_have_a_dream.vtt
 ├── notebooks
-│   └── transcript-summarization-with-langchain-and-galileo.ipynb
-└── requirements.txt
+│   └── transcript-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
+└── requirements.txt                                                        # Python dependencies
 ```
 
 ---
 
-## ⚙️ Setup
+# Setup
+
+### Step 0: Minimum Hardware Requirements
+To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
+
+- RAM: 64 GB 
+- VRAM: 12 GB 
+- GPU: NVIDIA GPU 
 
 ### Step 1: Create an AI Studio Project
 
@@ -47,11 +54,12 @@ This project demonstrates how to build a semantic chunking and summarization pip
 
 ### Step 3: Clone the Repository
 
-```bash
-https://github.com/HPInc/aistudio-galileo-templates.git
-```
+1. Clone the GitHub repository:  
+   ```
+   git clone https://github.com/HPInc/AI-Blueprints.git
+   ```
 
-- Ensure all files are available after workspace creation.
+2. Ensure all files are available after workspace creation..
 
 ### Step 4: Add the Model to Workspace
 
@@ -71,7 +79,7 @@ https://github.com/HPInc/aistudio-galileo-templates.git
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### Step 1: Run the Notebook
 
@@ -102,11 +110,15 @@ This will:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-galileo-templates/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

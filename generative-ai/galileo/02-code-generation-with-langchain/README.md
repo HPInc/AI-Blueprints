@@ -2,25 +2,25 @@
 
 ## 📚 Contents
 
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Setup](#setup)
-- [Usage](#usage)
-- [Contact & Support](#contact--support)
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+# Overview
 
 This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and integrates with PromptQuality and Galileo for evaluation and tracking. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
 
 ---
 
 ```
-├── README.md
+├── README.md                                       # Project documentation
 ├── notebooks
-│   └── code-generation-with-langchain.ipynb
-├── core
+│   └── code-generation-with-langchain.ipynb        # Main notebook for the project
+├── core                                            # Code for text generation service
 │   ├── dataflow
 │   │   └── dataflow.py
 │   ├── extract_text
@@ -30,17 +30,24 @@ This notebook performs automatic code explanation by extracting code snippets fr
 │   ├── vector_database
 │   │   └── vector_store_writer.py
 │   └── code_generation_service.py
-├── configs
+├── configs                                         # Configuration files
 │   ├── config.yaml
 │   └── secrets.yaml
-└── requirements.txt
+└── requirements.txt                                # Python dependencies
 
 
 ```
 
 ---
 
-## Setup
+# Setup
+
+### Step 0: Minimum Hardware Requirements
+To ensure smooth execution, make sure your system meets the following minimum hardware specifications:
+
+- RAM: 64 GB 
+- VRAM: 12 GB 
+- GPU: NVIDIA GPU 
 
 ### Quickstart
 
@@ -63,7 +70,16 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ### Step 2: Create a Workspace
 1. Choose **Local GenAI** as the base image when creating the workspace.
 
-### Step 3: Log Model
+### Step 3: Clone the Repository
+
+1. Clone the GitHub repository:  
+   ```
+   git clone https://github.com/HPInc/AI-Blueprints.git
+   ```
+
+2. Ensure all files are available after workspace creation..
+
+### Step 4: Log Model
 
 1. Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
   - **Dataset Name**: `llama2-7b`
@@ -74,7 +90,7 @@ This notebook performs automatic code explanation by extracting code snippets fr
 
 2. The model will be available under the /datafabric directory in your workspace.
 
-### Step 4:  Configure Secrets and Paths
+### Step 5:  Configure Secrets and Paths
 1. Add your API keys to the `secrets.yaml` file under the `configs` folder:
   - `HUGGINGFACE_API_KEY`
   - `GALILEO_API_KEY`
@@ -82,7 +98,7 @@ This notebook performs automatic code explanation by extracting code snippets fr
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### Step 1: Run the Notebook
 
@@ -106,8 +122,17 @@ This will:
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
 
-## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+---
 
-> Built with ❤️ using Z by HP AI Studio.
+# Contact and Support
+
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

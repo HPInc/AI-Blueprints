@@ -10,21 +10,21 @@
 
 ---
 
-# 🧠 Overview
+# Overview
 
 This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
-#  🗂 Project Structure
+# Project Structure
 
 ```
 ├── core
-│   └── chatbot_service
+│   └── chatbot_service                                                 # Code for chatbot service       
 │       ├── __init__.py
-│       └── chatbot_service.py
+│       └── chatbot_service.py                              
 ├── data                                                                # Data assets 
-│   └── AIStudioDoc.pdf
+│   └── AIStudioDoc.pdf                                                 # AIStudio documentation
 ├── demo                                                                # UI-related files
 │   ├── assets
 │   ├── index.html
@@ -32,7 +32,7 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ├── docs
 │   ├── html_ui_for_vanilla_rag.png                                     # HTML UI Screenshot
 │   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
-│   └── successful streamlit ui result for vanilla rag.pdf
+│   └── successful streamlit ui result for vanilla rag.pdf              # Successful Streamlit UI Screenshot
 ├── notebooks
 │   └── vanilla-rag-with-langchain-and-galileo.ipynb                    # Main notebook for the project
 ├── README.md                                                           # Project documentation
@@ -41,7 +41,7 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 
 ---
 
-# ⚙️ Setup
+# Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
@@ -60,11 +60,12 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 3: Clone the Repository
 
-```bash
-https://github.com/HPInc/aistudio-galileo-templates.git
-```
+1. Clone the GitHub repository:  
+   ```
+   git clone https://github.com/HPInc/AI-Blueprints.git
+   ```
 
-- Ensure all files are available after workspace creation.
+2. Ensure all files are available after workspace creation.
 
 ### Step 4: Add the Model to Workspace
 
@@ -84,7 +85,7 @@ https://github.com/HPInc/aistudio-galileo-templates.git
 
 ---
 
-# 🚀 Usage
+# Usage
 
 ### Step 1: Run the Notebook
 
@@ -117,12 +118,15 @@ This will:
 
 ---
 
-# 📞 Contact and Support
+# Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-galileo-templates/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
-
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
