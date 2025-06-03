@@ -10,7 +10,7 @@
 
 ---
 
-# Overview
+## Overview
 
 **Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 The pipeline:
@@ -22,7 +22,7 @@ The pipeline:
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 ├── demo
@@ -43,7 +43,7 @@ The pipeline:
 
 ---
 
-# Setup
+## Setup
 
 ### 0 ▪ Minimum hardware
 
@@ -82,7 +82,7 @@ You need to setup your input files in the 5th cell to work with your input csv f
 
 ---
 
-# Usage
+## Usage
 
 ### 1 ▪ Run the notebook
 
@@ -149,7 +149,7 @@ Paste a payload like:
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

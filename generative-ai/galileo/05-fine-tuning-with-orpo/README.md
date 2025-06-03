@@ -2,15 +2,15 @@
 
 ## 📚 Contents
 
-- Overview
-- Project Structure
-- Setup
-- Usage
-- Contact & Support
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+## Overview
 This project demonstrates a full-stack LLM fine-tuning experiment using ORPO (Open-Source Reinforcement Pretraining Objective) to align a base language model with human preference data. It leverages the **Z by HP AI Studio Local GenAI environment**, and uses models such as LLaMA 3, Gemma 1B, and Mistral 7B as foundations.
 
 We incorporate:
@@ -22,35 +22,43 @@ We incorporate:
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```
+├── config                                         # Configuration files 
+│   ├── default_config_cpu.yaml
+│   ├── default_config_multi-gpu.yaml
+│   └── default_config_one-gpu.yaml
+│
+├── core                                           # Core Python modules
+│   ├── comparer
+│   │   └── galileo_hf_model_comparer.py
+│   ├── data_visualizer
+│   │   └── feedback_visualizer.py
+│   ├── deploy
+│   │   └── deploy_fine_tuning.py
+│   ├── finetuning_inference
+│   │   └── inference_runner.py
+│   ├── local_inference
+│   │   └── inference.py
+│   ├── ggml_convert
+│   │   └── convert-lora-to-ggml.py
+│   │   └── convert.py
+│   ├── selection
+│   │   └── model_selection.py
+│   ├── target_mapper
+│   │   └── lora_target_mapper.py
+│
 ├── notebooks
-│   ├── config
-│   │   ├── default_config_cpu.yaml
-│   │   ├── default_config_multi-gpu.yaml
-│   │   └── default_config_one-gpu.yaml
-│   ├── core
-│   │   ├── comparer
-│   │   │   └── galileo_hf_model_comparer.py
-│   │   ├── data_visualizer
-│   │   │   └── feedback_visualizer.py
-│   │   ├── deploy
-│   │   │   └── deploy_fine_tuning.py
-│   │   ├── local_inference
-│   │   │   └── inference.py
-│   │   ├── selection
-│   │   │   └── model_selection.py
-│   │   └── target_mapper
-│   │       └── lora_target_mapper.py
-│   └── fine_tuning_orpo.ipynb
-├── README.md
-└── requirements.txt
+│   └── fine_tuning_orpo.ipynb                   # Main notebook for the project
+│
+├── README.md                                    # Project documentation
+└── requirements.txt                             # Required dependencies
 
 ```
 ---
 
-## ⚙️ Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following **minimum hardware specifications** based on the selected model and task (inference or fine-tuning):
@@ -85,7 +93,8 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 3: Clone the Repository
 
 ```bash
-https://github.com/HPInc/aistudio-galileo-templates.git
+git clone https://github.com/HPInc/AI-Blueprints.git
+
 ```
 
 - Ensure all files are available after workspace creation.
@@ -100,7 +109,7 @@ https://github.com/HPInc/aistudio-galileo-templates.git
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -128,11 +137,15 @@ This will:
 
 ---
 
-## 📞 Contact & Support
+## Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-galileo-templates/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
 
 ---
 
-> Built with ❤️ using Z by HP AI Studio.
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

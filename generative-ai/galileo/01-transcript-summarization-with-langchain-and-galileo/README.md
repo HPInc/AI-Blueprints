@@ -10,17 +10,17 @@
 
 ---
 
-# Overview
+## Overview
 
 This project demonstrates how to build a semantic chunking and summarization pipeline for transcripts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate concise and contextually accurate summaries from transcript data.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 ├── README.md                                                               # Project documentation
-├── core
+├── core                                                                    # Core Python modules
 │   └── service                     
 │       ├── __init__.py
 │       └── text_summarization_service.py                                   # Code for chatbot service  
@@ -34,7 +34,7 @@ This project demonstrates how to build a semantic chunking and summarization pip
 
 ---
 
-# Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
@@ -79,7 +79,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ---
 
-# Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -110,7 +110,7 @@ This will:
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

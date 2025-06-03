@@ -1,28 +1,22 @@
 # DreamBooth Inference with Stable Diffusion 2.1
 
 ### Content
-- Overview
-- Project Structure
-- Setup
-- Usage
-- Contact and support
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
 ## Overview
 This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
 
 ## Project Structure
 ```
-├── data/
-│   └── img/                                     # Directory containing generated or input images
-│       ├── 24C2_HP_OmniBook Ultra 14 i...       # Sample images used in inference
-│       └── ...                                  # Other image files
+├── config/                                     # Configuration files
+│   ├── config.yaml                             # General settings (e.g., model config, mode)
+│   └── secrets.yaml                            # API keys and credentials (e.g., HuggingFace, Galileo)
 │
-├── notebooks/
-│   ├── inference.ipynb                          # Main notebook for running image generation inference
-│   ├── config/                                  # Configuration files
-│   │   ├── config.yaml                          # General settings (e.g., model config, mode)
-│   │   └── secrets.yaml                         # API keys and credentials (e.g., HuggingFace, Galileo)
-│   └── core/                                    # Core Python modules
+├── core/                                        # Core Python modules
 │       ├── custom_metrics/
 │       │   └── image_metrics_scorers.py         # Image scoring (e.g., entropy, complexity)
 │       ├── deploy/
@@ -32,12 +26,31 @@ This notebook performs image generation inference using the Stable Diffusion arc
 │       └── dreambooth_inference/
 │           └── inference_dreambooth.py          # Inference for DreamBooth fine-tuned models
 │
+├── data/
+│   └── img/                                     # Directory containing generated or input images
+│       ├── 24C2_HP_OmniBook Ultra 14 i...       # Sample images used in inference
+│       └── ...                                  # Other image files
+│
+├── docs/            
+│     ├── Diagram dreambooth.png                 # Image generation diagram example  
+├── notebooks/
+│   ├── 04-image-generation_with_StableDiffusion.ipynb                          # Main notebook for running image generation inference
+│
 ├── Diagram dreambooth.png                       # Diagram illustrating the DreamBooth architecture
 ├── README.md                                     # Project documentation
 └── requirements.txt                              # Required dependencies
 ```
 
 ## Setup
+
+### 0 ▪ Minimum Hardware Requirements
+
+Ensure your environment meets the minimum hardware requirements for smooth model inference:
+
+- RAM: 16 GB  
+- VRAM: 8 GB  
+- GPU: NVIDIA GPU
+
 
 ### Step 1: Create an AI Studio Project  
 1. Create a **New Project** in AI Studio.   
@@ -50,9 +63,9 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ### Step 3: Verify Project Files 
 1. Clone the GitHub repository:  
    ```
-   git clone https://github.com/HPInc/aistudio-samples.git
+   git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-2. Make sure the folder `aistudio-samples/04-image-generation` is present inside your workspace.
+2. Make sure the folder `galileo/04-image-generation_with_StableDiffusion` is present inside your workspace.
 
 ### Step 4: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
@@ -60,7 +73,7 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ## Usage
 
 ### Step 1:
-Run the following notebook `/inference.ipynb`:
+Run the following notebook `/04-image-generation_with_StableDiffusion.ipynb`:
 1. Download the stabilityai/stable-diffusion-2-1 model from Hugging Face.
 2. In the Training DreamBooth section of the notebook:
 - Train your DreamBooth model (training time is approximately 1.5 to 2 hours).
@@ -85,7 +98,15 @@ Run the following notebook `/inference.ipynb`:
 8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
 
 
+## Contact and Support
 
-## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html)

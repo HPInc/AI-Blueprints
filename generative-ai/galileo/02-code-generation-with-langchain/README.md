@@ -10,17 +10,19 @@
 
 ---
 
-# Overview
+## Overview
 
 This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and integrates with PromptQuality and Galileo for evaluation and tracking. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
 
 ---
 
+## Project Structure
+
 ```
 ├── README.md                                       # Project documentation
 ├── notebooks
 │   └── code-generation-with-langchain.ipynb        # Main notebook for the project
-├── core                                            # Code for text generation service
+├── core                                            # Core Python modules
 │   ├── dataflow
 │   │   └── dataflow.py
 │   ├── extract_text
@@ -33,14 +35,13 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ├── configs                                         # Configuration files
 │   ├── config.yaml
 │   └── secrets.yaml
-└── requirements.txt                                # Python dependencies
 
 
 ```
 
 ---
 
-# Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution, make sure your system meets the following minimum hardware specifications:
@@ -98,7 +99,7 @@ To ensure smooth execution, make sure your system meets the following minimum ha
 
 ---
 
-# Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -124,7 +125,7 @@ This will:
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

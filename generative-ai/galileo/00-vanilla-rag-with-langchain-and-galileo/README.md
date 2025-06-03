@@ -10,17 +10,17 @@
 
 ---
 
-# Overview
+## Overview
 
 This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 ├── core
-│   └── chatbot_service                                                 # Code for chatbot service       
+│   └── chatbot_service                                                 # Core Python modules      
 │       ├── __init__.py
 │       └── chatbot_service.py                              
 ├── data                                                                # Data assets 
@@ -41,7 +41,7 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 
 ---
 
-# Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
@@ -85,7 +85,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ---
 
-# Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -118,7 +118,7 @@ This will:
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
