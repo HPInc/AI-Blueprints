@@ -20,8 +20,10 @@ Simple text, specifically spam, classification using Natural Language Processing
 
 ```
 ├── notebooks
-│   └── spam_detection_with_NLP.ipynb             # Main notebook for the project              
+│   └── spam_detection_with_NLP.ipynb            # Main notebook for the project             
 ├── README.md                                    # Project documentation
+│
+├── requirements.txt                             # Dependency file for installing required packages
 ```
 
 ---
