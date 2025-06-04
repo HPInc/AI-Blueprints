@@ -7,10 +7,10 @@
 * [🚀 Usage](#usage)
 * [📞 Contact and Support](#contact-and-support)
 
-# Overview  
+## Overview  
 The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
-# Project Structure  
+## Project Structure  
 ```
 ├── README.md                                            # Project documentation
 ├── data                                                 # Data assets used in the project
@@ -27,7 +27,7 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 └── requirements.txt                                     # Python dependencies (used with pip install)
 ```  
 
-# Setup 
+## Setup 
 
 ### Step 0: Minimum Hardware Requirements
 
@@ -60,7 +60,7 @@ https://github.com/HPInc/AI-Blueprints.git
 ### Step 5: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-# Usage 
+## Usage 
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings and save the tokenizer:  
@@ -81,11 +81,18 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
 
-# Contact and Support
+---
+
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 

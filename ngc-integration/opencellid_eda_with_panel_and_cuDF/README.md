@@ -10,7 +10,7 @@
 
 ---
 
-# Overview
+## Overview
 
 This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)** dashboard for the [OpenCellID](https://www.opencellid.org/) dataset. It uses **Panel** and **cuDF** to deliver lightning-fast geospatial analysis and visualization.
 
@@ -18,7 +18,7 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 ├── docs
@@ -33,7 +33,7 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ---
 
-# Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 
@@ -61,7 +61,7 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ---
 
-# Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -92,10 +92,15 @@ The notebook launches an embedded interactive dashboard featuring:
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

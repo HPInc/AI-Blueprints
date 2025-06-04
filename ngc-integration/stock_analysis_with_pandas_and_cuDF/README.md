@@ -7,13 +7,13 @@
 * [🚀 Usage](#usage)
 * [📞 Contact and Support](#contact-and-support)  
 
-# Overview  
+## Overview  
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
 - **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
-# Project Structure  
+## Project Structure  
 ```
 ├── README.md                                             # Project documentation
 ├── notebooks                                             # Main notebooks for the project
@@ -22,7 +22,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 └── requirements.txt                                      # Python dependencies (used with pip install)
 ```  
 
-# Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 
@@ -62,7 +62,7 @@ https://github.com/HPInc/AI-Blueprints.git
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 
-# Usage 
+## Usage 
 
 ### Step 1: Run the Notebooks
 
@@ -72,10 +72,15 @@ For the two data analysis notebooks, results are available both **within the not
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help. [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
