@@ -2,13 +2,13 @@
 
 ### 📚 Content
 
-- Overview
-- Project Structure
-- Setup
-- Usage
-- Contact and support
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
- ## 🧠 Overview
+ ## Overview
 
 The objective of this template is to show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
 
@@ -16,9 +16,12 @@ The objective of this template is to show how to create a simple text generation
 
  ## Project Structure
 ```
-├── code/                                        # Demo code
+├── code/                                             # Demo code
+│                                   
+├── data/                                             # Data assets used in the project
+│    └── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
 │
-├── demo/                                        # Compiled Interface Folder
+├── demo/                                             # Compiled Interface Folder
 │
 ├── notebooks
     └── models/
@@ -26,16 +29,14 @@ The objective of this template is to show how to create a simple text generation
 │        └── dict_torch_rnn_model.pt                  # Trained model for text_generation_with_RNN__Torch.ipynb
 │        └── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
 │        └── tf_rnn_model.h5                          # Trained model for the text_generation_with_RNN_TF.ipynb
-│   ├── Deployment.ipynb                         # Notebook for registering the model using MLFlow
-│   ├── text_generation_with_RNN_TF.ipynb         # Notebook for the TensorFlow trained model
-│   ├── text_generation_with_RNN_Torch.ipynb      # Notebook for the Torch trained model
-│   ├── deploy.py                                # Code to deploy        
-├── README.md                                    # Project documentation
-│                         
-├── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
+│   ├── Deployment.ipynb                              # Notebook for registering the model using MLFlow
+│   ├── text_generation_with_RNN_TF.ipynb             # Notebook for the TensorFlow trained model
+│   ├── text_generation_with_RNN_Torch.ipynb          # Notebook for the Torch trained model
+│   ├── deploy.py                                     # Code to deploy        
+├── README.md                                         # Project documentation
                                     
 ```
-## ⚙️ Setup
+## Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -63,7 +64,7 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### 1.1 ▪ Run the Notebook (Optional):
 Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
@@ -98,11 +99,14 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 
 ---
 
-## 📞 Contact & Support
+## Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

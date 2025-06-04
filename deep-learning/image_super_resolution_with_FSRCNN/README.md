@@ -2,13 +2,13 @@
 
 ### 📚 Content
 
-- Overview
-- Project Structure
-- Setup
-- Usage
-- Contact and support
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
- ## 🧠 Overview
+ ## Overview
 
 In this template, our objective is to increase the resolution of images, that is, to increase the number of pixels, using the FSRCNN model, a convolutional neural network model that offers faster runtime, which receives a low-resolution image and returns a higher-resolution image that is X times larger.
 
@@ -22,7 +22,7 @@ In this template, our objective is to increase the resolution of images, that is
 ├── README.md                                                  # Project documentation
 ```
 
- ## ⚙️ Setup
+ ## Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -54,7 +54,7 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### 1 ▪ Run the Notebook
 Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
@@ -74,13 +74,16 @@ Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 
 The local deployment should be done through the Deployments tab in AIStudio. Simply select the previously trained model, and then you will be able to perform super-resolution inferences on new images.
 
- ---
+---
 
-## 📞 Contact & Support
+## Contact and Support
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
