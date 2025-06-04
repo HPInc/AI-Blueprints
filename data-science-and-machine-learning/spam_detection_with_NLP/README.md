@@ -2,31 +2,33 @@
 
 ## 📚 Contents
 
-- Overview  
-- Project Structure  
-- Setup  
-- Usage  
-- Contact & Support
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+# Overview
 
 Simple text, specifically spam, classification using Natural Language Processing (NPL).
 
 ---
 
-## 🗂 Project Structure
+# Project Structure
 
 ```
 ├── notebooks
-│   └── spam_detection_with_NLP.ipynb             # Main notebook for the project              
+│   └── spam_detection_with_NLP.ipynb            # Main notebook for the project             
 ├── README.md                                    # Project documentation
+│
+├── requirements.txt                             # Dependency file for installing required packages
 ```
 
 ---
 
-## ⚙️ Setup
+# Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -50,15 +52,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 4 ▪ Clone the Repositoryy
 
-```bash
-https://github.com/HPInc/aistudio-samples.git
-```
+1. Clone the GitHub repository:  
+   ```
+   git clone https://github.com/HPInc/AI-Blueprints.git
+   ```
 
-- Ensure all files are available after workspace creation.
+2. Ensure all files are available after workspace creation.
 
 ---
 
-## 🚀 Usage
+# Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -81,11 +84,14 @@ This will:
 
 ---
 
-## 📞 Contact & Support
+# Contact and Support  
 
-- 💬 For issues or questions, please [open a GitHub issue](https://github.com/HPInc/aistudio-samples/issues).
-- 📘 Refer to the official [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) for detailed instructions and troubleshooting tips.
+- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
