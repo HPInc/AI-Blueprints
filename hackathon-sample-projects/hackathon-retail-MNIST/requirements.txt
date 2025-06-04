@@ -1,6 +1,6 @@
 # requirements.txt for Fashion MNIST CNN Comparison
 # Generated according to best practices (minimal, explicit, reproducible)
-torch==2.0.0
+torch==2.7.0
 torchvision==0.15.0
 PyYAML==6.0
 matplotlib==3.7.1
