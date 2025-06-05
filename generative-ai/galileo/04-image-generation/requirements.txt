@@ -1,5 +1,5 @@
 diffusers==0.32.2
-setuptools==70.0.0
+setuptools==78.1.1
 packaging==24.1
 accelerate==1.6.0
 torchvision==0.21.0
