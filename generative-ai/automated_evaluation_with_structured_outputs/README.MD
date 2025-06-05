@@ -47,9 +47,9 @@ The pipeline:
 
 ### 0 ▪ Minimum hardware
 
-* **RAM:** 64 GB
-* **VRAM:** 12 GB
-* **GPU:** NVIDIA (CUDA)
+- RAM: 32 GB 
+- VRAM: 6 GB 
+- GPU: NVIDIA GPU 
 
 ### 1 ▪ Create an AI Studio project
 
