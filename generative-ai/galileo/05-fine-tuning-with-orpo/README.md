@@ -69,7 +69,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 |---------------------------------------------|----------------|--------------|-------------|--------------------------------------|
 | `mistralai/Mistral-7B-Instruct-v0.1`         | Inference      | 12 GB        | 32 GB       | RTX 3080, A100 (for 4-bit QLoRA)     |
 |                                             | Fine-tuning    | 40–48+ GB    | 64+ GB      | RTX 4090, A100, H100                 |
-| `meta-llama/Llama-2-7b-chat-hf`              | Inference      | 12 GB        | 32 GB       | RTX 3080 or better                   |
+| `meta-llama/Llama-2-7b-chat-hf`              | Inference      | 6 GB        | 32 GB       | RTX 3080 or better                   |
 |                                             | Fine-tuning    | 40–48+ GB    | 64+ GB      | RTX 4090+                            |
 | `meta-llama/Meta-Llama-3-8B-Instruct`        | Inference      | 16 GB        | 32 GB       | RTX 3090, 4090                       |
 |                                             | Fine-tuning    | 64+ GB       | 64–96 GB    | Dual RTX 4090 or A100                |

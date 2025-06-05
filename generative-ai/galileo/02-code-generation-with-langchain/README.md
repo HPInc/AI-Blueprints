@@ -46,8 +46,8 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 64 GB 
-- VRAM: 12 GB 
+- RAM: 32 GB 
+- VRAM: 6 GB 
 - GPU: NVIDIA GPU 
 
 ### Quickstart

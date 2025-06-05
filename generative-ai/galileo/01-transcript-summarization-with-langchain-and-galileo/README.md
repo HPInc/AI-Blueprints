@@ -39,8 +39,8 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 64 GB 
-- VRAM: 12 GB 
+- RAM: 32 GB 
+- VRAM: 6 GB 
 - GPU: NVIDIA GPU 
 
 ### Step 1: Create an AI Studio Project
