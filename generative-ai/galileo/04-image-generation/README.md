@@ -57,6 +57,15 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ### Step 4: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
+
+> ⚠️ **GPU Compatibility Notice**  
+If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.  
+To ensure stable execution, uncomment the line below at the beginning of your script or notebook to force synchronous CUDA execution:
+
+```python
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+```
+
 ## Usage
 
 ### Step 1:
