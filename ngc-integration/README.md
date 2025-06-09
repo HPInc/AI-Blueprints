@@ -4,6 +4,54 @@ The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NV
 
 We provide **four distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
 
+```
+├── audio_translation_with_nemo_models/
+│    ├── data/                                                                    # Data assets used in the project   
+│    ├── ForrestGump.mp3
+│       └── June18.mp3
+│    ├── demo                                                                    # UI-related files
+│       └── ...
+│    ├── docs
+│       ├── react_ui_for_audio_translation.png                                  # React UI screenshot 
+│       ├── streamlit_ui_for_audio_translation.png                              # Streamlit UI screenshot screenshot    
+│       ├── successful react ui result for audio translation.pdf                # React UI screenshot 
+│       └── successful streamlit ui result for audio translation. pdf           # Streamlit UI screenshot
+├── opencellid_eda_with_panel_and_cuDF/                   
+│    ├── docs/
+│    │   └── ui_opencellid.png                                   # opencellid UI screenshot
+│    ├── notebooks/
+│    │   └── opencellid_eda_with_panel_and_cuDF.ipynb            # Main notebook for the project
+│    ├── src/                                                    # Core Python modules
+│    │   └── opencellid_downloader.py
+│    ├── README.md                                               # Project documentation
+│    └── requirements.txt                                        # Python dependencies (used with pip install)
+│
+├── stock_analysis_with_pandas_and_cuDF/                     
+│    ├── notebooks/                                              # Main notebooks for the project
+│    │   ├── stock_analysis_with_pandas.ipynb
+│    │   └── stock_analysis_with_pandas_and_cuDF.ipynb
+│    ├── README.md                                               # Project documentation
+│    └── requirements.txt                                        # Python dependencies (used with pip install)
+│
+├── vacation_recommendation_agent_with_bert/
+│    ├── data/                                                   # Data assets used in the project
+│    │   └── raw/
+│    │       └── corpus.csv
+│    ├── demo/                                                   # UI-related files
+│    │   └── index.html
+│    ├── docs/
+│    │   ├── architecture.md                                     # Model Details and API Endpoints
+│    │   └── ui_vacation.png                                     # UI screenshot
+│    ├── notebooks/                                              # Main notebooks for the project
+│    │   ├── 00_Word_Embeddings_Generation.ipynb
+│    │   └── 01_Bert_Model_Registration.ipynb
+│    ├── README.md                                               # Project documentation
+│    └── requirements.txt                                        # Python dependencies (used with pip install)
+
+
+
+```
+
 # 🎙️ Audio Translation with NeMo Models
 
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
