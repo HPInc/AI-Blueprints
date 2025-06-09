@@ -1,4 +1,4 @@
-<h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for Z by HP AI Studio 🚀 </h1>
+<h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for HP AI Studio 🚀 </h1>
 
 # Content  
 - [Overview](#overview)
@@ -177,4 +177,4 @@ It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
