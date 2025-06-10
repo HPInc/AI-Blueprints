@@ -16,6 +16,9 @@ In this template, our objective is to increase the resolution of images, that is
  ## Project Structure
 
  ```
+├── docs/      
+├── demo
+│   └── streamlit-webapp/                                     # Streamlit UI
 ├── notebooks
 │   ├── image_super_resolution_with_FSRCNN.ipynb               # Main notebook for the project
 │
