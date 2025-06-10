@@ -1,4 +1,4 @@
-<h1 style="text-align: center; font-size: 40px;"> NGC Integration Sample Projects for HP AI Studio </h1>
+<h1 style="text-align: center; font-size: 40px;"> NGC Integration Blueprint Projects for HP AI Studio </h1>
 
 The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
