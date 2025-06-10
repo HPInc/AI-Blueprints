@@ -25,6 +25,8 @@ The pipeline:
 ## Project Structure
 
 ```
+├── data                                                                # Data assets for the project
+│   └── 2025 ISEF Project Abstracts.csv     
 ├── demo
 │   ├── index.html                 # Lightweight HTML/JS UI
 │   └── streamlit-webapp/          # Streamlit UI
