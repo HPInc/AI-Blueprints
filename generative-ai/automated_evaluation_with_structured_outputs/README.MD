@@ -10,7 +10,7 @@
 
 ---
 
-# Overview
+## Overview
 
 **Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 The pipeline:
@@ -22,9 +22,11 @@ The pipeline:
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
+├── data                                                                # Data assets for the project
+│   └── 2025 ISEF Project Abstracts.csv     
 ├── demo
 │   ├── index.html                 # Lightweight HTML/JS UI
 │   └── streamlit-webapp/          # Streamlit UI
@@ -43,13 +45,13 @@ The pipeline:
 
 ---
 
-# Setup
+## Setup
 
 ### 0 ▪ Minimum hardware
 
-* **RAM:** 64 GB
-* **VRAM:** 12 GB
-* **GPU:** NVIDIA (CUDA)
+- RAM: 32 GB 
+- VRAM: 6 GB 
+- GPU: NVIDIA GPU 
 
 ### 1 ▪ Create an AI Studio project
 
@@ -58,7 +60,7 @@ Log into [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistu
 ### 2 ▪ Clone the repo
 
 ```bash
-git clone https://github.com/HPInc/aistudio-samples.git
+git clone https://github.com/HPInc/AI-Blueprints.git
 ```
 
 ### 3 ▪ Add the Llama‑3 model
@@ -82,7 +84,7 @@ You need to setup your input files in the 5th cell to work with your input csv f
 
 ---
 
-# Usage
+## Usage
 
 ### 1 ▪ Run the notebook
 
