@@ -1,0 +1,4 @@
+transformers==4.16.2
+accelerate==0.28.0
+datasets==1.12.1
+tqdm==4.62.2
