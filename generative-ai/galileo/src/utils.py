@@ -10,15 +10,15 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from trt_llm_langchain import TensorRTLangchain
+from .trt_llm_langchain import TensorRTLangchain
 
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    local: "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
-    tensorrt: "",
-    hugging-face-local: "meta-llama/Llama-3.2-3B-Instruct",
-    hugging-face-cloud: "mistralai/Mistral-7B-Instruct-v0.3"
+    "local": "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
+    "tensorrt": "",
+    "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
+    "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
 }
 
 # Context window sizes for various models
