@@ -12,19 +12,19 @@ This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline fo
 
 ## Proect Struture
 ```
-├── demo/
+├── demo/                                             # UI-related files
 │   ├── main.py                         
 │   ├── poetry.lock                      
 │   ├── pyproject.toml                   
 │   └── README.md                       
 │
 ├── docs/
-│   └── streamlit_sucess.png           
+│   └── streamlit_sucess.png                          # Streamlit Sucess UI Screenshot     
 │
 ├── notebooks/
-│   └── text-generation-with-langchain.ipynb   
+│   └── text-generation-with-langchain.ipynb          # Main notebook for the project
 │
-├── core/
+├── core/                                             # Core Python modules
 │   ├── analyzer/
 │   │   └── scientific_paper_analyzer.py 
 │   ├── deploy/
@@ -34,8 +34,8 @@ This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline fo
 │   └── generator/
 │       └── script_generator.py          
 │
-├── README.md                          
-├── requirements.txt                     
+├── README.md                                         # Project documentation                  
+├── requirements.txt                                  # Python dependencies             
 
 
 ```
@@ -79,7 +79,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### Step 4: Verify Project Files  
 1. In the Project Setup tab, under Setup, clone the project repository:
    ```
-   git clone https://github.com/HPInc/aistudio-galileo-templates.git
+   git clone git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
 2. Navigate to `03-text-generation/notebooks/text-generation-with-langchain.ipynb` to ensure all files are cloned correctly after workspace creation.  
 
@@ -148,8 +148,17 @@ Paste that into the Swagger “/invocations” endpoint and click **Try it out**
 ### Successful UI demo
 ![Automated Evaluation Streamlit UI](docs/streamlit_sucess.png)  
 
-## Contact and Support  
-- If you encounter issues, report them via GitHub by opening a new issue.  
-- Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.  
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+## Contact and Support
+
+- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+
+---
+
+> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html)
