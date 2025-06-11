@@ -22,7 +22,7 @@ import sys
 import os
 
 # Add the src directory to the path to import base_service
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.service.base_service import BaseGenerativeService
 
 # Set up logger
@@ -133,8 +133,10 @@ class TextSummarizationService(BaseGenerativeService):
             context: MLflow model context containing artifacts
         """
         try:
+            if self.model_config["hf_key"] != "" :
+                os.environ["HF_TOKEN"] = self.model_config["hf_key"]
             logger.info("Loading local Hugging Face model")
-            model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+            model_id = "meta-llama/Llama-3.2-3B-Instruct"
             logger.info(f"Using model_id: {model_id}")
             
             logger.info("Loading tokenizer...")
@@ -147,7 +149,7 @@ class TextSummarizationService(BaseGenerativeService):
             pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100, device=0)
             
             self.llm = HuggingFacePipeline(pipeline=pipe)
-            logger.info("Using the local Deep Seek model downloaded from HuggingFace.")
+            logger.info("Using the local Llama 3b downloaded from HuggingFace.")
         except Exception as e:
             logger.error(f"Error in load_local_hf_model: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
@@ -171,7 +173,7 @@ class TextSummarizationService(BaseGenerativeService):
             logger.info("Initializing HuggingFaceEndpoint with Mistral-7B model")
             self.llm = HuggingFaceEndpoint(
                 huggingfacehub_api_token=self.model_config["hf_key"],
-                repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+                repo_id="mistralai/Mistral-7B-Instruct-v0.3",
             )
             logger.info("Using the cloud Mistral model on HuggingFace.")
         except Exception as e:
@@ -186,10 +188,12 @@ class TextSummarizationService(BaseGenerativeService):
         self.prompt_str = '''
             The following text is an excerpt of a transcription:
 
-            ### 
-            {context} 
             ###
-
+            
+            {context} 
+            
+            ###
+            
             Please, summarize this transcription, in a concise and comprehensive manner.
             '''
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
@@ -207,31 +211,33 @@ class TextSummarizationService(BaseGenerativeService):
             model_input: Input data for summarization, expecting a "text" field
             
         Returns:
-            Dictionary with the summary in a "summary" field
+            DataFrame with the summary in a "summary" field
         """
-        text = model_input["text"][0]
         try:
             logger.info("Processing summarization request")
+            text = model_input["text"][0]
+            
             # Run the input through the protection chain with monitoring
             result = self.protected_chain.invoke(
-                {"context": text}, 
+                {"input": text, "output": ""},
                 config={"callbacks": [self.monitor_handler]}
             )
+            
             logger.info("Successfully processed summarization request")
             
+            # Handle different result formats based on what the chain returns
             if isinstance(result, dict) and "predictions" in result and len(result["predictions"]) > 0:
                 if "summary" in result["predictions"][0]:
                     summary = result["predictions"][0]["summary"]
                     logger.info("Extracted summary from predictions array")
                 else:
-                    logger.warning("Found predictions array but no summary field")
                     summary = str(result)
             else:
                 # Use the result directly if it's a string or other format
-                summary = result
+                summary = str(result)
                 
             logger.info(f"Summary extraction completed, type: {type(summary)}")
-            
+        
         except Exception as e:
             error_message = f"Error processing summarization request: {str(e)}"
             logger.error(error_message)
@@ -297,6 +303,7 @@ class TextSummarizationService(BaseGenerativeService):
             pip_requirements=[
                 "galileo-protect==0.15.1",
                 "galileo-observe==1.13.2",
+                "langchain-huggingface==0.2.0",
                 "pyyaml",
                 "pandas",
                 "sentence-transformers",

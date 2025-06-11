@@ -28,7 +28,7 @@ import os
 import time
 
 # Add the src directory to the path to import base_service
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.service.base_service import BaseGenerativeService
 from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context
 

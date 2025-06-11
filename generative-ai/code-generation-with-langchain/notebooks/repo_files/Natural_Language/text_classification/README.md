@@ -1,1 +1,0 @@
-This is a simple example for categorizing (classifying) text, under a supervised approach. The experiment is in progress

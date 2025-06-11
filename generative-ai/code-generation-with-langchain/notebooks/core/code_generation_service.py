@@ -13,8 +13,6 @@ import traceback
 import time
 import json
 import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
 import numpy as np
 from typing import Dict, Any, List, Optional
 import pandas as pd
@@ -30,29 +28,15 @@ import chromadb
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-def _add_project_to_syspath() -> Tuple[Path, Path | None]:
-    """
-    Ensure <repo>/core and an optional <repo>/src are on ``sys.path`` so that
-    imports work when the model is loaded inside the MLflow scoring server.
-    """
-    core_path = ROOT_DIR
-    (core_path / "__init__.py").touch(exist_ok=True)
-    sys.path.insert(0, str(core_path))
-
-    src_path = next(
-        (p / "src" for p in [core_path, *core_path.parents] if (p / "src").is_dir()),
-        None,
-    )
-    if src_path:
-        sys.path.insert(0, str(src_path))
-
-    sys.path.insert(0, str(core_path.parent))
-    return core_path, src_path
-
+# Add the src directory to the path to import base_service
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.service.base_service import BaseGenerativeService
 from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, clean_code, get_model_context_window
 
+# Add core directory to path for local imports
+core_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if core_path not in sys.path:
+    sys.path.append(core_path)
 
 # Import GitHub extraction and context storage tools
 from core.extract_text.github_repository_extractor import GitHubRepositoryExtractor
@@ -857,14 +841,14 @@ Question: {question}
         else:
             logger.warning("No local embedding model path provided or path doesn't exist. " 
                          "The service will download the embedding model during initialization.")
-        core, src = _add_project_to_syspath()
+        
         # Log model to MLflow
         mlflow.pyfunc.log_model(
             artifact_path="code_generation_service",
             python_model=cls(delay_async_init=delay_async_init),  # Create instance with delayed initialization
             artifacts=artifacts,
             signature=signature,
-            code_paths=["../core", "../src"],
+            code_paths=["./core", "../src"],
             pip_requirements=[
                 "mlflow==2.9.2", 
                 "langchain", 

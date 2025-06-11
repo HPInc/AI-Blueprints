@@ -2,3 +2,4 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 webvtt-py==0.5.1
+langchain-huggingface==0.2.0
