@@ -3,7 +3,8 @@ import os
 import base64
 import requests
 from io import BytesIO
-import numpy as np
+from PIL import Image
+
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
@@ -92,23 +93,16 @@ if st.button("Get the image with super resolution"):
                 response = requests.post(api_url, json = payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-                resolution_image = data.get("predictions")
 
                 # --- Display Results ---
                 if "predictions" in data:
-                        st.success("✅ Here are your classified digit!")
-                        st.markdown(f"""
-                            <div style="
-                                background-color: #ffffff;
-                                padding: 15px;
-                                border-radius: 10px;
-                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                                margin: 10px 0px;
-                                border-left: 8px solid #4CAF50;
-                            ">
-                                <h4 style="color: #2C3E50;">{resolution_image}</h4>
-                            </div>
-                        """, unsafe_allow_html=True)
+                        
+                        base64_image = data["predictions"]
+
+                        image_bytes = base64.b64decode(base64_image)
+                        image = Image.open(BytesIO(image_bytes))    
+                        st.success("✅ Here are your image!")
+                        st.image(image, caption="Super Resolution Output", use_column_width=True)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
 
