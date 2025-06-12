@@ -95,7 +95,29 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 4. Choose an available model version and configure it with **GPU acceleration**.  
 5. Start the deployment.  
 6. Once deployed, click on the **Service URL** to access the Swagger API page.  
-7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
+7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.
+
+### 3 ▪ Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "initial_word": [
+      "love"
+    ],
+    "size": [
+      100
+    ]
+  },
+  "params": {}
+}
+
+```
 
 ---
 
