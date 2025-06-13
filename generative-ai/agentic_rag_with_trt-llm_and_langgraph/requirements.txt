@@ -14,5 +14,7 @@ chromadb==0.6.3
 fastapi==0.115.4
 protobuf==4.24.4
 zstandard==0.18.0
+mlflow==2.21.2
+hf_xet==1.1.3
 
 
