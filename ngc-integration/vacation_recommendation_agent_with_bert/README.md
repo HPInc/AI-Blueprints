@@ -33,11 +33,9 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
-- **RAM**: ≥ 64 GB system memory  
-- **VRAM**: 32 GB VRAM  
-- **GPU**: NVIDIA GPU
-- **Disk**: ≥ 32 GB free
-- **CUDA**: Compatible CUDA toolkit (11.8 or 12.x) installed on your system
+- RAM: 16 GB  
+- VRAM: 8 GB  
+- GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
 
