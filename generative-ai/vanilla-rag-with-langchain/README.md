@@ -28,7 +28,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ├── demo                                                                # UI-related files
 │   ├── assets
 │   ├── index.html
-│   └── source
+│   ├── source
+│   └── streamlit-webapp
 ├── docs
 │   ├── html_ui_for_vanilla_rag.png                                     # HTML UI Screenshot
 │   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
