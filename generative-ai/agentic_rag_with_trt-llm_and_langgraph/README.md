@@ -1,7 +1,5 @@
 # 🤖 Agentic RAG for AI Studio with TRT-LLM and LangGraph
 
-
-
 # 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -12,7 +10,7 @@
 
 ---
 
-# Overview  
+## Overview  
 This repository contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
 
 - **TensorRT-backed Llama-3.1-Nano (TRT-LLM)**: for fast, GPU-accelerated inference.
@@ -22,24 +20,24 @@ This repository contains a single integrated pipeline—**Agentic RAG for AI Stu
 
 ---
 
-# Project Structure  
+## Project Structure
 ```
 agentic_rag_with_trt-llm_and_langgraph/
-├── data/
+├── data/                                                                  # Data assets used in the project
 │   └── context/
 │       └── aistudio
 ├── notebooks/
-│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb
-├── src/
+│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb         # Main notebook for the project
+├── src/                                                                   # Core Python modules
 │   ├── __init__.py
 │   └── trt_llm_langchain.py
-├── README.md
-└── requirements.txt
+├── README.md                                                              # Project documentation
+└── requirements.txt                                                       # Python dependencies
 ```  
 
 ---
 
-# Setup  
+## Setup  
 
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
@@ -74,7 +72,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ---
 
-# Usage  
+## Usage 
 
 ### Step 1: Use the Agentic Workflow
 
@@ -83,9 +81,7 @@ Run the following notebook to see the Agentic Workflow in action:
 
 ---
 
-
-
-# Contact and Support  
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

@@ -1,3 +1,0 @@
-# Create the workspace using the Local GenAI image. 
-# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-pymupdf==1.25.5
