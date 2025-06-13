@@ -10,7 +10,7 @@
 
 ---
 
-# 🧠 Overview
+## Overview
 
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
@@ -22,28 +22,28 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 
 ---
 
-# 🗂 Project Structure
+## Project Structure
 
 ```
-├── data
+├── data                                                                    # Data assets used in the project
 │   ├── ForrestGump.mp3
 │   └── June18.mp3
-├── demo
+├── demo                                                                    # UI-related files
 │   └── ...
 ├── docs
-│   ├── react_ui_for_audio_translation.png
-│   ├── streamlit_ui_for_audio_translation.png
-│   ├── successful react ui result for audio translation.pdf
-│   └── successful streamlit ui result for audio translation.pdf
+│   ├── react_ui_for_audio_translation.png                                  # React UI screenshot 
+│   ├── streamlit_ui_for_audio_translation.png                              # Streamlit UI screenshot screenshot    
+│   ├── successful react ui result for audio translation.pdf                # React UI screenshot 
+│   └── successful streamlit ui result for audio translation. pdf           # Streamlit UI screenshot
 ├── notebooks
-│   └── english_to_spanish.ipynb
-├── README.md
-└── requirements.txt
+│   └── english_to_spanish.ipynb                                            # Main notebook for the project
+├── README.md                                                               # Project documentation
+└── requirements.txt                                                        # Python dependencies (used with pip install)
 ```
 
 ---
 
-# ⚙️ Setup
+## Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -64,7 +64,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### 3 ▪ Clone the Repository
 
 ```bash
-https://github.com/HPInc/aistudio-samples.git
+https://github.com/HPInc/AI-Blueprints.git
 ```
 
 - Ensure all files are available after workspace creation.
@@ -89,7 +89,7 @@ Make sure these models are downloaded and available in the `datafabric` folder i
 
 ---
 
-# 🚀 Usage
+## Usage
 
 ### 1 ▪ Run the Notebook
 
@@ -160,7 +160,7 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 
 ---
 
-# 📞 Contact & Support
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
