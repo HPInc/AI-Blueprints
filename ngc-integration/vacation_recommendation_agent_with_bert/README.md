@@ -1,46 +1,56 @@
 # 🌍 Vacation Recommendation Agent  
 
 ## Content  
-- Overview  
-- Project Structure  
-- Setup  
-- Usage  
-- Contact and Support  
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
 ## Overview  
 The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
 ## Project Structure  
 ```
-├── README.md
-├── data
+├── README.md                                            # Project documentation
+├── data                                                 # Data assets used in the project
 │   └── raw
 │       └── corpus.csv
-├── demo
+├── demo                                                 # UI-related files
 │   └── index.html
 ├── docs
-│   ├── architecture.md
-│   └── ui_vacation.png
-├── notebooks
+│   ├── architecture.md                                  # Model Details and API Endpoints
+│   └── ui_vacation.png                                  # UI screenshot
+├── notebooks                                            # Main notebook for the project
 │   ├── 00_Word_Embeddings_Generation.ipynb
-│   └── 01_Bert_Model_Registration.ipynb
-└── requirements.txt
+│   
+└── requirements.txt                                     # Python dependencies (used with pip install)
 ```  
 
-## Setup  
+## Setup 
 
-### Step 1: Create an AI Studio Project  
-1. Create a **New Project** in AI Studio.   
+### Step 0: Minimum Hardware Requirements
 
-### Step 2: Create a Workspace  
-1. Select **NeMo Framework** as the base image.    
+Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
-### Step 3: Verify Project Files  
-1. Clone the GitHub repository:  
-   ```
-   git clone https://github.com/HPInc/aistudio-samples.git
-   ```  
-2. Navigate to `ngc-integration/vacation_recommendation_agent_with_bert` to ensure all files are cloned correctly after workspace creation.  
+- RAM: 16 GB  
+- VRAM: 8 GB  
+- GPU: NVIDIA GPU
+
+### Step 1: Create an AI Studio Project
+
+- Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+### Step 2: Set Up a Workspace 
+- Choose **NeMo Framework** as the base image.    
+
+### Step 3: Clone the Repository
+
+```bash
+https://github.com/HPInc/AI-Blueprints.git
+```
+
+- Ensure all files are available after workspace creation.
 
 ### Step 4: Add Project Assets  
 1. Add the **Bertlargeuncased** (not **BertLargeUncasedForNemo**) model from the model catalog in AI Studio to your workspace. Use the `datafabric` folder inside the workspace to work with this model.
@@ -48,15 +58,15 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 ### Step 5: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-
-## Usage  
+## Usage 
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings and save the tokenizer:  
 - `00_Word_Embeddings_Generation.ipynb`.  
 
+
 ### Step 2: Deploy the Service  
-1. Execute `01_Bert_Model_Registration.ipynb` to register the BERT model in MLflow and create the API logic.  
+1. Execute `00_Word_Embeddings_Generation.ipynb` to register the BERT model in MLflow and create the API logic.  
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
@@ -70,7 +80,9 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
 
-## Contact and Support  
+---
+
+## Contact and Support 
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
