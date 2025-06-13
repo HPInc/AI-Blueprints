@@ -21,9 +21,9 @@ The **Vacation Recommendation Agent** is an AI-powered system designed to provid
 ├── docs
 │   ├── architecture.md                                  # Model Details and API Endpoints
 │   └── ui_vacation.png                                  # UI screenshot
-├── notebooks                                            # Main notebooks for the project
+├── notebooks                                            # Main notebook for the project
 │   ├── 00_Word_Embeddings_Generation.ipynb
-│   └── 01_Bert_Model_Registration.ipynb
+│   
 └── requirements.txt                                     # Python dependencies (used with pip install)
 ```  
 
