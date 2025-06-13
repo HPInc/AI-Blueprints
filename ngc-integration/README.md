@@ -4,6 +4,10 @@ The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NV
 
 We provide **four distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
 
+## Repository Structure
+
+The repository is organized into the following structure:
+
 ```
 ├── audio_translation_with_nemo_models/
 │    ├── data/                                                                    # Data assets used in the project   
