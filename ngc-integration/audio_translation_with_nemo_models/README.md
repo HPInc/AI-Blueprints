@@ -77,11 +77,7 @@ From the **Models** tab, add the following models from the model catalog in AI S
    - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`  
    - Asset Name: `STT En Citrinet 1024 Gamma 0.25`
 
-2. **Neural Machine Translation (NMT)**  
-   - Model: `nmt_en_es_transformer12x2-1.0.0rc1`  
-   - Asset Name: `NMT En Es Transformer12x2`
-
-3. **Text-to-Speech (TTS)**  
+2. **Text-to-Speech (TTS)**  
    - Model: `tts_es_multispeaker_fastpitchhifigan-1.15.0`  
    - Asset Name: `TTS Es Multispeaker FastPitch HiFiGAN`
 
@@ -101,7 +97,7 @@ notebooks/english_to_spanish.ipynb
 
 This will:
 
-- Load STT, NMT, and TTS models from the NGC assets  
+- Load STT, Helsinki-NLP, and TTS models from the NGC assets  
 - Convert an English audio file to English text  
 - Translate the text into Spanish  
 - Synthesize spoken Spanish audio from the translated text  
