@@ -186,7 +186,7 @@ class TextSummarizationService(BaseGenerativeService):
     def load_prompt(self) -> None:
         """Load the prompt template for text summarization."""
         self.prompt_str = '''
-            The following text is an excerpt of a transcription:
+            The following text is an excerpt of a text:
 
             ###
             
@@ -194,7 +194,7 @@ class TextSummarizationService(BaseGenerativeService):
             
             ###
             
-            Please, summarize this transcription, in a concise and comprehensive manner.
+            Please, summarize this text, in a concise and comprehensive manner.
             '''
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
