@@ -29,7 +29,6 @@ The objective of this template is to show how to create a simple text generation
 │        └── dict_torch_rnn_model.pt                  # Trained model for text_generation_with_RNN__Torch.ipynb
 │        └── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
 │        └── tf_rnn_model.h5                          # Trained model for the text_generation_with_RNN_TF.ipynb
-│   ├── Deployment.ipynb                              # Notebook for registering the model using MLFlow
 │   ├── text_generation_with_RNN_TF.ipynb             # Notebook for the TensorFlow trained model
 │   ├── text_generation_with_RNN_Torch.ipynb          # Notebook for the Torch trained model
 │   ├── deploy.py                                     # Code to deploy        
