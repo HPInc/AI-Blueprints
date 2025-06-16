@@ -1,6 +1,6 @@
-# Transcript Summarization Demo
+# Text Summarization Demo
 
-This is a React-based user interface for the `transcript-summarization` example. It allows users to upload text documents (PDF, DOC, TXT formats), extract text from them, and display the API output as a summary.
+This is a React-based user interface for the `text-summarization` example. It allows users to upload text documents (PDF, DOC, TXT formats), extract text from them, and display the API output as a summary.
 
 ## Features
 
@@ -39,6 +39,7 @@ npm run preview
 ## Interface
 
 The UI provides two viewing modes:
+
 - **Simple View**: Shows only the summary output
 - **Detailed View**: Shows both the original text and the generated summary side by side
 
@@ -73,10 +74,9 @@ The API returns a JSON response with the following structure:
 }
 ```
 
+### Successful Demonstration of the User Interface
 
-### Successful Demonstration of the User Interface  
-
-![Transcript Summarization Demo UI](docs/ui_summarization.png) 
+![Text Summarization Demo UI](docs/ui_summarization.png)
 
 ### Implementation Details
 
