@@ -126,7 +126,7 @@ st.markdown(
 *🎥🍿Recommender Movies System © 2025* local, private, recommender system + MLflow.
 
 ---
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 """,
 unsafe_allow_html=True,
 )
