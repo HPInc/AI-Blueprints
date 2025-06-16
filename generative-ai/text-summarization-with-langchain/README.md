@@ -12,7 +12,7 @@
 
 ## Overview
 
-This project demonstrates how to build a semantic chunking and summarization pipeline for transcripts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate concise and contextually accurate summaries from transcript data.
+This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate concise and contextually accurate summaries from text data.
 
 ---
 
@@ -21,14 +21,14 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ```
 ├── README.md                                                               # Project documentation
 ├── core                                                                    # Core Python modules
-│   └── service                     
+│   └── service
 │       ├── __init__.py
-│       └── text_summarization_service.py                                   # Code for chatbot service  
+│       └── text_summarization_service.py                                   # Code for chatbot service
 ├── data                                                                    # Data assets used in the project
 │   ├── I_have_a_dream.txt
 │   └── I_have_a_dream.vtt
 ├── notebooks
-│   └── transcript-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
+│   └── text-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
 └── requirements.txt                                                        # Python dependencies
 ```
 
@@ -37,11 +37,12 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ## Setup
 
 ### Step 0: Minimum Hardware Requirements
+
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 32 GB 
-- VRAM: 6 GB 
-- GPU: NVIDIA GPU 
+- RAM: 32 GB
+- VRAM: 6 GB
+- GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
 
@@ -54,7 +55,8 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 3: Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
@@ -69,7 +71,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
   - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
   - **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your workspace.
-  
+
 ### Step 5: Configure Secrets and Paths
 
 - Add your API keys to the `secrets.yaml` file under the `configs` folder:
@@ -86,10 +88,11 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/transcript-summarization-with-langchain-and-galileo.ipynb
+notebooks/text-summarization-with-langchain-and-galileo.ipynb
 ```
 
 This will:
+
 - Set up the semantic chunking pipeline
 - Create the summarization chain with LangChain
 - Integrate Galileo evaluation, protection, and observability
@@ -102,14 +105,13 @@ This will:
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
-- Use the API endpoints to generate summaries from your transcript data.
+- Use the API endpoints to generate summaries from your text data.
 
-### Successful Demonstration of the User Interface  
+### Successful Demonstration of the User Interface
 
-![Transcript Summarization Demo UI](docs/ui_summarization.png)
+![text Summarization Demo UI](docs/ui_summarization.png)
 
 :warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of suggested local model (i.e. Llama2-7b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
-
 
 ---
 
@@ -120,7 +122,6 @@ This will:
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
-
 
 ---
 
