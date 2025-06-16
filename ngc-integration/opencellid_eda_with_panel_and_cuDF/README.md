@@ -2,15 +2,15 @@
 
 ## 📚 Contents
 
-- Overview  
-- Project Structure  
-- Setup  
-- Usage  
-- Contact & Support
+* [🧠 Overview](#overview)
+* [🗂 Project Structure](#project-structure)
+* [⚙️ Setup](#setup)
+* [🚀 Usage](#usage)
+* [📞 Contact and Support](#contact-and-support)
 
 ---
 
-## 🧠 Overview
+## Overview
 
 This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)** dashboard for the [OpenCellID](https://www.opencellid.org/) dataset. It uses **Panel** and **cuDF** to deliver lightning-fast geospatial analysis and visualization.
 
@@ -18,22 +18,22 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```
 ├── docs
-│   └── ui_opencellid.png 
+│   └── ui_opencellid.png                                      # opencellid UI screenshot
 ├── notebooks
-│   └── opencellid_eda_with_panel_and_cuDF.ipynb 
-├── src
+│   └── opencellid_eda_with_panel_and_cuDF.ipynb               # Main notebook for the project
+├── src                                                        # Core Python modules
 │   └── opencellid_downloader.py               
-├── README.md
-└── requirements.txt
+├── README.md                                                  # Project documentation
+└── requirements.txt                                           # Python dependencies (used with pip install)
 ```
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
 
@@ -54,14 +54,14 @@ Ensure your environment meets the minimum compute requirements for smooth dashbo
 ### Step 3: Clone the Repository
 
 ```bash
-https://github.com/HPInc/aistudio-samples.git
+https://github.com/HPInc/AI-Blueprints.git
 ```
 
 - Ensure all files are available after workspace creation.
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### Step 1: Run the Notebook
 
@@ -92,14 +92,13 @@ The notebook launches an embedded interactive dashboard featuring:
 
 ---
 
-## 📞 Contact & Support
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
 - Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
-
 ---
 
 > Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
