@@ -187,7 +187,7 @@ function App() {
 		<div>
 			<div className="header">
 				<div className="header-logo">
-					<img src={iconImage} width="150px" height="150px" alt="Transcript Summarization Logo" /> 
+					<img src={iconImage} width="150px" height="150px" alt="Text Summarization Logo" /> 
 				</div>
 				<div className='title-info'>
 					<div className="header-title">
