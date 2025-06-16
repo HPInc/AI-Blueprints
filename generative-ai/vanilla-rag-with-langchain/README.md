@@ -1,5 +1,11 @@
 # 🤖 Vanilla RAG with LangChain and Galileo
 
+<div align="center">
+
+  ![mlflow](https://img.shields.io/badge/mlflow-%23d9ead3.svg?style=for-the-badge&logo=numpy&logoColor=blue)
+
+</div>
+
 # 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -28,7 +34,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ├── demo                                                                # UI-related files
 │   ├── assets
 │   ├── index.html
-│   └── source
+│   ├── source
+│   └── streamlit-webapp
 ├── docs
 │   ├── html_ui_for_vanilla_rag.png                                     # HTML UI Screenshot
 │   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
