@@ -1,0 +1,6 @@
+#model_source can be either local, hugging-face-cloud and hugging-face-local
+model_source: "local"
+galileo_url: "https://console.hp.galileocloud.io/"
+#proxy is used to setup HTTPS_PROXY environment variable when necessary 
+
+
