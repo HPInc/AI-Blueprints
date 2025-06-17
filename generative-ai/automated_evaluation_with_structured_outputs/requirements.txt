@@ -1,0 +1,4 @@
+openai==1.77.0
+pandas==2.2.3
+PyYAML==6.0.2
+tqdm==4.67.0

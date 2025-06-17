@@ -1,272 +1,180 @@
-# Data Science with Z by HP AI Studio
+<h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for HP AI Studio 🚀 </h1>
 
-This is a proposal for an initial structure of public repositories for educational material and demos. The main idea here is to make available a set of 15+ notebooks with end-to-end experiments split into subjects according to different topics. This way, we would have smaller repos (with no more than 5 experiments) - avoiding the current scenario of having to download a single big repo to run any experiment, but also without having too many different repos to give maintenance.
-
-
-1. [Using AI Studio in 6 Steps](#first-course)
-   1. [Projects, Workspaces and Github](#section1-1)
-   2. [Datafabric](#section1-2)
-   3. [Data visualization and monitoring](#section1-3)
-   4. [Libraries and custom environments](#section1-4)
-   5. [Deploying models locally](#section1-5)
-   6. [Introducing CV and NLP](#section1-6)
-2. [Deep Learning in AI Studio](#deep-learning-with-AI-Studio)
-   1. [Image Classification](#section2-1)
-   2. [Image Transformation: Super resolution](#section2-2)
-   3. [Generating text by characters](#section2-3)
-   4. [Introducing transformers for answering questions](#section2-4)
-3. [Integrating with NGC](#using-NGC-resources)
-   1. [Using RAPIDS to accelerate data processing](#section3-1)
-   2. [Extending RAPIDS with data visualization](#section3-2)
-   3. [NeMo for Audio and Text translation](#section3-3)
-4. [Gen AI with Galileo and AIS](#using-prometheus)
-   1. [Galileo Evaluate on RAG-based chatbot](#section4-1)
-   2. [Improving chatbot quality with Galileo Observe and Protect ](#section4-2)
-   3. [Summarizing text](#section4-3)
-   4. [Code Generation](#section4-4)
-   5. [Text Generation](#section4-5)
-
-Below, we find a description of each specific subject/repository, as well as the intended demos/tutorials to be included on each one
-
-<a id=first-course> </a>
-
-## 1. Using AI Studio features in 6 steps 
-* Currently saved on ai-studio fundamentals folder
-
-This repo would have a different structure than the other ones. Five different notebooks would be used to illustrate different foundational features of AI Studio, in separate tutorials. These notebooks are:
-  * Iris classification: One of the most traditional examples in ML, this notebook will be used to illustrate the most simple usage of AI Studio (section 1)
-  * Movie experiment: This notebook is an example of a recommendation system, which can be used to show features as Data Fabric, ML Flow and Tensorboard monitoring and model deployment.
-  * Tale of two cities: A nice example for different data visualization techniques, can also be used to demonstrate data fabric and installation of libraries/customization of environments
-  * MNIST classification: End-to-end introdutory example of Computer Vision with AI Studio
-  * Spam Classification: End-to-end introdutory example of Natural Language Processing with AI Studio
-
-<a id=section1-1> </a>
-
-### 1.1 Working with projects, workspaces and Github
-#### Notebooks on this session
-  * classification/iris
-    * Needs to change the load_data, to use sklearn one 
-#### Content
-  * What is a project on AI Studio, and how does it work?
-  * How to create a simple project?
-  * How to add a simple Workspace inside a project (Minimal vs Data Science workspace)
-  * How to connect to a Github Repository
-  * How to access your notebook inside the workspace
-  * What are the local folders?
-  
-  
-<a id=section1-2> </a>
-
-### 1.2 Using datafabric
-#### Notebooks on this session
-  * Introduce Movie experiment example
-  * Introduce tale of two cities project
-#### Content
-  * How to add local folders to my project
-  * How to access these local folders from inside the workspace
-  * How to add cloud folders to my project
-  * Why should you restart your workspace to access data fabric
-
-<a id=section1-3> </a>
-
-### 1.3 Data visualization and experiments monitoring
-#### Notebooks on this session
-  * Show data visualization in previous examples
-  * Use movie experiment example to show monitoring
-    * Can we change TB logging to use tensorboard library instead of TF
-#### Content
-  * Data visualization tools included
-  * Using MLFlow to monitoring
-  * Using Tensorboard to monitoring
-
-<a id=section1-4> </a>
-
-### 1.4 Installing libraries and configuring environments
-#### Notebooks on this session
-  * Use the same notebooks in previous sessions
-    * Try to run them on minimal workspace, to show how to show the effects on environment
-#### Content
-  * Installing libraries with PIP
-  * Custom workspaces/environments
-  * Using conda environments manually
-
-<a id=section1-5> </a>
-
-### 1.5 Deploying models locally
-#### Notebooks on this session
-  * Use movie experiment example to show Model Service (make sure it works)
-    * Create a quick UI later
-#### Content
-  * Logging and registering models in MLFlow
-  * Deploying a service (swagger interface)
-  * Adding a UI to the service 
-
-<a id=section1-6> </a>
-
-### 1.6 Introducing text and image processing
-#### Notebooks on this session
-  * MNIST (change Keras to scikit learn, so we do not use Tensorflow)
-  * SpamClassification
-#### Content
-  * Use MNIST to show how to work with images
-  * Use Spam classification to show how to work with text
-
-### Extra Material
-#### Notebooks on this session
-  * Select in the future
-#### Content
-  * Briefly explain the extra notebooks
-    
----
-
-<a id=deep-learning-with-AI-Studio></a>
-
-## 2. Deep Learning with Z by HP AI Studio
-
-* Folder: deep-learning-in-ais
-
-Starting in this second subject, each individual demo/tutorial is associated with a single notebook (and auxiliary files). In this section we will have 4 examples on how to use Tensorflow and Pytorch inside AI Studio, using GPU resources and our Deep Learning workspaces to easily put in practice to process images and language.
-
-<a id=section2-1> </a>
-
-### 2.1 Classifying images with TensorFlow/PyTorch
-#### Notebooks on this session
-* Basic Image Classification notebook
-#### Content
-* Use Deep Learning image to work with a Image Classification example
-* Use Data from datafabric
-* Ensure that MLFlow/Tensorboard are being used in the code
-* Ensure that multiple runs are made, with different configurations, to allow comparison
-* Ensure that GPU is being used
-
-<a id=section2-2> </a>
-
-### 2.2 Image transformation with Tensorflow/Pytorch (a different one from the previous session)
-#### Notebooks on this session
-* Super resolution example
-#### Content
-* Use Deep Learning image and the super resolution problem
-* Use cloud data from Data Fabric
-* Ensure that MLFlow/Tensorboard are being used
-* Deploy a super resolution service with UI
-
-<a id=section2-3> </a>
-
-### 2.3 Generating text by character
-#### Notebooks on this session
-* Shakespeare example
-#### Content
-* Explain basic character generation using statistical patterns
-
-<a id=section2-4> </a>
-
-### 2.4 Simple Q&A with Bert
-#### Notebooks on this session
-* Bert QA
-#### Content
-* Explain basic usage of Hugging Face and transformers
+# Content  
+- [Overview](#overview)
+- [Repository Structure](#repository-structure)
+- [Data Science and Machine Learning](#data-science-and-machine-learning)
+- [Deep Learning](#deep-learning)
+- [Generative AI](#generative-ai)
+- [NVIDIA GPU Cloud](#nvidia-gpu-cloud)
+- [Contact and Support](#contact-and-support)
 
 ---
 
-<a id=using-NGC-resources></a>
+# Overview 
 
-## 3. Interating NVidia's NGC Resources with AI Studio
+This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.  
 
-* Folder: ngc-integration
+The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **CitriNet** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.  
 
-Here, we will aggregate the demos that use NGC resources, to show how to use them to our use cases
-
-<a id=section3-1> </a>
-
-### 3.1 Using Rapids to accelerate data processing
-#### Notebooks on this session
-* Rapids/Pandas Stock Demo
-  
-#### Content
-* Show how Rapids can accelerate data operations done in pandas
-
-<a id=section3-2> </a>
-
-### 3.2 GeoProcessing with Rapids 
-#### Notebooks on this session
-* Rapids OpenCellID example
-
-#### Content
-* Expand Rapids acceleration to Data visualization of geo processing
-
-<a id=section3-3> </a>
-
-### 3.3 Using NeMo for audio and language processing
-#### Notebooks on this session
-* Audio translation examples
-
-#### Content
-* Nemo Framework image and how to use it in AI Studio
-* Download models using NGC integration
-* Running the models inside notebook
-* Publishing a service using the models
+We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview), please feel free to open a new issue in this repository — we welcome your feedback!
 
 ---
 
-<a id=using-prometheus></a>
+# Repository Structure 
 
-## 4. Gen AI with AI Studio and Galileo
+- data-science-and-machine-learning
+  - covid_movement_patterns_with_var
+  - handwritten_digit_classification_with_keras
+  - iris_flowers_classification_with_svm
+  - recommender_systems_with_tensorflow
+  - spam_detection_with_NLP
+- deep-learning
+  - bert_qa
+  - super_resolution
+  - text_generation
+- generative-ai
+  - agentic_rag_with_trt-llm_and_langgraph
+  - automated_evaluation_with_structured_outputs
+- ngc-integration
+  - audio_translation_with_nemo_models
+  - opencellid_eda_with_panel_and_cuDF
+  - stock_analysis_with_pandas_and_cuDF
+  - vacation_recommendation_agent_with_bert
 
-This actually is the same repository as the templates for [Prometheus](https://github.com/HPInc/aistudio-galileo-templates)
+---
 
-<a id=section4-1> </a>
+# Data Science and Machine Learning
 
-### 4.1 General Chatbot with cloud model
-#### Notebooks on this session
-* Prometheus chatbot template
-  
-#### Content
-* Creating a chatbot with langchain
-* Using OpenAI model
-* Evaluating experiment with Galileo Evaluate
-* Using feedbacks from Galileo Evaluate to improve prompt
+The sample projects in this folder demonstrate how to build data science and machine learning applications with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-<a id=section4-2> </a>
+We provide **5 sample projects**, each designed for quick and easy use to help you get started efficiently.
 
-### 4.2 Galileo Observe and Protect
-#### Notebooks on this session
-* Prometheus chatbot template
-  
-#### Content
-* Instrumenting the code with Galileo Observe
-* Monitoring the code with Galileo Observe interface
-* Instrumenting the code with Galileo Protect
-* Deploying the model locally
-* Monitoring Galileo Protect errors and alerts
+### 🌸 Iris Flowers Classification with SVM
 
-<a id=section4-3> </a>
+This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.  
 
-### 4.3 Summarization with local model
-#### Notebooks on this session
-* Prometheus summarization template
-  
-#### Content
-* Creating a custom pipeline for summarization
-* Using multiple data connectors
-* Using locally deployed model
-* Custom chains on Galileo Evaluate
-* Custom scorers on Galileo Evaluate
-* Deploying the service and adding Observe and Protect
+It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
-<a id=section4-4> </a>
+### 🖌️ Handwritten Digit Classification with Keras
 
-### 4.4 Code Generation with AI Studio and Galileo
-#### Notebooks on this session
-* Prometheus code generation example
-  
-#### Content
-* Explain the content of this example
+This project performs basic **image classification** using the **TensorFlow** framework.  
 
-<a id=section4-5> </a>
+It trains a model to classify handwritten digits from the **MNIST** dataset and runs on the **Deep Learning Workspace**.
 
-### 4.5 Text Generation with AI Studio and Galileo
-#### Notebooks on this session
-* Prometheus text generation example
-  
-#### Content
-* Explain the content of this example
+### 🏙️ COVID Movement Patterns with VAR
+
+This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.  
+
+It highlights how city-level movement patterns changed during the crisis. The experiment runs on the **Data Science Workspace**.
+
+### 🎬 Movie Recommender System with TensorFlow
+
+This project builds a simple **recommender system** for movies using **TensorFlow**.  
+
+It trains on user-item interaction data to predict movie preferences and runs on the **Deep Learning Workspace**.
+
+### 🚫 Spam Detection with NLP
+
+This project implements a **text classification** system to detect **spam** messages.  
+
+It uses deep learning techniques and requires the **Deep Learning Workspace** for training and inference.
+
+---
+
+# Deep Learning
+
+The sample projects in this folder demonstrate how to build deep learning applications with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+We provide **3 sample projects**, each designed for quick and easy use to help you get started efficiently.
+
+### 🧠 BERT Question Answering with MLflow
+
+This project demonstrates a simple **BERT Question Answering (QA)** experiment. It provides code to train a BERT-based model, as well as instructions to load a pretrained model from **Hugging Face**.  
+
+The model is deployed using **MLflow** to expose an inference service capable of answering questions based on input text.
+
+### 🖼️ Image Super Resolution with Convolutional Networks
+
+This project showcases a **Computer Vision** experiment that applies convolutional neural networks for **image super-resolution** — enhancing the quality and resolution of input images.  
+
+### ✍️ Character-Level Text Generation with Shakespeare Dataset
+
+This project illustrates how to build a simple **character-by-character text generation** model.  
+
+It trains on a dataset containing **Shakespeare's texts**, demonstrating the fundamentals of text generation by predicting one character at a time.
+
+---
+
+# Generative AI
+
+The sample projects in this folder demonstrate how to build generative AI applications with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+We provide **2 sample projects**, each designed for quick and easy use to help you get started efficiently.
+
+### 🤖 Agentic RAG Notebook with Llama 2 and ChromaDB
+
+This project implements an **Agentic Retrieval-Augmented Generation (RAG)** pipeline combining **Llama 2** and **ChromaDB**.  
+
+It features an intelligent question-answering system where the model dynamically decides whether external document context is needed before responding, ensuring highly accurate and contextually relevant answers through an agentic workflow.
+
+### 📊 Automated Evaluation with Structured Outputs
+
+**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
+
+* Generates scores locally via `llama.cpp` (no data leaves your machine)
+* Registers the evaluator as a **pyfunc** model in MLflow
+* Exposes a REST `/invocations` endpoint
+* Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
+
+---
+
+# NVIDIA GPU Cloud
+
+The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+We provide **four distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
+
+### 🎙️ Audio Translation with NeMo Models
+
+This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
+
+1. **Speech-to-Text (STT)** conversion using Citrinet  
+2. **Text Translation (TT)** from English to Spanish using NMT  
+3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
+
+All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
+
+### 📡 OpenCellID Exploratory Data Analysis with Panel and cuDF
+
+This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)** dashboard for the [OpenCellID](https://www.opencellid.org/) dataset. It uses **Panel** and **cuDF** to deliver lightning-fast geospatial analysis and visualization.
+
+You can explore cell tower distributions by radio type, operator, country, and time window — rendered live on an interactive map with full GPU acceleration.
+
+### 📈 Stock Analysis with Pandas and cuDF  
+
+In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
+
+- **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
+
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+
+### 🌍 Vacation Recommendation Agent with NeMo and BERT
+
+This project implements an **AI-powered recommendation agent** that delivers personalized travel suggestions based on user queries. 
+
+It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand user intent and generate highly relevant, tailored vacation recommendations.
+
+---
+
+# Contact and Support  
+
+- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+
+- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+---
+
+> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).

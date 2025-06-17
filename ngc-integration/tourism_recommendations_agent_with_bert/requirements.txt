@@ -1,2 +1,0 @@
-# Create the workspace using the NeMo Framework image and select the aistudio kernel for Jupyter notebooks. 
-# This image includes all the required libraries to run the sample project.
