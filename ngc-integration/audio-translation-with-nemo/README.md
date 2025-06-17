@@ -103,6 +103,8 @@ This will:
 - Synthesize spoken Spanish audio from the translated text  
 - Log the entire workflow as a composite model in **MLflow**
 
+Ensure that in **Translate the Text**, you include the step **Extract the text from the first hypothesis**, according to the NeMo version.
+
 ### 2 ▪ Deploy the Nemo Translation Service
 
 - In AI Studio, navigate to **Deployments > New Service**.  
