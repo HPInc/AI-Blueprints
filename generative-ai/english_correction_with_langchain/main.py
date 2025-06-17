@@ -3,11 +3,26 @@ from urllib.parse import urlparse
 import sys
 import base64 
 import re 
-
+from markdown_it import MarkdownIt
+from markdown_it.token import Token 
 import os
+from bs4 import BeautifulSoup
+from typing import Optional, Tuple, Dict, Union
 
 # Input URL parser to extract owner and repo
-def parse_url(github_url):
+def parse_url(github_url: str) -> Tuple[Optional[str], Optional[str], Optional[str]] :
+    """
+    Parses a GitHub URL and extracts the repository owner and name.
+
+    Args:
+        github_url (str): The full GitHub URL to parse.
+
+    Returns:
+        Tuple[Optional[str], Optional[str], Optional[str]]:
+            - The repository owner (e.g., 'openai')
+            - The repository name (e.g., 'whisper')
+            - An error message string if parsing fails; otherwise, None
+    """
     parsed_url = urlparse(github_url)
     path_parts = parsed_url.path.strip("/").split("/")
 
@@ -19,7 +34,21 @@ def parse_url(github_url):
     return path_parts[0], path_parts[1], None
 
 # Repo access checker
-def check_repo(github_url, access_token=None):
+def check_repo(github_url: str, access_token: Optional[str] = None) -> str:
+    """
+    Determines the visibility (public or private) of a GitHub repository.
+
+    Parses the provided GitHub URL, queries the GitHub API to fetch repository details,
+    and returns a string indicating its visibility or an error message if access fails.
+
+    Args:
+        github_url (str): The URL of the GitHub repository to check.
+        access_token (Optional[str], optional): GitHub personal access token for authenticated requests. Defaults to None.
+
+    Returns:
+        str: "private" or "public" if the repository is accessible;
+             otherwise, a descriptive error message.
+    """
     # Parse url into components
     owner, name, error = parse_url(github_url)
     if error:
@@ -45,7 +74,22 @@ def check_repo(github_url, access_token=None):
         return f"Error: {response.status_code}, {response.text}"
     
 # Repo traverser to extract md files and save repo structure
-def extract_md_files(github_url, access_token=None):
+def extract_md_files(github_url: str, access_token: Optional[str] = None) -> Tuple[Optional[Dict], Optional[str]]:
+    """
+    Traverses a GitHub repository to extract all Markdown (.md) files and organize them in a nested directory structure.
+
+    Connects to the GitHub API, retrieves the file tree of the default branch, downloads any Markdown files,
+    and reconstructs their paths locally in a dictionary format. Supports optional authentication with a personal access token.
+
+    Args:
+        github_url (str): The GitHub repository URL (e.g., "https://github.com/user/repo").
+        access_token (Optional[str], optional): GitHub personal access token for authenticated requests. Defaults to None.
+
+    Returns:
+        Tuple[Optional[Dict], Optional[str]]:
+            - A nested dictionary representing the directory structure and Markdown file contents.
+            - An error message string if any step fails; otherwise, None.
+    """
     # Parse url into components
     owner, name, error = parse_url(github_url)
     if error:
@@ -106,17 +150,42 @@ def extract_md_files(github_url, access_token=None):
     return dir_structure
 
 # Markdown parser to extract and placehold special text
-def parse_md(md_content):
+def parse_md(md_content: str) -> Tuple[Dict[str, Dict[str, str]], str]:
+    """
+    Parses Markdown content to extract and label structural and inline elements.
+
+    This function identifies and extracts:
+        - Headers (Markdown and HTML-based)
+        - Fenced code blocks
+        - Blockquotes
+        - Inline code
+        - URLs
+        - Internal markdown links
+
+    Each identified element is replaced with a unique placeholder label (e.g., HEADER_1, CODEBLOCK_2),
+    and the original content is stored in a structured dictionary for reference.
+
+    Args:
+        md_content (str): The raw Markdown content to parse.
+
+    Returns:
+        Tuple[Dict[str, Dict[str, str]], str]:
+            - A dictionary containing extracted elements grouped by type and labeled sequentially.
+            - A modified Markdown string with placeholders replacing the original elements.
+    """
+    # Initialize parser and parse Markdown into tokens
+    md = MarkdownIt()
+    tokens = md.parse(md_content)
+
     # Dictionary to store special components
     results = {
         "headers": {},
         "urls": {},
         "code_blocks": {},
         "inline_code": {},
+        "blockquotes": {},
+        "internal_links": {},
     }
-
-    # Copy of md content to be edited with placeholders
-    placeholder_md = md_content
 
     # Dictionary to keep track of component counts for identification purposes
     counts = {
@@ -126,78 +195,166 @@ def parse_md(md_content):
         "url": 0,
         "inline_code": 0,
         "code_block": 0,
+        "blockquote": 0,
+        "internal_link": 0,
     }
 
-    # Code block replacer
-    def replace_code_blocks(content):
-        # Custom handler for re.sub()
-        def repl(match):
-            # Increment code block count, generate label, and store
+    # Split md into lines
+    lines = md_content.splitlines()
+
+    # List to store line number ranges for clean replacements
+    block_replacements = []
+
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+
+        # Handle fenced code blocks
+        if token.type == "fence":
             counts["code_block"] += 1
             label = f"CODEBLOCK_{counts['code_block']}"
-            code = match.group(0).strip("`\n")
-            results["code_blocks"][label] = code
-            return label
-        # Apply regex substitution
-        return re.sub(r'```[\s\S]*?```', repl, content)
+            results["code_blocks"][label] = token.content.strip()
+            start, end = token.map
+            block_replacements.append((start, end, label))
 
-    # Inline code replacer
-    def replace_inline_code(content):
-        # Custom handler for re.sub()
-        def repl(match):
-            # Increment inline code count, generate label, and store
-            counts["inline_code"] += 1
-            label = f"INLINE_CODE_{counts['inline_code']}"
-            code = match.group(1)
-            results["inline_code"][label] = code
-            return label
-        # Apply regex substitution
-        return re.sub(r'`([^`\n]+)`', repl, content)
-    
-    # Header replacer
-    def replace_headers(content):
-        # Custom handler for re.sub()
-        def header_repl(match):
-            # Interpret md headings
-            hashes, text = match.group(1), match.group(2).strip()
-            level = len(hashes)
+        # Handle markdown headings
+        elif token.type == "heading_open":
+            level = int(token.tag[1])
+            inline_token = tokens[i + 1]
+            text = inline_token.content.strip()
+
             if level == 1:
                 key, prefix = "header", "HEADER"
             elif level == 2:
                 key, prefix = "subheader", "SUBHEADER"
             else:
                 key, prefix = "subsubheader", "SUBSUBHEADER"
-            # Increment respective heading count, generate label, and store
+
             counts[key] += 1
             label = f"{prefix}_{counts[key]}"
             results["headers"][label] = text
-            return label
-        # Apply regex substitution
-        return re.sub(r'^(#{1,6})\s+(.*)', header_repl, content, flags=re.MULTILINE)
+            start, end = token.map
+            block_replacements.append((start, end, label))
+            i += 2
+            continue
+
+        # Handle HTML blocks
+        elif token.type == "html_block":
+            html = token.content
+            soup = BeautifulSoup(html, "html.parser")
+
+            header_found = False
+            for level in range(1, 7):
+                tag = soup.find(f"h{level}")
+                if tag:
+                    text = tag.get_text(strip=True)
+                    if level == 1:
+                        key, prefix = "header", "HEADER"
+                    elif level == 2:
+                        key, prefix = "subheader", "SUBHEADER"
+                    else:
+                        key, prefix = "subsubheader", "SUBSUBHEADER"
+
+                    counts[key] += 1
+                    label = f"{prefix}_{counts[key]}"
+                    results["headers"][label] = text
+                    if token.map:
+                        start, end = token.map
+                        block_replacements.append((start, end, label))
+                    else:
+                        # fallback: insert at line after previous known block
+                        start = end = i
+                        block_replacements.append((start, start + 1, label))
+                    header_found = True
+                    break
+
+            if not header_found and token.map:
+                start, end = token.map
+                block_replacements.append((start, end, html.strip()))
     
-    # URL replacer
-    def replace_urls(content):
-        # Custom handler for re.sub()
-        def repl(match):
-            # Increment URL count, generate label, and store
+        # Handle blockquotes
+        elif token.type == "blockquote_open":
+            start = token.map[0] if token.map else i
+            j = i + 1
+            while j < len(tokens) and tokens[j].type != "blockquote_close":
+                j += 1
+
+            end = tokens[j].map[1] if tokens[j].map else start + 1
+            blockquote_text = "\n".join(lines[start:end]).strip()
+            counts["blockquote"] += 1
+            label = f"BLOCKQUOTE_{counts['blockquote']}"
+            results["blockquotes"][label] = blockquote_text
+            block_replacements.append((start, end, label))
+            i = j  # skip to close token
+        i += 1
+
+    # Replace all block elements in reverse to preserve line indexing
+    for start, end, label in sorted(block_replacements, reverse=True):
+        lines[start:end] = [label]
+
+    # Define and apply patterns for inline replacements
+    url_pattern = re.compile(r'https?://[^\s\)\]\}]+')
+    inline_code_pattern = re.compile(r'`([^`]+)`')
+    internal_link_pattern = re.compile(r'\[([^\]]+)\]\(#([^\)]+)\)')
+
+    def replace_inline(line):
+        # Handle internal markdown links
+        def internal_link_repl(m):
+            counts["internal_link"] += 1
+            label_text = m.group(1)
+            anchor = m.group(2)
+            label = f"INTERNAL_LINK_{counts['internal_link']}"
+            results["internal_links"][label] = {
+                "text": label_text,
+                "anchor": anchor,
+            }
+            return label
+
+        line = internal_link_pattern.sub(internal_link_repl, line)
+
+        # Replace inline code
+        def inline_code_repl(m):
+            counts["inline_code"] += 1
+            label = f"INLINE_CODE_{counts['inline_code']}"
+            results["inline_code"][label] = m.group(1)
+            return label
+
+        line = inline_code_pattern.sub(inline_code_repl, line)
+
+        # Replace URLs
+        def url_repl(m):
             counts["url"] += 1
             label = f"URL_{counts['url']}"
-            url = match.group(0)
-            results["urls"][label] = url
+            results["urls"][label] = m.group(0)
             return label
-        # Apply regex substitution
-        return re.sub(r'https?://[^\s\)\]\}]+', repl, content)
-    
-    # Apply md preprocessing functions
-    placeholder_md = replace_code_blocks(placeholder_md)
-    placeholder_md = replace_inline_code(placeholder_md)
-    placeholder_md = replace_headers(placeholder_md)
-    placeholder_md = replace_urls(placeholder_md)
 
+        return url_pattern.sub(url_repl, line)
+
+    # Apply inline replacements line by line (skip placeholder labels)
+    for idx, line in enumerate(lines):
+        if re.match(r'^(CODEBLOCK|HEADER|SUBHEADER|SUBSUBHEADER|BLOCKQUOTE)_\d+$', line.strip()):
+            continue
+        lines[idx] = replace_inline(line)
+
+    # Return parsed results and placeholder-filled markdown
+    placeholder_md = "\n".join(lines)
     return results, placeholder_md
 
 # Repo tree traverser and parse caller
-def traverse_and_parse(structure):
+def traverse_and_parse(structure: Dict[str, Union[str, dict]]) -> Dict[str, Union[str, dict]]:
+    """
+    Recursively traverses a nested dictionary of Markdown files and replaces their content with placeholder-labeled versions.
+
+    For each markdown string value, the function applies `parse_md()` to extract and replace structural elements with labeled placeholders. 
+    Nested dictionaries are processed recursively to preserve the original hierarchy.
+
+    Args:
+        structure (Dict[str, Union[str, dict]]): A nested dictionary representing directory structure and Markdown file contents.
+
+    Returns:
+        Dict[str, Union[str, dict]]: A new dictionary with the same structure, where Markdown strings are replaced
+        by their placeholder-filled versions.
+    """
     parsed = {}
     for key, value in structure.items():
         if isinstance(value, dict):
@@ -210,7 +367,20 @@ def traverse_and_parse(structure):
     return parsed
 
 # Save processed files in a directory that emulates the structure of the repo
-def save_files(structure, output_dir="."):
+def save_files(structure: Dict[str, Union[str, dict]], output_dir: str =".") -> None:
+    """
+    Recursively saves a nested dictionary structure to disk, preserving the directory hierarchy.
+
+    Each string value is written to a file, and each nested dictionary is treated as a subdirectory.
+    This function mirrors the structure of a parsed repository and writes its contents to the specified output directory.
+
+    Args:
+        structure (Dict[str, Union[str, dict]]): A nested dictionary representing file paths and their contents.
+        output_dir (str, optional): The root directory where the structure will be saved. Defaults to the current directory.
+
+    Returns:
+        None
+    """
     os.makedirs(output_dir, exist_ok=True)  
 
     # Loop through every item in the structure dictionary
@@ -226,8 +396,11 @@ def save_files(structure, output_dir="."):
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(value)
 
-# Top level workflow
-def main():
+# Top level workflow (Will be removed)
+def main() -> None:
+    """
+    Temporary CLI entry point for development and testing.
+    """
     # Placeholder repo for testing purposes
     github_url = "https://github.com/HPInc/AI-Blueprints/tree/main"
 
@@ -251,19 +424,11 @@ def main():
     # Obtain md files along with directory structure
     dir_structure = extract_md_files(github_url, access_token)
     
-    # Initialize lists to store processed md content and extracted special elements
-    processed_md = []
-    extracted_elements = []
-
     # Traverse md file tree to parse and store content
     parsed_structure = traverse_and_parse(dir_structure)
 
     # Save files
     save_files(parsed_structure, output_dir="parsed_md_output")
-
-    # Print content and extracted elements
-    #print(processed_md)
-    #print(extracted_elements)
 
 if __name__ == "__main__":
     main()
