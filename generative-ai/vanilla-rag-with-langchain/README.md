@@ -2,10 +2,11 @@
 
 <div align="center">
 
-![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-integrated-ff4b4b.svg?logo=streamlit&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg)
 ![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface&logoColor=black)
+![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-integrated-ff4b4b.svg?logo=streamlit&logoColor=white)
+
 
 
 
