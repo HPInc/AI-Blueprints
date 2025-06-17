@@ -11,7 +11,7 @@
 ---
 
 ## Overview  
-This repository contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
+This project contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
 
 - **TensorRT-backed Llama-3.1-Nano (TRT-LLM)**: for fast, GPU-accelerated inference.
 - **LangGraph**: to orchestrate an agentic, multi-step decision flow (relevance check, memory lookup, query rewriting, retrieval, answer generation, and memory update).
@@ -60,7 +60,14 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    ```
    ngcconfig:
 	   nemoversionpin: "25.04"
-   ```  
+   ```
+3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `docs/` folder.
+
+- On **Windows**, the file is located at:  
+  `C:\Program Files\HP\AIStudio\util\container-setup\workspace.sh`
+
+- On **Ubuntu**, replace the corresponding `workspace.sh` file in the equivalent directory.
+
    
 ### Step 3: Verify Project Files  
 1. Clone the GitHub repository:
@@ -72,14 +79,29 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ---
 
+
+
 ## Usage 
 
-### Step 1: Use the Agentic Workflow
+### Step 1: Run the Agentic RAG Workflow
 
-Run the following notebook to see the Agentic Workflow in action:  
-- **`Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb`**
+Execute the following notebook located in the `notebooks/` folder to see the Agentic RAG workflow in action:  
+- **`run-workflow.ipynb`**
+
+### Step 2: Register the Agentic RAG Model in MLflow
+
+Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:  
+- **`register-model.ipynb`**
+
+### Step 3: Deploy the Agentic RAG Service Locally
+
+Currently, deploying this service locally in AI Studio is not possible due to limitations in the version of the NeMo framework image used in this blueprint. We are actively working on resolving this issue.
+
+
 
 ---
+
+
 
 ## Contact and Support
 
