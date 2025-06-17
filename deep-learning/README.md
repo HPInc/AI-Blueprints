@@ -2,6 +2,46 @@
 
 In this folder, we move forward with valuable examples Deep Learning applications on AI Studio, focusing mainly in Computer Vision with Convolutional Neural Networks and Natural Language with Transformers. Currently, we are working with three examples, all of them requiring Deep Learning workspaces (preferably with GPU) to run.
 
+## Repository Structure
+
+The repository is organized into the following structure:
+
+```
+├── image_super_resolution_with_FSRCNN/               # Image Super Resolution Template
+│   ├── notebooks/                                    # Contains the notebook files
+│   │   └── image_super_resolution_with_FSRCNN.ipynb  # Main notebook for FSRCNN
+│   └── README.md                                     # Detailed documentation for the super resolution example
+│
+├── Question and Answer with BERT/                    # Question and Answer Template
+│   ├── code/                                         # Demo code
+│   ├── notebooks/                                    # Contains the notebook files
+│   │   ├── Testing Mlflow Server.ipynb               # Notebook for testing the MLflow server
+│   │   ├── question_answering_with_BERT.ipynb        # Main notebook for the project
+│   │   └── deploy.py                                 # Code to deploy
+│   ├── README.md                                     # Detailed documentation for the Q&A example
+│   └── requirements.txt                              # Dependencies for the Q&A example
+│
+├── text_generation_with_RNN/                         # Text Generation Template
+│   ├── code/                                         # Demo code
+│
+│   ├── data/                                         # Data assets used in the project
+│   │   └── shakespeare.txt                           # Text from Shakespeare's Sonnet 1 used in this template
+│
+│   ├── demo/                                         # Compiled interface folder
+│
+│   ├── notebooks/                                    # Contains the notebook files
+│   │   ├── models/                                   # Trained models and components
+│   │   │   ├── decoder.pt                            # Reconstructs input data from compressed form
+│   │   │   ├── dict_torch_rnn_model.pt               # Trained model for Torch notebook
+│   │   │   ├── encoder.pt                            # Compresses input into compact representation
+│   │   │   └── tf_rnn_model.h5                       # Trained model for TensorFlow notebook
+│   │   ├── Deployment.ipynb                          # Notebook for registering the model using MLflow
+│   │   ├── text_generation_with_RNN_TF.ipynb         # Notebook for the TensorFlow trained model
+│   │   ├── text_generation_with_RNN_Torch.ipynb      # Notebook for the Torch trained model
+│   │   └── deploy.py                                 # Code to deploy
+│
+│   └── README.md                                     # Project documentation
+```
 ## 1. Bert QA
 This experiment shows a simple BertQA experiment, providing code to train a model, and other to load a trained model from Hugging Face, deploying a service in MLFlow to perform the inference
 
