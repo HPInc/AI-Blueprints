@@ -9,3 +9,5 @@ langchain_huggingface==0.3.0
 hf-xet==1.1.4
 opencv-python-headless==4.11.0.86
 jq==1.9.1
+pymupdf==1.25.5
+deepeval==3.1.4

@@ -45,7 +45,7 @@ class ChatbotService(BaseGenerativeService):
         super().__init__()
         self.memory = []
         self.embedding = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-mpnet-base-v2",
+            model_name="intfloat/e5-large-v2",
             cache_folder="/tmp/hf_cache"
         )
         self.vectordb = None
