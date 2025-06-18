@@ -6,6 +6,7 @@ assets:
   hurricane: "c:\\Users\\borges\\data\\hurricane"
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
-  minimal: "0.14.5"
-  deeplearning: "0.13.6"
   deeplearninggpu: "0.11.5"
+ngcconfig:
+  rapidsbaseversionpin: "25.02-cuda12.0-py3.12"
+  rapidsnotebooksversionpin: "25.02-cuda12.0-py3.12"

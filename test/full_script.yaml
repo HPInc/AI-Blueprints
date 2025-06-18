@@ -1,4 +1,0 @@
-code_folder: "."
-test_folder: "test"
-files: 
-- mnist_test.py

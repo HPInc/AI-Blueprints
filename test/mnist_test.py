@@ -1,6 +1,6 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "ai-studio-fundamentals/[MLFlow] MNIST with Keras.ipynb"
+#  path: "data-science-and-machine-learning/handwritten_digit_classification_with_keras/notebooks/handwritten_digit_classification_with_keras.ipynb"
 #  class_name: MnistNotebook
 #  variables:
 #  - x_train
