@@ -6,7 +6,7 @@
 - [Data Science](#data-science)
 - [Deep Learning](#deep-learning)
 - [Generative AI](#generative-ai)
-- [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-(ngc)-integration)
+- [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-integration)
 - [Contact and Support](#contact-and-support)
 
 ---
@@ -174,7 +174,7 @@ This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatb
 
 ---
 
-# NVIDIA GPU Cloud (NGC) Integration
+# NVIDIA GPU Cloud Integration
 
 The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
