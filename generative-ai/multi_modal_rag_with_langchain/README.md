@@ -18,7 +18,7 @@
 
 ## Overview
 
-This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
+This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **llama3.1-8b-instruct-Q8_0** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
@@ -58,7 +58,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 4: Add the Model to Workspace
 
-- Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
+- Download the **llama3.1-8b-instruct-Q8_0** model from AWS S3 using the Models tab in your AI Studio project:
   - **Model Name**: `llama3.1-8b-instruct-Q8_0`
   - **Model Source**: `AWS S3`
   - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
