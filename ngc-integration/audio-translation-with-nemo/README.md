@@ -15,7 +15,7 @@
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
 1. **Speech-to-Text (STT)** conversion using Citrinet  
-2. **Text Translation (TT)** from English to Spanish using  Helsinki-NLP  
+2. **Text Translation (TT)** from English to Spanish using opus-mt-en-es
 3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
 
 All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
