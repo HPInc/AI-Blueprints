@@ -54,7 +54,7 @@ We are continuously expanding this collection with new projects. If you have sug
 
 The sample projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **2 sample projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **2 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 🌸 Classification with SVM
 
@@ -74,7 +74,7 @@ It highlights how city-level movement patterns changed during the crisis. The ex
 
 The sample projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **6 sample projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **6 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 
 ### 🖌️ Classification with Keras
@@ -122,7 +122,7 @@ It trains on a dataset containing **Shakespeare's texts**, demonstrating the fun
 
 The sample projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **7 sample projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **7 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 
 ### 📊 Automated Evaluation with Structured Outputs
@@ -178,7 +178,7 @@ This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatb
 
 The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **5 distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **5 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 🤖 Agentic RAG with TensorRT-LLM
 
