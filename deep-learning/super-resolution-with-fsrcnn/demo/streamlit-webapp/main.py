@@ -103,6 +103,18 @@ if st.button("Get the image with super resolution"):
                         image = Image.open(BytesIO(image_bytes))    
                         st.success("✅ Here are your image!")
                         st.image(image, caption="Super Resolution Output", use_column_width=True)
+
+                        buffered = BytesIO()
+                        image.save(buffered, format="PNG")
+                        img_bytes = buffered.getvalue()
+
+                        st.download_button( 
+                            label="📥 Download Image",
+                            data=img_bytes,
+                            file_name="super_resolution_output.png",
+                            mime="image/png"
+                            )
+
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
 
