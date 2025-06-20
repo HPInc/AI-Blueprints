@@ -1,0 +1,197 @@
+#root {
+  margin-right:0px;
+  width:1200px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.my_card {
+	padding: 50px;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.main-white-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+}
+.vector-module-card{
+	margin-left:15px;
+  margin-right:15px;
+}
+
+.vector-text-area .vn-textarea{
+  height:518px;
+  /* overflow-y:scroll; */
+ }
+ 
+ .prompt-text-area .vn-textarea{
+  height:300px;
+  /* overflow-y:scroll; */
+ }
+ 
+ .output-text-area .vn-textarea{
+  height:530px;
+  /* overflow-y:scroll; */
+ }
+
+.prompt-module-card{
+	margin-left:15px;
+	margin-right:15px;
+}
+
+.output-module-card{
+  margin-left:15px;
+	margin-right:15px;
+}
+
+/* Division */
+#root > div{
+ margin-right:0px;
+ width:1200px;
+}
+
+
+.input-text-area-container{
+  color: #fff !important;
+  /* padding: 20px; */
+}
+
+.input-text-area-container > {
+  color: #fff !important;
+}
+.submit-btn-container{
+  margin-bottom: 20px;
+}
+
+
+.input-query-card{
+  margin-bottom: 20px;
+}
+
+.vector-info{
+  height: 100%;
+}
+
+.prompt-paragraph{
+  padding: 0 20px 0 20px;
+}
+
+.output-container{
+  padding: 20px;
+}
+
+.output-text-area{
+  margin-top: 20px;
+}
+
+.header-title{
+  display: flex;
+  align-items: center;
+}
+
+.input-query-buttons{
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.input-query-toggle{
+  /* margin-left: 20px; */
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.header-logo{
+  display: flex;
+  justify-content: center;
+}
+.title-info{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 20px;
+  text-align: left;
+}
+.title{
+  font-size: 30px;
+  line-height: normal;
+}
+
+.title-with-icon{
+  display:flex;
+  flex-direction: row; 
+}
+
+.title-with-icon-icon{
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.outer-padding{
+  padding: 20px;
+}
+
+.output-text-area{
+  /* padding: 20px; */
+}
+
+.middle-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(100% - 40px);
+}
+
+.card-expanded{
+  width: 75%;
+}
+
+.card-not-expanded{
+  width: 33%;
+}
