@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: white;
+}
+
+/* .voice-recorder_recordcontainer{
+  margin: 0 !important;
+}
+
+.voice-recorder_maincontainer{
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.waveformgraph-record{
+  width: 100%;
+} */
+
+.waveformgraph-played-graph, .progressbar{
+  top: 0;
+}
+
+#recorder {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 3rem;
+  background: #38383d;
+  border: 1px solid #f9f9fa33;
+  cursor: pointer;
+  box-shadow: 0 1px 4px 0 rgba(12, 12, 13, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.15);
+  transition: 0.2s ease;
+}
+#recorder #record {
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+  position: absolute;
+  transition: inherit;
+}
+#recorder #arrow {
+  width: 50%;
+  height: 50%;
+  top: 30%;
+  left: 25%;
+  position: absolute;
+  transition: inherit;
+  opacity: 0;
+}
+#recorder:active {
+  border-color: transparent;
+}
+#recorder:active #record {
+  width: 55%;
+  height: 55%;
+  top: 23%;
+  left: 23%;
+}
+#recorder.recording {
+  box-shadow: 0 0 0 1px #45a1ff, 0 0 0 4px rgba(69, 161, 255, 0.3);
+}
+#recorder.recording #record {
+  animation: recording 0.7s ease infinite;
+}
+#recorder.download #record {
+  height: 40%;
+  width: 40%;
+  top: 15%;
+  left: 30%;
+  animation: none;
+}
+#recorder.download #arrow {
+  animation: download 0.5s ease infinite;
+}
+#recorder.out #record {
+  animation: out 0.8s ease, in 0.2s 0.8s ease;
+}
+
+@keyframes in {
+  from {
+    height: 0%;
+    top: 60%;
+  }
+}
+@keyframes recording {
+  from, to {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes download {
+  0% {
+    top: 30%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 55%;
+    opacity: 0;
+  }
+}
+@keyframes out {
+  0% {
+    top: 15%;
+    height: 40%;
+  }
+  20% {
+    top: 8%;
+  }
+  75%, 100% {
+    top: 100%;
+    opacity: 0;
+    height: 0px;
+  }
+}
+body {
+  background-color: #2a2a2e;
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
