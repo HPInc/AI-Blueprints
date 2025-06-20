@@ -1,6 +1,0 @@
-# Create the workspace using the RAPIDS Notebooks image within Z by HP AI Studio.
-# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-
-hvplot==0.11.2
-panel==1.6.2
-pydeck==0.9.1
