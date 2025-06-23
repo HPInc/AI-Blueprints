@@ -1,0 +1,7 @@
+# Create the workspace using the Local GenAI image. 
+# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
+
+requests == 2.32.4
+markdown-it-py == 3.0.0
+beautifulsoup4 == 4.13.4
+langchain == 0.3.25
