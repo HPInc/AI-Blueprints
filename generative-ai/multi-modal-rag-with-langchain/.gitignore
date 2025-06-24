@@ -1,3 +1,4 @@
 data/images
 data/wiki_full_structure.json
+data/wiki_flat_structure.json
 configs/secrets.yaml

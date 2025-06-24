@@ -217,15 +217,16 @@ def initialize_llm(
         # For LlamaCpp, get the context window from the filename
         model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[model_filename]
+            context_window = MODEL_CONTEXT_WINDOWS[model_filename, 8192]
         else:  
             # Default context window for LlamaCpp models (explicitly set)
-            context_window = 4096
+            context_window = 8192
 
         model = LlamaCpp(
             model_path=local_model_path,
             n_gpu_layers=-1,
-            n_batch=512,
+            top_p=0.95,
+            n_batch=256,
             n_ctx=context_window,
             max_tokens=1024,
             f16_kv=True,
@@ -233,7 +234,10 @@ def initialize_llm(
             verbose=False,
             stop=[],
             streaming=False,
-            temperature=0.2,
+            temperature=0.7,
+            repetition_penalty=1.1,
+            no_repeat_ngram_size = 3,
+            model_kwargs={"chat_format": "llama-3"},
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
