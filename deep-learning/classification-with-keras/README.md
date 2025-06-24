@@ -24,6 +24,8 @@ This project shows how to do a image classification, specifically digits of hand
 ├── docs/
 │   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
 │   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
+│   └── swagger_UI_handwritten_digit_classification.pdf               # Swagger screenshot
+│   └── swagger_UI_handwritten_digit_classification.png               # Swagger screenshot
 ├── notebooks
 │   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
 ├── README.md                                                         # Project documentation
