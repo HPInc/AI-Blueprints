@@ -19,6 +19,9 @@ This Project shows how to do machine learning classification using a Iris Flower
 # Project Structure
 
 ```
+├── docs/
+│   └── swagger_UI_classification_with_svm.pdf                 # Swagger screenshot
+│   └── swagger_UI_classification_with_svm.png                 # Swagger screenshot
 ├── notebooks
 │   └── iris_flowers_classification_with_svm.ipynb             # Main notebook for the project              
 ├── README.md                                                  # Project documentation
@@ -106,7 +109,16 @@ Paste a payload like:
   "params": {}
 }
 ```
+And as response:
 
+```
+{
+  "predictions": [
+    "Iris-setosa"
+  ]
+}
+
+```
 ---
 
 # Contact and Support  
