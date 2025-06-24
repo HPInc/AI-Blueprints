@@ -103,6 +103,17 @@ Paste a payload like:
   },
   "params": {}
 }
+
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    9
+  ]
+}
 ```
 
 ### 4 ▪ Launch the Streamlit UI
