@@ -18,6 +18,9 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 # Project Structure
 
 ```
+├── docs/
+│   └── swagger_UI_data_analysis_with_var.pdf                   # Swagger screenshot
+│   └── swagger_UI_data_analysis_with_var.png                   # Swagger screenshot
 ├── notebooks
 │   └── covid_movement_patterns_with_var.ipynb                  # Main notebook for the project              
 ├── README.md                                                   # Project documentation
@@ -105,10 +108,39 @@ Paste a payload like:
       "New York"
     ],
     "steps": [
-      5
+      2
     ]
   },
   "params": {}
+}
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    {
+      "retail_forecast": -33.728463233848125,
+      "pharmacy_forecast": -30.846298674683787,
+      "parks_forecast": 10.141207881911434,
+      "transit_station_forecast": -22.428499788561272,
+      "workplaces_forecast": -22.99469300562751,
+      "case_count_forecast": 2408.7536947190256,
+      "hospitalized_count_forecast": 98.59975487297108,
+      "death_count_forecast": 11.877680770250993
+    },
+    {
+      "retail_forecast": -38.21554995618252,
+      "pharmacy_forecast": -30.56449061598022,
+      "parks_forecast": -4.27564275594397,
+      "transit_station_forecast": -39.14454598096768,
+      "workplaces_forecast": -56.921910023079036,
+      "case_count_forecast": 4896.93595036146,
+      "hospitalized_count_forecast": 116.0842596188819,
+      "death_count_forecast": 10.01707228744587
+    }
+  ]
 }
 ```
 
