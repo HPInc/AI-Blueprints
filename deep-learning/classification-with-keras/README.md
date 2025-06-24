@@ -80,7 +80,7 @@ This will:
 - Make inference
 - Integrate MLflow 
 
-### 2 ▪ Deploy the Handwritten Digit Classification Service
+### 2 ▪ Deploy the Handwritten digit classification with keras Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
