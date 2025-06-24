@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
 
+_PROJECT_ROOT   = Path(__file__).resolve().parents[1]         
+_DEFAULT_CONFIG = _PROJECT_ROOT / "configs" / "config.yaml"
+_DEFAULT_SECRETS = _PROJECT_ROOT / "configs" / "secrets.yaml"
+
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
@@ -68,8 +72,8 @@ def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> No
 
 
 def load_config_and_secrets(
-    config_path: str = "../../configs/config.yaml",
-    secrets_path: str = "../../configs/secrets.yaml"
+    config_path: str | os.PathLike = _DEFAULT_CONFIG,
+    secrets_path: str | os.PathLike = _DEFAULT_SECRETS,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Load configuration and secrets from YAML files.
@@ -79,26 +83,25 @@ def load_config_and_secrets(
         secrets_path: Path to the secrets YAML file.
 
     Returns:
-        Tuple containing (config, secrets) as dictionaries.
+        Tuple (config, secrets) as dictionaries.
 
     Raises:
-        FileNotFoundError: If either the config or secrets file is not found.
+        FileNotFoundError: If either file is not found.
     """
-    # Convert to absolute paths if needed
-    config_path = os.path.abspath(config_path)
-    secrets_path = os.path.abspath(secrets_path)
+    config_path  = Path(config_path).expanduser().resolve()
+    secrets_path = Path(secrets_path).expanduser().resolve()
 
-    if not os.path.exists(secrets_path):
-        raise FileNotFoundError(f"secrets.yaml file not found in path: {secrets_path}")
+    if not secrets_path.exists():
+        raise FileNotFoundError(f"`secrets.yaml` not found → {secrets_path}")
 
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+    if not config_path.exists():
+        raise FileNotFoundError(f"`config.yaml` not found  → {config_path}")
 
-    with open(config_path) as file:
-        config = yaml.safe_load(file)
+    with secrets_path.open() as f:
+        secrets = yaml.safe_load(f) or {}
 
-    with open(secrets_path) as file:
-        secrets = yaml.safe_load(file)
+    with config_path.open() as f:
+        config = yaml.safe_load(f) or {}
 
     return config, secrets
 
