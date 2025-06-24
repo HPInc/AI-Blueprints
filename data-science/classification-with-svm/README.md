@@ -71,6 +71,41 @@ This will:
 - Build the Model and Measure Model.
 - Integrate MLflow
 
+### 2 ▪ Deploy the Iris flowers classification with SVM Service
+
+- Go to **Deployments > New Service** in AI Studio.
+- Name the service and select the registered model.
+- Choose a model version and **GPU** it's **not necessary**.
+- Choose the workspace.
+- Start the deployment.
+- Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
+
+### 3 ▪ Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "sepal-length": [
+      5.1
+    ],
+    "sepal-width": [
+      3.5
+    ],
+    "petal-length": [
+      1.4
+    ],
+    "petal-width": [
+      0.2
+    ]
+  },
+  "params": {}
+}
+```
 
 ---
 
