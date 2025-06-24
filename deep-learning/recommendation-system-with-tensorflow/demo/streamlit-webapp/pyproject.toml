@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "recommender-system-streamlit-webapp"
+version = "0.1.0"
+description = ""
+authors = ["gabisponciano gabriela.ponciano2016@gmail.com"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+streamlit = "1.45.0"
+requests = "2.32.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
