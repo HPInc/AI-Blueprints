@@ -5,16 +5,17 @@ import requests
 from io import BytesIO
 from PIL import Image
 
-
+# Configuração de ambiente
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
-# --- Streamlit Page Configuration ---
+
+# --- Configuração da Página ---
 st.set_page_config(
     page_title="Image Super Resolution",
-    page_icon = "📷",
+    page_icon="📷",
     layout="centered"
 )
 
-# --- Custom Styling ---
+# --- Estilo Personalizado ---
 st.markdown("""
     <style>
         .block-container {
@@ -46,78 +47,72 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Header ---
+# --- Cabeçalho ---
 st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Super Resolution</h1>", unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────────────
-# 1 ▸ Server Settings
-# ─────────────────────────────────────────────────────────────
+# --- Configurações da API ---
 st.sidebar.header("⚙️ Model API Settings")
-
 api_url = st.sidebar.text_input(
     "MLflow /invocations URL",
     value="https://localhost:5000/invocations",
     help="Endpoint where the MLflow model is served."
 )
 
-    
-# ─────────────────────────────────────────────────────────────
-# 2 ▸ Main – data input
-# ─────────────────────────────────────────────────────────────
+# --- Upload da Imagem ---
 digit_image = st.file_uploader(
-    "Choose a image:",
-     type = ["jpg", "jpeg", "png"]
+    "Choose an image:",
+    type=["jpg", "jpeg", "png"]
 )
 
+encoded_string = None
 if digit_image is not None:
-    st.image(digit_image, width = 300)
+    st.image(digit_image, width=300)
     encoded_string = base64.b64encode(digit_image.read()).decode("utf-8")
 else:
     st.text("Upload image")
-    
 
-# ─────────────────────────────────────────────────────────────
-# 3 ▸ Call the model
-# ─────────────────────────────────────────────────────────────
+# --- Botão para Chamar o Modelo ---
 if st.button("Get the image with super resolution"):
     if not digit_image:
-        st.warning("⚠️ Please enter a image!")
+        st.warning("⚠️ Please upload an image!")
     else:
-        file = {"files":digit_image}
-        # --- Loading Spinner ---
-        with st.spinner("Classifying..."):
-            payload = {
-                "inputs": {"image": [encoded_string]},
-            }
+        payload = {
+            "inputs": {"image": [encoded_string]},
+        }
+
+        with st.spinner("Enhancing image..."):
             try:
-                response = requests.post(api_url, json = payload, verify=False)
+                response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
 
-                # --- Display Results ---
-                if "predictions" in data:
-                        
-                        base64_image = data["predictions"]
+                # Corrigido: acessando a chave correta
+                base64_image = data.get("predictions", [None])[0]
 
+                if base64_image and isinstance(base64_image, str):
+                    try:
                         image_bytes = base64.b64decode(base64_image)
-                        image = Image.open(BytesIO(image_bytes))    
-                        st.success("✅ Here are your image!")
+                        image = Image.open(BytesIO(image_bytes))
+                        st.success("✅ Here is your image!")
                         st.image(image, caption="Super Resolution Output", use_column_width=True)
+                    except Exception as e:
+                        st.error("❌ Failed to decode the image.")
+                        st.error(str(e))
                 else:
-                    st.error("❌ Unexpected response format. Please try again.")
+                    st.error("❌ No valid image data returned from the model.")
+                    st.write("Raw response:", data)
 
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching classification.")
+                st.error("❌ Error fetching prediction.")
                 st.error(str(e))
-# ─────────────────────────────────────────────────────────────
-# 4 ▸ Footer
-# ─────────────────────────────────────────────────────────────
-st.markdown(
-"""
-*🖼️ Image Super Resolution © 2025* local, private, handwritten classification + MLflow.
 
----
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
-""",
-unsafe_allow_html=True,
+# --- Rodapé ---
+st.markdown(
+    """
+    *🖼️ Image Super Resolution © 2025* local, private, handwritten classification + MLflow.
+
+    ---
+    > Built with ❤️ using **Z by HP AI Studio**.
+    """,
+    unsafe_allow_html=True,
 )
