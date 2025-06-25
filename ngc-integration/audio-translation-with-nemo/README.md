@@ -15,7 +15,7 @@
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
 1. **Speech-to-Text (STT)** conversion using Citrinet  
-2. **Text Translation (TT)** from English to Spanish using NMT  
+2. **Text Translation (TT)** from English to Spanish using opus-mt-en-es
 3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
 
 All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
@@ -77,11 +77,7 @@ From the **Models** tab, add the following models from the model catalog in AI S
    - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`  
    - Asset Name: `STT En Citrinet 1024 Gamma 0.25`
 
-2. **Neural Machine Translation (NMT)**  
-   - Model: `nmt_en_es_transformer12x2-1.0.0rc1`  
-   - Asset Name: `NMT En Es Transformer12x2`
-
-3. **Text-to-Speech (TTS)**  
+2. **Text-to-Speech (TTS)**  
    - Model: `tts_es_multispeaker_fastpitchhifigan-1.15.0`  
    - Asset Name: `TTS Es Multispeaker FastPitch HiFiGAN`
 
@@ -101,11 +97,13 @@ notebooks/english_to_spanish.ipynb
 
 This will:
 
-- Load STT, NMT, and TTS models from the NGC assets  
+- Load STT, Helsinki-NLP, and TTS models from the NGC assets  
 - Convert an English audio file to English text  
 - Translate the text into Spanish  
 - Synthesize spoken Spanish audio from the translated text  
 - Log the entire workflow as a composite model in **MLflow**
+
+Ensure that in **Translate the Text**, you include the step **Extract the text from the first hypothesis**, according to the NeMo version.
 
 ### 2 ▪ Deploy the Nemo Translation Service
 
