@@ -1,17 +1,12 @@
+
+
 from __future__ import annotations
 
-import logging
-import os
-import subprocess
-import io
-import base64
+import base64, io, logging, os, shutil, subprocess, time
 from pathlib import Path
 from typing import Union
 
-import mlflow
-import torch
-import pandas as pd
-import numpy as np
+import mlflow, torch, pandas as pd, numpy as np
 from PIL import Image
 from diffusers import StableDiffusionPipeline
 from mlflow.types import Schema, ColSpec
@@ -19,6 +14,28 @@ from mlflow.models import ModelSignature
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
+
+
+
+_CONFIG_FILENAMES = {
+    "multi": "default_config_multi-gpu.yaml",
+    "single": "default_config_one-gpu.yaml",
+    "cpu": "default_config-cpu.yaml",
+}
+
+def _find_config_dir() -> Path:
+    required = set(_CONFIG_FILENAMES.values())
+    for base in [Path.cwd(), *Path.cwd().parents]:
+        if required.issubset({p.name for p in base.iterdir()}):
+            return base
+        cfg = base / "config"
+        if cfg.is_dir() and required.issubset({p.name for p in cfg.iterdir()}):
+            return cfg
+    raise FileNotFoundError(
+        f"I did not find a directory with{', '.join(required)} starting from{Path.cwd()}"
+    )
+
+
 
 class ImageGenerationModel(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
@@ -28,83 +45,67 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
 
         self.num_gpus = torch.cuda.device_count()
         if self.num_gpus >= 2:
-            cfg = "config/default_config_multi-gpu.yaml"
-            logging.info("Detected %d GPUs → multi-GPU config: %s",
-                         self.num_gpus, cfg)
+            logging.info("Detected %d GPUs (multi-GPU pipeline)", self.num_gpus)
         elif self.num_gpus == 1:
-            cfg = "config/default_config_one-gpu.yaml"
-            logging.info("Detected 1 GPU → single-GPU config: %s", cfg)
+            logging.info("Detected 1 GPU (single-GPU pipeline)")
         else:
-            cfg = "config/default_config-cpu.yaml"
-            logging.info("No GPU detected → CPU config.")
+            logging.info("Running on CPU")
         self.current_pipeline, self.current_model = None, None
 
     def _load_pipeline(self, use_finetuning: bool):
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        if self.current_pipeline is None:
-            target = "finetuning" if use_finetuning else "no_finetuning"
-        elif    (self.current_model == "finetuning"     and not use_finetuning) \
-          or    (self.current_model == "no_finetuning"  and     use_finetuning):
-            logging.info("Switching pipeline (finetuned = %s)…", use_finetuning)
-            del self.current_pipeline
-            torch.cuda.empty_cache()
-            target = "finetuning" if use_finetuning else "no_finetuning"
-        else:
-            return  
+        need_switch = (
+            self.current_pipeline is None or
+            (self.current_model == "finetuning" and not use_finetuning) or
+            (self.current_model == "no_finetuning" and use_finetuning)
+        )
+        if not need_switch:
+            return
 
-        mdl_path = (self.model_finetuning_path if target == "finetuning"
+        target = "finetuning" if use_finetuning else "no_finetuning"
+        mdl_path = (self.model_finetuning_path if use_finetuning
                     else self.model_no_finetuning_path)
 
+        if self.current_pipeline is not None:
+            logging.info("Switching pipeline (finetuned = %s)…", use_finetuning)
+            del self.current_pipeline; torch.cuda.empty_cache()
+
         self.current_pipeline = StableDiffusionPipeline.from_pretrained(
-            mdl_path, torch_dtype=torch.float16, low_cpu_mem_usage=True
-        ).to(device)
+            mdl_path, torch_dtype=torch.float16, low_cpu_mem_usage=True).to(device)
         self.current_model = target
 
     def predict(self, context, X: Union[pd.DataFrame, dict]) -> pd.DataFrame:
-        prompt            = X["prompt"].iloc[0]         if isinstance(X, pd.DataFrame) else X["prompt"]
-        use_finetuning    = X["use_finetuning"].iloc[0] if isinstance(X, pd.DataFrame) else X["use_finetuning"]
-        height            = X.get("height", 512)
-        width             = X.get("width",  512)
-        num_images        = X.get("num_images", 1)
-        num_steps         = X.get("num_inference_steps", 100)
+        def _first(val):
+            return val.iloc[0] if isinstance(val, pd.Series) else val
 
-        if isinstance(height, pd.Series):  height  = height.iloc[0]
-        if isinstance(width,  pd.Series):  width   = width.iloc[0]
-        if isinstance(num_images, pd.Series): num_images = num_images.iloc[0]
-        if isinstance(num_steps,  pd.Series): num_steps  = num_steps.iloc[0]
+        prompt         = _first(X["prompt"])
+        use_finetuning = _first(X["use_finetuning"])
+        height         = _first(X.get("height", 512))
+        width          = _first(X.get("width", 512))
+        num_images     = _first(X.get("num_images", 1))
+        num_steps      = _first(X.get("num_inference_steps", 100))
 
-        logging.info("Running inference → \"%s\"", prompt)
-        self._load_pipeline(use_finetuning)
+        logging.info("Running inference – '%s'", prompt)
+        self._load_pipeline(bool(use_finetuning))
 
         images64: list[str] = []
         with torch.no_grad():
             for i in range(num_images):
                 logging.info("Image %d / %d", i + 1, num_images)
-                img = self.current_pipeline(
-                    prompt,
-                    height=height,
-                    width=width,
-                    num_inference_steps=num_steps,
-                    guidance_scale=7.5
-                ).images[0]
-
-                buf = io.BytesIO()
-                img.save(buf, format="PNG")
-                buf.seek(0)
+                img = self.current_pipeline(prompt, height=height, width=width,
+                                            num_inference_steps=num_steps,
+                                            guidance_scale=7.5).images[0]
+                buf = io.BytesIO(); img.save(buf, format="PNG"); buf.seek(0)
                 images64.append(base64.b64encode(buf.read()).decode())
-
                 img.save(f"local_model_result_{i}.png")
 
         return pd.DataFrame({"output_images": images64})
 
+   
     @classmethod
-    def log_model(
-        cls,
-        finetuned_model_path: str,
-        model_no_finetuning_path: str,
-        artifact_path: str = "image_generation_model"
-    ):
+    def log_model(cls, finetuned_model_path: str, model_no_finetuning_path: str,
+                  artifact_path: str = "image_generation_model"):
         input_schema  = Schema([
             ColSpec("string",  "prompt"),
             ColSpec("boolean", "use_finetuning"),
@@ -117,7 +118,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
         signature     = ModelSignature(inputs=input_schema, outputs=output_schema)
 
         core = Path(__file__).resolve().parent.parent
-        (core / "__init__.py").touch(exist_ok=True) 
+        (core / "__init__.py").touch(exist_ok=True)
 
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,
@@ -127,42 +128,46 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 "model_no_finetuning": model_no_finetuning_path,
             },
             signature=signature,
-            code_paths=[str(core)], 
+            code_paths=[str(core)],
             pip_requirements=[
-                "torch",
-                "diffusers",
-                "transformers",
-                "accelerate",
-                "pillow",
-                "pandas",
-                "mlflow",
+                "torch", "diffusers", "transformers", "accelerate",
+                "pillow", "pandas", "mlflow",
             ],
         )
-        logging.info("✅ Model logged to MLflow at «%s»", artifact_path)
+        logging.info("✅ Model logged to MLflow at '%s'", artifact_path)
+
+
+
+def _resolve_accelerate_cfg() -> str:
+    base = Path(os.getenv("CONFIG_DIR", "")).expanduser() if os.getenv("CONFIG_DIR") else _find_config_dir()
+    n_gpu = torch.cuda.device_count()
+    key   = "multi" if n_gpu >= 2 else "single" if n_gpu == 1 else "cpu"
+    cfg_path = base / _CONFIG_FILENAMES[key]
+    if not cfg_path.exists():
+        raise FileNotFoundError(cfg_path)
+    return str(cfg_path)
+
 
 def setup_accelerate():
-    subprocess.run(["pip", "install", "accelerate"], check=True)
-    num_gpus = torch.cuda.device_count()
-    if num_gpus >= 2:
-        cfg = "config/default_config_multi-gpu.yaml"
-    elif num_gpus == 1:
-        cfg = "config/default_config_one-gpu.yaml"
-    else:
-        cfg = "config/default_config-cpu.yaml"
+    subprocess.run(["pip", "install", "--quiet", "accelerate"], check=True)
+    cfg = _resolve_accelerate_cfg()
     os.environ["ACCELERATE_CONFIG_FILE"] = cfg
     logging.info("Using accelerate cfg: %s", cfg)
+
 
 def deploy_model():
     setup_accelerate()
 
     mlflow.set_tracking_uri('/phoenix/mlflow')
     mlflow.set_experiment("ImageGeneration")
+
     finetuned = "./dreambooth"
     base      = "../../../local/stable-diffusion-2-1"
 
     with mlflow.start_run(run_name="image_generation_service") as run:
         mlflow.log_artifact(os.environ["ACCELERATE_CONFIG_FILE"],
                             artifact_path="accelerate_config")
+
         ImageGenerationModel.log_model(
             finetuned_model_path=finetuned,
             model_no_finetuning_path=base,
@@ -170,7 +175,8 @@ def deploy_model():
         model_uri = f"runs:/{run.info.run_id}/image_generation_model"
         mlflow.register_model(model_uri=model_uri,
                               name="ImageGenerationService")
-        logging.info("🏷️ Registered «ImageGenerationService» (run %s)",
-                     run.info.run_id)
+        logging.info("🏷️ Registered 'ImageGenerationService' (run %s)", run.info.run_id)
 
- 
+
+if __name__ == "__main__":
+    deploy_model()
