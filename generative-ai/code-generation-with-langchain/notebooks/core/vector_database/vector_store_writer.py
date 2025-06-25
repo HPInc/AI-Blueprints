@@ -1,24 +1,4 @@
-# vector_store_writer.py
-# ------------------------------------------------------------
-# Escreve embeddings gerados localmente (ex.: ChunkEmbedder)
-# no ChromaDB, aceitando **duas** entradas:
-#
-#   1. Uma lista de dicionários (ex.: `chunk_embeddings`)
-#      [
-#         {
-#             "file_path": "...",
-#             "chunk_idx": 0,
-#             "text": "...",
-#             "embedding": np.ndarray | list[float]
-#         },
-#         ...
-#      ]
-#
-#   2. Um pandas.DataFrame que possua colunas:
-#        ["ids", "code", "metadatas", "embeddings"]
-#
-# Não há dependência de OpenAI; tudo roda localmente.
-# ------------------------------------------------------------
+
 
 from __future__ import annotations
 
@@ -58,9 +38,7 @@ class VectorStoreWriter:
         self.collection = self.client.get_or_create_collection(name=collection_name)
         logger.info(f"Ready to upsert into collection: '{collection_name}'")
 
-    # ------------------------------------------------------------------ #
-    # Public helpers
-    # ------------------------------------------------------------------ #
+
     def upsert_chunk_embeddings(self, chunk_embeddings: Sequence[Dict[str, Any]]) -> None:
         """
         Accepts list[dict] 
@@ -93,7 +71,7 @@ class VectorStoreWriter:
         """Maintains compatibility with DataFrame in the old format."""
         required = ["ids", "code", "metadatas", "embeddings"]
         if not all(col in df.columns for col in required):
-            raise ValueError(f"DataFrame precisa das colunas: {required}")
+            raise ValueError(f"DataFrame: {required}")
 
         ids = df["ids"].astype(str).tolist()
         docs = df["code"].tolist()
@@ -125,7 +103,7 @@ class VectorStoreWriter:
             )
             logger.info("✅ Upsert completed with embeddings.")
         except Exception as e:
-            logger.warning(f"Falhou com embeddings ({e}); tentando sem embedding.")
+            logger.warning(f"Failed with embeddings({e});trying without embedding..")
             self.collection.upsert(ids=ids, documents=docs, metadatas=metas)
             logger.info("✅ Upsert completed (Chroma generated embeddings).")
 
