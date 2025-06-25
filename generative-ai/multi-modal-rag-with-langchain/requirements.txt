@@ -2,9 +2,9 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 chromadb==0.6.3
-langchain==0.3.25
-langchain_community==0.3.25
-langchain_core==0.3.65
+langchain==0.3.26
+langchain_community==0.3.26
+langchain_core==0.3.66
 langchain_huggingface==0.3.0
 hf-xet==1.1.4
 opencv-python-headless==4.11.0.86

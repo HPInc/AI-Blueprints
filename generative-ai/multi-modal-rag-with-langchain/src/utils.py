@@ -234,8 +234,8 @@ def initialize_llm(
             verbose=False,
             stop=[],
             streaming=False,
-            temperature=0.7,
-            repetition_penalty=1.1,
+            temperature=0.2,
+            repetition_penalty=2,
             no_repeat_ngram_size = 3,
             model_kwargs={"chat_format": "llama-3"},
         )
@@ -248,88 +248,14 @@ def initialize_llm(
 
     return model
 
+def setup_opik_environment(secrets: Dict[str, Any]) -> None:
+    if "OPIK_API_KEY" not in secrets:
+        raise ValueError("Opik API key not found in secrets")
+    if "OPENAI_API_KEY" not in secrets:
+        raise ValueError("OPENAI API key not found in secrets")
+    os.environ['OPIK_API_KEY'] = secrets["OPIK_API_KEY"]
+    os.environ['OPENAI_API_KEY'] = secrets["OPENAI_API_KEY"]
 
-def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
-    """
-    Configure environment variables for Galileo services.
-
-    Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
-
-    Raises:
-        ValueError: If Galileo API key is not found in secrets.
-    """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
-
-
-def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
-    """
-    Initialize Galileo Protect project and stage.
-
-    Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
-
-    Returns:
-        Tuple containing (project object, project_id, stage_id).
-
-    Raises:
-        ImportError: If galileo_protect is not installed.
-    """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
-
-
-def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
-    """
-    Initialize a Galileo Prompt Callback for evaluation.
-
-    Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
-
-    Returns:
-        Galileo prompt callback object.
-
-    Raises:
-        ImportError: If promptquality is not installed.
-    """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
-    
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.
