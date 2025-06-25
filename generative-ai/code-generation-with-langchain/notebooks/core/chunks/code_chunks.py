@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional, Any, Union
 
 
-# ─────────────────────────  Tokenizer  ────────────────────────── #
 def _default_tokenizer(text: str) -> List[str]:
     """
     Very simple fallback tokenizer: splits on words and punctuation.
@@ -16,7 +15,6 @@ def _default_tokenizer(text: str) -> List[str]:
     return re.findall(r"\w+|[^\s\w]", text, re.UNICODE)
 
 
-# ─────────────────────────  Main class  ───────────────────────── #
 class CodeChunker:
     """
     Smart, AST-aware chunker (works best for Python; falls back to lines).
@@ -26,15 +24,14 @@ class CodeChunker:
         self,
         max_tokens: int = 300,
         overlap_tokens: int = 50,
-        tokenizer: Optional[Any] = None,          # Callable[[str], List[str]]
-        allowed_ext: Tuple[str, ...] = (".py",),  # Used only in `chunk_repository`
+        tokenizer: Optional[Any] = None,          
+        allowed_ext: Tuple[str, ...] = (".py",),  
     ) -> None:
         self.max_tokens = max_tokens
         self.overlap_tokens = overlap_tokens
         self.tokenizer = tokenizer or _default_tokenizer
         self.allowed_ext = allowed_ext
 
-    # ───────────────────────  Public API  ─────────────────────── #
 
     def chunk_code(self, code: str) -> List[str]:
         """Chunk a single source-code string."""
@@ -65,7 +62,6 @@ class CodeChunker:
                 out[rel] = self.chunk_file(path)
         return out
 
-    # ──────────────────────  Internal logic  ───────────────────── #
 
     def _chunk_code_ast(self, code: str) -> List[str]:
         """
@@ -136,7 +132,6 @@ class CodeChunker:
 
         return self._apply_overlap(chunks) if self._needs_overlap(chunks) else chunks
 
-    # ─────────────────────────  Helpers  ───────────────────────── #
 
     def _needs_overlap(self, chunks: List[str]) -> bool:
         return self.overlap_tokens > 0 and len(chunks) > 1
