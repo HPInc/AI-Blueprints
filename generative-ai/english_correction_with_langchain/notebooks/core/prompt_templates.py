@@ -10,20 +10,14 @@ from typing import Dict, List, Any
 
 # Template to correct English grammar in markdown content
 MARKDOWN_CORRECTION_TEMPLATE = """
-You are an English grammar assistant.
+Fix only grammatical errors in this text. Preserve all formatting exactly. Do not include any additional notes or comments. 
 
-Your task is to **correct grammar and improve clarity** in the following Markdown content, while preserving its meaning and Markdown formatting.
+IMPORTANT: Text contains PLACEHOLDER tokens (like __PLACEHOLDER_1__) that represent protected content. Leave ALL placeholders exactly as they are. They must all be present in the output.
 
-Return **only** the corrected Markdown. Do not add any explanations or extra text.
-
----
-
-Markdown input:
+Text to correct:
 {markdown}
 
----
-
-Corrected Markdown:
+Corrected text:
 """
 
 def get_markdown_correction_prompt() -> PromptTemplate:

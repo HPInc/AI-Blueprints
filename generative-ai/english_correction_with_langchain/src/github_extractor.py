@@ -128,6 +128,7 @@ class GitHubMarkdownProcessor:
                 - A nested dictionary representing the directory structure and Markdown file contents.
                 - An error message string if any step fails; otherwise, None.
         """
+        
         # Parse url into components
         owner, name, error = self.parse_url()
         if error:
@@ -189,59 +190,46 @@ class GitHubMarkdownProcessor:
 
     # Semantically chunk md file content
     def chunk_markdown(self, markdown_text: str, max_chunk_tokens: int = 500) -> list:
-        """
-        Splits markdown content into semantic chunks based on heading structure.
-
-        Args:
-            markdown_text (str): The full markdown content.
-            max_chunk_tokens (int): Approximate max tokens per chunk.
-
-        Returns:
-            List[str]: List of semantically split markdown sections.
-        """
         md = MarkdownIt()
         tokens = md.parse(markdown_text)
-
+    
         chunks = []
         current_chunk = []
         current_token_count = 0
-
+    
         for token in tokens:
-            token_text = token.content if token.content else token.markup
-            # Rough estimate: 1 token ~ 4 characters
-            token_len = len(token_text) // 4 + 1
-
-            if token.type.startswith('heading_open'):
-                # Start new chunk if current is non-empty
-                if current_chunk:
-                    chunks.append("".join(current_chunk).strip())
-                    current_chunk = []
-                    current_token_count = 0
-
-            current_chunk.append(token.markup + " " + token.content + "\n" if token.type.startswith('heading_open') else token.content + "\n")
-            current_token_count += token_len
-
+            if token.type == "inline":
+                line = token.content
+            elif token.type.endswith("_open") or token.type.endswith("_close"):
+                # Skip structural open/close tokens — they add formatting noise
+                continue
+            else:
+                line = token.content
+    
+            current_chunk.append(line)
+            current_token_count += len(line) // 4 + 1
+    
             if current_token_count > max_chunk_tokens:
-                chunks.append("".join(current_chunk).strip())
+                chunks.append("\n".join(current_chunk).strip())
                 current_chunk = []
                 current_token_count = 0
-
+    
         if current_chunk:
-            chunks.append("".join(current_chunk).strip())
-
+            chunks.append("\n".join(current_chunk).strip())
+    
         return chunks
+
     
     # Top-level function to encapsulate workflow
-    def run(self) -> Dict[str, list]:
+    def run(self) -> Dict[str, str]:
         """
         High-level method to:
         1. Check repository access
         2. Extract markdown files
-        3. Chunk markdown content semantically
-        4. Return in-memory chunk structure
-
+        3. Return raw markdown content by file path
+    
         Returns:
-            Dict[str, list]: Mapping from file paths to list of markdown chunks.
+            Dict[str, str]: Mapping from file paths to raw markdown content.
         """
         visibility = self.check_repo()
         print(f"Repository visibility: {visibility}")
@@ -253,18 +241,16 @@ class GitHubMarkdownProcessor:
         if error:
             raise RuntimeError(f"Markdown extraction failed: {error}")
     
-        chunked_data = {}
-
+        raw_data = {}
+    
         def process_structure(structure, path=""):
             for name, content in structure.items():
                 current_path = os.path.join(path, name)
                 if isinstance(content, dict):
                     process_structure(content, current_path)
                 else:
-                    chunks = self.chunk_markdown(content)
-                    chunked_data[current_path] = chunks
-
+                    raw_data[current_path] = content
+    
         process_structure(structure)
-        print("Semantic chunking complete.")
-        return chunked_data
-
+        print("Raw markdown extraction complete.")
+        return raw_data

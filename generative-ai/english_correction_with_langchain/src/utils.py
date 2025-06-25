@@ -3,8 +3,6 @@ import yaml
 import importlib.util
 from typing import Dict, Any, Optional, Union, List, Tuple
 
-
-
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
     "local": "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
@@ -200,9 +198,9 @@ def initialize_llm(
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,
-            stop=[],
+            stop=["Text to correct:", "Corrected text:", "IMPORTANT:", "\n\n\n"], #
             streaming=False,
-            temperature=0.2,
+            temperature=0.1, #
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
