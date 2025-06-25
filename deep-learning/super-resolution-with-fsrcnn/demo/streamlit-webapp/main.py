@@ -117,7 +117,7 @@ if "enhanced_image" in st.session_state:
 # --- Footer ---
 st.markdown(
     """
-    *🖼️ Image Super Resolution © 2025* local, private, handwritten classification + MLflow.
+    *🖼️ Image Super Resolution © 2025* local, private, super resolution + MLflow.
 
     ---
     > Built with ❤️ using **Z by HP AI Studio**.
