@@ -142,7 +142,7 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 
 ### Successful UI demo
 
-- React
+- HTML
 ![Automated Evaluation React UI](docs/ui_text_generation_with_rnn.png)  
 
 ---
