@@ -43,7 +43,8 @@ class ModelSelector:
             "meta-llama/Llama-2-7b-chat-hf",
             "meta-llama/Meta-Llama-3-8B-Instruct",
             "google/gemma-7b-it",
-            "google/gemma-3-1b-it"
+            "google/gemma-3-1b-it",
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         ]
         self.base_local_dir = base_local_dir or os.path.join("..", "..", "..", "local", "models")
         self.model_id = None
