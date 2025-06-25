@@ -77,10 +77,14 @@ Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 5. HR and LR image comparison:
 - Compare the low-resolution and high-resolution images after training.
 
-### 2 ▪ Local deployment on AI Studio
+### 2 ▪ Deploy the Image Super Resolution with FSRCNN Service
 
-The local deployment should be done through the Deployments tab in AIStudio. Simply select the previously trained model, and then you will be able to perform super-resolution inferences on new images.
-
+- Go to **Deployments > New Service** in AI Studio.
+- Name the service and select the registered model.
+- Choose a model version with **GPU**.
+- Choose the workspace.
+- Start the deployment.
+- Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
 ### 3 ▪ Swagger / raw API
 
@@ -118,7 +122,6 @@ And as response:
 
 - Streamlit
 ![Handwritten Digit Classification Streamlit UI](docs/streamlit_ui_image_super_resolution_with_fsrcnn.png)
-
 
 ---
 
