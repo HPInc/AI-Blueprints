@@ -1,72 +1,87 @@
-# src/local_judge.py
-import re, json
-from typing import Dict, Any, List
-from opik.evaluation.models import OpikBaseModel
+import json
+import re
+import logging
+from typing import Any, Dict, List
 from langchain_community.llms import LlamaCpp
+from opik.evaluation.models import OpikBaseModel
 
-JSON_GRAMMAR = r'''
-root    ::= object
-object  ::= "{" members? "}"
-members ::= pair ("," pair)*
-pair    ::= string ":" value
-string  ::= "\"" [^"]* "\""
-value   ::= string | number | bool
-number  ::= [0-9]+ ("." [0-9]+)?
-bool    ::= "true" | "false"
-'''
+logger = logging.getLogger("llama_judge")
+logger.setLevel(logging.DEBUG)
+
+_JSON_SCORE_RE = re.compile(
+    r'"(?:score|answer_relevance_score|context_precision_score|context_recall_score)"\s*:\s*(0(?:\.\d+)?|1(?:\.0+)?)'
+)
+
+def extract_score(text: str) -> float:
+    m = _JSON_SCORE_RE.search(text)
+    if m:
+        return float(m.group(1))
+    else: 
+        return -1.0
+    return 0.0
 
 
 class LangChainJudge(OpikBaseModel):
-    """
-    Loads a *separate* llama-cpp instance using paths & params from
-    your existing `config` dict, so the main `llm` stays untouched.
-    """
+    def __init__(self, model_path: str, metric: str):
+        super().__init__("llama-judge")
+        self.metric = metric.lower()  # e.g., "hallucination", "answer_relevance", etc.
 
-    _mini_json = re.compile(r"\{.*?\}", re.S)
-
-
-    def __init__(self, model_path: str):
-        # • deterministic, JSON-safe decoding
         self.llm = LlamaCpp(
-            model_path      = model_path,
-            n_gpu_layers    = -1,
-            n_ctx           = 4096,
-            temperature     = 0.0,
-            top_p           = 1.0,
-            max_tokens      = 64,
-            stop            = ["}"],
-            grammar         = JSON_GRAMMAR,
-            f16_kv          = True,
-            streaming       = False,
-            verbose         = False,
-            model_kwargs    = {"chat_format": "llama-3"},
+            model_path=model_path,
+            n_gpu_layers=-1,
+            n_ctx=4096,
+            temperature=0.0,
+            top_p=1.0,
+            max_tokens=512,
+            f16_kv=True,
+            streaming=False,
+            verbose=False,
+            model_kwargs={"chat_format": "llama-3"},
         )
 
-    # ---------- internal helpers --------------------------
-    def _clean(self, txt: str) -> str:
-        print(txt)
-        for m in self._mini_json.finditer(txt):
-            candidate = m.group(0)
-            try:
-                json.loads(candidate)
-                return candidate
-            except Exception:
-                continue
-        return '{"score": 1.0, "reason": "No valid JSON in judge output"}'
-
-        
-    def _run(self, prompt: str) -> str:
-        return self.llm.invoke(prompt) if hasattr(self.llm, "invoke") else self.llm(prompt)
-
-    # ---------- Opik-required API -------------------------
     def generate_string(self, input: str, **_) -> str:
-        return self._clean(self._run(input))
+        score = self._evaluate(input)
 
-    def generate_provider_response(self, messages: List[Dict[str, Any]], **_) -> Any:
-        prompt  = "\n".join(m["content"] for m in messages if m["role"] == "user")
-        content = self.generate_string(prompt)
+        if self.metric == "answer_relevance":
+            payload = {"answer_relevance_score": score}
+        elif self.metric == "context_precision":
+            payload = {"context_precision_score": score}
+        elif self.metric == "context_recall":
+            payload = {"context_recall_score": score}
+        else:                       # "hallucination" or fallback
+            payload = {"score": score}
 
-        class _M: pass; _m=_M(); _m.content = content
-        class _C: pass; _c=_C(); _c.message = _m
-        class _R: pass; _r=_R(); _r.choices = [_c]
-        return _r
+        # always include a generic reason
+        if score == -1:
+            payload["reason"] = [
+            "Model did not output in a correct format."
+        ]
+        else:
+            payload["reason"] = [
+                "Small local model – explanation unavailable."
+            ]
+        return json.dumps(payload)
+        
+    def _raw_generate(self, prompt: str) -> str:
+        output = self.llm.invoke(prompt) if hasattr(self.llm, "invoke") else self.llm(prompt)
+        logger.debug(f"Raw model output:\n{output}")
+        return output.strip()
+
+    def _evaluate(self, prompt: str) -> float:
+        raw_output = self._raw_generate(prompt)
+        logger.debug(f"Raw Score:\n{extract_score(raw_output)}")
+        return extract_score(raw_output)
+
+    def generate_provider_response(
+            self,
+            messages: List[Dict[str, Any]],
+            **_: Any,
+        ) -> Dict[str, Any]:
+            """
+            Required only to satisfy OpikBaseModel’s abstractmethod.
+            Opik’s judge metrics never call this, so a stub is fine.
+            """
+            raise NotImplementedError(
+                "generate_provider_response is not used in this context. "
+                "Call generate_string() instead."
+            )
