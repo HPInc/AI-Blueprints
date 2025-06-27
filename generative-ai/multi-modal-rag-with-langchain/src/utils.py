@@ -11,7 +11,8 @@ import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
-
+from langchain.chat_models import ChatOpenAI
+import opik
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
@@ -114,6 +115,7 @@ def configure_proxy(config: Dict[str, Any]) -> None:
         os.environ["HTTPS_PROXY"] = config["proxy"]
 
 
+@opik.track
 def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
@@ -212,6 +214,18 @@ def initialize_llm(
                 "Please make sure tensorrt-llm is installed properly, or "
                 "consider using workspaces based on the NeMo Framework"
             )
+            
+    elif model_source == "openai":
+        model = ChatOpenAI(
+            model_name="gpt-4o-mini",
+            temperature=0.0,
+            streaming=False,
+            openai_api_key=secrets["OPENAI_API_KEY"]
+        )
+
+        model._context_window = 131072  # gpt-4o-mini’s window
+
+    
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         # For LlamaCpp, get the context window from the filename
@@ -247,13 +261,14 @@ def initialize_llm(
 
     return model
 
-def setup_opik_environment(secrets: Dict[str, Any]) -> None:
+def setup_opik_environment(config: Dict[str, Any], secrets: Dict[str, Any]) -> None:
     if "OPIK_API_KEY" not in secrets:
         raise ValueError("Opik API key not found in secrets")
     if "OPENAI_API_KEY" not in secrets:
         raise ValueError("OPENAI API key not found in secrets")
     os.environ['OPIK_API_KEY'] = secrets["OPIK_API_KEY"]
     os.environ['OPENAI_API_KEY'] = secrets["OPENAI_API_KEY"]
+    os.environ['OPIK_PROJECT_NAME'] = config["OPIK_PROJECT_NAME"]
 
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
