@@ -15,7 +15,7 @@ from .trt_llm_langchain import TensorRTLangchain
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -54,6 +54,7 @@ MODEL_CONTEXT_WINDOWS = {
     'microsoft/phi-2': 2048,
     'tiiuae/falcon-7b': 4096,
     "meta-llama/Llama-3.2-3B-Instruct": 128000,
+    "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
