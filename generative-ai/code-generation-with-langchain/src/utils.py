@@ -170,6 +170,7 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
+            task="text-generation",
         )
 
     elif model_source == "hugging-face-local":

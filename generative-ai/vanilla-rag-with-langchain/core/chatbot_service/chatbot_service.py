@@ -213,6 +213,7 @@ class ChatbotService(BaseGenerativeService):
         self.llm = HuggingFaceEndpoint(
             huggingfacehub_api_token=self.model_config["hf_key"],
             repo_id=repo_id,
+            task="text-generation",
         )
         
         # Set known context window for Mistral-7B-Instruct-v0.2 (8192 tokens) 
