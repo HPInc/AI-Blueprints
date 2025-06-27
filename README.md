@@ -8,6 +8,7 @@
 - [Deep Learning](#deep-learning)
 - [Generative AI](#generative-ai)
 - [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-integration)
+- [Troubleshooting](#troubleshooting) 
 - [Contact and Support](#contact-and-support)
 
 ---
@@ -211,6 +212,35 @@ You can explore cell tower distributions by radio type, operator, country, and t
 This project implements an **AI-powered recommendation agent** that delivers personalized travel suggestions based on user queries.
 
 It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand user intent and generate highly relevant, tailored vacation recommendations.
+
+Here is a professionally rewritten version of the troubleshooting section for your AI Blueprints repo README:
+
+---
+
+# Troubleshooting
+
+This section provides solutions for common issues users may encounter when working with AI Blueprint projects in HP AI Studio:
+
+1. **Check Hardware Compatibility**
+   Each project’s README includes recommended minimum hardware specifications (e.g., RAM, VRAM). Make sure your system meets these requirements—especially when working with large models or during deployment, as insufficient resources can cause failures.
+
+2. **Models or Datasets Not Visible After Download**
+   If you download models or datasets while your workspace is running, they might not appear in the workspace. In such cases, restart your workspace to ensure they are properly recognized.
+
+3. **Connection or SSL Errors in Notebooks**
+   If you encounter SSL certificate or connection errors while accessing websites from notebooks (especially on restricted networks), verify your network settings. Consider using a proxy to bypass restrictive network constraints.
+
+4. **File or Path Not Found Errors**
+   Ensure that all required files and directories are correctly placed as specified in the project’s README. If any paths or files are missing, create or move them to the correct locations.
+
+5. **GPU Not Available**
+   For projects requiring NVIDIA GPUs, verify GPU availability by running `nvidia-smi` in the terminal. Ensure that a compatible GPU is accessible and has sufficient free memory to run the project.
+
+6. **Deployment Errors Despite Meeting Requirements**
+   Even if your hardware meets the specs, limited available RAM or VRAM can cause deployment issues. Close other running workspaces or programs to free up memory.
+
+7. **API Timeout Issues**
+   API requests triggered through user interfaces have a response timeout limit (usually 30 seconds). For long-running tasks or large inputs, use the provided notebooks instead of the UI to avoid timeout errors.
 
 ---
 
