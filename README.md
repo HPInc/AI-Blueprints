@@ -213,8 +213,6 @@ This project implements an **AI-powered recommendation agent** that delivers per
 
 It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand user intent and generate highly relevant, tailored vacation recommendations.
 
-Here is a professionally rewritten version of the troubleshooting section for your AI Blueprints repo README:
-
 ---
 
 # Troubleshooting
