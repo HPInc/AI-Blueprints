@@ -44,57 +44,65 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ## Setup
 
 ### Step 0: Minimum Hardware Requirements
+
 To ensure smooth execution, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 32 GB 
-- VRAM: 6 GB 
-- GPU: NVIDIA GPU 
+- RAM: 32 GB
+- VRAM: 6 GB
+- GPU: NVIDIA GPU
 
 ### Quickstart
 
 ### Step 1: Create an AIstudio Project
+
 1. Create a **New Project** in AI Studio
 2. Select the template Text Generation with Langchain
 3. Add a title description and relevant tags.
 
 ### Step 2: Verify Project Files
+
 1. Launch a workspace.
 2. Navigate to `02-code-generation-with-langchain/notebooks/code-generation-with-langchain.ipynb` to ensure all files were cloned correctly.
-
 
 ## Alternative Manual Setup
 
 ### Step 1: Create an AIStudio Project
-1. Create a **New Project** in AI Studio.   
+
+1. Create a **New Project** in AI Studio.
 2. (Optional) Add a description and relevant tags.
 
 ### Step 2: Create a Workspace
+
 1. Choose **Local GenAI** as the base image when creating the workspace.
 
 ### Step 3: Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
 
 2. Ensure all files are available after workspace creation..
 
-### Step 4: Log Model
+### Step 4: Log the Llama‑3 Model
 
-1. Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Dataset Name**: `llama2-7b`
-  - **Dataset Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
-  - **Bucket Region**: `us-west-2`
+1. Download the Meta Llama 3.1 model with 8B parameters via Models tab:
+
+- **Model Name**: `meta-llama3.1-8b-Q8`
+- **Model Source**: `AWS S3`
+- **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+- **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your workspace.
 
 2. The model will be available under the /datafabric directory in your workspace.
 
-### Step 5:  Configure Secrets and Paths
+### Step 5: Configure Secrets and Paths
+
 1. Add your API keys to the `secrets.yaml` file under the `configs` folder:
-  - `HUGGINGFACE_API_KEY`
-  - `GALILEO_API_KEY`
+
+- `HUGGINGFACE_API_KEY`
+- `GALILEO_API_KEY`
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -132,7 +140,6 @@ This will:
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
-
 
 ---
 

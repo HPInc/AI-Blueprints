@@ -2,23 +2,23 @@
 
 # 📚 Contents
 
-* [🧠 Overview](#overview)
-* [🗂 Project Structure](#project-structure)
-* [⚙️ Setup](#setup)
-* [🚀 Usage](#usage)
-* [📞 Contact and Support](#contact-and-support)
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
 ## Overview
 
-**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑2** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
+**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑3** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 The pipeline:
 
-* Generates scores locally via `llama.cpp` (no data leaves your machine)
-* Registers the evaluator as a **pyfunc** model in MLflow
-* Exposes a REST `/invocations` endpoint
-* Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
+- Generates scores locally via `llama.cpp` (no data leaves your machine)
+- Registers the evaluator as a **pyfunc** model in MLflow
+- Exposes a REST `/invocations` endpoint
+- Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
 
 ---
 
@@ -26,7 +26,7 @@ The pipeline:
 
 ```
 ├── data                                                                # Data assets for the project
-│   └── 2025 ISEF Project Abstracts.csv     
+│   └── 2025 ISEF Project Abstracts.csv
 ├── demo
 │   ├── index.html                 # Lightweight HTML/JS UI
 │   └── streamlit-webapp/          # Streamlit UI
@@ -49,9 +49,9 @@ The pipeline:
 
 ### 0 ▪ Minimum hardware
 
-- RAM: 32 GB 
-- VRAM: 6 GB 
-- GPU: NVIDIA GPU 
+- RAM: 32 GB
+- VRAM: 6 GB
+- GPU: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio project
 
@@ -65,12 +65,12 @@ git clone https://github.com/HPInc/AI-Blueprints.git
 
 ### 3 ▪ Add the Llama‑3 model
 
-- Download the 7-B‑Instruct GGUF via Models tab:
+- Download the Meta Llama 3.1 model with 8B parameters via Models tab:
 
-  * **Model Name**: `llama2-7b`
-  * **Model Source**: `AWS S3`
-  * **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
-  * **Bucket Region**: `us-west-2`
+  - **Model Name**: `meta-llama3.1-8b-Q8`
+  - **Model Source**: `AWS S3`
+  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+  - **Bucket Region**: `us-west-2`
 
 - Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
@@ -107,7 +107,6 @@ This will:
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
-
 Paste a payload like:
 
 ```jsonc
@@ -115,22 +114,22 @@ Paste a payload like:
   "dataframe_split": {
     "columns": ["BoothNumber", "AbstractText"],
     "data": [
-      ["TEST001","Microplastics impact on marine life"],
-      ["TEST002","Low‑cost solar charger for off‑grid use"]
+      ["TEST001", "Microplastics impact on marine life"],
+      ["TEST002", "Low‑cost solar charger for off‑grid use"]
     ]
   },
   "params": {
-    "key_column":"BoothNumber",
-    "eval_column":"AbstractText",
-    "criteria":"[\"Originality\",\"ScientificRigor\",\"Clarity\",\"Relevance\",\"Feasibility\",\"Brevity\"]",
-    "batch_size":2
+    "key_column": "BoothNumber",
+    "eval_column": "AbstractText",
+    "criteria": "[\"Originality\",\"ScientificRigor\",\"Clarity\",\"Relevance\",\"Feasibility\",\"Brevity\"]",
+    "batch_size": 2
   }
 }
 ```
 
 ### 4 ▪ Use the HTML UI
 
- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
+From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
 
 ### 5 ▪ Launch the Streamlit UI
 
@@ -138,24 +137,21 @@ Paste a payload like:
 
 2. Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
 
-
 ### Successful UI demo
 
 - HTML
-![Automated Evaluation HTML UI](docs/html_ui_for_automated_evaluation.png)  
+  ![Automated Evaluation HTML UI](docs/html_ui_for_automated_evaluation.png)
 
 - Streamlit
-![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_automated_evaluation.png)  
-
-
+  ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_automated_evaluation.png)
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
