@@ -132,12 +132,14 @@ This will:
 
 ## Contact and Support
 
-- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
