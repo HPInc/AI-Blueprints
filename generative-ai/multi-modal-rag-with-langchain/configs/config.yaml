@@ -1,5 +1,5 @@
-# model_source can be one of the following: local, hugging-face-cloud, hugging-face-local, or openai
-model_source: "openai"
+# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
+model_source: "local"
 OPIK_PROJECT_NAME: "RAG_DS_DEMO"
 # proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access Galileo from a restricted network,
