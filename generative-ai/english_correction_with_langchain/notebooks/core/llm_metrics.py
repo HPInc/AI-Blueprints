@@ -4,10 +4,40 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
 from mlflow.metrics import make_metric
+import os
 
 # Initialize tools (do this once at startup)
 tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
 
+# Constants
+LOCAL_LLAMA_JUDGE_PATH = "/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+
+from llama_cpp import Llama
+
+class LocalJudgeLlamaClient:
+    """Singleton wrapper for local judge-specific LLaMA."""
+    _client = None
+
+    @classmethod
+    def get_client(cls, model_path=None):
+        if cls._client is None:
+            if model_path is None:
+                raise ValueError("Must provide model_path to initialize local LLaMA judge.")
+
+            cls._client = Llama(
+                model_path=model_path,
+                n_ctx=512,           # smaller context window for short prompts
+                n_gpu_layers=-1,
+                n_batch=8,
+                f16_kv=True,
+                temperature=0.0,     # deterministic outputs for judging
+                max_tokens=32,
+                stop=["\n"]
+            )
+        return cls._client
+
+# Preload model
+LocalJudgeLlamaClient.get_client(model_path=LOCAL_LLAMA_JUDGE_PATH)
 
 class OpenAIClient:
     """Singleton-like class to manage OpenAI client initialization"""
@@ -177,54 +207,91 @@ def readability_improvement_eval_fn(predictions, targets):
     
     return np.mean(improvements)
 
-
-def llm_judge_eval_fn(predictions, targets):
+def llm_judge_eval_fn(predictions):
     """
-    Use GPT to judge the quality of grammar corrections.
-    Returns a score from 0-10 where 10 is perfect correction.
+    Use GPT to judge the grammar quality of standalone sentences.
+    Returns a score from 0-10 where 10 is perfect grammar.
     """
+    import re
     client = OpenAIClient.get_client()
     scores = []
-    
-    for pred, target in zip(predictions, targets):
-        prompt = f"""Rate the quality of this grammar correction on a scale of 0-10, where:
-- 10: Perfect correction that fixes all errors while preserving meaning and style
-- 7-9: Good correction with minor issues
-- 4-6: Adequate correction but with some problems
-- 1-3: Poor correction with major issues
-- 0: Made the text worse or changed meaning incorrectly
 
-Original text: "{target}"
-Corrected text: "{pred}"
+    for pred in predictions:
+        prompt = f"""Evaluate the grammar quality of the following sentence on a scale from 0 to 10.
 
-Consider:
-1. Were grammar errors actually fixed?
-2. Was meaning preserved?
-3. Does it sound natural?
-4. Were unnecessary changes avoided?
+IMPORTANT: Ignore any placeholder tokens (__PLACEHOLDER_X__) and ignore html and markdown tags.
 
-Reply with just the number (0-10):"""
-        
+Sentence: "{pred}"
+
+Reply with a number (0–10) and a brief explanation:"""
+
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini",  # Cheaper and faster than gpt-4
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=5,
+                max_tokens=20,
                 temperature=0
             )
-            
-            # Extract score from response
+
             score_text = response.choices[0].message.content.strip()
-            score = float(score_text)
+
+            # Save response
+            try:
+                import os
+                os.makedirs("llm_eval_logs", exist_ok=True)
+                with open("llm_eval_logs/gpt_responses.txt", 'a', encoding='utf-8') as f:
+                    f.write(f"Response: {score_text}\n")
+            except:
+                pass
+
+            match = re.search(r'\b(?:10(?:\.0)?|[0-9](?:\.\d+)?)\b', score_text)
+            score = float(match.group(0)) if match else 5.0
             scores.append(score)
-            
+
         except Exception as e:
             print(f"Error with OpenAI API: {e}")
-            scores.append(5.0)  # Default score on error
+            scores.append(5.0)
+
+    return sum(scores) / len(scores) if scores else 0.0
+
+def llm_judge_eval_fn_local(predictions):
+    """
+    Use a local LLaMA model to rate standalone grammar quality of sentences.
+    Returns a score from 0–10.
+    """
+    import re
+    llama = LocalJudgeLlamaClient.get_client()
+    scores = []
+
+    for pred in predictions:
+        prompt = f"""Rate the grammar quality of this sentence from 0 to 10:
+
+IMPORTANT: Ignore any placeholder tokens (__PLACEHOLDER_X__) and ignore html and markdown tags.
+
+"{pred}"
+
+Only consider grammaticality, not meaning or correction quality. Reply with a number between 0 and 10 and a short explanation."""
+
+        try:
+            result = llama(prompt, stop=["\n"])
+            text = result["choices"][0]["text"].strip()
+
+            try:
+                import os
+                os.makedirs("llm_eval_logs", exist_ok=True)
+                with open("llm_eval_logs/local_llama_responses.txt", 'a', encoding='utf-8') as f:
+                    f.write(f"Response: {text}\n")
+            except:
+                pass
+
+            score = float(re.findall(r"\d+", text)[0])
+            scores.append(score)
+        except Exception as e:
+            print(f"[LLaMA judge error]: {e}")
+            scores.append(5.0)
+
+    return sum(scores) / len(scores)
     
-    return sum(scores) / len(scores)  # Return average score
-
-
 def generate_gpt_gold_standards(original_texts, api_key=None):
     """Generate gold standard corrections using GPT"""
     client = OpenAIClient.get_client(api_key)
@@ -295,9 +362,14 @@ readability_improvement_metric = make_metric(
     name="readability_improvement"
 )
 
-# Create the metric instance
 llm_judge_metric = make_metric(
     eval_fn=llm_judge_eval_fn,
     greater_is_better=True,
     name="llm_judge_score"
+)
+
+llm_judge_metric_local = make_metric(
+    eval_fn=llm_judge_eval_fn_local,
+    greater_is_better=True,
+    name="llm_judge_local_score"
 )
