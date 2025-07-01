@@ -25,20 +25,20 @@ The pipeline:
 ## Project Structure
 
 ```
-├── data                                                                # Data assets for the project
-│   └── 2025 ISEF Project Abstracts.csv
+├── data                                                                
+│   ├── inputs
+│   │   ├── 2025 ISEF Project Abstracts.csv # Data assets for the project
 ├── demo
 │   ├── index.html                 # Lightweight HTML/JS UI
 │   └── streamlit-webapp/          # Streamlit UI
 ├── docs/
-│   └── html_ui_for_automated_evaluation.png          # UI screenshot
-│   └── streamlit_ui_for_automated_evaluation.png          # UI screenshot
-│   └── successful html ui result for automated evaluation.pdf          # UI pdf
-│   └── successful streamlit ui result for automated evaluation.pdf          # UI pdf
+│   ├── html_ui_for_automated_evaluation.png          # UI screenshot
+│   ├── streamlit_ui_for_automated_evaluation.png          # UI screenshot
+│   ├── sample-html-ui.pdf          # UI pdf
+│   └── sample-streamlit-ui.pdf          # UI pdf
 ├── notebooks
-│   └── automated_evaluation_with_structured_outputs.ipynb   # One‑click notebook to to setup the pipeline and create the api
-│   └── isef_evaluation_with_llama.ipynb   # One‑click notebook to evaluate isef projects with local Llama model
-│   └── isef_evaluation_with_openai.ipynb   # One‑click notebook to evaluate isef projects with openAI model
+│   ├── register-model.ipynb   # One‑click notebook for registering trained models to MLflow, generating API logic, and testing the registration.
+│   └── run-workflow.ipynb   # One‑click notebook for executing the pipeline using custom inputs and configurations.
 ├── README.md
 └── requirements.txt
 ```
@@ -49,13 +49,13 @@ The pipeline:
 
 ### 0 ▪ Minimum hardware
 
-- RAM: 32 GB
-- VRAM: 6 GB
+- RAM: 64 GB
+- VRAM: 12 GB
 - GPU: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio project
 
-Log into [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview) and start a **Local GenAI** workspace.
+Log into [HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview) and start a **Local GenAI** workspace.
 
 ### 2 ▪ Clone the repo
 
@@ -74,28 +74,25 @@ git clone https://github.com/HPInc/AI-Blueprints.git
 
 - Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
-### 4 ▪ Configure secrets (optional)
-
-Edit `configs/secrets.yaml` if you plan to call external APIs; not required for pure local inference.
-
-### 5 ▪ Input File
-
-You need to setup your input files in the 5th cell to work with your input csv files and configuration.
-
 ---
 
 ## Usage
 
 ### 1 ▪ Run the notebook
 
-Open **`notebooks/automated_evaluation_with_structured_outputs.ipynb`**, run all cells.
+Open **`notebooks/run-workflow.ipynb`**, run all cells.
 This will:
 
 1. Load the GGUF model
 2. Setup the pipeline
-3. Log **`LlamaEvaluatorModel`** to MLflow
 
-### 2 ▪ Deploy the LlamaEvaluator Service
+### 2 ▪ Deploy the Service
+
+Open **`notebooks/register-model.ipynb`**, run all cells.
+This will:
+
+1. Log the model to MLflow
+2. Run the inference with logged model
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -112,15 +109,15 @@ Paste a payload like:
 ```jsonc
 {
   "dataframe_split": {
-    "columns": ["BoothNumber", "AbstractText"],
+    "columns": ["title", "abstract"],
     "data": [
       ["TEST001", "Microplastics impact on marine life"],
       ["TEST002", "Low‑cost solar charger for off‑grid use"]
     ]
   },
   "params": {
-    "key_column": "BoothNumber",
-    "eval_column": "AbstractText",
+    "key_column": "title",
+    "eval_column": "abstract",
     "criteria": "[\"Originality\",\"ScientificRigor\",\"Clarity\",\"Relevance\",\"Feasibility\",\"Brevity\"]",
     "batch_size": 2
   }
@@ -129,7 +126,7 @@ Paste a payload like:
 
 ### 4 ▪ Use the HTML UI
 
-From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
+From the Swagger page, click the demo link to interact with the locally deployed model via UI.
 
 ### 5 ▪ Launch the Streamlit UI
 
@@ -137,24 +134,26 @@ From the Swagger page, click the demo link to interact with the locally deployed
 
 2. Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
 
-### Successful UI demo
+### Successful UI Screenshots
 
 - HTML
-  ![Automated Evaluation HTML UI](docs/html_ui_for_automated_evaluation.png)
+  ![Automated Evaluation HTML UI](docs/sample-html-ss.png)
 
 - Streamlit
-  ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_automated_evaluation.png)
+  ![Automated Evaluation Streamlit UI](docs/sample-streamlit-ss.png)
 
 ---
 
 # Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
