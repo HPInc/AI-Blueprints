@@ -76,6 +76,12 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 8. Enter a search query (e.g., *"Suggest a budget-friendly resort vacation."*).  
 9. Click **Get Recommendations** to view the results.  
 
+
+### Step 3: Launh the Streamlit UI
+1. To launch the Streamlit UI, follow the instructions in the README file located in the demo/streamlit-webapp folder.
+2. Navigate to the shown URL and view the vacation recommendation
+
+
 ### Successful Demonstration of the User Interface  
 
 ![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
