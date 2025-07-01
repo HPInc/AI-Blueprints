@@ -34,13 +34,14 @@ You are a helpful assistant that provides accurate and concise responses.<|eot_i
 """
     
     elif model_source == "hugging-face-local":
-        # For local HuggingFace models (Llama 3.2 3B) - uses simpler chat format
-        return f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+        # For local HuggingFace models (Llama 3.2 3B) - uses simple role-based format
+        return f"""system
+You are a helpful assistant that provides accurate and concise responses for text summarization.
 
-You are a helpful assistant that provides accurate and concise responses.<|eot_id|><|start_header_id|>user<|end_header_id|>
+user
+{base_prompt}
 
-{base_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
+assistant
 """
     
     elif model_source == "hugging-face-cloud":
