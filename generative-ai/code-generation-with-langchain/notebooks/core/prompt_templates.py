@@ -35,14 +35,13 @@ You are a helpful assistant that provides accurate and concise responses for cod
 """
     
     elif model_source == "hugging-face-local":
-        # For local HuggingFace models (Llama 3.2 3B) - uses simple role-based format
-        return f"""system
-You are a helpful assistant that provides accurate and concise responses for code repository analysis.
+        # For local HuggingFace models (Llama 3.2 3B) - uses Llama 3.2 chat template with special tokens
+        return f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
-user
-{base_prompt}
+You are a helpful assistant that provides accurate and concise responses for code repository analysis.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
-assistant
+{base_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
 """
     
     elif model_source == "hugging-face-cloud":
