@@ -55,28 +55,25 @@ th{background:#eef}
       </div>
       <div class="col">
         <label>…or paste CSV/TSV text</label>
-        <textarea id="csvText" rows="6" placeholder="BoothNumber,AbstractText&#10;T1,&quot;some text&quot;"></textarea>
+        <textarea id="csvText" rows="6" placeholder="title,abstract&#10;T1,&quot;some text&quot;"></textarea>
       </div>
     </div>
   </fieldset>
 
   <fieldset>
-    <legend>Runtime parameters</legend>
+    <legend>Parameters</legend>
     <div class="row">
       <div class="col">
         <label>Key column name</label>
-        <input type="text" id="keyColumn" value="BoothNumber" required>
+        <input type="text" id="keyColumn" value="title" required>
       </div>
       <div class="col">
         <label>Text column name</label>
-        <input type="text" id="evalColumn" value="AbstractText" required>
+        <input type="text" id="evalColumn" value="abstract" required>
       </div>
     </div>
     <label>Criteria (JSON array)</label>
     <textarea id="criteria" rows="4">["Originality","ScientificRigor","Clarity","Relevance","Feasibility","Brevity"]</textarea>
-
-    <label>Batch size</label>
-    <input type="number" id="batchSize" value="5" min="1" max="100">
   </fieldset>
 
   <button id="submitBtn" type="submit">Evaluate</button>
@@ -93,7 +90,7 @@ const csvTextInp = document.getElementById('csvText');
 const alertBox   = document.getElementById('alert');
 const resultsDiv = document.getElementById('results');
 const dlBtn      = document.getElementById('downloadBtn');
-//const apiUrl     =  "https://localhost:58884/invocations";
+//const apiUrl     =  "https://localhost:57931/invocations";
 const apiUrl     = window.location.origin + "/invocations";
 
 let lastCSVBlob  = null;   // for download
@@ -138,7 +135,6 @@ form.addEventListener('submit', async e=>{
   const keyColumn  = document.getElementById('keyColumn').value.trim();
   const evalColumn = document.getElementById('evalColumn').value.trim();
   const critText   = document.getElementById('criteria').value.trim();
-  const batchSize  = parseInt(document.getElementById('batchSize').value,10)||1;
 
   let criteriaArr;
   try{criteriaArr = JSON.parse(critText);
@@ -161,7 +157,6 @@ form.addEventListener('submit', async e=>{
       key_column:  keyColumn,
       eval_column: evalColumn,
       criteria:    JSON.stringify(criteriaArr),
-      batch_size:  batchSize
     }
   };
 
@@ -211,8 +206,8 @@ dlBtn.addEventListener('click',()=>{
 <hr>
 <blockquote style="margin:2rem 0;font-size:0.95rem">
   Built with ❤️ using
-  <a href="https://zdocs.datascience.hp.com/docs/aistudio/overview" target="_blank"
-     style="font-weight:600;text-decoration:none;">Z&nbsp;by&nbsp;HP&nbsp;AI&nbsp;Studio</a>.
+  <a href="https://hp.com/ai-studio" target="_blank"
+     style="font-weight:600;text-decoration:none;">HP&nbsp;AI&nbsp;Studio</a>.
 </blockquote>
 
 </body>

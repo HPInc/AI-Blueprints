@@ -25,8 +25,8 @@ api_url = st.sidebar.text_input(
 st.sidebar.markdown("---")
 st.sidebar.header("📄 Runtime parameters")
 
-key_column   = st.sidebar.text_input("Key column", value="BoothNumber")
-eval_column  = st.sidebar.text_input("Text column", value="AbstractText")
+key_column   = st.sidebar.text_input("Key column", value="title")
+eval_column  = st.sidebar.text_input("Text column", value="abstract")
 
 criteria_default = [
     "Originality", "ScientificRigor", "Clarity",
@@ -36,9 +36,6 @@ criteria_str = st.sidebar.text_area(
     "Criteria (JSON list)",
     value=json.dumps(criteria_default, indent=2),
     height=120,
-)
-batch_size = st.sidebar.number_input(
-    "Batch size", min_value=1, max_value=100, value=5, step=1
 )
 
 # Validate criteria JSON
@@ -94,7 +91,6 @@ if st.button("🚀 Evaluate", disabled=df is None or not crit_valid):
                     "key_column":  key_column,
                     "eval_column": eval_column,
                     "criteria":    json.dumps(criteria_list),
-                    "batch_size":  batch_size
                 }
             }
             try:
@@ -152,7 +148,7 @@ st.markdown(
 *⚙️📊🦙 Automated Evaluation with Structured Outputs © 2025* – local, private, reproducible text evaluation with LLaMA + MLflow.
 
 ---
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
 """,
 unsafe_allow_html=True,
 )
