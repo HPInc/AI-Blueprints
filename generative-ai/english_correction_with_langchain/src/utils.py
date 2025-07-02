@@ -192,7 +192,7 @@ def initialize_llm(
         model = LlamaCpp(
             model_path=local_model_path,
             n_gpu_layers=-1,
-            n_batch=512,
+            n_batch=128,
             n_ctx=context_window,
             max_tokens=1024,
             f16_kv=True,
@@ -200,7 +200,7 @@ def initialize_llm(
             verbose=False,
             stop=["Text to correct:", "Corrected text:", "IMPORTANT:", "\n\n\n"], #
             streaming=False,
-            temperature=0.1, #
+            temperature=0.0, #
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")

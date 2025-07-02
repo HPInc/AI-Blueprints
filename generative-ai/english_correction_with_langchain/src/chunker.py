@@ -3,15 +3,6 @@ from typing import List
 
 
 def estimate_token_count(text: str) -> int:
-    """
-    Estimate token count based on average 4 characters per token (OpenAI's rule of thumb).
-    
-     Args:
-        text (str): The text string to estimate token count for.
-
-    Returns:
-        int: Approximate number of tokens in the input text.
-    """
     return len(text) // 4
 
 
@@ -19,62 +10,59 @@ def split_by_top_level_headers(markdown: str) -> List[str]:
     """
     Splits a markdown file by top-level headers (# ) while preserving content.
 
-    Args:
-        markdown (str): The full markdown text to be split.
-
     Returns:
         List[str]: List of markdown sections starting with a top-level header.
     """
-    # Include leading header line in each section
-    sections = re.split(r'(?=^#\s)', markdown, flags=re.MULTILINE)
-    return [section.strip() for section in sections if section.strip()]
+    matches = list(re.finditer(r'^#\s.*', markdown, flags=re.MULTILINE))
+    sections = []
+    for i, match in enumerate(matches):
+        start = match.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(markdown)
+        sections.append(markdown[start:end])  # No stripping
+    return sections
 
 
 def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
     """
-    Chunk large markdown sections without changing structure.
+    Chunk a section of markdown text exactly (preserving all whitespace, formatting, etc.)
 
     Args:
-        section (str): A section of markdown text to be chunked.
-        max_tokens (int, optional): Maximum number of tokens per chunk. Defaults to 1000.
+        section (str): A markdown section that exceeds max_tokens.
+        max_tokens (int): Token limit per chunk.
 
     Returns:
-        List[str]: List of markdown chunks that do not exceed the max token limit.
+        List[str]: List of exact markdown chunks under token limit.
     """
-    lines = section.splitlines()
     chunks = []
-    current_chunk = []
-    current_token_count = 0
+    start = 0
+    length = len(section)
 
-    for line in lines:
-        line_token_estimate = estimate_token_count(line)
-        if current_token_count + line_token_estimate > max_tokens:
-            # Save current chunk
-            chunks.append("\n".join(current_chunk).strip())
-            current_chunk = []
-            current_token_count = 0
+    while start < length:
+        est_chunk_size = max_tokens * 4
+        end = min(start + est_chunk_size, length)
 
-        current_chunk.append(line)
-        current_token_count += line_token_estimate
+        # Prefer to end on a newline
+        newline_pos = section.rfind('\n', start + 1, end)
+        if newline_pos > start:
+            end = newline_pos + 1  # Include the newline
 
-    if current_chunk:
-        chunks.append("\n".join(current_chunk).strip())
+        chunks.append(section[start:end])
+        start = end
 
     return chunks
 
 
 def chunk_markdown(markdown: str, max_tokens: int = 1000) -> List[str]:
     """
-    Chunk markdown into manageable parts for LLM input, preserving formatting.
-    
-    Split by top-level headers (`# `) and sub-chunk if any section is too large
+    Chunk markdown into pieces under the max token threshold,
+    while ensuring exact reconstruction is possible.
 
     Args:
         markdown (str): Raw markdown content to chunk.
-        max_tokens (int, optional): Token limit per chunk. Defaults to 1000.
+        max_tokens (int, optional): Token limit per chunk.
 
     Returns:
-        List[str]: List of markdown chunks each under the max token threshold.
+        List[str]: List of markdown chunks.
     """
     sections = split_by_top_level_headers(markdown)
     final_chunks = []

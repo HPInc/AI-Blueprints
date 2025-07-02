@@ -10,7 +10,7 @@ import os
 tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
 
 # Constants
-LOCAL_LLAMA_JUDGE_PATH = "/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+LOCAL_LLAMA_JUDGE_PATH = "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf" #"/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
 
 from llama_cpp import Llama
 
@@ -217,13 +217,10 @@ def llm_judge_eval_fn(predictions):
     scores = []
 
     for pred in predictions:
-        prompt = f"""Evaluate the grammar quality of the following sentence on a scale from 0 to 10.
-
-IMPORTANT: Ignore any placeholder tokens (__PLACEHOLDER_X__) and ignore html and markdown tags.
-
-Sentence: "{pred}"
-
-Reply with a number (0–10) and a brief explanation:"""
+        prompt = f"""You are an expert evaluator. Rate the text below based solely on its grammatical correctness.
+        Provide a single integer from 1 to 10 (inclusive).
+        Output only the number - no words, labels, punctuation, or explanations.
+        text: {pred}"""
 
         try:
             response = client.chat.completions.create(
@@ -264,13 +261,19 @@ def llm_judge_eval_fn_local(predictions):
     scores = []
 
     for pred in predictions:
-        prompt = f"""Rate the grammar quality of this sentence from 0 to 10:
+        prompt = f"""Rate the following text solely on grammar. Respond with a single digit from 1 to 10. DO NOT include any explanation, label, or punctuation. Reply with just the number.
 
-IMPORTANT: Ignore any placeholder tokens (__PLACEHOLDER_X__) and ignore html and markdown tags.
+Text: I has a apple.
+Answer: 3
 
-"{pred}"
+Text: The dog chased the ball across the yard.
+Answer: 9
 
-Only consider grammaticality, not meaning or correction quality. Reply with a number between 0 and 10 and a short explanation."""
+Text: Him don't know where she is.
+Answer: 2
+
+Text: {pred}
+Answer:"""
 
         try:
             result = llama(prompt, stop=["\n"])
