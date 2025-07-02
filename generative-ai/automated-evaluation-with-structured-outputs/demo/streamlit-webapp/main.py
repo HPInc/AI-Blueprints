@@ -1,6 +1,7 @@
 # app.py
 import json
 import io
+import numpy as np
 import requests
 import pandas as pd
 import streamlit as st
@@ -28,20 +29,18 @@ st.sidebar.header("📄 Runtime parameters")
 key_column   = st.sidebar.text_input("Key column", value="title")
 eval_column  = st.sidebar.text_input("Text column", value="abstract")
 
-criteria_default = [
-    "Originality", "ScientificRigor", "Clarity",
-    "Relevance", "Feasibility", "Brevity"
-]
+criteria_default = {"Originality": 3, "ScientificRigor": 4, "Clarity": 2, "Relevance": 1, "Feasibility": 3, "Brevity": 2}
+
 criteria_str = st.sidebar.text_area(
-    "Criteria (JSON list)",
+    "Criteria (JSON object)",
     value=json.dumps(criteria_default, indent=2),
     height=120,
 )
 
 # Validate criteria JSON
 try:
-    criteria_list = json.loads(criteria_str)
-    assert isinstance(criteria_list, list) and all(isinstance(c, str) for c in criteria_list)
+    criteria_obj = json.loads(criteria_str)
+    assert all(isinstance(key, str) and (isinstance(value, float) or isinstance(value, int)) for key, value in criteria_obj.items())
     crit_valid = True
 except Exception as e:
     crit_valid = False
@@ -72,6 +71,8 @@ elif raw_text.strip():
         st.error(f"Could not parse pasted data: {e}")
 
 if df is not None:
+    df = df.replace([np.inf, -np.inf], np.nan) # Replace infinities with NaN first
+    df = df.fillna(value='n/a') # Replace NaNs with None
     st.subheader("Preview of input data")
     st.dataframe(df.head(), use_container_width=True)
 
@@ -90,7 +91,7 @@ if st.button("🚀 Evaluate", disabled=df is None or not crit_valid):
                 "params": {
                     "key_column":  key_column,
                     "eval_column": eval_column,
-                    "criteria":    json.dumps(criteria_list),
+                    "criteria":    json.dumps(criteria_obj),
                 }
             }
             try:

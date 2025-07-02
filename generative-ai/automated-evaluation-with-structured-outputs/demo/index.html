@@ -72,8 +72,8 @@ th{background:#eef}
         <input type="text" id="evalColumn" value="abstract" required>
       </div>
     </div>
-    <label>Criteria (JSON array)</label>
-    <textarea id="criteria" rows="4">["Originality","ScientificRigor","Clarity","Relevance","Feasibility","Brevity"]</textarea>
+    <label>Criteria (JSON object)</label>
+    <textarea id="criteria" rows="4"> {"Originality": 3, "ScientificRigor": 4, "Clarity": 2, "Relevance": 1, "Feasibility": 3, "Brevity": 2}</textarea>
   </fieldset>
 
   <button id="submitBtn" type="submit">Evaluate</button>
@@ -90,16 +90,73 @@ const csvTextInp = document.getElementById('csvText');
 const alertBox   = document.getElementById('alert');
 const resultsDiv = document.getElementById('results');
 const dlBtn      = document.getElementById('downloadBtn');
-//const apiUrl     =  "https://localhost:57931/invocations";
+//const apiUrl     =  "https://localhost:58355/invocations";
 const apiUrl     = window.location.origin + "/invocations";
 
 let lastCSVBlob  = null;   // for download
 
 // basic CSV parser (comma or tab)
-function parseCSV(text){
-  const rows = text.trim().split(/\r?\n/).map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)|\t/).map(s=>s.replace(/^"(.*)"$/,'$1')));
-  if(rows.length<2) throw "Need header + at least one row";
-  return {columns: rows[0], data: rows.slice(1)};
+function parseCSV(text) {
+  const result = {
+    columns: [],
+    data: []
+  };
+
+  let rows = [];
+  let row = [];
+  let value = '';
+  let inQuotes = false;
+  let quoteChar = null;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (inQuotes) {
+      if (char === quoteChar && nextChar === quoteChar) {
+        value += quoteChar; // Escaped quote
+        i++;
+      } else if (char === quoteChar) {
+        inQuotes = false;
+      } else {
+        value += char;
+      }
+    } else {
+      if ((char === '"' || char === "'") && value === '') {
+        inQuotes = true;
+        quoteChar = char;
+      } else if (char === ',' || char === '\t') {
+        row.push(value.trim());
+        value = '';
+      } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+        if (char === '\r') i++; // skip \n after \r
+        row.push(value.trim());
+        rows.push(row);
+        row = [];
+        value = '';
+      } else {
+        value += char;
+      }
+    }
+  }
+
+  if (value !== '' || inQuotes || row.length > 0) {
+    row.push(value.trim());
+    rows.push(row);
+  }
+
+  if (rows.length < 2) throw new Error("Need header + at least one row");
+
+  result.columns = rows[0];
+  result.data = rows.slice(1).map(r => {
+    const obj = {};
+    for (let i = 0; i < result.columns.length; i++) {
+      obj[result.columns[i]] = r[i] ?? '';
+    }
+    return obj;
+  });
+
+  return result;
 }
 
 function showAlert(msg){alertBox.textContent=msg}
@@ -136,10 +193,19 @@ form.addEventListener('submit', async e=>{
   const evalColumn = document.getElementById('evalColumn').value.trim();
   const critText   = document.getElementById('criteria').value.trim();
 
-  let criteriaArr;
-  try{criteriaArr = JSON.parse(critText);
-     if(!Array.isArray(criteriaArr) || !criteriaArr.every(x=>typeof x==='string')) throw 'criteria must be array of strings';
-  }catch(err){showAlert("Invalid criteria JSON: "+err);return;}
+  let criteriaObj;
+    try {
+      criteriaObj = JSON.parse(critText);
+      if (
+        typeof criteriaObj !== 'object' ||
+        Array.isArray(criteriaObj) ||
+        !Object.keys(criteriaObj).every(k => typeof k === 'string') ||
+        !Object.values(criteriaObj).every(v => typeof v === 'number')
+      ) throw 'criteria must be a JSON object mapping strings to numbers';
+    } catch (err) {
+      showAlert('Invalid criteria JSON: ' + err);
+      return;
+    }
 
   // dataframe_split
   let split;
@@ -156,7 +222,7 @@ form.addEventListener('submit', async e=>{
     params:{
       key_column:  keyColumn,
       eval_column: evalColumn,
-      criteria:    JSON.stringify(criteriaArr),
+      criteria:    JSON.stringify(criteriaObj),
     }
   };
 
