@@ -20,7 +20,6 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda, RunnableMap
 from langchain.schema.document import Document
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from galileo_protect import ProtectParser
 
 # Import base service class from the shared location
 import sys
@@ -230,14 +229,14 @@ class ChatbotService(BaseGenerativeService):
         if not self.docs_path or not os.path.exists(self.docs_path):
             raise FileNotFoundError(f"The documents directory was not found at: {self.docs_path}")
 
-        json_path = os.path.join(self.docs_path, "wiki_flat_structure.json")
-        if not os.path.exists(pdf_path):
+        json_path = os.path.join(self.docs_path, "wiki_flat_structure_mini.json")
+        if not os.path.exists(json_path):
             raise FileNotFoundError(f"The file 'wiki_flat_structure' was not found at: {json_path}")
 
         logger.info(f"Reading and processing the json wiki file: {json_path}")
 
         try:
-            # Load PDF documents
+            # Load json documents
             logger.info("Loading json data...")
             wiki_loader = JSONLoader(
                 file_path=json_path,

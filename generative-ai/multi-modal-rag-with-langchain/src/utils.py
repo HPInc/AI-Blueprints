@@ -1,5 +1,5 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio GenAI Templates.
 
 This module contains common functions used across notebooks in the project,
 including configuration loading, model initialization, and Galileo integration.
@@ -12,6 +12,14 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
 from langchain.chat_models import ChatOpenAI
+import mlflow
+from mlflow.metrics.genai import (
+    answer_similarity,
+    answer_correctness,
+    answer_relevance,
+    relevance,
+    faithfulness,
+)
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
@@ -55,6 +63,12 @@ MODEL_CONTEXT_WINDOWS = {
     'tiiuae/falcon-7b': 4096,
     "meta-llama/Llama-3.2-3B-Instruct": 128000,
 }
+
+META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
+{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+"""
+
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
     """
@@ -258,6 +272,39 @@ def initialize_llm(
         model.__dict__['_context_window'] = context_window
 
     return model
+
+def mlflow_evaluate_setup(
+    secrets: dict,
+    mlflow_tracking_uri: str = "/phoenix/mlflow"
+) -> None:
+    """
+    Prepare the environment for MLflow LLM-judge evaluation in MLflow 2.21.2.
+
+    1. Ensures the OpenAI API key is present (in secrets or environment) and exports it.
+    2. Optionally sets MLflow tracking URI.
+
+    Args:
+        secrets (dict): Dictionary loaded from your secrets.yaml.
+        openai_key_name (str): Name of the OpenAI key in secrets/env (default: "OPENAI_API_KEY").
+        mlflow_tracking_uri (str, optional): If provided, sets MLflow's tracking URI.
+
+    Raises:
+        RuntimeError: If API key is missing.
+    """
+    # Ensure OpenAI API key is available in secrets or environment
+    key = secrets.get("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError(
+            f"OpenAI API key '{openai_key_name}' not found in secrets or environment variables"
+        )
+    os.environ["OPENAI_API_KEY"] = key
+
+    # Set MLflow tracking URI
+    if mlflow_tracking_uri:
+        mlflow.set_tracking_uri(mlflow_tracking_uri)
+
+    # Informational log
+    print(f"✅ Environment ready for MLflow evaluation; OPENAI_KEY set.")
 
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
