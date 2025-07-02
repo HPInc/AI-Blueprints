@@ -259,6 +259,15 @@ def initialize_llm(
 
     return model
 
+def setup_opik_environment(config: Dict[str, Any], secrets: Dict[str, Any]) -> None:
+    if "OPIK_API_KEY" not in secrets:
+        raise ValueError("Opik API key not found in secrets")
+    if "OPENAI_API_KEY" not in secrets:
+        raise ValueError("OPENAI API key not found in secrets")
+    os.environ['OPIK_API_KEY'] = secrets["OPIK_API_KEY"]
+    os.environ['OPENAI_API_KEY'] = secrets["OPENAI_API_KEY"]
+    os.environ['OPIK_PROJECT_NAME'] = config["OPIK_PROJECT_NAME"]
+
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.

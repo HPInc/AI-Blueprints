@@ -10,3 +10,4 @@ hf-xet==1.1.4
 opencv-python-headless==4.11.0.86
 jq==1.9.1
 pymupdf==1.25.5
+opik==1.7.36
