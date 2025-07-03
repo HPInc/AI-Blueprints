@@ -49,9 +49,31 @@ def get_default_model_path():
 
 def get_model_cache_dir():
     """Get the directory for caching downloaded models"""
-    cache_dir = get_project_root() / "models" / "cache"
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_dir = get_project_root() / "models"
+    cache_dir.mkdir(exist_ok=True)
     return cache_dir
+
+def setup_dreambooth_model():
+    """
+    Setup and validate DreamBooth model path. 
+    Returns the model path if valid, raises an error otherwise.
+    """
+    # Use the correct model path from the project's output directory
+    dreambooth_model_path = str(get_output_dir() / "dreambooth")
+    print(f"Loading DreamBooth model from: {dreambooth_model_path}")
+
+    # Check if the model exists
+    if not os.path.exists(dreambooth_model_path):
+        print(f"DreamBooth model not found at {dreambooth_model_path}")
+        print("Please run the DreamBooth training first, or use a different model path.")
+        print("Available files in output directory:")
+        output_dir = get_output_dir()
+        if output_dir.exists():
+            for item in os.listdir(output_dir):
+                print(f"  - {item}")
+        raise FileNotFoundError(f"DreamBooth model not found at {dreambooth_model_path}")
+    
+    return dreambooth_model_path
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
