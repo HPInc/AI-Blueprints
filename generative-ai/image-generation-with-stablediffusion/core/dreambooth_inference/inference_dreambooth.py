@@ -1,8 +1,8 @@
 
-
 from __future__ import annotations
 
 import os
+import sys
 import time
 from pathlib import Path
 from typing import List, Union
@@ -15,6 +15,10 @@ from accelerate import Accelerator
 from diffusers import StableDiffusionPipeline
 from PIL import Image
 
+# Import path utilities from src
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+from utils import get_project_root, get_config_dir, get_output_dir, get_default_model_path, get_model_cache_dir
+
 
 
 _CONFIG_FILENAMES = {
@@ -25,6 +29,13 @@ _CONFIG_FILENAMES = {
 
 
 def _find_config_dir() -> Path:
+    """Find the config directory using simple relative path resolution"""
+    # Try the simple approach first
+    config_dir = get_config_dir()
+    if config_dir.exists():
+        return config_dir
+    
+    # Fallback to searching
     required = set(_CONFIG_FILENAMES.values())
     for base in [Path.cwd(), *Path.cwd().parents]:
         if required.issubset({p.name for p in base.iterdir()}):
@@ -112,14 +123,19 @@ def run_inference_dreambooth(
     )
 
     times, images = [], []
+    output_dir = get_output_dir()  # Get the output directory
+    
     if accelerator.process_index == 0:
         for i in range(num_images):
             t0 = time.time()
             res = pipe(prompt, height=height, width=width, num_inference_steps=num_inference_steps)
             times.append(time.time() - t0)
-            res.images[0].save(f"local_model_result_{i}.png")
+            
+            # Save image to the output directory
+            img_path = output_dir / f"dreambooth_result_{i}.png"
+            res.images[0].save(img_path)
             images.append(res.images[0])
-            print(f"[{i+1}/{num_images}] {times[-1]:6.2f} s")
+            print(f"[{i+1}/{num_images}] {times[-1]:6.2f} s - Saved to {img_path}")
 
         arr = np.array(times)
         print(f"\nAvg {arr.mean():.2f}s | Med {np.median(arr):.2f}s | Min {arr.min():.2f}s | Max {arr.max():.2f}s")

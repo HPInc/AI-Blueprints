@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import base64, io, logging, os, shutil, subprocess, time
+import base64, io, logging, os, shutil, subprocess, sys, time
 from pathlib import Path
 from typing import Union
 
@@ -11,6 +11,10 @@ from PIL import Image
 from diffusers import StableDiffusionPipeline
 from mlflow.types import Schema, ColSpec
 from mlflow.models import ModelSignature
+
+# Import path utilities from src
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+from utils import get_project_root, get_config_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
@@ -24,6 +28,13 @@ _CONFIG_FILENAMES = {
 }
 
 def _find_config_dir() -> Path:
+    """Find the config directory using simple relative path resolution"""
+    # Try the simple approach first
+    config_dir = get_config_dir()
+    if config_dir.exists():
+        return config_dir
+    
+    # Fallback to searching
     required = set(_CONFIG_FILENAMES.values())
     for base in [Path.cwd(), *Path.cwd().parents]:
         if required.issubset({p.name for p in base.iterdir()}):
@@ -161,8 +172,17 @@ def deploy_model():
     mlflow.set_tracking_uri('/phoenix/mlflow')
     mlflow.set_experiment("ImageGeneration")
 
-    finetuned = "./dreambooth"
-    base      = "../../../local/stable-diffusion-2-1"
+    # Use project-relative paths
+    project_root = get_project_root()
+    finetuned = str(project_root / "dreambooth")
+    
+    # Try local model first, fallback to HuggingFace
+    local_base_model = project_root / "models" / "stable-diffusion-2-1"
+    if local_base_model.exists():
+        base = str(local_base_model)
+    else:
+        # Use HuggingFace model identifier as fallback
+        base = "stabilityai/stable-diffusion-2-1"
 
     with mlflow.start_run(run_name="image_generation_service") as run:
         mlflow.log_artifact(os.environ["ACCELERATE_CONFIG_FILE"],
