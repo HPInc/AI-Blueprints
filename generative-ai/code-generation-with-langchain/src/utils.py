@@ -192,7 +192,20 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+        # Disable automatic chat template application by removing it from tokenizer
+        if hasattr(tokenizer, 'chat_template'):
+            tokenizer.chat_template = None
+
+        pipe = pipeline(
+            "text-generation", 
+            model=hf_model, 
+            tokenizer=tokenizer, 
+            max_new_tokens=100, 
+            device=0,
+            return_full_text=False,
+            do_sample=True,
+            temperature=0.1
+        )
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -203,7 +216,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, config.json)
+                model_config = os.path.join(local_model_path, "config.json")
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:
@@ -785,3 +798,63 @@ def initialize_galileo_observer(project_name: str):
         raise ImportError("galileo_observe is required but not installed")
     
     return GalileoObserveCallback(project_name=project_name)
+
+def estimate_tokens_accurate(text: str, model=None) -> int:
+    """
+    More accurate token estimation that can use actual model tokenizer.
+    
+    Args:
+        text: Text to count tokens for  
+        model: Optional model object with tokenizer
+        
+    Returns:
+        Estimated token count
+    """
+    if not text:
+        return 0
+        
+    try:
+        # Try to use actual tokenizer if available
+        if model and hasattr(model, 'client') and hasattr(model.client, '_model'):
+            # For llama-cpp models
+            if hasattr(model.client._model, 'tokenize'):
+                tokens = model.client._model.tokenize(text.encode('utf-8'))
+                return len(tokens)
+        elif model and hasattr(model, 'pipeline') and hasattr(model.pipeline, 'tokenizer'):
+            # For HuggingFace models
+            tokens = model.pipeline.tokenizer.encode(text, add_special_tokens=False)
+            return len(tokens)
+    except Exception as e:
+        # Fall back to estimation if tokenizer fails
+        pass
+    
+    # Improved character-based estimation based on content analysis
+    # Code and technical content typically has different token density
+    if any(keyword in text.lower() for keyword in ['import', 'def ', 'class ', 'function', 'var ', 'const ', 'package', 'library']):
+        # Code content - more tokens per character due to technical terms
+        return int(len(text) / 3.2)
+    elif any(marker in text for marker in ['```', '---', '##', '**', 'README', '.md']):
+        # Documentation with formatting - medium density
+        return int(len(text) / 3.6)
+    else:
+        # Regular text - standard estimation
+        return int(len(text) / 4.0)
+
+def check_context_fits(text: str, context_window: int, model=None, reserve_tokens: int = 800) -> Tuple[bool, int]:
+    """
+    Check if text fits within context window with safety margin.
+    
+    Args:
+        text: Text to check
+        context_window: Available context window in tokens
+        model: Optional model for accurate tokenization
+        reserve_tokens: Tokens to reserve for prompt and response
+        
+    Returns:
+        Tuple of (fits, estimated_tokens)
+    """
+    estimated_tokens = estimate_tokens_accurate(text, model)
+    available_tokens = context_window - reserve_tokens
+    fits = estimated_tokens <= available_tokens
+    
+    return fits, estimated_tokens
