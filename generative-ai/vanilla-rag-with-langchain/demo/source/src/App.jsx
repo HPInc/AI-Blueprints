@@ -249,7 +249,7 @@ function App() {
 							content={
 								<div className='outer-padding'>
 									<div className='title-with-icon'>
-										<h5>Local LLM (Llama7b)</h5>
+										<h5>Local LLM (Meta Llama 3.1 model with 8B parameters)</h5>
 										<div className='title-with-icon-icon'>
 											{ showLlmInfo ? 
 												<IconInfo size={24} onClick={toggleLlmInfo} filled />:
@@ -260,7 +260,7 @@ function App() {
 									<div className="output-info">
 										{ showLlmInfo &&	
 											<p>
-												This is where the actual large language model is run. Based on the input prompt, the Llama7b is loaded locally, and generates an output one word at a time.
+												This is where the actual large language model is run. Based on the input prompt, the model is loaded locally, and generates an output one word at a time.
 											</p>
 										}
 										<TextArea className="output-text-area" id="output-text"
