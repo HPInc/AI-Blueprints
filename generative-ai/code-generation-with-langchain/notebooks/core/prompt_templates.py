@@ -1,12 +1,56 @@
 """
-Prompt templates for code repository RAG.
+Prompt templates for code repository RAG with model-specific formatting.
 
 This module provides improved prompt templates for code repository analysis,
-with specialized handling for different question types and multi-document context.
+with specialized handling for different question types, multi-document context,
+and model-specific formatting to prevent hallucination.
 """
 
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from typing import Dict, List, Any
+
+
+def get_prompt_template_for_model_source(model_source: str, base_prompt: str) -> str:
+    """
+    Format prompt template based on model source to follow the expected format for each model.
+    
+    This function prevents model hallucination by applying the correct prompt format structure
+    for different model sources. Each model type has its own expected format.
+    
+    Args:
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
+        base_prompt: The base prompt content to be formatted
+        
+    Returns:
+        str: Properly formatted prompt template for the specified model source
+    """
+    if model_source == "local":
+        # For local Meta Llama 3.1 8B model - uses structured tokenized conversation style
+        return f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You are a helpful assistant that provides accurate and concise responses for code repository analysis.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{base_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+"""
+    
+    elif model_source == "hugging-face-local":
+        # For local HuggingFace models (Llama 3.2 3B) - uses Llama 3.2 chat template with special tokens
+        return f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You are a helpful assistant that provides accurate and concise responses for code repository analysis.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{base_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+"""
+    
+    elif model_source == "hugging-face-cloud":
+        # For cloud HuggingFace models (Mistral 7B) - uses Mistral's instruction format
+        return f"""[INST] {base_prompt} [/INST]"""
+    
+    else:
+        # Fallback to simple format for unknown model sources
+        return base_prompt
 
 # Template for code repository questions with dynamic multi-document context
 DYNAMIC_REPOSITORY_TEMPLATE = """
@@ -81,61 +125,78 @@ Context:
 Describe what the code above does.
 """
 
-def get_dynamic_repository_prompt() -> ChatPromptTemplate:
+def get_dynamic_repository_prompt(model_source: str = "local") -> ChatPromptTemplate:
     """
-    Get the dynamic repository prompt template.
+    Get the dynamic repository prompt template formatted for the specified model source.
     
+    Args:
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
+        
     Returns:
         ChatPromptTemplate for repository questions
     """
-    return ChatPromptTemplate.from_template(DYNAMIC_REPOSITORY_TEMPLATE)
+    formatted_template = get_prompt_template_for_model_source(model_source, DYNAMIC_REPOSITORY_TEMPLATE)
+    return ChatPromptTemplate.from_template(formatted_template)
 
-def get_code_description_prompt() -> ChatPromptTemplate:
+def get_code_description_prompt(model_source: str = "local") -> ChatPromptTemplate:
     """
-    Get the code description prompt template.
+    Get the code description prompt template formatted for the specified model source.
     
+    Args:
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
+        
     Returns:
         ChatPromptTemplate for code description
     """
-    return ChatPromptTemplate.from_template(CODE_DESCRIPTION_TEMPLATE)
+    formatted_template = get_prompt_template_for_model_source(model_source, CODE_DESCRIPTION_TEMPLATE)
+    return ChatPromptTemplate.from_template(formatted_template)
 
-def get_code_generation_prompt() -> ChatPromptTemplate:
+def get_code_generation_prompt(model_source: str = "local") -> ChatPromptTemplate:
     """
-    Get the code generation prompt template.
+    Get the code generation prompt template formatted for the specified model source.
     
+    Args:
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
+        
     Returns:
         ChatPromptTemplate for code generation
     """
-    return ChatPromptTemplate.from_template(CODE_GENERATION_TEMPLATE)
+    formatted_template = get_prompt_template_for_model_source(model_source, CODE_GENERATION_TEMPLATE)
+    return ChatPromptTemplate.from_template(formatted_template)
 
-def get_metadata_generation_prompt() -> PromptTemplate:
+def get_metadata_generation_prompt(model_source: str = "local") -> PromptTemplate:
     """
-    Get the metadata generation prompt template.
+    Get the metadata generation prompt template formatted for the specified model source.
     
+    Args:
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
+        
     Returns:
         PromptTemplate for metadata generation
     """
-    return PromptTemplate.from_template(METADATA_GENERATION_TEMPLATE)
+    formatted_template = get_prompt_template_for_model_source(model_source, METADATA_GENERATION_TEMPLATE)
+    return PromptTemplate.from_template(formatted_template)
 
-def get_specialized_prompt(question_types: List[str]) -> ChatPromptTemplate:
+def get_specialized_prompt(question_types: List[str], model_source: str = "local") -> ChatPromptTemplate:
     """
-    Get a specialized prompt based on the detected question type.
+    Get a specialized prompt based on the detected question type with model-specific formatting.
     
     Args:
         question_types: List of identified question types
+        model_source: Source of the model ("local", "hugging-face-local", "hugging-face-cloud")
         
     Returns:
         Specialized ChatPromptTemplate or default if no specialization
     """
     if not question_types:
-        return get_code_description_prompt()
+        return get_code_description_prompt(model_source)
         
     # Get the primary question type (highest confidence)
     primary_type = question_types[0]
     
     if primary_type == "dependency":
         # Specialized prompt for dependency questions
-        template = """You are a dependency analysis expert for code repositories.
+        base_template = """You are a dependency analysis expert for code repositories.
 
 **Dependency Question:** {question}
 
@@ -151,13 +212,13 @@ Focus specifically on:
 5. External vs. internal dependencies
 
 Reference specific configuration files like requirements.txt, setup.py, package.json, etc.
-Organize your response to clearly indicate primary vs. optional dependencies.
-"""
-        return ChatPromptTemplate.from_template(template)
+Organize your response to clearly indicate primary vs. optional dependencies."""
+        formatted_template = get_prompt_template_for_model_source(model_source, base_template)
+        return ChatPromptTemplate.from_template(formatted_template)
         
     elif primary_type == "implementation":
         # Specialized prompt for implementation questions
-        template = """You are an expert code analyst with deep understanding of software implementation patterns.
+        base_template = """You are an expert code analyst with deep understanding of software implementation patterns.
 
 **Implementation Question:** {question}
 
@@ -173,13 +234,13 @@ Focus on:
 5. Edge case handling
 
 Reference specific code files, functions, and line numbers to support your explanation.
-Use code examples from the context when relevant to illustrate key points.
-"""
-        return ChatPromptTemplate.from_template(template)
+Use code examples from the context when relevant to illustrate key points."""
+        formatted_template = get_prompt_template_for_model_source(model_source, base_template)
+        return ChatPromptTemplate.from_template(formatted_template)
         
     elif primary_type == "error":
         # Specialized prompt for error questions
-        template = """You are a debugging expert who specializes in identifying and resolving code issues.
+        base_template = """You are a debugging expert who specializes in identifying and resolving code issues.
 
 **Error Question:** {question}
 
@@ -195,9 +256,9 @@ Focus on:
 5. Best practices for avoiding similar issues
 
 Reference specific problematic code sections and explain why they might cause issues.
-When suggesting fixes, be specific and provide code examples if possible.
-"""
-        return ChatPromptTemplate.from_template(template)
+When suggesting fixes, be specific and provide code examples if possible."""
+        formatted_template = get_prompt_template_for_model_source(model_source, base_template)
+        return ChatPromptTemplate.from_template(formatted_template)
     
     # Default to the standard code description prompt
-    return get_code_description_prompt()
+    return get_code_description_prompt(model_source)
