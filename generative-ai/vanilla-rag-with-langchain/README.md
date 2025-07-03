@@ -2,10 +2,12 @@
 
 <div align="center">
 
-![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg)
-![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface&logoColor=black)
-![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-integrated-ff4b4b.svg?logo=streamlit&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface)
+![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg?logo=mlflow)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
 
 </div>
 

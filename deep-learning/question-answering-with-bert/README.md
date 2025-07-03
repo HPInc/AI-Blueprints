@@ -1,5 +1,16 @@
 # ❓ Question and Answer with BERT
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface)
+![BERT](https://img.shields.io/badge/BERT-used-lightgreen.svg)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
+
 ### 📚 Content
 
 * [🧠 Overview](#overview)
