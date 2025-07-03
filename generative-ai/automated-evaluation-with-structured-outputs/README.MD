@@ -27,18 +27,18 @@ The pipeline:
 ```
 ├── data                                                                
 │   ├── inputs
-│   │   ├── 2025 ISEF Project Abstracts.csv # Data assets for the project
+│   │   ├── 2025 ISEF Project Abstracts.csv    # Data assets for the project
 ├── demo
-│   ├── index.html                 # Lightweight HTML/JS UI
-│   └── streamlit-webapp/          # Streamlit UI
+│   ├── streamlit-webapp/                      # Streamlit UI
+│   └── index.html                             # Lightweight HTML/JS UI
 ├── docs/
-│   ├── html_ui_for_automated_evaluation.png          # UI screenshot
-│   ├── streamlit_ui_for_automated_evaluation.png          # UI screenshot
-│   ├── sample-html-ui.pdf          # UI pdf
-│   └── sample-streamlit-ui.pdf          # UI pdf
+│   ├── sample-html-ss.png                     # HTML UI screenshot
+│   ├── sample-html-ui.pdf                     # HTML UI page
+│   ├── sample-streamlit-ss.png                # Streamlit UI screenshot
+│   └── sample-streamlit-ui.pdf                # Streamlit UI page
 ├── notebooks
-│   ├── register-model.ipynb   # One‑click notebook for registering trained models to MLflow, generating API logic, and testing the registration.
-│   └── run-workflow.ipynb   # One‑click notebook for executing the pipeline using custom inputs and configurations.
+│   ├── register-model.ipynb                   # One‑click notebook for registering trained models to MLflow, generating API logic, and testing the registration.
+│   └── run-workflow.ipynb                     # One‑click notebook for executing the pipeline using custom inputs and configurations.
 ├── README.md
 └── requirements.txt
 ```
