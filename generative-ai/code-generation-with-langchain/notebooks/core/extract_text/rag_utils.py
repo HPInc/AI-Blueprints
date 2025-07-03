@@ -89,6 +89,42 @@ QUESTION_TYPE_PATTERNS = {
     ]
 }
 
+def estimate_tokens(text: str, model=None) -> int:
+    """
+    Estimate token count for given text, using model tokenizer if available.
+    
+    Args:
+        text: Text to count tokens for
+        model: Optional model object with tokenizer
+        
+    Returns:
+        Estimated token count
+    """
+    try:
+        # Try to use actual tokenizer if available
+        if model and hasattr(model, 'client') and hasattr(model.client, '_model') and hasattr(model.client._model, 'tokenize'):
+            # For llama-cpp models
+            tokens = model.client._model.tokenize(text.encode('utf-8'))
+            return len(tokens)
+        elif model and hasattr(model, 'pipeline') and hasattr(model.pipeline, 'tokenizer'):
+            # For HuggingFace models
+            tokens = model.pipeline.tokenizer.encode(text, add_special_tokens=False)
+            return len(tokens)
+    except Exception as e:
+        logger.debug(f"Could not use model tokenizer: {e}")
+    
+    # Fall back to character-based estimation
+    # More accurate estimation based on content type
+    if any(lang in text.lower() for lang in ['import', 'def ', 'class ', 'function', 'var ', 'const ']):
+        # Code content - typically more dense
+        return len(text) // 3.5
+    elif any(marker in text for marker in ['```', '---', '##', '**']):
+        # Documentation with formatting - medium density
+        return len(text) // 3.8
+    else:
+        # Regular text - standard estimation
+        return len(text) // 4.0
+
 def identify_question_type(query: str) -> List[str]:
     """
     Identify the type of question being asked.
@@ -457,17 +493,20 @@ def format_multi_doc_context(
     if not docs:
         return "No relevant documents found."
     
-    # Average tokens per character (approximation)
-    chars_per_token = 4
+    # More accurate token estimation for code/technical content
+    # Code typically has fewer tokens per character than natural language
+    chars_per_token = 3.5
     
     # Determine the maximum character budget based on context window
     if context_window:
-        # Reserve 30% for the prompt template and response
-        available_tokens = int(context_window * 0.7)
+        # Reserve 25% for the prompt template and response (less conservative)
+        # This allows more context while maintaining safety
+        available_tokens = int(context_window * 0.75)
         max_total_chars = available_tokens * chars_per_token
+        logger.info(f"Context budget: {available_tokens} tokens ({max_total_chars} chars)")
     else:
         # Default conservative estimate if we don't know the context window
-        max_total_chars = 10000
+        max_total_chars = 12000
     
     # Allocate budget for file type sections
     # File type weight adjustments based on question type
@@ -637,6 +676,16 @@ def process_repository_question(
     question_types = identify_question_type(query)
     
     # Step 2: Retrieve relevant documents
+    # Optimize top_n based on context window to avoid overwhelming the model
+    if top_n is None:
+        if context_window and context_window <= 4096:
+            # For smaller context windows, retrieve fewer documents
+            top_n = 3
+        elif context_window and context_window <= 8192:
+            top_n = 5
+        else:
+            top_n = 8
+    
     docs = retriever(
         query=query,
         collection=collection,
