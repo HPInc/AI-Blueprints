@@ -1,5 +1,7 @@
 import streamlit as st
 import requests
+import os
+os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Streamlit Page Configuration ---
 st.set_page_config(
@@ -56,7 +58,7 @@ if st.button("🔍 Get Recommendations"):
         st.warning("⚠️ Please enter a vacation preference!")
     else:
         # API Configuration
-        api_url = os.getenv("API_URL", "https://localhost:61743/invocations")  # Update this URL accordingly
+        api_url = os.getenv("API_URL", "https://localhost:52259/invocations")  # Update this URL accordingly
         payload = {
             "inputs": {"query": [query]},
             "params": {"show_score": True}
