@@ -817,7 +817,7 @@ Question: {question}
         input_schema = Schema([
             ColSpec("string", "question"),
             ColSpec("string", "repository_url", required=False),  # Optional repository URL
-            ColSpec("boolean", "metadata_only", required=False),  # Optional metadata-only flag
+            #ColSpec("boolean", "metadata_only", required=False),  # Optional metadata-only flag
         ])
         output_schema = Schema([
             ColSpec("string", "result")
