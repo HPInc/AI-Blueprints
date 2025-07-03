@@ -6,7 +6,6 @@
 ![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
 ![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
 ![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
-![Galileo](https://img.shields.io/badge/Galileo-integrated-purple.svg)
 
 </div>
 

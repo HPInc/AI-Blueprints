@@ -8,7 +8,6 @@
 ![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface)
 ![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg?logo=mlflow)
 ![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
-![Galileo](https://img.shields.io/badge/Galileo-integrated-purple.svg)
 
 </div>
 
