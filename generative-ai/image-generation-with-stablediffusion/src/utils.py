@@ -10,7 +10,17 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from .trt_llm_langchain import TensorRTLangchain
+
+try:
+    # First try absolute import
+    from trt_llm_langchain import TensorRTLangchain
+except ImportError:
+    # If that fails, try adding the src directory to path and import
+    import sys
+    src_dir = str(Path(__file__).parent)
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+    from trt_llm_langchain import TensorRTLangchain
 
 
 # Simple path utilities for project-relative paths
