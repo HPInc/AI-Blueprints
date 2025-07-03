@@ -5,7 +5,6 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
 ![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
 ![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
-![Galileo](https://img.shields.io/badge/Galileo-integrated-purple.svg)
 
 </div>
 
