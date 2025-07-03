@@ -9,7 +9,7 @@ This is a React-based user interface for the `vanilla-rag-chatbot` example. It a
 - Document retrieval visualization with ChromaDB vector chunks
 - Prompt engineering transparency
 - Interaction history tracking
-- Local LLM (Llama7b) integration
+- Local LLM (Meta Llama 3.1 model with 8B parameters) integration
 
 ## Running the Application
 
@@ -40,12 +40,13 @@ npm run preview
 ## Interface
 
 The UI provides two viewing modes:
+
 - **Black Box Mode**: Shows only the query input and the AI-generated response
 - **White Box Mode**: Shows the complete RAG pipeline components:
   - ChromaDB vector database chunks
   - Interaction history
   - Prompt engineering details
-  - Local LLM (Llama7b) output
+  - Local LLM (Meta Llama 3.1 model with 8B parameters) output
 
 Each component in the White Box view has an information icon that can be toggled to learn more about its role in the RAG pipeline.
 
@@ -87,5 +88,4 @@ The API returns a JSON response with the following structure:
 - Retrieved document chunks show which parts of the knowledge base were used for answering
 - The prompt engineering section shows how the query and context are formatted for the LLM
 - Full interaction history is maintained and displayed in the UI
-- The local Llama7b model processes queries without requiring cloud resources
-````
+- The local Meta Llama 3.1 model with 8B parameters processes queries without requiring cloud resources
