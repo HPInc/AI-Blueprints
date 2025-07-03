@@ -185,17 +185,15 @@ class TextSummarizationService(BaseGenerativeService):
     
     def load_prompt(self) -> None:
         """Load the prompt template for text summarization."""
-        self.prompt_str = '''
-            The following text is an excerpt of a text:
-
-            ###
-            
-            {context} 
-            
-            ###
-            
-            Please, summarize this text, in a concise and comprehensive manner.
-            '''
+        # Import the prompt formatting function
+        from src.prompt_templates import format_summarization_prompt
+        
+        # Get the model source from configuration
+        model_source = self.model_config.get("model_source", "local")
+        
+        # Format the prompt template based on the model source
+        self.prompt_str = format_summarization_prompt(model_source)
+        
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
     def load_chain(self) -> None:

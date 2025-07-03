@@ -267,14 +267,15 @@ class ChatbotService(BaseGenerativeService):
 
     def load_prompt(self) -> None:
         """Load the prompt template for the chatbot."""
-        self.prompt_str = """You are a chatbot assistant for a Data Science platform created by HP, called 'Z by HP AI Studio'. 
-            Do not hallucinate and answer questions only if they are related to 'Z by HP AI Studio'. 
-            Now, answer the question perfectly based on the following context:
-
-            {context}
-
-            Question: {query}
-            """
+        # Import the prompt formatting function
+        from src.prompt_templates import format_rag_chatbot_prompt
+        
+        # Get the model source from configuration
+        model_source = self.model_config.get("model_source", "local")
+        
+        # Format the prompt template based on the model source
+        self.prompt_str = format_rag_chatbot_prompt(model_source)
+        
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
     def load_chain(self) -> None:
