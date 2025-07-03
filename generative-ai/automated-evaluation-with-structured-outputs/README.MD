@@ -31,7 +31,7 @@ The pipeline:
 ├── demo
 │   ├── streamlit-webapp/                      # Streamlit UI
 │   └── index.html                             # Lightweight HTML/JS UI
-├── docs/
+├── docs
 │   ├── sample-html-ss.png                     # HTML UI screenshot
 │   ├── sample-html-ui.pdf                     # HTML UI page
 │   ├── sample-streamlit-ss.png                # Streamlit UI screenshot
