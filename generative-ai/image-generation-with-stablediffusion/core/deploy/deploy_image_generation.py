@@ -14,7 +14,7 @@ from mlflow.models import ModelSignature
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_project_root, get_config_dir
+from utils import get_project_root, get_config_dir, get_output_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
@@ -172,9 +172,9 @@ def deploy_model():
     mlflow.set_tracking_uri('/phoenix/mlflow')
     mlflow.set_experiment("ImageGeneration")
 
-    # Use project-relative paths
+    # Use project-relative paths with proper output directory
     project_root = get_project_root()
-    finetuned = str(project_root / "dreambooth")
+    finetuned = str(get_output_dir() / "dreambooth")
     
     # Try local model first, fallback to HuggingFace
     local_base_model = project_root / "models" / "stable-diffusion-2-1"
@@ -183,6 +183,20 @@ def deploy_model():
     else:
         # Use HuggingFace model identifier as fallback
         base = "stabilityai/stable-diffusion-2-1"
+
+    # Check if the DreamBooth model exists before proceeding
+    if not Path(finetuned).exists():
+        logging.warning(f"DreamBooth model not found at {finetuned}")
+        logging.warning("Please run DreamBooth training first or use a different finetuned model path.")
+        logging.info("Available files in output directory:")
+        output_dir = get_output_dir()
+        if output_dir.exists():
+            for item in os.listdir(output_dir):
+                logging.info(f"  - {item}")
+        raise FileNotFoundError(f"DreamBooth model not found at {finetuned}")
+
+    logging.info(f"Using finetuned model: {finetuned}")
+    logging.info(f"Using base model: {base}")
 
     with mlflow.start_run(run_name="image_generation_service") as run:
         mlflow.log_artifact(os.environ["ACCELERATE_CONFIG_FILE"],
