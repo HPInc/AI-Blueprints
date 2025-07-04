@@ -1,5 +1,14 @@
 # 🎥 Recommender Systems with Tensorflow
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)

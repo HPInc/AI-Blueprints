@@ -1,5 +1,15 @@
 # 📜💬 Shakespeare text generation with RNN
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![PyTorch](https://img.shields.io/badge/PyTorch-used-ee4c2c.svg?logo=pytorch)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
+
 ### 📚 Content
 
 * [🧠 Overview](#overview)
