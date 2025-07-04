@@ -1,5 +1,15 @@
 # Text Summarization with LangChain and Galileo
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)

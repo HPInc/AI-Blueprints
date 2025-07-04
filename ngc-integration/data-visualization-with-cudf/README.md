@@ -1,5 +1,15 @@
 # 📡 OpenCellID Exploratory Data Analysis with Panel and cuDF
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![cuDF](https://img.shields.io/badge/cuDF-GPU%20accelerated-76B900.svg?logo=nvidia)
+![RAPIDS](https://img.shields.io/badge/RAPIDS-ecosystem-orange.svg?logo=nvidia)
+![Panel](https://img.shields.io/badge/Panel-dashboard-brightgreen.svg)
+
+</div>
+
 ## 📚 Contents
 
 * [🧠 Overview](#overview)
