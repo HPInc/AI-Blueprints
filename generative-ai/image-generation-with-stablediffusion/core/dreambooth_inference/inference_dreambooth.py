@@ -1,9 +1,7 @@
 
 from __future__ import annotations
 
-import os
-import sys
-import time
+import os, sys, time, gc
 from pathlib import Path
 from typing import List, Union
 
@@ -14,6 +12,13 @@ import yaml
 from accelerate import Accelerator
 from diffusers import StableDiffusionPipeline
 from PIL import Image
+
+# Check for xformers availability
+try:
+    import xformers
+    _XFORMERS_AVAILABLE = True
+except ImportError:
+    _XFORMERS_AVAILABLE = False
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -121,14 +126,35 @@ def run_inference_dreambooth(
         max_memory=max_memory,
         low_cpu_mem_usage=True,
     )
+    
+    # Apply memory management
+    try:
+        if _XFORMERS_AVAILABLE and hasattr(pipe, 'unet'):
+            pipe.unet.enable_xformers_memory_efficient_attention()
+            print("Enabled xformers memory-efficient attention")
+    except Exception as e:
+        print(f"Could not enable xformers attention: {e}")
+    
+    try:
+        if hasattr(pipe, 'enable_attention_slicing'):
+            pipe.enable_attention_slicing(slice_size="auto")
+            print("Enabled attention slicing for memory efficiency")
+    except Exception as e:
+        print(f"Could not enable attention slicing: {e}")
 
     times, images = [], []
     output_dir = get_output_dir()  # Get the output directory
     
+    # Clear GPU memory before starting inference
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        gc.collect()
+    
     if accelerator.process_index == 0:
         for i in range(num_images):
             t0 = time.time()
-            res = pipe(prompt, height=height, width=width, num_inference_steps=num_inference_steps)
+            with torch.no_grad():  # Ensure no gradients are computed
+                res = pipe(prompt, height=height, width=width, num_inference_steps=num_inference_steps)
             times.append(time.time() - t0)
             
             # Save image to the output directory
@@ -136,7 +162,16 @@ def run_inference_dreambooth(
             res.images[0].save(img_path)
             images.append(res.images[0])
             print(f"[{i+1}/{num_images}] {times[-1]:6.2f} s - Saved to {img_path}")
+            
+            # Clear GPU memory after each image to prevent accumulation
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
+        # Final memory cleanup
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
+        
         arr = np.array(times)
         print(f"\nAvg {arr.mean():.2f}s | Med {np.median(arr):.2f}s | Min {arr.min():.2f}s | Max {arr.max():.2f}s")
         if output:
