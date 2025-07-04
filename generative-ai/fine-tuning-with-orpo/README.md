@@ -1,5 +1,15 @@
 # Interactive ORPO Fine-Tuning & Inference Hub for Open LLMs
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![HuggingFace](https://img.shields.io/badge/Hugging--Face-model-yellow.svg?logo=huggingface)
+![PyTorch](https://img.shields.io/badge/PyTorch-used-ee4c2c.svg?logo=pytorch)
+![ORPO](https://img.shields.io/badge/ORPO-fine--tuning-lightblue.svg)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
