@@ -17,7 +17,7 @@
 
 This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.
 
-The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **CitriNet** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.
+The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **Nemotron** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.
 
 We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), please feel free to open a new issue in this repository — we welcome your feedback!
 
