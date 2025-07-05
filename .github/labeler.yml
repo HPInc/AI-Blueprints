@@ -1,8 +1,5 @@
 # .github/labeler.yml
 
-- name: Labeler
-  uses: actions/labeler@v5.0.0
-
 # --- Classical ML and Statistical Analysis ---
 data-science:
   - 'data-science/**'
