@@ -1,99 +1,64 @@
 # .github/labeler.yml
 
-# --- Classical ML and Statistical Analysis ---
-data-science:
+# Map all existing folders to current repo labels only
+
+bug:
+  - '*/**/bugfix*'
+
+ci/cd:
+  - '.github/workflows/**'
+
+dependencies:
+  - '**/requirements.txt'
+  - '**/environment.yml'
+  - '**/package-lock.json'
+  - '**/Pipfile.lock'
+
+design:
+  - 'demo/**'
+  - '**/*.html'
+  - '**/*.css'
+
+documentation:
+  - 'docs/**'
+  - '**/*.md'
+  - '**/*.pdf'
+  - '**/*.png'
+  - '**/*.jpg'
+
+duplicate:
+  - '**/*duplicate*'
+
+enhancement:
   - 'data-science/**'
-
-classification-with-svm:
-  - 'data-science/classification-with-svm/**'
-
-data-analysis-with-var:
-  - 'data-science/data-analysis-with-var/**'
-
-# --- Deep Learning Projects ---
-deep-learning:
   - 'deep-learning/**'
-
-classification-with-keras:
-  - 'deep-learning/classification-with-keras/**'
-
-question-answering-with-bert:
-  - 'deep-learning/question-answering-with-bert/**'
-
-recommendation-system-with-tensorflow:
-  - 'deep-learning/recommendation-system-with-tensorflow/**'
-
-spam-detection-with-nlp:
-  - 'deep-learning/spam-detection-with-nlp/**'
-
-super-resolution-with-fsrcnn:
-  - 'deep-learning/super-resolution-with-fsrcnn/**'
-
-text-generation-with-rnn:
-  - 'deep-learning/text-generation-with-rnn/**'
-
-# --- Generative AI ---
-generative-ai:
   - 'generative-ai/**'
-
-automated-evaluation-with-structured-outputs:
-  - 'generative-ai/automated-evaluation-with-structured-outputs/**'
-
-code-generation-with-langchain:
-  - 'generative-ai/code-generation-with-langchain/**'
-
-fine-tuning-with-orpo:
-  - 'generative-ai/fine-tuning-with-orpo/**'
-
-image-generation-with-stablediffusion:
-  - 'generative-ai/image-generation-with-stablediffusion/**'
-
-text-generation-with-langchain:
-  - 'generative-ai/text-generation-with-langchain/**'
-
-text-summarization-with-langchain:
-  - 'generative-ai/text-summarization-with-langchain/**'
-
-vanilla-rag-with-langchain:
-  - 'generative-ai/vanilla-rag-with-langchain/**'
-
-# --- NGC Integration Projects ---
-ngc-integration:
   - 'ngc-integration/**'
 
-agentic-rag-with-tensorrtllm:
-  - 'ngc-integration/agentic-rag-with-tensorrtllm/**'
-
-audio-translation-with-nemo:
-  - 'ngc-integration/audio-translation-with-nemo/**'
-
-data-analysis-with-cudf:
-  - 'ngc-integration/data-analysis-with-cudf/**'
-
-data-visualization-with-cudf:
-  - 'ngc-integration/data-visualization-with-cudf/**'
-
-vacation-recommendation-with-bert:
-  - 'ngc-integration/vacation-recommendation-with-bert/**'
-
-# --- Core and General Repo Assets ---
-core:
-  - 'core/**'
-
-data:
-  - 'data/**'
-
-docs:
-  - 'docs/**'
-
-demo:
-  - 'demo/**'
-
-notebooks:
+feature:
+  - '**/feature/**'
+  - '**/new/**'
   - 'notebooks/**'
 
-infrastructure:
-  - '.github/**'
-  - 'requirements.txt'
-  - 'README.md'
+invalid:
+  - '**/broken*'
+  - '**/deprecated*'
 
+javascript:
+  - '**/*.js'
+
+performance:
+  - '**/performance*/**'
+  - '**/*optimized*/**'
+
+python:
+  - '**/*.py'
+  - '**/*.ipynb'
+
+refactor:
+  - '**/refactor*/**'
+
+test:
+  - '**/test*/**'
+  - '**/tests/**'
+  - '**/unittest/**'
