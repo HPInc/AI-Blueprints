@@ -1,10 +1,14 @@
 import os
+import sys
 import torch
 import logging
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import HfHubHTTPError
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+from utils import get_models_dir, format_model_path, setup_model_environment
 
 
 class ModelAccessException(Exception):
@@ -31,8 +35,8 @@ class ModelSelector:
         """
         Args:
             model_list (list[str], optional): Supported model IDs.
-            base_local_dir (str, optional): Folder to store downloaded models.
-                                             Default: ../../../local/models
+            base_local_dir (str, optional): Base directory for storing models.
+                                             Uses project-relative path by default.
         """
         self.model_list = model_list or [
             "mistralai/Mistral-7B-Instruct-v0.1",
@@ -42,10 +46,11 @@ class ModelSelector:
             "google/gemma-3-1b-it",
             "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         ]
-        self.base_local_dir = (
-            base_local_dir
-            or os.path.join("..", "..", "..", "local", "models")
-        )
+        
+        # Set up model environment (HF cache, etc.)
+        setup_model_environment()
+        
+        self.base_local_dir = str(get_models_dir())
         self.model_id: str | None = None
         self.model = None
         self.tokenizer = None
@@ -59,8 +64,8 @@ class ModelSelector:
         self.logger.info(f"[ModelSelector] {message}")
 
     def format_model_path(self, model_id: str) -> str:
-        """Converts a repo ID into a local directory name."""
-        return os.path.join(self.base_local_dir, model_id.replace("/", "__"))
+        """Converts a repo ID into a local directory name using centralized utility."""
+        return str(format_model_path(model_id))
 
   
 
@@ -80,20 +85,13 @@ class ModelSelector:
         Downloads the snapshot and returns the local path.
         Falls back to creating the full directory tree if FileNotFoundError occurs.
         """
-        model_path = Path(self.format_model_path(self.model_id))
+        model_path = format_model_path(self.model_id)
         self.log(f"Downloading model snapshot to: {model_path}")
 
         try:
-            snapshot_download(
-                repo_id=self.model_id,
-                local_dir=str(model_path),
-                resume_download=True,
-                etag_timeout=60,
-                local_dir_use_symlinks=False,
-            )
-
-        except FileNotFoundError:
+            # Ensure the directory exists
             model_path.mkdir(parents=True, exist_ok=True)
+            
             snapshot_download(
                 repo_id=self.model_id,
                 local_dir=str(model_path),
@@ -103,9 +101,15 @@ class ModelSelector:
             )
 
         except HfHubHTTPError as e:
-            if "401" in str(e) or "403" in str(e):
+            if e.response.status_code == 401:
+                raise ModelAccessException(
+                    self.model_id,
+                    "You need to be authenticated and have access permission."
+                )
+            elif e.response.status_code == 403:
                 raise ModelAccessException(self.model_id)
-            raise RuntimeError(f"Unexpected Hugging Face HTTP error: {e}")
+            else:
+                raise RuntimeError(f"Unexpected Hugging Face HTTP error: {e}")
 
         except Exception as e:
             raise RuntimeError(f"Download failed for {self.model_id}: {e}")
