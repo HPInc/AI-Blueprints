@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from src.utils import initialize_galileo_evaluator
+from utils import initialize_galileo_evaluator
 
 class GalileoLocalComparer:
     """
