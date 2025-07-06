@@ -1,7 +1,14 @@
 import os
+import sys
 import logging
+from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
 from sentence_transformers import SentenceTransformer, util
+
+# Add project root to path for imports
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root / "src"))
+from utils import get_output_dir
 
 class UltraFeedbackVisualizer:
     """
@@ -18,19 +25,25 @@ class UltraFeedbackVisualizer:
         max_samples (int): Maximum number of samples to visualize from each dataset.
     """
 
-    def __init__(self, train_dataset, test_dataset, log_dir="/phoenix/tensorboard/tensorlogs", max_samples=20):
+    def __init__(self, train_dataset, test_dataset, log_dir=None, max_samples=20):
         """
         Initializes the UltraFeedbackVisualizer.
 
         Args:
             train_dataset (Dataset): The training split of UltraFeedback.
             test_dataset (Dataset): The testing split of UltraFeedback.
-            log_dir (str, optional): Directory to save TensorBoard logs. Defaults to "/phoenix/tensorboard/tensorlogs".
+            log_dir (str, optional): Directory to save TensorBoard logs. If None, uses project output/tensorboard/tensorlogs.
             max_samples (int, optional): Maximum number of examples to log per split. Defaults to 20.
         """
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
-        self.log_dir = log_dir
+        
+        if log_dir is None:
+            # Use project-relative path
+            self.log_dir = str(get_output_dir() / "tensorboard" / "tensorlogs")
+        else:
+            self.log_dir = log_dir
+        
         self.max_samples = max_samples
 
         os.makedirs(self.log_dir, exist_ok=True)

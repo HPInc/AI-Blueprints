@@ -10,11 +10,70 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from .trt_llm_langchain import TensorRTLangchain
+
+try:
+    # First try absolute import
+    from trt_llm_langchain import TensorRTLangchain
+except ImportError:
+    # If that fails, try adding the src directory to path and import
+    import sys
+    src_dir = str(Path(__file__).parent)
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+    from trt_llm_langchain import TensorRTLangchain
 
 _PROJECT_ROOT   = Path(__file__).resolve().parents[1]         
 _DEFAULT_CONFIG = _PROJECT_ROOT / "configs" / "config.yaml"
 _DEFAULT_SECRETS = _PROJECT_ROOT / "configs" / "secrets.yaml"
+
+
+# Simple path utilities for project-relative paths
+def get_project_root():
+    """Get the project root directory (fine-tuning-with-orpo)"""
+    return Path(__file__).parent.parent
+
+def get_config_dir():
+    """Get the config directory"""
+    return get_project_root() / "config"
+
+def get_configs_dir():
+    """Get the configs directory"""
+    return get_project_root() / "configs"
+
+def get_output_dir():
+    """Get or create the output directory for generated models and artifacts"""
+    output_dir = get_project_root() / "output"
+    output_dir.mkdir(exist_ok=True)
+    return output_dir
+
+def get_models_dir():
+    """Get or create the models directory for downloaded models"""
+    models_dir = get_project_root() / "models"
+    models_dir.mkdir(exist_ok=True)
+    return models_dir
+
+def get_fine_tuned_models_dir():
+    """Get or create the directory for fine-tuned models"""
+    fine_tuned_dir = get_output_dir() / "fine_tuned_models"
+    fine_tuned_dir.mkdir(exist_ok=True)
+    return fine_tuned_dir
+
+def get_model_cache_dir():
+    """Get the directory for caching downloaded models"""
+    cache_dir = get_models_dir() / "cache"
+    cache_dir.mkdir(exist_ok=True)
+    return cache_dir
+
+def format_model_path(model_id: str) -> Path:
+    """Convert a HuggingFace model ID to a local path"""
+    return get_models_dir() / model_id.replace("/", "__")
+
+def setup_model_environment():
+    """Setup model-related environment variables for the project"""
+    # Configure HuggingFace cache to use project directory
+    hf_cache_dir = str(get_model_cache_dir())
+    os.environ["HF_HOME"] = hf_cache_dir
+    os.environ["HF_HUB_CACHE"] = hf_cache_dir
 
 
 #Default models to be loaded in our examples:
@@ -61,13 +120,16 @@ MODEL_CONTEXT_WINDOWS = {
     "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
-def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+def configure_hf_cache(cache_dir: str = None) -> None:
     """
     Configure HuggingFace cache directories to persist models locally.
 
     Args:
-        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+        cache_dir: Base directory for HuggingFace cache. Uses project's cache directory by default.
     """
+    if cache_dir is None:
+        cache_dir = str(get_model_cache_dir())
+    
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
