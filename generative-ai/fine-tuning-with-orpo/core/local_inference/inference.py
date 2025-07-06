@@ -1,9 +1,15 @@
 import os
+import sys
 import torch
 import yaml
 import logging
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM
+
+# Add project root to path for imports
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root / "src"))
+from utils import get_config_dir
 
 class InferenceRunner:
   
@@ -14,7 +20,8 @@ class InferenceRunner:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         if config_dir is None:
-            self.config_dir = Path(__file__).resolve().parents[2] / "config"
+            # Use centralized path utility
+            self.config_dir = get_config_dir()
         else:
             self.config_dir = Path(config_dir).expanduser().resolve()
 
