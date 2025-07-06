@@ -1,5 +1,15 @@
 # DreamBooth Inference with Stable Diffusion 2.1
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Stable Diffusion](https://img.shields.io/badge/Stable%20Diffusion-2.1-blue.svg)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![DreamBooth](https://img.shields.io/badge/DreamBooth-fine--tuning-lightgreen.svg)
+
+</div>
+
 ### Content
 * [🧠 Overview](#overview)
 * [🗂 Project Structure](#project-structure)

@@ -1,5 +1,15 @@
 # 🤖 Agentic RAG for AI Studio with TRT-LLM and LangGraph
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorRT](https://img.shields.io/badge/TensorRT-optimized-green.svg?logo=TensorRT)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![LangGraph](https://img.shields.io/badge/LangGraph-orchestration-blue.svg)
+
+</div>
+
 # 📚 Contents
 
 - [🧠 Overview](#overview)

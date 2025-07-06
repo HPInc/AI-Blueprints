@@ -1,5 +1,13 @@
 # 😷 COVID Movement Patterns with VAR
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Pandas](https://img.shields.io/badge/Pandas-used-150458.svg?logo=pandas)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)

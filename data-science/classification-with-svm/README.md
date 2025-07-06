@@ -1,5 +1,13 @@
 # 🌷 Iris flowers classification with SVM
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-used-f7931e.svg?logo=scikit-learn)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)

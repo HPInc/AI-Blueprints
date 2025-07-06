@@ -1,5 +1,13 @@
 # Code Generation RAG with Langchain and Galileo
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
