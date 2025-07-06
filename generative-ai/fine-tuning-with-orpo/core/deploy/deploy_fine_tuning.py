@@ -1,10 +1,15 @@
 
 from __future__ import annotations
 
-import logging, re, pandas as pd, torch, mlflow
+import logging, re, pandas as pd, torch, mlflow, sys
 from pathlib import Path
 from typing import Union
 
+# Add project root to path for imports
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root / "src"))
+
+from utils import get_fine_tuned_models_dir, get_models_dir, get_project_root
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from mlflow.types import Schema, ColSpec
 from mlflow.models import ModelSignature
@@ -128,6 +133,57 @@ def register_llm_comparison_model(
     run_name: str,
     registry_name: str,
 ):
+    """
+    Register an LLM comparison model with MLflow.
+    
+    Args:
+        model_base_path: Path to base model (can be relative to project)
+        model_finetuned_path: Path to fine-tuned model (can be relative to project)
+        experiment: MLflow experiment name
+        run_name: MLflow run name
+        registry_name: Model registry name
+    """
+    # Validate and resolve paths
+    def resolve_model_path(path_str: str) -> str:
+        """Resolve model path, making it project-relative if needed."""
+        path = Path(path_str)
+        
+        # If absolute path and exists, use as-is
+        if path.is_absolute() and path.exists():
+            return str(path)
+            
+        # If relative path, try to resolve relative to project directories
+        project_root = get_project_root()
+        
+        # Try models directory
+        models_path = get_models_dir() / path_str
+        if models_path.exists():
+            return str(models_path)
+            
+        # Try fine-tuned models directory
+        ft_path = get_fine_tuned_models_dir() / path_str
+        if ft_path.exists():
+            return str(ft_path)
+            
+        # Try relative to project root
+        root_path = project_root / path_str
+        if root_path.exists():
+            return str(root_path)
+            
+        # If it's a HuggingFace model ID, return as-is
+        if "/" in path_str and not path_str.startswith("../"):
+            return path_str
+            
+        # Return original path and let downstream handle the error
+        logging.warning(f"Could not resolve model path: {path_str}")
+        return path_str
+    
+    resolved_base_path = resolve_model_path(model_base_path)
+    resolved_ft_path = resolve_model_path(model_finetuned_path)
+    
+    logging.info(f"Resolved base model path: {resolved_base_path}")
+    logging.info(f"Resolved fine-tuned model path: {resolved_ft_path}")
+    
     core = Path(__file__).resolve().parent.parent
     (core / "__init__.py").touch(exist_ok=True)
 
@@ -148,8 +204,8 @@ def register_llm_comparison_model(
             artifact_path="llm_serving_model",
             python_model=LLMComparisonModel(),
             artifacts={
-                "model_no_finetuning": model_base_path,
-                "finetuned_model":     model_finetuned_path,
+                "model_no_finetuning": resolved_base_path,
+                "finetuned_model":     resolved_ft_path,
             },
             signature=signature,
             code_paths=[str(core)],
