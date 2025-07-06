@@ -10,12 +10,74 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from .trt_llm_langchain import TensorRTLangchain
 
+try:
+    # First try absolute import
+    from trt_llm_langchain import TensorRTLangchain
+except ImportError:
+    # If that fails, try adding the src directory to path and import
+    import sys
+    src_dir = str(Path(__file__).parent)
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+    from trt_llm_langchain import TensorRTLangchain
+
+
+# Simple path utilities for project-relative paths
+def get_project_root():
+    """Get the project root directory (image-generation-with-stablediffusion)"""
+    return Path(__file__).parent.parent
+
+def get_config_dir():
+    """Get the config directory"""
+    return get_project_root() / "config"
+
+def get_output_dir():
+    """Get or create the output directory for generated images"""
+    output_dir = get_project_root() / "output"
+    output_dir.mkdir(exist_ok=True)
+    return output_dir
+
+def get_default_model_path():
+    """Get the default model path, preferring local models directory"""
+    # First, check if we have a local models directory with the model
+    local_model_path = get_project_root() / "models" / "stable-diffusion-2-1"
+    if local_model_path.exists():
+        return str(local_model_path)
+    # Fall back to HuggingFace model identifier (will be downloaded automatically)
+    return "stabilityai/stable-diffusion-2-1"
+
+def get_model_cache_dir():
+    """Get the directory for caching downloaded models"""
+    cache_dir = get_project_root() / "models"
+    cache_dir.mkdir(exist_ok=True)
+    return cache_dir
+
+def setup_dreambooth_model():
+    """
+    Setup and validate DreamBooth model path. 
+    Returns the model path if valid, raises an error otherwise.
+    """
+    # Use the correct model path from the project's output directory
+    dreambooth_model_path = str(get_output_dir() / "dreambooth")
+    print(f"Loading DreamBooth model from: {dreambooth_model_path}")
+
+    # Check if the model exists
+    if not os.path.exists(dreambooth_model_path):
+        print(f"DreamBooth model not found at {dreambooth_model_path}")
+        print("Please run the DreamBooth training first, or use a different model path.")
+        print("Available files in output directory:")
+        output_dir = get_output_dir()
+        if output_dir.exists():
+            for item in os.listdir(output_dir):
+                print(f"  - {item}")
+        raise FileNotFoundError(f"DreamBooth model not found at {dreambooth_model_path}")
+    
+    return dreambooth_model_path
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+    "local": str(get_project_root() / "models" / "meta-llama3.1-8b-Q8" / "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"),
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -57,27 +119,29 @@ MODEL_CONTEXT_WINDOWS = {
     "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
-def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+def configure_hf_cache(cache_dir: str = None) -> None:
     """
     Configure HuggingFace cache directories to persist models locally.
 
     Args:
-        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+        cache_dir: Base directory for HuggingFace cache. If None, uses project's models/cache directory.
     """
+    if cache_dir is None:
+        cache_dir = str(get_project_root() / "models" / "cache" / "hugging_face")
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
 
 def load_config_and_secrets(
-    config_path: str = "../../configs/config.yaml",
-    secrets_path: str = "../../configs/secrets.yaml"
+    config_path: str = None,
+    secrets_path: str = None
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Load configuration and secrets from YAML files.
 
     Args:
-        config_path: Path to the configuration YAML file.
-        secrets_path: Path to the secrets YAML file.
+        config_path: Path to the configuration YAML file. If None, uses project's configs/config.yaml.
+        secrets_path: Path to the secrets YAML file. If None, uses project's configs/secrets.yaml.
 
     Returns:
         Tuple containing (config, secrets) as dictionaries.
@@ -85,6 +149,12 @@ def load_config_and_secrets(
     Raises:
         FileNotFoundError: If either the config or secrets file is not found.
     """
+    # Use project-relative paths if not specified
+    if config_path is None:
+        config_path = str(get_project_root() / "configs" / "config.yaml")
+    if secrets_path is None:
+        secrets_path = str(get_project_root() / "configs" / "secrets.yaml")
+    
     # Convert to absolute paths if needed
     config_path = os.path.abspath(config_path)
     secrets_path = os.path.abspath(secrets_path)
@@ -202,7 +272,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, config.json)
+                model_config = os.path.join(local_model_path, "config.json")
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:
