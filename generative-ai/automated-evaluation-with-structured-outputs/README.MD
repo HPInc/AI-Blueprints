@@ -1,14 +1,22 @@
 # 📊 Automated Evaluation with Structured Outputs
 
-# 📚 Contents
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![MLflow](https://img.shields.io/badge/MLflow-enabled-blue.svg?logo=mlflow)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+![HTML UI](https://img.shields.io/badge/User%20Interface-HTML-blue.svg?logo=html5)
+
+</div>
+
+## 📚 Contents
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
 - [⚙️ Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
-
----
 
 ## Overview
 
@@ -25,7 +33,7 @@ The pipeline:
 ## Project Structure
 
 ```
-├── data                                                                
+├── data
 │   ├── inputs
 │   │   ├── 2025 ISEF Project Abstracts.csv    # Data assets for the project
 ├── demo
