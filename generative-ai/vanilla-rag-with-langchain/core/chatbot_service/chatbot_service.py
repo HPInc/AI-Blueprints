@@ -1,7 +1,7 @@
 """
 Chatbot Service implementation that extends the BaseGenerativeService.
 This service provides a RAG (Retrieval-Augmented Generation) chatbot with 
-Galileo integration for protection, observation, and evaluation.
+support for document retrieval and conversational AI capabilities.
 """
 import os
 import uuid
@@ -20,7 +20,6 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda, RunnableMap
 from langchain.schema.document import Document
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from galileo_protect import ProtectParser
 
 # Import base service class from the shared location
 import sys
@@ -339,10 +338,6 @@ class ChatbotService(BaseGenerativeService):
             self.load_prompt()
             self.load_chain()
 
-            # Set up Galileo integration
-            self.setup_protection()
-            self.setup_monitoring()
-
             logger.info(f"{self.__class__.__name__} successfully loaded and configured.")
         except Exception as e:
             logger.error(f"Error loading context: {e}")
@@ -431,7 +426,6 @@ class ChatbotService(BaseGenerativeService):
 
             # Rebuild the chain with the new prompt
             self.load_chain()
-            self.setup_protection()
 
             return {
                 "chunks": [],
@@ -480,10 +474,9 @@ class ChatbotService(BaseGenerativeService):
             # Get the model context window for optimized retrieval
             context_window = get_context_window(self.llm)
             
-            # Run the query through the protected chain with monitoring
-            response = self.protected_chain.invoke(
-                {"input": user_query, "output": ""},
-                config={"callbacks": [self.monitor_handler]}
+            # Run the query through the chain
+            response = self.chain.invoke(
+                {"input": user_query, "output": ""}
             )
             
             # Get relevant documents using context-aware retrieval
