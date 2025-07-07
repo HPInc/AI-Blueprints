@@ -1,93 +1,89 @@
-# Text Summarization with LangChain and Galileo
+# Text Summarization with LangChain
 
 <div align="center">
-
-![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
-![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
-![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
-![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
-![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
-
+  <img src="../../assets/images/ai_studio_logo.png" alt="AI Studio Logo" width="150">
 </div>
 
-## 📚 Contents
+---
 
-- [🧠 Overview](#overview)
-- [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
-- [🚀 Usage](#usage)
-- [📞 Contact and Support](#contact-and-support)
+## 📋 Overview
+
+This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain** and **Sentence Transformers** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
 
 ---
 
-## Overview
-
-This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-├── README.md                                                               # Project documentation
-├── core                                                                    # Core Python modules
-│   └── service
-│       ├── __init__.py
-│       └── text_summarization_service.py                                   # Code for chatbot service
-├── data                                                                    # Data assets used in the project
-│   ├── I_have_a_dream.txt
-│   └── I_have_a_dream.vtt
-├── notebooks
-│   └── text-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
-└── requirements.txt                                                        # Python dependencies
+text-summarization-with-langchain/
+│
+├── configs/
+│   ├── config.yaml                                # Configuration parameters
+│   └── secrets.yaml                               # API keys and credentials
+│
+├── core/
+│   └── summarizer_service/
+│       └── summarizer_service.py                  # Main service implementation
+│
+├── data/
+│   └── sample_text.txt                            # Sample text for summarization
+│
+├── demo/
+│   └── streamlit_app.py                           # Streamlit demo application
+│
+├── docs/
+│   └── architecture.md                            # Technical documentation
+│
+├── notebooks/
+│   ├── register-model.ipynb                       # Model registration notebook
+│   └── text-summarization-with-langchain.ipynb                          # Main notebook for the project
+│
+├── src/
+│   ├── service/
+│   │   └── base_service.py                        # Base service class
+│   ├── utils.py                                   # Utility functions
+│   └── prompt_templates.py                        # Prompt templates
+│
+├── requirements.txt                                # Python dependencies
+└── README.md                                       # This file
 ```
 
 ---
 
-## Setup
+## 🚀 Getting Started
 
-### Step 0: Minimum Hardware Requirements
+### Prerequisites
 
-To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
+- **HP AI Studio** account and access
+- **Python 3.8+**
+- **CUDA-compatible GPU** (optional, for faster processing)
 
-- RAM: 32 GB
-- VRAM: 6 GB
-- GPU: NVIDIA GPU
+### Step 1: Set up HP AI Studio
 
-### Step 1: Create an AI Studio Project
+1. **Access HP AI Studio** and create a new workspace.
+2. **Upload this project** to your workspace.
+3. **Select the Z by HP AI Studio Local GenAI image** when launching your workspace.
 
-- Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
-- (Optional) Add a description and relevant tags.
+### Step 2: Install Dependencies
 
-### Step 2: Set Up a Workspace
-
-- Choose **Local GenAI** as the base image.
-
-### Step 3: Clone the Repository
-
-1. Clone the GitHub repository:
+```bash
+pip install -r requirements.txt
+```
 
    ```
-   git clone https://github.com/HPInc/AI-Blueprints.git
-   ```
 
-2. Ensure all files are available after workspace creation..
+### Step 3: Download the Required Model
 
-### Step 4: Add the Model to Workspace
+- Navigate to the **Data Fabric** section in HP AI Studio.
+- **Download the Meta Llama 3.1 8B model** to your workspace:
+  - **Bucket Name**: `meta-llama3.1-8b-Q8`
+  - **Bucket Region**: `us-west-2`
+- Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
-1. Download the Meta Llama 3.1 model with 8B parameters via Models tab:
+### Step 4: Configure Secrets and Paths
 
-- **Model Name**: `meta-llama3.1-8b-Q8`
-- **Model Source**: `AWS S3`
-- **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
-- **Bucket Region**: `us-west-2`
-- Make sure that the model is in the `datafabric` folder inside your workspace.
-
-### Step 5: Configure Secrets and Paths
-
-- Add your API keys to the `secrets.yaml` file under the `configs` folder:
-  - `HUGGINGFACE_API_KEY`
-  - `GALILEO_API_KEY`
+- Add your API keys to the `secrets.yaml` file located in the `configs` folder:
+  - `HUGGINGFACE_HUB_TOKEN`
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -96,44 +92,100 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 1: Run the Notebook
 
-Execute the notebook inside the `notebooks` folder:
-
 ```bash
-notebooks/text-summarization-with-langchain-and-galileo.ipynb
+notebooks/text-summarization-with-langchain.ipynb
 ```
 
-This will:
+### Step 2: Key Features
 
-- Set up the semantic chunking pipeline
-- Create the summarization chain with LangChain
-- Integrate Galileo evaluation, protection, and observability
-- Register the model in MLflow
-
-### Step 2: Deploy the Summarization Service
-
-- Go to **Deployments > New Service** in AI Studio.
-- Name the service and select the registered model.
-- Choose a model version and enable **GPU acceleration**.
-- Start the deployment.
-- Once deployed, access the **Swagger UI** via the Service URL.
-- Use the API endpoints to generate summaries from your text data.
-
-### Successful Demonstration of the User Interface
-
-![text Summarization Demo UI](docs/ui_summarization.png)
-
-:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of suggested local model (i.e. Llama3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
+- Build semantic chunking pipeline
+- Generate contextual summaries
+- Integrate evaluation, protection, and observability
+- Support for multiple model sources
 
 ---
 
-## Contact and Support
+## 🔧 Configuration
 
-- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+### config.yaml
+```yaml
+model:
+  source: "local"  # Options: "local", "huggingface_hosted", "huggingface_cloud"
+  model_name: "meta-llama/Llama-3.1-8b"
+  
+chunking:
+  chunk_size: 1000
+  chunk_overlap: 200
+  
+summarization:
+  max_length: 150
+  temperature: 0.7
+```
 
-- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
-
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+### secrets.yaml
+```yaml
+HUGGINGFACE_API_KEY: "your_huggingface_api_key_here"
+```
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+## 🎯 Key Features
+
+- **📝 Semantic Chunking**: Intelligent text segmentation using sentence transformers
+- **🤖 AI-Powered Summarization**: Generate concise summaries using Meta Llama 3.1
+- **⚡ Multi-Source Support**: Local models, HuggingFace hosted, and cloud APIs
+- **📊 Evaluation Framework**: Built-in metrics for summary quality assessment
+- **🛡️ Content Protection**: Safeguards against sensitive information exposure
+- **📈 Observability**: Comprehensive logging and monitoring capabilities
+
+---
+
+## 📊 Example Usage
+
+```python
+from core.summarizer_service.summarizer_service import SummarizerService
+
+# Initialize the service
+summarizer = SummarizerService(config_path="configs/config.yaml")
+
+# Load and process text
+text = "Your long text content here..."
+summary = summarizer.summarize(text)
+
+print(f"Summary: {summary}")
+```
+
+---
+
+## 🧪 Demo Application
+
+Run the Streamlit demo:
+
+```bash
+streamlit run demo/streamlit_app.py
+```
+
+---
+
+## 📚 Additional Resources
+
+- [LangChain Documentation](https://docs.langchain.com/)
+- [Sentence Transformers Documentation](https://www.sbert.net/)
+- [Meta Llama Documentation](https://llama.meta.com/)
+- [HP AI Studio Documentation](https://developers.hp.com/ai-studio)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our contributing guidelines and submit pull requests for any improvements.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+**🚀 Happy Summarizing with AI Studio!**

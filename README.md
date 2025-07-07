@@ -1,255 +1,295 @@
 <h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for HP AI Studio 🚀 </h1>
 
-# Content
+<p align="center">
+  <img src="assets/images/ai_studio_logo.png" alt="AI Studio Logo" width="200">
+</p>
 
-- [Overview](#overview)
-- [Repository Structure](#repository-structure)
-- [Data Science](#data-science)
-- [Deep Learning](#deep-learning)
-- [Generative AI](#generative-ai)
-- [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-integration)
+## Table of Contents
+
 - [Troubleshooting](#troubleshooting) 
-- [Contact and Support](#contact-and-support)
 
 ---
 
-# Overview
+## 📋 Overview
 
-This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.
-
-The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **Nemotron** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.
-
-We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), please feel free to open a new issue in this repository — we welcome your feedback!
+Welcome to the **AI Blueprint Projects** repository! This collection contains a variety of projects that demonstrate how to build, train, and deploy machine learning and AI models using **HP AI Studio**. Each project is designed to be a **blueprint** that provides practical, real-world examples of AI development workflows.
 
 ---
 
-# Repository Structure
+## 🚀 Getting Started
+
+To get started with these AI Blueprint projects:
+
+1. **Clone this repository** to your local machine or workspace.
+2. **Navigate to any project folder** that interests you.
+3. **Follow the README.md instructions** within each project directory.
+4. **Set up the required dependencies** as outlined in each project's requirements file.
 
 ```
-# Root Directory
-├── data-science/                          # Projects related to classical machine learning and statistical analysis
-│   ├── classification-with-svm/           # SVM-based classification implementation
-│   └── data-analysis-with-var/            # Vector AutoRegression analysis workflow
-│
-├── deep-learning/                         # Deep learning applications using popular frameworks
-│   ├── classification-with-keras/         # Image classification using Keras
-│   ├── question-answering-with-bert/      # QA system built on top of BERT model
-│   ├── recommendation-system-with-tensorflow/  # TensorFlow-based recommendation engine
-│   ├── spam-detection-with-nlp/           # NLP-driven spam classifier
-│   ├── super-resolution-with-fsrcnn/      # Image enhancement using FSRCNN
-│   └── text-generation-with-rnn/          # RNN-based generative model for text
-│
-├── generative-ai/                         # Generative AI applications across text, code, and image
-│   ├── automated-evaluation-with-structured-outputs/  # Eval pipeline for structured generation
-│   ├── code-generation-with-langchain/    # Code synthesis using LangChain
-│   ├── fine-tuning-with-orpo/             # ORPO-based fine-tuning procedure
-│   ├── image-generation-with-stablediffusion/  # StableDiffusion-powered image generation
-│   ├── text-generation-with-langchain/    # Text generation leveraging LangChain stack
-│   ├── text-summarization-with-langchain/ # Summarization pipeline using LangChain
-│   └── vanilla-rag-with-langchain/        # Basic Retrieval-Augmented Generation with LangChain
-│
-├── ngc-integration/                       # Projects leveraging NVIDIA GPU Cloud and libraries
-│   ├── agentic-rag-with-tensorrtllm/      # RAG system using TensorRT-LLM and agentic planning
-│   ├── audio-translation-with-nemo/       # Speech translation with NVIDIA NeMo
-│   ├── data-analysis-with-cudf/           # RAPIDS cuDF-based data manipulation
-│   ├── data-visualization-with-cudf/      # Visualizations using GPU-accelerated tools
-│   └── vacation-recommendation-with-bert/ # Recommendation app using BERT embeddings
 ```
 
 ---
 
-# Data Science
+## 📚 Projects Overview
 
-The sample projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+Below is a comprehensive list of all available AI Blueprint projects, organized by category. Each project includes detailed documentation, code examples, and step-by-step instructions.
 
-We provide **2 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+---
+
+## 🧠 Deep Learning Projects
+
+### 📝 Question Answering with BERT
+
+**🔗 Path:** `deep-learning/question-answering-with-bert/`
+
+**📝 Description:** This project demonstrates how to fine-tune a BERT model for question-answering tasks using the SQuAD dataset. It covers data preprocessing, model training, evaluation metrics, and deployment strategies for production use.
+
+**🔧 Key Technologies:** BERT, Transformers, PyTorch, Hugging Face, SQuAD Dataset
+
+**📋 Features:**
+- Pre-trained BERT model fine-tuning
+- SQuAD dataset integration
+- Performance evaluation and metrics
+- Model deployment examples
+
+---
 
 ### 🌸 Classification with SVM
 
-This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+**🔗 Path:** `data-science/classification-with-svm/`
 
-It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
+**📝 Description:** A comprehensive guide to building classification models using Support Vector Machines (SVM). This project uses the classic Iris dataset to demonstrate feature selection, model training, hyperparameter tuning, and performance evaluation.
 
-### 🏙️ Data Analysis with VAR
+**🔧 Key Technologies:** scikit-learn, pandas, matplotlib, seaborn
 
-This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
-
-It highlights how city-level movement patterns changed during the crisis. The experiment runs on the **Data Science Workspace**.
+**📋 Features:**
+- Data preprocessing and visualization
+- SVM model implementation
+- Hyperparameter optimization
+- Cross-validation techniques
+- Model performance analysis
 
 ---
-
-# Deep Learning
-
-The sample projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
-
-We provide **6 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 🖌️ Classification with Keras
 
-This project performs basic **image classification** using the **TensorFlow** framework.
+**🔗 Path:** `deep-learning/classification-with-keras/`
 
-It trains a model to classify handwritten digits from the **MNIST** dataset and runs on the **Deep Learning Workspace**.
+**📝 Description:** Build and train neural networks for image classification using Keras and TensorFlow. This project focuses on handwritten digit recognition using the MNIST dataset, covering model architecture design, training optimization, and evaluation.
 
-### 🧠 Question Answering with BERT
+**🔧 Key Technologies:** Keras, TensorFlow, MNIST, Neural Networks
 
-This project demonstrates a simple **BERT Question Answering (QA)** experiment. It provides code to train a BERT-based model, as well as instructions to load a pretrained model from **Hugging Face**.
-
-The model is deployed using **MLflow** to expose an inference service capable of answering questions based on input text.
-
-### 🎬 Recommendation System with TensorFlow
-
-This project builds a simple **recommender system** for movies using **TensorFlow**.
-
-It trains on user-item interaction data to predict movie preferences and runs on the **Deep Learning Workspace**.
-
-### 🚫 Spam Detection with NLP
-
-This project implements a **text classification** system to detect **spam** messages.
-
-It uses deep learning techniques and requires the **Deep Learning Workspace** for training and inference.
-
-### 🖼️ Super Resolution with FSRCNN
-
-This project showcases a **Computer Vision** experiment that applies convolutional neural networks for **image super-resolution** — enhancing the quality and resolution of input images.
-
-### ✍️ Text Generation with RNN
-
-This project illustrates how to build a simple **character-by-character text generation** model.
-
-It trains on a dataset containing **Shakespeare's texts**, demonstrating the fundamentals of text generation by predicting one character at a time.
+**📋 Features:**
+- Neural network architecture design
+- MNIST dataset handling
+- Model training and validation
+- Performance visualization
+- Prediction and inference
 
 ---
 
-# Generative AI
+### 🛡️ Spam Detection with NLP
 
-The sample projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+**🔗 Path:** `deep-learning/spam-detection-with-nlp/`
 
-We provide **7 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+**📝 Description:** Implement natural language processing techniques to build an effective spam detection system. This project covers text preprocessing, feature extraction, model training, and evaluation using various NLP libraries and techniques.
 
-### 📊 Automated Evaluation with Structured Outputs
+**🔧 Key Technologies:** NLTK, scikit-learn, pandas, Text Processing
 
-**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑3** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
-
-- Generates scores locally via `llama.cpp` (no data leaves your machine)
-- Registers the evaluator as a **pyfunc** model in MLflow
-- Exposes a REST `/invocations` endpoint
-- Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
-
-### Code Generation with Langchain
-
-This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and integrates with PromptQuality and Galileo for evaluation and tracking. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
-
-### Fine Tuning with ORPO
-
-This project demonstrates a full-stack LLM fine-tuning experiment using ORPO (Open-Source Reinforcement Pretraining Objective) to align a base language model with human preference data. It leverages the Z by HP AI Studio Local GenAI environment, and uses models such as LLaMA 3, Gemma 1B, and Mistral 7B as foundations.
-
-We incorporate:
-
-Galileo PromptQuality for evaluating model responses with human-like scorers (e.g., context adherence)
-TensorBoard for human feedback visualization before fine-tuning
-A flexible model selector and inference runner architecture
-A comparative setup to benchmark base vs fine-tuned models on the same prompts
-
-### Image Generation with Stable Diffusion
-
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
-
-### Text Generation with LangChain
-
-This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It also integrates Galileo Prompt Quality for evaluation and logging, and supports multi-source model loading including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
-
-### Text Summarization with LangChain
-
-This project demonstrates how to build a semantic chunking and summarization pipeline for texts using LangChain, Sentence Transformers, and Galileo for model evaluation, protection, and observability. It leverages the Z by HP AI Studio Local GenAI image and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
-
-### Vanilla RAG with LangChain
-
-This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatbot built using LangChain and Galileo for model evaluation, protection, and observability. It leverages the Z by HP AI Studio Local GenAI image and the Meta Llama 3.1 model with 8B parameters to generate contextual and document-grounded answers to user queries about Z by HP AI Studio.
+**📋 Features:**
+- Text preprocessing and cleaning
+- Feature extraction (TF-IDF, n-grams)
+- Multiple classification algorithms
+- Model comparison and evaluation
+- Real-time spam detection
 
 ---
 
-# NVIDIA GPU Cloud Integration
+## 🤖 Generative AI Projects
 
-The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+### 📊 Automated Evaluation with Structured Outputs
 
-We provide **5 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+**🔗 Path:** `generative-ai/automated-evaluation-with-structured-outputs/`
+
+**📝 Description:** This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and includes evaluation tracking capabilities. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
+
+**🔧 Key Technologies:** LangChain, Transformers, Structured Outputs
+
+**📋 Features:**
+- Code snippet extraction from Jupyter notebooks
+- LLM-powered natural language generation
+- Structured output generation
+- PromptQuality for evaluating model responses with human-like scorers (e.g., context adherence)
+- Multi-source model support (local/hosted)
+- GitHub integration for notebook crawling
+- Vector store integration for RAG workflows
+- Configurable prompt templating
+
+---
+
+### 📄 Text Summarization with LangChain
+
+**🔗 Path:** `generative-ai/text-summarization-with-langchain/`
+
+**📝 Description:** This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It includes evaluation and logging capabilities, and supports multi-source model loading including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
+
+**🔧 Key Technologies:** LangChain, Sentence Transformers, LLaMA
+
+**📋 Features:**
+- Semantic chunking and summarization
+- This project demonstrates how to build a semantic chunking and summarization pipeline for texts using LangChain and Sentence Transformers for model evaluation, protection, and observability. It leverages the Z by HP AI Studio Local GenAI image and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
+
+---
+
+### 🤖 Vanilla RAG with LangChain
+
+**🔗 Path:** `generative-ai/vanilla-rag-with-langchain/`
+
+**📝 Description:** This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatbot built using LangChain for model evaluation, protection, and observability. It leverages the Z by HP AI Studio Local GenAI image and the Meta Llama 3.1 model with 8B parameters to generate contextual and document-grounded answers to user queries about Z by HP AI Studio.
+
+**🔧 Key Technologies:** LangChain, ChromaDB, LLaMA, RAG
+
+**📋 Features:**
+- Document loading and processing
+- Vector storage with ChromaDB
+- Question answering with context
+- Multi-source model support
+- Configurable pipeline
+
+---
+
+## 🔗 NGC Integration Projects
 
 ### 🤖 Agentic RAG with TensorRT-LLM
 
-This project contains a single integrated pipeline—Agentic RAG for AI Studio with TRT-LLM and LangGraph—that implements a Retrieval-Augmented Generation (RAG) workflow using:
+**🔗 Path:** `ngc-integration/agentic-rag-with-tensorrtllm/`
 
-TensorRT-backed Llama-3.1-Nano (TRT-LLM): for fast, GPU-accelerated inference.
-LangGraph: to orchestrate an agentic, multi-step decision flow (relevance check, memory lookup, query rewriting, retrieval, answer generation, and memory update).
-ChromaDB: as a local vector store over Markdown context files (about AI Studio).
-SimpleKVMemory: a lightweight on-disk key-value store to cache query-answer pairs.
+**📝 Description:** Build advanced agentic RAG systems using NVIDIA's TensorRT-LLM for optimized inference performance. This project demonstrates how to create intelligent agents that can reason, plan, and execute complex tasks using retrieval-augmented generation.
 
-### 🎙️ Audio Translation with NeMo
+**🔧 Key Technologies:** TensorRT-LLM, NVIDIA NGC, Agentic AI, RAG
 
-This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
-
-1. **Speech-to-Text (STT)** conversion using Citrinet
-2. **Text Translation (TT)** from English to Spanish using NMT
-3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN
-
-All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
-
-### 📈 Data Analysis with cuDF
-
-In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
-
-- **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
-
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
-
-### 📡 Data Visualization with cuDF
-
-This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)** dashboard for the [OpenCellID](https://www.opencellid.org/) dataset. It uses **Panel** and **cuDF** to deliver lightning-fast geospatial analysis and visualization.
-
-You can explore cell tower distributions by radio type, operator, country, and time window — rendered live on an interactive map with full GPU acceleration.
-
-### 🌍 Vacation Recommendation with BERT
-
-This project implements an **AI-powered recommendation agent** that delivers personalized travel suggestions based on user queries.
-
-It leverages the **NVIDIA NeMo Framework** and **BERT embeddings** to understand user intent and generate highly relevant, tailored vacation recommendations.
+**📋 Features:**
+- High-performance LLM inference with TensorRT
+- Agentic behavior implementation
+- Advanced RAG architectures
+- NVIDIA NGC integration
+- Multi-step reasoning capabilities
 
 ---
 
-# Troubleshooting
+## 🛠️ Installation and Setup
 
-This section provides solutions for common issues users may encounter when working with AI Blueprint projects in HP AI Studio:
+Each project contains its own setup instructions, but here are the general steps:
 
-1. **Check Hardware Compatibility**
-   Each project’s README includes recommended minimum hardware specifications (e.g., RAM, VRAM). Make sure your system meets these requirements—especially when working with large models or during deployment, as insufficient resources can cause failures.
+### Prerequisites
 
-2. **Models or Datasets Not Visible After Download**
-   If you download models or datasets while your workspace is running, they might not appear in the workspace. In such cases, restart your workspace to ensure they are properly recognized.
+- **Python 3.8+**
+- **pip** or **conda** package manager
+- **Git** for version control
+- **HP AI Studio** access (for cloud-based projects)
 
-3. **Connection or SSL Errors in Notebooks**
-   If you encounter SSL certificate or connection errors while accessing websites from notebooks (especially on restricted networks), verify your network settings. Consider using a proxy to bypass restrictive network constraints.
+### Quick Start
 
-4. **File or Path Not Found Errors**
-   Ensure that all required files and directories are correctly placed as specified in the project’s README. If any paths or files are missing, create or move them to the correct locations.
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd AI-Blueprints
+   ```
 
-5. **GPU Not Available**
-   For projects requiring NVIDIA GPUs, verify GPU availability by running `nvidia-smi` in the terminal. Ensure that a compatible GPU is accessible and has sufficient free memory to run the project.
+2. **Navigate to a specific project:**
+   ```bash
+   cd <project-category>/<project-name>
+   ```
 
-6. **Deployment Errors Despite Meeting Requirements**
-   Even if your hardware meets the specs, limited available RAM or VRAM can cause deployment issues. Close other running workspaces or programs to free up memory.
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-7. **API Timeout Issues**
-   API requests triggered through user interfaces have a response timeout limit (usually 30 seconds). For long-running tasks or large inputs, use the provided notebooks instead of the UI to avoid timeout errors.
-
----
-
-# Contact and Support
-
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
-
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
-
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+4. **Follow project-specific instructions** in the individual README files.
 
 ---
 
-> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+## 📚 Documentation
+
+Each project includes:
+
+- **📖 README.md**: Detailed setup and usage instructions
+- **📓 Jupyter Notebooks**: Interactive code examples and tutorials
+- **📋 requirements.txt**: Python dependency specifications
+- **⚙️ Configuration files**: Model and environment settings
+- **📊 Sample data**: Example datasets for testing and learning
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions to the AI Blueprint Projects! Here's how you can help:
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/your-feature`)
+3. **Make your changes** and test thoroughly
+4. **Commit your changes** (`git commit -am 'Add new feature'`)
+5. **Push to the branch** (`git push origin feature/your-feature`)
+6. **Create a Pull Request**
+
+### Contribution Guidelines
+
+- Follow existing code style and structure
+- Include comprehensive documentation
+- Add unit tests where applicable
+- Update README files as needed
+- Ensure compatibility with HP AI Studio
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE). See the LICENSE file for full details.
+
+---
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Issue: Package installation failures**
+- Solution: Ensure you're using the correct Python version (3.8+)
+- Try using virtual environments: `python -m venv venv && source venv/bin/activate`
+
+**Issue: CUDA/GPU related errors**
+- Solution: Verify GPU drivers and CUDA installation
+- Check compatibility between PyTorch/TensorFlow versions and CUDA
+
+**Issue: Memory errors during model training**
+- Solution: Reduce batch size or use gradient accumulation
+- Consider using mixed precision training
+
+**Issue: Data loading problems**
+- Solution: Check file paths and permissions
+- Verify data format matches expected input
+
+### Getting Help
+
+If you encounter issues:
+
+1. **Check the project-specific README** for detailed instructions
+2. **Review the troubleshooting section** in individual projects
+3. **Search existing issues** in the repository
+4. **Create a new issue** with detailed information about your problem
+
+---
+
+## 📞 Support
+
+For additional support:
+
+- **📧 Email**: [Support Team](mailto:support@example.com)
+- **💬 Community Forum**: [AI Studio Community](https://community.example.com)
+- **📚 Documentation**: [HP AI Studio Docs](https://docs.example.com)
+
+---
+
+**🚀 Happy Building with AI Studio!**
