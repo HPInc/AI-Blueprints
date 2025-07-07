@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, model initialization.
 """
 
 import os
@@ -263,85 +263,72 @@ def initialize_llm(
 
 def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
     """
-    Configure environment variables for Galileo services.
+    Configure environment variables for Galileo services (deprecated).
 
     Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
+        secrets: Dictionary containing API keys (ignored).
+        console_url: URL for the Galileo console (ignored).
 
-    Raises:
-        ValueError: If Galileo API key is not found in secrets.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
+    print("⚠️  Warning: Galileo environment setup is disabled - dependencies removed for public release")
+    pass
 
 
 def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
     """
-    Initialize Galileo Protect project and stage.
+    Initialize Galileo Protect project and stage (deprecated).
 
     Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
+        project_name: Name for the Galileo Protect project (ignored).
+        stage_name: Optional name for the stage (ignored).
 
     Returns:
-        Tuple containing (project object, project_id, stage_id).
+        Tuple containing (None, empty_string, empty_string).
 
-    Raises:
-        ImportError: If galileo_protect is not installed.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
+    print("⚠️  Warning: Galileo Protect initialization is disabled - dependencies removed for public release")
+    return None, "", ""
 
 
 def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
     """
-    Initialize a Galileo Prompt Callback for evaluation.
+    Initialize a Galileo Prompt Callback for evaluation (deprecated).
 
     Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
+        project_name: Name for the evaluation project (ignored).
+        scorers: List of scorers to use (ignored).
 
     Returns:
-        Galileo prompt callback object.
+        None
 
-    Raises:
-        ImportError: If promptquality is not installed.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
+    print("⚠️  Warning: Galileo Evaluator initialization is disabled - dependencies removed for public release")
+    return None
     
+
+def initialize_galileo_observer(project_name: str):
+    """
+    Initialize a Galileo Observer for monitoring (deprecated).
+
+    Args:
+        project_name: Name for the observation project (ignored).
+
+    Returns:
+        None
+
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
+    """
+    print("⚠️  Warning: Galileo Observer initialization is disabled - dependencies removed for public release")
+    return None
+
+
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.
@@ -778,24 +765,3 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     formatted_text = "\n\n".join(formatted_docs)
 
     return formatted_text
-
-
-def initialize_galileo_observer(project_name: str):
-    """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
-    
-    return GalileoObserveCallback(project_name=project_name)
