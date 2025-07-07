@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for image generation templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, model initialization, and helper functions.
 """
 
 import os
@@ -49,35 +49,14 @@ def get_default_model_path():
 
 def get_model_cache_dir():
     """Get the directory for caching downloaded models"""
-    cache_dir = get_project_root() / "models"
-    cache_dir.mkdir(exist_ok=True)
-    return cache_dir
+    cache_dir = get_project_root() / "cache" / "models"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return str(cache_dir)
 
-def setup_dreambooth_model():
-    """
-    Setup and validate DreamBooth model path. 
-    Returns the model path if valid, raises an error otherwise.
-    """
-    # Use the correct model path from the project's output directory
-    dreambooth_model_path = str(get_output_dir() / "dreambooth")
-    print(f"Loading DreamBooth model from: {dreambooth_model_path}")
-
-    # Check if the model exists
-    if not os.path.exists(dreambooth_model_path):
-        print(f"DreamBooth model not found at {dreambooth_model_path}")
-        print("Please run the DreamBooth training first, or use a different model path.")
-        print("Available files in output directory:")
-        output_dir = get_output_dir()
-        if output_dir.exists():
-            for item in os.listdir(output_dir):
-                print(f"  - {item}")
-        raise FileNotFoundError(f"DreamBooth model not found at {dreambooth_model_path}")
-    
-    return dreambooth_model_path
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": str(get_project_root() / "models" / "meta-llama3.1-8b-Q8" / "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"),
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -119,29 +98,27 @@ MODEL_CONTEXT_WINDOWS = {
     "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
-def configure_hf_cache(cache_dir: str = None) -> None:
+def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
     """
     Configure HuggingFace cache directories to persist models locally.
 
     Args:
-        cache_dir: Base directory for HuggingFace cache. If None, uses project's models/cache directory.
+        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
     """
-    if cache_dir is None:
-        cache_dir = str(get_project_root() / "models" / "cache" / "hugging_face")
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
 
 def load_config_and_secrets(
-    config_path: str = None,
-    secrets_path: str = None
+    config_path: str = "../../config/config.yaml",
+    secrets_path: str = "../../config/secrets.yaml"
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Load configuration and secrets from YAML files.
 
     Args:
-        config_path: Path to the configuration YAML file. If None, uses project's configs/config.yaml.
-        secrets_path: Path to the secrets YAML file. If None, uses project's configs/secrets.yaml.
+        config_path: Path to the configuration YAML file.
+        secrets_path: Path to the secrets YAML file.
 
     Returns:
         Tuple containing (config, secrets) as dictionaries.
@@ -149,12 +126,6 @@ def load_config_and_secrets(
     Raises:
         FileNotFoundError: If either the config or secrets file is not found.
     """
-    # Use project-relative paths if not specified
-    if config_path is None:
-        config_path = str(get_project_root() / "configs" / "config.yaml")
-    if secrets_path is None:
-        secrets_path = str(get_project_root() / "configs" / "secrets.yaml")
-    
     # Convert to absolute paths if needed
     config_path = os.path.abspath(config_path)
     secrets_path = os.path.abspath(secrets_path)
@@ -240,6 +211,7 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
+            task="text-generation",
         )
 
     elif model_source == "hugging-face-local":
@@ -261,7 +233,21 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+        # Disable automatic chat template application by removing it from tokenizer
+        if hasattr(tokenizer, 'chat_template'):
+            tokenizer.chat_template = None
+
+        pipe = pipeline(
+            "text-generation", 
+            model=hf_model, 
+            tokenizer=tokenizer, 
+            max_new_tokens=100, 
+            device=0,
+            return_full_text=False,
+            do_sample=True,
+            temperature=0.1
+        )
+        # Create HuggingFacePipeline without automatic chat template application
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -318,85 +304,72 @@ def initialize_llm(
 
 def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
     """
-    Configure environment variables for Galileo services.
+    Configure environment variables for Galileo services (deprecated).
 
     Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
+        secrets: Dictionary containing API keys (ignored).
+        console_url: URL for the Galileo console (ignored).
 
-    Raises:
-        ValueError: If Galileo API key is not found in secrets.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
+    print("⚠️  Warning: Galileo environment setup is disabled - dependencies removed for public release")
+    pass
 
 
 def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
     """
-    Initialize Galileo Protect project and stage.
+    Initialize Galileo Protect project and stage (deprecated).
 
     Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
+        project_name: Name for the Galileo Protect project (ignored).
+        stage_name: Optional name for the stage (ignored).
 
     Returns:
-        Tuple containing (project object, project_id, stage_id).
+        Tuple containing (None, empty_string, empty_string).
 
-    Raises:
-        ImportError: If galileo_protect is not installed.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
+    print("⚠️  Warning: Galileo Protect initialization is disabled - dependencies removed for public release")
+    return None, "", ""
 
 
 def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
     """
-    Initialize a Galileo Prompt Callback for evaluation.
+    Initialize a Galileo Prompt Callback for evaluation (deprecated).
 
     Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
+        project_name: Name for the evaluation project (ignored).
+        scorers: List of scorers to use (ignored).
 
     Returns:
-        Galileo prompt callback object.
+        None
 
-    Raises:
-        ImportError: If promptquality is not installed.
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
     """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
+    print("⚠️  Warning: Galileo Evaluator initialization is disabled - dependencies removed for public release")
+    return None
     
+
+def initialize_galileo_observer(project_name: str):
+    """
+    Initialize a Galileo Observer for monitoring (deprecated).
+
+    Args:
+        project_name: Name for the observation project (ignored).
+
+    Returns:
+        None
+
+    Note:
+        This function is deprecated. Galileo dependencies have been removed for public release.
+    """
+    print("⚠️  Warning: Galileo Observer initialization is disabled - dependencies removed for public release")
+    return None
+
+
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.
@@ -646,211 +619,3 @@ def get_context_window(model) -> int:
 
     # Fall back to detection logic
     return get_model_context_window(model)
-
-
-def dynamic_retriever(query: str, collection, top_n: int = None, context_window: int = None) -> List:
-    """
-    Retrieve relevant documents with dynamic adaptation based on context window.
-    
-    This function automatically determines how many documents to retrieve based on
-    the available context window, optimizing for the specific model being used.
-    
-    Args:
-        query: The search query
-        collection: Vector database collection to search in
-        top_n: Number of documents to retrieve (if None, will be determined dynamically)
-        context_window: Size of the model's context window in tokens
-        
-    Returns:
-        List: Document objects containing relevant content
-    """
-    from langchain.schema import Document
-
-    # Dynamically determine how many documents to retrieve based on context window
-    if top_n is None:
-        if context_window:
-            # Larger context windows can handle more documents
-            # Using a heuristic: 1 document per 1000 tokens of context
-            # with a minimum of 2 and maximum of 10
-            suggested_top_n = max(2, min(10, context_window // 1000))
-            top_n = suggested_top_n
-        else:
-            # Default if we can't determine context window
-            top_n = 3
-
-    # Check if collection is a Chroma vector store
-    if hasattr(collection, 'as_retriever'):
-        # It's a LangChain Chroma vector store
-        retriever = collection.as_retriever(search_kwargs={"k": top_n})
-        documents = retriever.get_relevant_documents(query)
-    elif hasattr(collection, '_collection'):
-        # It's a direct ChromaDB collection
-        results = collection._collection.query(
-            query_texts=[query],
-            n_results=top_n
-        )
-        
-        # Convert to Document objects
-        documents = [
-            Document(
-                page_content=str(results['documents'][0][i]),
-                metadata=results['metadatas'][0][i] if isinstance(results['metadatas'][0][i], dict) else results['metadatas'][0][i]
-            )
-            for i in range(len(results['documents'][0]))
-        ]
-    else:
-        # Try direct query as a fallback
-        try:
-            results = collection.query(
-                query_texts=[query],
-                n_results=top_n
-            )
-            
-            # Convert to Document objects
-            documents = [
-                Document(
-                    page_content=str(results['documents'][i]),
-                    metadata=results['metadatas'][i] if isinstance(results['metadatas'][i], dict) else results['metadatas'][i][0]  
-                )
-                for i in range(len(results['documents']))
-            ]
-        except AttributeError:
-            # If all else fails, raise a more helpful error
-            raise AttributeError(
-                "The collection object doesn't have required retrieval methods. "
-                "Expected a LangChain Chroma vector store or a ChromaDB collection."
-            )
-
-    return documents
-
-
-def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
-    """
-    Format retrieved documents using dynamic allocation based on model context window.
-    
-    This function:
-    1. Adapts to the model's context window size
-    2. Keeps full content for the most relevant document when possible
-    3. Distributes remaining context based on document relevance
-    4. Preserves code structure by breaking at logical points
-    5. Provides diagnostics about context usage
-    
-    Args:
-        docs: List of Document objects to format
-        context_window: Size of the model's context window in tokens (if provided)
-        
-    Returns:
-        Formatted context string for the LLM
-    """
-    if not docs:
-        return ""
-
-    # Average characters per token (this is an approximation)
-    chars_per_token = 4
-
-    # Determine the maximum character budget based on context window
-    if context_window:
-        # Reserve 20% for the prompt and response
-        available_tokens = int(context_window * 0.8)
-        max_total_chars = available_tokens * chars_per_token
-    else:
-        # Default conservative estimate if we don't know the context window
-        max_total_chars = 8000
-
-    # Track metrics for diagnostic output
-    formatted_docs = []
-    total_chars = 0
-    doc_allocation = []
-
-    # Process documents by relevance order
-    for i, doc in enumerate(docs):
-        content = doc.page_content
-        original_length = len(content)
-
-        # Distribute context budget based on relevance
-        # First document gets up to 50% of remaining budget, but don't exceed its actual size
-        if i == 0:
-            # Give the first (most relevant) document up to 50% of the budget
-            budget_fraction = 0.5
-        else:
-            # Distribute remaining budget exponentially declining by relevance
-            budget_fraction = 0.5 / (2 ** i)
-
-        chars_to_allocate = min(
-            int(max_total_chars * budget_fraction),  # Relevance-based allocation
-            original_length,  # Don't allocate more than needed
-            max_total_chars - total_chars  # Don't exceed remaining budget
-        )
-
-        # If we can fit the whole document, do it
-        if original_length <= chars_to_allocate:
-            formatted_docs.append(content)
-            used_chars = original_length
-            truncated = False
-        # Otherwise, truncate it
-        elif chars_to_allocate > 0:
-            # Try to break at a logical point like a line break
-            truncation_point = min(chars_to_allocate, original_length)
-
-            # Find a good break point - prefer newlines, then periods, then spaces
-            last_newline = content[:truncation_point].rfind('\n')
-            last_period = content[:truncation_point].rfind('.')
-            last_space = content[:truncation_point].rfind(' ')
-
-            # Use the best break point that's not too far from target (at least 80% of target)
-            threshold = truncation_point * 0.8
-            if last_newline > threshold:
-                truncation_point = last_newline + 1  # +1 to include the newline
-            elif last_period > threshold:
-                truncation_point = last_period + 1  # +1 to include the period
-            elif last_space > threshold:
-                truncation_point = last_space + 1  # +1 to include the space
-
-            formatted_content = f"{content[:truncation_point]}... (truncated)"
-            formatted_docs.append(formatted_content)
-            used_chars = truncation_point + 15  # +15 for the truncation message
-            truncated = True
-        else:
-            # No budget left for this document
-            break
-
-        # Track allocation for diagnostic output
-        doc_allocation.append({
-            'document': i+1,
-            'original_chars': original_length,
-            'allocated_chars': used_chars,
-            'truncated': truncated,
-            'percent_used': round(100 * used_chars / original_length, 1) if original_length > 0 else 100
-        })
-
-        total_chars += used_chars
-
-        # Stop if we've reached our budget
-        if total_chars >= max_total_chars:
-            break
-
-    # Join everything together with clear separators
-    formatted_text = "\n\n".join(formatted_docs)
-
-    return formatted_text
-
-
-def initialize_galileo_observer(project_name: str):
-    """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
-    
-    return GalileoObserveCallback(project_name=project_name)
