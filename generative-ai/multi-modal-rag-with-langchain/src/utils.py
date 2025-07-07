@@ -279,29 +279,15 @@ def mlflow_evaluate_setup(
 ) -> None:
     """
     Prepare the environment for MLflow LLM-judge evaluation in MLflow 2.21.2.
-
-    1. Ensures the OpenAI API key is present (in secrets or environment) and exports it.
-    2. Optionally sets MLflow tracking URI.
-
     Args:
         secrets (dict): Dictionary loaded from your secrets.yaml.
-        openai_key_name (str): Name of the OpenAI key in secrets/env (default: "OPENAI_API_KEY").
         mlflow_tracking_uri (str, optional): If provided, sets MLflow's tracking URI.
-
-    Raises:
-        RuntimeError: If API key is missing.
     """
-    # Ensure OpenAI API key is available in secrets or environment
-    key = secrets.get("OPENAI_API_KEY")
-    if not key:
-        raise RuntimeError(
-            f"OpenAI API key '{openai_key_name}' not found in secrets or environment variables"
-        )
-    os.environ["OPENAI_API_KEY"] = key
-
     # Set MLflow tracking URI
     if mlflow_tracking_uri:
         mlflow.set_tracking_uri(mlflow_tracking_uri)
+    else:
+        raise ValueError("❌ Tracking URI is missing")
 
     # Informational log
     print(f"✅ Environment ready for MLflow evaluation; OPENAI_KEY set.")
