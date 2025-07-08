@@ -2,8 +2,8 @@
 Code Generation Service implementation that extends the BaseGenerativeService.
 
 This service provides code generation capabilities using LLM models with vector retrieval
-and integrates with Galileo for protection, observation, and evaluation.
-It can extract context from GitHub repositories to enhance code generation responses.
+for enhanced context-aware code generation. It can extract context from GitHub repositories 
+to provide more relevant and accurate code generation responses.
 """
 
 import os
@@ -22,7 +22,6 @@ from langchain_community.llms import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
-from galileo_protect import ProtectParser
 from core.chroma_embedding_adapter import ChromaEmbeddingAdapter
 import chromadb
 
@@ -852,9 +851,6 @@ Question: {question}
             pip_requirements=[
                 "mlflow==2.9.2", 
                 "langchain", 
-                "promptquality", 
-                "galileo-protect==0.15.1", 
-                "galileo-observe==1.13.2",
                 "chromadb",
                 "langchain_core",
                 "langchain_huggingface",
