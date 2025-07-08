@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, model initialization, and LLM integrations.
 """
 
 import os
