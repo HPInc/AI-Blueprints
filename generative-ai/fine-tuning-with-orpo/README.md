@@ -25,10 +25,10 @@ This project demonstrates a full-stack LLM fine-tuning experiment using ORPO (Op
 
 We incorporate:
 
-- **Galileo PromptQuality** for evaluating model responses with human-like scorers (e.g., context adherence)
 - **TensorBoard** for human feedback visualization before fine-tuning
 - A flexible model selector and inference runner architecture
 - A comparative setup to benchmark base vs fine-tuned models on the same prompts
+- Detailed model comparison tools for quality evaluation
 
 ---
 
@@ -113,7 +113,6 @@ git clone https://github.com/HPInc/AI-Blueprints.git
 
 - Add your API keys to the `secrets.yaml` file located in the `configs` folder:
   - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
-  - `GALILEO_API_KEY`: Required to connect to Galileo for evaluation, protection, and observability features.
 - Edit `config.yaml` with relevant configuration details.
 
 
@@ -134,7 +133,7 @@ This will:
 - Select and download a compatible model from Hugging Face
 - Apply QLoRA configuration and prepare the model for training
 - Run the fine-tuning using ORPO
-- Perform evaluation and comparison with the base model using Galileo Prompt Quality
+- Perform evaluation and comparison between the base and fine-tuned models
 - Register and serve both base and fine-tuned models via MLflow
 
 ### Step 2: Deploy the Chatbot Service
