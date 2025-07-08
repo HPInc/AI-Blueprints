@@ -1,8 +1,9 @@
-from langchain.llms import LlamaCpp
-from mlflow.metrics import make_metric, MetricValue          # NEW
-from langchain_core.prompts import PromptTemplate
 import pandas as pd
+import re
 
+from mlflow.metrics import make_metric, MetricValue
+from langchain_community.llms import LlamaCpp
+from langchain_core.prompts import PromptTemplate
 
 class LocalGenAIJudge:
     META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
@@ -20,19 +21,8 @@ class LocalGenAIJudge:
         "- Output only the numeric score without explanation.\n"
     )
 
-    def __init__(self, model_path: str):
-        self.llm = LlamaCpp(
-            model_path=model_path,
-            n_gpu_layers=-1,
-            n_ctx=2048,
-            temperature=0.0,
-            top_p=1.0,
-            max_tokens=512,
-            f16_kv=True,
-            streaming=False,
-            verbose=False,
-            model_kwargs={"chat_format": "llama-3"},
-        )
+    def __init__(self, llm: LlamaCpp):
+        self.llm = llm
 
         self.prompt_template = PromptTemplate(
             template=self.META_LLAMA_TEMPLATE,
@@ -50,15 +40,30 @@ class LocalGenAIJudge:
         except Exception:
             return 0.0
 
+    @staticmethod
+    def _extract_score(response: str) -> float:
+        # find the first 0–1 float, e.g. "0.8" or "1.0"
+        m = re.search(r"\b0(?:\.\d+)?|1(?:\.0+)?\b", response)
+        return float(m.group()) if m else 0.0
+
+    
     def _evaluate(self, batch_df: pd.DataFrame, prompt_builder) -> pd.Series:
-        return batch_df.apply(
-            lambda row: self._run_prompt(prompt_builder(
-                question=row["questions"],
-                answer=row["result"],
-                context=row["source_documents"]
-            )),
-            axis=1
-        )
+        # 1) build all prompts for the batch in one go
+        prompts = [
+            prompt_builder(
+                question=row.questions,
+                answer=row.result,
+                context=row.source_documents
+            )
+            for row in batch_df.itertuples()
+        ]
+    
+        # 2) invoke the LlamaCpp batch API
+        raw = self.llm.batch(prompts, stop=["\n"])
+    
+        # 3) parse floats and preserve original index ordering
+        scores = [self._extract_score(r) for r in raw]
+        return pd.Series(scores, index=batch_df.index)
 
     def evaluate_faithfulness(self, batch_df: pd.DataFrame) -> pd.Series:
         def prompt_builder(question, answer, context):

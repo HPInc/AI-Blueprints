@@ -13,13 +13,6 @@ from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
 from langchain.chat_models import ChatOpenAI
 import mlflow
-from mlflow.metrics.genai import (
-    answer_similarity,
-    answer_correctness,
-    answer_relevance,
-    relevance,
-    faithfulness,
-)
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
@@ -290,7 +283,7 @@ def mlflow_evaluate_setup(
         raise ValueError("❌ Tracking URI is missing")
 
     # Informational log
-    print(f"✅ Environment ready for MLflow evaluation; OPENAI_KEY set.")
+    print(f"✅ Environment ready for MLflow evaluation.")
 
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
