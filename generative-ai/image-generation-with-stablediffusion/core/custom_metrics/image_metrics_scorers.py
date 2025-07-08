@@ -82,9 +82,11 @@ class ImageMetrics:
         gray = convert_to_grayscale(self.image)
         return calculate_complexity(gray)
 
-def calculate_image_entropy(image_path: str = None) -> float:
+# --- Image Metric Scorer Functions ---
+
+def entropy_scorer(image_path: str = None) -> float:
     """
-    Calculate the entropy of an image using the global CUSTOM_IMAGE_PATH if no path provided.
+    Calculate the entropy of an image.
     
     Args:
         image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
@@ -92,30 +94,17 @@ def calculate_image_entropy(image_path: str = None) -> float:
     Returns:
         float: Entropy value of the image
     """
-    if image_path is None:
-        image_path = CUSTOM_IMAGE_PATH
-        
-    print(f"[calculate_image_entropy] Using image_path: {image_path}")
+    path = image_path if image_path is not None else CUSTOM_IMAGE_PATH
     try:
-        metrics = ImageMetrics(image_path)
-        entropy = metrics.calculate_entropy()
-        print(f"[calculate_image_entropy] Entropy: {entropy}")
-        return entropy
+        metrics = ImageMetrics(path)
+        return metrics.calculate_entropy()
     except Exception as e:
-        print(f"[calculate_image_entropy] Error: {e}")
+        print(f"[entropy_scorer] Error calculating entropy: {e}")
         return 0.0
 
-def aggregate_entropy_scores(scores: List[float]) -> Dict[str, float]:
-    """Aggregate entropy scores and return summary statistics."""
-    total = sum(scores)
-    avg = total / len(scores) if scores else 0.0
-    return {"Total Entropy": total, "Average Entropy": avg, "Count": len(scores)}
-
-# --- Executor and Aggregator for Complexity ---
-
-def calculate_image_complexity(image_path: str = None) -> float:
+def complexity_scorer(image_path: str = None) -> float:
     """
-    Calculate the complexity of an image using the global CUSTOM_IMAGE_PATH if no path provided.
+    Calculate the complexity of an image.
     
     Args:
         image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
@@ -123,89 +112,10 @@ def calculate_image_complexity(image_path: str = None) -> float:
     Returns:
         float: Complexity value of the image
     """
-    if image_path is None:
-        image_path = CUSTOM_IMAGE_PATH
-        
-    print(f"[calculate_image_complexity] Using image_path: {image_path}")
+    path = image_path if image_path is not None else CUSTOM_IMAGE_PATH
     try:
-        metrics = ImageMetrics(image_path)
-        complexity = metrics.calculate_complexity()
-        print(f"[calculate_image_complexity] Complexity: {complexity}")
-        return complexity
+        metrics = ImageMetrics(path)
+        return metrics.calculate_complexity()
     except Exception as e:
-        print(f"[calculate_image_complexity] Error: {e}")
+        print(f"[complexity_scorer] Error calculating complexity: {e}")
         return 0.0
-
-def aggregate_complexity_scores(scores: List[float]) -> Dict[str, float]:
-    """Aggregate complexity scores and return summary statistics."""
-    total = sum(scores)
-    avg = total / len(scores) if scores else 0.0
-    return {"Total Complexity": total, "Average Complexity": avg, "Count": len(scores)}
-
-# --- Legacy compatibility functions for existing usage ---
-
-def executor_entropy(row=None, **kwargs) -> float:
-    """
-    Legacy compatibility function for entropy calculation.
-    Maintains API compatibility while removing promptquality dependency.
-    """
-    return calculate_image_entropy()
-
-def aggregator_entropy(scores: List[float], indices: List[int] = None) -> Dict[str, float]:
-    """Legacy compatibility function for entropy aggregation."""
-    return aggregate_entropy_scores(scores)
-
-def executor_complexity(row=None, **kwargs) -> float:
-    """
-    Legacy compatibility function for complexity calculation.
-    Maintains API compatibility while removing promptquality dependency.
-    """
-    return calculate_image_complexity()
-
-def aggregator_complexity(scores: List[float], indices: List[int] = None) -> Dict[str, float]:
-    """Legacy compatibility function for complexity aggregation."""
-    return aggregate_complexity_scores(scores)
-
-# --- Standalone Metric Objects for compatibility ---
-
-class StandaloneScorer:
-    """
-    Standalone scorer class to replace promptquality CustomScorer dependency.
-    Provides basic functionality for image quality metric evaluation.
-    """
-    def __init__(self, name: str, executor_func, aggregator_func):
-        self.name = name
-        self.executor = executor_func
-        self.aggregator = aggregator_func
-    
-    def score(self, image_path: str = None) -> float:
-        """Calculate score for a single image."""
-        if image_path:
-            # Temporarily set the global path for compatibility
-            original_path = CUSTOM_IMAGE_PATH
-            set_custom_image_path(image_path)
-            result = self.executor()
-            set_custom_image_path(original_path)
-            return result
-        else:
-            return self.executor()
-    
-    def batch_score(self, image_paths: List[str]) -> Dict[str, float]:
-        """Calculate scores for multiple images and return aggregated results."""
-        scores = []
-        for path in image_paths:
-            scores.append(self.score(path))
-        return self.aggregator(scores)
-
-# Create scorer instances for backward compatibility
-entropy_scorer = StandaloneScorer(
-    name="Image Entropy",
-    executor_func=executor_entropy,
-    aggregator_func=aggregator_entropy
-)
-
-complexity_scorer = StandaloneScorer(
-    name="Image Complexity",
-    executor_func=executor_complexity,
-    aggregator_func=aggregator_complexity
-)
