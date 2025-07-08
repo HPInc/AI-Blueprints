@@ -5,14 +5,7 @@ End-to-end pipeline exposed as an MLflow **pyfunc**:
 
     arXiv → paper extraction → summarisation → slide-style script.
 
-Optional integration with **Galileo Prompt-Quality** (promptquality):
-activate it by setting the environment variable
-
-    GALILEO_PQ=ON        # (ON | 1 | TRUE are accepted, case-insensitive)
-
-and provide an API-key either in `secrets.yaml` (key: `GALILEO_API_KEY`)
-or as `GALILEO_API_KEY` in the environment.  
-`config.yaml` may optionally define `galileo_console_url`.
+MLflow-compatible service for text generation from arXiv papers.
 """
 
 from __future__ import annotations
@@ -35,7 +28,6 @@ from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-ENABLE_GALILEO_FLAG = os.getenv("GALILEO_PQ", "OFF").upper() in {"ON", "1", "TRUE"}
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
 DEFAULT_LOG_LEVEL = LOGLEVEL_FILE.read_text().strip() if LOGLEVEL_FILE.exists() else "INFO"
 
@@ -79,78 +71,9 @@ def _add_project_to_syspath() -> Tuple[Path, Path | None]:
     return core_path, src_path
 
 
-def _patch_promptquality(pq_module) -> None:
-    """Replace `GalileoPromptCallback` with a no-op stub everywhere."""
-
-    class _Stub: 
-        def __init__(self, *_, **__): ...
-        def __call__(self, *_, **__): return self
-        def finish(self, *_, **__): ...
-
-    pq_module.GalileoPromptCallback = _Stub  
-
-    for submodule in ("promptquality.callback", "promptquality.set_config_module"):
-        try:
-            mod = importlib.import_module(submodule)
-            if hasattr(mod, "GalileoPromptCallback"):
-                mod.GalileoPromptCallback = _Stub  
-            if hasattr(mod, "set_config"):
-                mod.set_config = lambda *_, **__: None  
-        except ModuleNotFoundError:
-            pass
-
-    try:
-        sg = importlib.import_module("core.generator.script_generator")
-        sg.pq = pq_module
-    except ModuleNotFoundError:
-        pass
-
-    if hasattr(pq_module, "disable"):
-        pq_module.disable()
-
-
-def _initialise_promptquality(api_key: str | None, console_url_cfg: str | None) -> bool:
-    """
-    Try to enable Galileo Prompt-Quality.  
-    Returns **True** if fully enabled *and login succeeded*, otherwise patches
-    prompt-quality with stubs so that it never raises at runtime.
-    """
-    try:
-        pq = importlib.import_module("promptquality")
-    except ModuleNotFoundError:
-        logging.info("promptquality not installed – Galileo disabled.")
-        return False
-
-    console_url = (
-        console_url_cfg
-        or os.getenv("GALILEO_CONSOLE_URL")
-        or "https://console.hp.galileocloud.io/"
-    ).rstrip("/") + "/"
-
-    # If the global flag is OFF or key is missing, disable gracefully
-    if not (ENABLE_GALILEO_FLAG and api_key):
-        reason = "flag OFF" if not ENABLE_GALILEO_FLAG else "API-key missing"
-        logging.info("🔸 Galileo disabled – %s.", reason)
-        _patch_promptquality(pq)
-        return False
-
-    # Set environment vars expected by prompt-quality
-    os.environ["GALILEO_API_KEY"] = api_key
-    os.environ["GALILEO_CONSOLE_URL"] = console_url
-
-    try:
-        pq.login(console_url)
-        logging.info("🔹 Galileo enabled – console: %s", console_url)
-        return True
-    except Exception as exc:  
-        logging.warning("Galileo login failed (%s). Falling back to stub.", exc)
-        _patch_promptquality(pq)
-        return False
-
-
 def _load_llm(artifacts: Dict[str, str]):
     """
-    Load the LlamaCpp model and configure Prompt-Quality if requested.
+    Load the LlamaCpp model.
     """
     from src.utils import (
         configure_hf_cache,
@@ -169,11 +92,9 @@ def _load_llm(artifacts: Dict[str, str]):
         cfg_dir / "config.yaml", cfg_dir / "secrets.yaml"
     )
 
+    # Galileo integration disabled
     global GALILEO_ACTIVE
-    GALILEO_ACTIVE = _initialise_promptquality(
-        api_key=secrets.get("GALILEO_API_KEY") or os.getenv("GALILEO_API_KEY"),
-        console_url_cfg=cfg.get("galileo_console_url"),
-    )
+    GALILEO_ACTIVE = False
 
     model_path = artifacts.get("llm") or ""
     if not model_path:
