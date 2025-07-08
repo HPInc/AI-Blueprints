@@ -1,8 +1,7 @@
 """
 Text Summarization Service implementation that extends the BaseGenerativeService.
 
-This service provides text summarization capabilities using different LLM options
-and integrates with Galileo for protection, observation, and evaluation.
+This service provides text summarization capabilities using different LLM options.
 """
 
 import os
@@ -15,7 +14,6 @@ from langchain_huggingface import HuggingFaceEndpoint, HuggingFacePipeline
 from langchain_community.llms import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from galileo_protect import ProtectParser
 
 # Import base service class from the shared location
 import sys
@@ -215,11 +213,8 @@ class TextSummarizationService(BaseGenerativeService):
             logger.info("Processing summarization request")
             text = model_input["text"][0]
             
-            # Run the input through the protection chain with monitoring
-            result = self.protected_chain.invoke(
-                {"input": text, "output": ""},
-                config={"callbacks": [self.monitor_handler]}
-            )
+            # Run the input through the summarization chain
+            result = self.chain.invoke({"input": text})
             
             logger.info("Successfully processed summarization request")
             
@@ -299,8 +294,6 @@ class TextSummarizationService(BaseGenerativeService):
             signature=signature,
             code_paths=["../core", "../src"],
             pip_requirements=[
-                "galileo-protect==0.15.1",
-                "galileo-observe==1.13.2",
                 "langchain-huggingface==0.2.0",
                 "pyyaml",
                 "pandas",
