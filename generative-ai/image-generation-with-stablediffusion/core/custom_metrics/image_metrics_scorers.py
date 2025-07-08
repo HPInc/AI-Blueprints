@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 import numpy as np
 import tensorflow as tf
-from promptquality import PromptRow, CustomScorer
 
 # Force TensorFlow to use only the CPU (if necessary)
 tf.config.set_visible_devices([], 'GPU')
@@ -83,60 +82,130 @@ class ImageMetrics:
         gray = convert_to_grayscale(self.image)
         return calculate_complexity(gray)
 
-# --- Executor and Aggregator for Entropy ---
-
-def executor_entropy(row: PromptRow, **kwargs) -> float:
+def calculate_image_entropy(image_path: str = None) -> float:
     """
-    Calculates entropy using the path defined in the CUSTOM_IMAGE_PATH variable.Calcula a entropia usando o caminho definido na variável CUSTOM_IMAGE_PATH.
+    Calculate the entropy of an image using the global CUSTOM_IMAGE_PATH if no path provided.
+    
+    Args:
+        image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
+        
+    Returns:
+        float: Entropy value of the image
     """
-    image_path = CUSTOM_IMAGE_PATH  
-    print(f"[executor_entropy] Using image_path: {image_path}")
+    if image_path is None:
+        image_path = CUSTOM_IMAGE_PATH
+        
+    print(f"[calculate_image_entropy] Using image_path: {image_path}")
     try:
         metrics = ImageMetrics(image_path)
         entropy = metrics.calculate_entropy()
-        print(f"[executor_entropy] Entropy: {entropy}")
+        print(f"[calculate_image_entropy] Entropy: {entropy}")
         return entropy
     except Exception as e:
-        print(f"[executor_entropy] Error: {e}")
+        print(f"[calculate_image_entropy] Error: {e}")
         return 0.0
 
-def aggregator_entropy(scores: List[float], indices: List[int]) -> Dict[str, float]:
+def aggregate_entropy_scores(scores: List[float]) -> Dict[str, float]:
+    """Aggregate entropy scores and return summary statistics."""
     total = sum(scores)
     avg = total / len(scores) if scores else 0.0
     return {"Total Entropy": total, "Average Entropy": avg, "Count": len(scores)}
 
 # --- Executor and Aggregator for Complexity ---
 
-def executor_complexity(row: PromptRow, **kwargs) -> float:
+def calculate_image_complexity(image_path: str = None) -> float:
     """
-    Calculate the complexity using the path defined in the CUSTOM IMAGE PATH variable.
+    Calculate the complexity of an image using the global CUSTOM_IMAGE_PATH if no path provided.
+    
+    Args:
+        image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
+        
+    Returns:
+        float: Complexity value of the image
     """
-    image_path = CUSTOM_IMAGE_PATH
-    print(f"[executor_complexity] Using image_path: {image_path}")
+    if image_path is None:
+        image_path = CUSTOM_IMAGE_PATH
+        
+    print(f"[calculate_image_complexity] Using image_path: {image_path}")
     try:
         metrics = ImageMetrics(image_path)
         complexity = metrics.calculate_complexity()
-        print(f"[executor_complexity] Complexity: {complexity}")
+        print(f"[calculate_image_complexity] Complexity: {complexity}")
         return complexity
     except Exception as e:
-        print(f"[executor_complexity] Error: {e}")
+        print(f"[calculate_image_complexity] Error: {e}")
         return 0.0
 
-def aggregator_complexity(scores: List[float], indices: List[int]) -> Dict[str, float]:
+def aggregate_complexity_scores(scores: List[float]) -> Dict[str, float]:
+    """Aggregate complexity scores and return summary statistics."""
     total = sum(scores)
     avg = total / len(scores) if scores else 0.0
     return {"Total Complexity": total, "Average Complexity": avg, "Count": len(scores)}
 
-# --- Creating Custom Scorers ---
+# --- Legacy compatibility functions for existing usage ---
 
-entropy_scorer = CustomScorer(
+def executor_entropy(row=None, **kwargs) -> float:
+    """
+    Legacy compatibility function for entropy calculation.
+    Maintains API compatibility while removing promptquality dependency.
+    """
+    return calculate_image_entropy()
+
+def aggregator_entropy(scores: List[float], indices: List[int] = None) -> Dict[str, float]:
+    """Legacy compatibility function for entropy aggregation."""
+    return aggregate_entropy_scores(scores)
+
+def executor_complexity(row=None, **kwargs) -> float:
+    """
+    Legacy compatibility function for complexity calculation.
+    Maintains API compatibility while removing promptquality dependency.
+    """
+    return calculate_image_complexity()
+
+def aggregator_complexity(scores: List[float], indices: List[int] = None) -> Dict[str, float]:
+    """Legacy compatibility function for complexity aggregation."""
+    return aggregate_complexity_scores(scores)
+
+# --- Standalone Metric Objects for compatibility ---
+
+class StandaloneScorer:
+    """
+    Standalone scorer class to replace promptquality CustomScorer dependency.
+    Provides basic functionality for image quality metric evaluation.
+    """
+    def __init__(self, name: str, executor_func, aggregator_func):
+        self.name = name
+        self.executor = executor_func
+        self.aggregator = aggregator_func
+    
+    def score(self, image_path: str = None) -> float:
+        """Calculate score for a single image."""
+        if image_path:
+            # Temporarily set the global path for compatibility
+            original_path = CUSTOM_IMAGE_PATH
+            set_custom_image_path(image_path)
+            result = self.executor()
+            set_custom_image_path(original_path)
+            return result
+        else:
+            return self.executor()
+    
+    def batch_score(self, image_paths: List[str]) -> Dict[str, float]:
+        """Calculate scores for multiple images and return aggregated results."""
+        scores = []
+        for path in image_paths:
+            scores.append(self.score(path))
+        return self.aggregator(scores)
+
+# Create scorer instances for backward compatibility
+entropy_scorer = StandaloneScorer(
     name="Image Entropy",
-    executor=executor_entropy,
-    aggregator=aggregator_entropy
+    executor_func=executor_entropy,
+    aggregator_func=aggregator_entropy
 )
 
-complexity_scorer = CustomScorer(
+complexity_scorer = StandaloneScorer(
     name="Image Complexity",
-    executor=executor_complexity,
-    aggregator=aggregator_complexity
+    executor_func=executor_complexity,
+    aggregator_func=aggregator_complexity
 )
