@@ -1,7 +1,7 @@
 """
-Base service class for AI Studio Galileo Templates.
+Base service class for AI Studio Templates.
 This module provides the core functionality for all service classes,
-including model loading, configuration, and integration with Galileo services.
+including model loading, configuration, and integration with MLflow services.
 """
 
 import datetime
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class BaseGenerativeService(PythonModel):
-    """Base class for all generative services in AI Studio Galileo Templates."""
+    """Base class for all generative services in AI Studio Templates."""
 
     def __init__(self):
         """Initialize the base service with empty configuration."""

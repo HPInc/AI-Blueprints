@@ -44,7 +44,7 @@ DEFAULT_SCRIPT_PROMPT = (
     "Return only the script – no extra commentary."
 )
 
-GALILEO_ACTIVE: bool = False
+LOCAL_LOGGING_ACTIVE: bool = False
 
 logging.basicConfig(
     level=getattr(logging, DEFAULT_LOG_LEVEL),
@@ -92,9 +92,9 @@ def _load_llm(artifacts: Dict[str, str]):
         cfg_dir / "config.yaml", cfg_dir / "secrets.yaml"
     )
 
-    # Galileo integration disabled
-    global GALILEO_ACTIVE
-    GALILEO_ACTIVE = False
+    # External logging integration disabled
+    global LOCAL_LOGGING_ACTIVE
+    LOCAL_LOGGING_ACTIVE = False
 
     model_path = artifacts.get("llm") or ""
     if not model_path:
@@ -180,7 +180,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
     def _generate_script(self, chain, prompt):
         from core.generator.script_generator import ScriptGenerator
 
-        generator = ScriptGenerator(chain=chain, use_galileo=GALILEO_ACTIVE)
+        generator = ScriptGenerator(chain=chain, use_local_logging=LOCAL_LOGGING_ACTIVE)
         generator.add_section(name="user_prompt", prompt=prompt)
 
         stdin_backup, builtins.input = builtins.input, lambda *_a, **_kw: "y"

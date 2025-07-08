@@ -17,8 +17,8 @@ class ScriptGenerator:
         A LangChain runnable that will be invoked for each section.
     scorers : list[Callable] | None, optional
         Explicit list of scorer functions (kept for compatibility, ignored).
-    use_galileo : bool, default ``True``
-        Whether to log metrics (disabled - kept for compatibility).
+    use_local_logging : bool, default ``True``
+        Whether to log metrics locally (disabled - kept for compatibility).
     logging_enabled : bool, default ``False``
         Verbose, per-section logging to ``stdout`` and the module logger.
     """
@@ -28,15 +28,15 @@ class ScriptGenerator:
         chain: Runnable,
         scorers: Optional[List[Callable]] = None,
         *,
-        use_galileo: bool = True,
+        use_local_logging: bool = True,
         logging_enabled: bool = False,
     ):
         self.chain: Runnable = chain
         self.sections: List[dict[str, str]] = []
         self.results: dict[str, str] = {}
-        self.use_galileo: bool = False  # Always disabled
+        self.use_local_logging: bool = False  # Always disabled
 
-        # Remove Galileo dependency check
+        # Remove external logging dependency check
         self.scorers: List[Callable] = []
 
         self.logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class ScriptGenerator:
         (or approves on the first try). Blocks for interactive feedback.
         """
         while True:
-            # Execute the runnable (Galileo callback removed)
+            # Execute the runnable (external callback removed)
             if self.logging_enabled:
                 self.logger.info("Generating section '%s'…", section["name"])
             result_batch = self.chain.batch(
