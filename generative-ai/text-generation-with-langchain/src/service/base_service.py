@@ -67,13 +67,9 @@ class BaseGenerativeService(PythonModel):
             
         # Merge configurations
         self.model_config = {
-            "galileo_key": secrets.get("GALILEO_API_KEY", ""),
             "hf_key": secrets.get("HUGGINGFACE_API_KEY", ""),
-            "galileo_url": config.get("galileo_url", "https://console.hp.galileocloud.io/"),
             "proxy": config.get("proxy", None),
             "model_source": config.get("model_source", "local"),
-            "observe_project": f"{self.__class__.__name__}_Observations",
-            "protect_project": f"{self.__class__.__name__}_Protection",
         }
         
         return self.model_config
@@ -95,17 +91,9 @@ class BaseGenerativeService(PythonModel):
                 else:
                     logger.warning("No proxy configuration found in config or environment variables.")
                     
-            # Set up Galileo environment
-            if not self.model_config.get("galileo_key"):
-                logger.warning("No Galileo API key found. Galileo services will not function.")
-            else:
-                logger.info("Setting up Galileo environment variables.")
-                os.environ["GALILEO_API_KEY"] = self.model_config["galileo_key"]
-                os.environ["GALILEO_CONSOLE_URL"] = self.model_config["galileo_url"]
-                
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
-            # Continue without failing to allow the model to still function even without Galileo
+            # Continue without failing to allow the model to still function
     
     def load_model(self, context) -> None:
         """
@@ -125,104 +113,32 @@ class BaseGenerativeService(PythonModel):
         raise NotImplementedError("Each service must implement its own chain creation logic")
     
     def setup_protection(self) -> None:
-        """Set up protection with Galileo Protect."""
-        try:
-            import galileo_protect as gp
-            from galileo_protect import ProtectTool, ProtectParser, Ruleset
-            
-            logger.info(f"Setting up Galileo Protect for project: {self.model_config['protect_project']}")
-            
-            # Create project and stage
-            project = gp.create_project(self.model_config["protect_project"])
-            project_id = project.id
-            
-            timestamp = datetime.datetime.now()
-            stage_name = f"{self.model_config['protect_project']}_stage" + timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            stage = gp.create_stage(name=stage_name, project_id=project_id)
-            stage_id = stage.id
-            
-            # Create default ruleset for PII protection
-            ruleset = Ruleset(
-                rules=[
-                    {
-                        "metric": "pii",
-                        "operator": "contains",
-                        "target_value": "ssn",
-                    },
-                ],
-                action={
-                    "type": "OVERRIDE",
-                    "choices": [
-                        "Personal Identifiable Information detected in the model output. Sorry, I cannot answer that question."
-                    ]
-                }
-            )
-            
-            # Create protection tool
-            self.protect_tool = ProtectTool(
-                stage_id=stage_id,
-                prioritized_rulesets=[ruleset],
-                timeout=10
-            )
-            
-            # Set up protection parser and chain
-            protect_parser = ProtectParser(chain=self.chain)
-            self.protected_chain = self.protect_tool | protect_parser.parser
-            logger.info("Galileo Protect setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Protect: {str(e)}")
-            # Fallback to unprotected chain if protection setup fails
-            logger.warning("Using unprotected chain as fallback.")
-            self.protected_chain = self.chain
+        """Set up protection - Galileo Protect removed."""
+        logger.info("Protection setup disabled - Galileo dependencies removed.")
+        # Fallback to unprotected chain
+        self.protected_chain = self.chain
     
     def setup_monitoring(self) -> None:
-        """Set up monitoring with Galileo Observe."""
-        try:
-            from galileo_observe import GalileoObserveCallback
-            
-            logger.info(f"Setting up Galileo Observe for project: {self.model_config['observe_project']}")
-            self.monitor_handler = GalileoObserveCallback(
-                project_name=self.model_config["observe_project"]
-            )
-            logger.info("Galileo Observe setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Observe: {str(e)}")
-            # Create a dummy handler that does nothing when Galileo services aren't available
-            self.monitor_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
-                                                              'on_llm_end': lambda *args, **kwargs: None,
-                                                              'on_llm_error': lambda *args, **kwargs: None})()
+        """Set up monitoring - Galileo Observe removed."""
+        logger.info("Monitoring setup disabled - Galileo dependencies removed.")
+        # Create a dummy handler that does nothing
+        self.monitor_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
+                                                          'on_llm_end': lambda *args, **kwargs: None,
+                                                          'on_llm_error': lambda *args, **kwargs: None})()
     
     def setup_evaluation(self, scorers=None) -> None:
         """
-        Set up evaluation with Galileo Prompt Quality.
+        Set up evaluation - Galileo Prompt Quality removed.
         
         Args:
-            scorers: List of scorer functions to use for evaluation
+            scorers: List of scorer functions (ignored - kept for compatibility)
         """
-        try:
-            import promptquality as pq
-            
-            if scorers is None:
-                scorers = [
-                    pq.Scorers.context_adherence_luna,
-                    pq.Scorers.correctness,
-                    pq.Scorers.toxicity,
-                    pq.Scorers.sexist
-                ]
-            
-            logger.info(f"Setting up Galileo Evaluator for project: {self.model_config['observe_project']}")
-            self.prompt_handler = pq.GalileoPromptCallback(
-                project_name=self.model_config["observe_project"],
-                scorers=scorers
-            )
-            logger.info("Galileo Evaluator setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Evaluator: {str(e)}")
-            # Create a dummy handler that does nothing when Galileo services aren't available
-            self.prompt_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
-                                                             'on_llm_end': lambda *args, **kwargs: None,
-                                                             'on_llm_error': lambda *args, **kwargs: None,
-                                                             'finish': lambda *args, **kwargs: None})()
+        logger.info("Evaluation setup disabled - Galileo dependencies removed.")
+        # Create a dummy handler that does nothing
+        self.prompt_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
+                                                         'on_llm_end': lambda *args, **kwargs: None,
+                                                         'on_llm_error': lambda *args, **kwargs: None,
+                                                         'finish': lambda *args, **kwargs: None})()
     
     def load_context(self, context) -> None:
         """
@@ -243,22 +159,10 @@ class BaseGenerativeService(PythonModel):
             self.load_prompt()
             self.load_chain()
             
-            # Set up Galileo integration with error handling
-            try:
-                self.setup_protection()
-            except Exception as e:
-                logger.error(f"Error setting up protection: {str(e)}")
-                self.protected_chain = self.chain  # Fallback to unprotected chain
-                
-            try:
-                self.setup_monitoring()
-            except Exception as e:
-                logger.error(f"Error setting up monitoring: {str(e)}")
-                
-            try:
-                self.setup_evaluation()
-            except Exception as e:
-                logger.error(f"Error setting up evaluation: {str(e)}")
+            # Set up service components (Galileo dependencies removed)
+            self.setup_protection()
+            self.setup_monitoring()
+            self.setup_evaluation()
             
             logger.info(f"{self.__class__.__name__} successfully loaded and configured.")
         except Exception as e:
