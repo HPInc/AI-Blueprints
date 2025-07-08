@@ -18,13 +18,13 @@
 * [📞 Contact and Support](#contact-and-support)
 
 ## Overview
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
+This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with advanced evaluation capabilities.
 
 ## Project Structure
 ```
 ├── config/                                     # Configuration files
 │   ├── config.yaml                             # General settings (e.g., model config, mode)
-│   └── secrets.yaml                            # API keys and credentials (e.g., HuggingFace, Galileo)
+│   └── secrets.yaml                            # API keys and credentials (e.g., HuggingFace)
 │
 ├── core/                                        # Core Python modules
 │       ├── custom_metrics/
@@ -75,7 +75,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-2. Make sure the folder `galileo/04-image-generation_with_StableDiffusion` is present inside your workspace.
+2. Make sure the folder `generative-ai/image-generation-with-stablediffusion` is present inside your workspace.
 
 ### Step 4: Use a Custom Kernel for Notebooks  
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
@@ -92,7 +92,7 @@ os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 ## Usage
 
 ### Step 1:
-Run the following notebook `/04-image-generation_with_StableDiffusion.ipynb`:
+Run the following notebook `/image-generation_with_StableDiffusion.ipynb`:
 1. Download the stabilityai/stable-diffusion-2-1 model from Hugging Face.
 2. In the Training DreamBooth section of the notebook:
 - Train your DreamBooth model (training time is approximately 1.5 to 2 hours).
