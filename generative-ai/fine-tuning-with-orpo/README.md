@@ -21,6 +21,7 @@
 ---
 
 ## Overview
+
 This project demonstrates a full-stack LLM fine-tuning experiment using ORPO (Open-Source Reinforcement Pretraining Objective) to align a base language model with human preference data. It leverages the **Z by HP AI Studio Local GenAI environment**, and uses models such as LLaMA 3, Gemma 1B, and Mistral 7B as foundations.
 
 We incorporate:
@@ -35,14 +36,14 @@ We incorporate:
 ## Project Structure
 
 ```
-├── config                                         # Configuration files 
+├── config                                         # Configuration files
 │   ├── default_config_cpu.yaml
 │   ├── default_config_multi-gpu.yaml
 │   └── default_config_one-gpu.yaml
 │
 ├── core                                           # Core Python modules
 │   ├── comparer
-│   │   └── galileo_hf_model_comparer.py
+│   │   └── model_comparer.py
 │   ├── data_visualizer
 │   │   └── feedback_visualizer.py
 │   ├── deploy
@@ -66,29 +67,29 @@ We incorporate:
 └── requirements.txt                             # Required dependencies
 
 ```
+
 ---
 
 ## Setup
 
 ### Step 0: Minimum Hardware Requirements
+
 To ensure smooth execution and reliable model deployment, make sure your system meets the following **minimum hardware specifications** based on the selected model and task (inference or fine-tuning):
 
 ### ✅ Model Hardware Matrix
 
-| **Model**                                    | **Task**       | **Min VRAM** | **Min RAM** | **GPU Recommendation**              |
-|---------------------------------------------|----------------|--------------|-------------|--------------------------------------|
-| `mistralai/Mistral-7B-Instruct-v0.1`         | Inference      | 12 GB        | 32 GB       | RTX 3080, A100 (for 4-bit QLoRA)     |
-|                                             | Fine-tuning    | 40–48+ GB    | 64+ GB      | RTX 4090, A100, H100                 |
-| `meta-llama/Llama-2-7b-chat-hf`              | Inference      | 6 GB        | 32 GB       | RTX 3080 or better                   |
-|                                             | Fine-tuning    | 40–48+ GB    | 64+ GB      | RTX 4090+                            |
-| `meta-llama/Meta-Llama-3-8B-Instruct`        | Inference      | 16 GB        | 32 GB       | RTX 3090, 4090                       |
-|                                             | Fine-tuning    | 64+ GB       | 64–96 GB    | Dual RTX 4090 or A100                |
-| `google/gemma-7b-it`                         | Inference      | 12 GB        | 32 GB       | RTX 3080 or better                   |
-|                                             | Fine-tuning    | 40+ GB       | 64 GB       | RTX 4090                             |
-| `google/gemma-3-1b-it`                       | Inference      | 8 GB         | 16–24 GB    | RTX 3060 or better                   |
-|                                             | Fine-tuning    | 16–24 GB     | 32–48 GB    | RTX 3080 / 3090                      |
-
-
+| **Model**                             | **Task**    | **Min VRAM** | **Min RAM** | **GPU Recommendation**           |
+| ------------------------------------- | ----------- | ------------ | ----------- | -------------------------------- |
+| `mistralai/Mistral-7B-Instruct-v0.1`  | Inference   | 12 GB        | 32 GB       | RTX 3080, A100 (for 4-bit QLoRA) |
+|                                       | Fine-tuning | 40–48+ GB    | 64+ GB      | RTX 4090, A100, H100             |
+| `meta-llama/Llama-2-7b-chat-hf`       | Inference   | 6 GB         | 32 GB       | RTX 3080 or better               |
+|                                       | Fine-tuning | 40–48+ GB    | 64+ GB      | RTX 4090+                        |
+| `meta-llama/Meta-Llama-3-8B-Instruct` | Inference   | 16 GB        | 32 GB       | RTX 3090, 4090                   |
+|                                       | Fine-tuning | 64+ GB       | 64–96 GB    | Dual RTX 4090 or A100            |
+| `google/gemma-7b-it`                  | Inference   | 12 GB        | 32 GB       | RTX 3080 or better               |
+|                                       | Fine-tuning | 40+ GB       | 64 GB       | RTX 4090                         |
+| `google/gemma-3-1b-it`                | Inference   | 8 GB         | 16–24 GB    | RTX 3060 or better               |
+|                                       | Fine-tuning | 16–24 GB     | 32–48 GB    | RTX 3080 / 3090                  |
 
 > ⚠️ These recommendations are based on community benchmarks and documentation provided by Hugging Face, Unsloth, and Google. For production workloads, always monitor VRAM/RAM usage on your system.
 
@@ -115,7 +116,6 @@ git clone https://github.com/HPInc/AI-Blueprints.git
   - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 - Edit `config.yaml` with relevant configuration details.
 
-
 ---
 
 ## Usage
@@ -138,7 +138,7 @@ This will:
 
 ### Step 2: Deploy the Chatbot Service
 
--  Go to **Deployments > New Service** in AI Studio.
+- Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
@@ -153,7 +153,6 @@ This will:
 - Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
-
 
 ---
 

@@ -1,7 +1,7 @@
 """
-Base service class for AI Studio Galileo Templates.
+Base service class for AI Studio Templates.
 This module provides the core functionality for all service classes,
-including model loading, configuration, and integration with Galileo services.
+including model loading and configuration.
 """
 
 import datetime
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class BaseGenerativeService(PythonModel):
-    """Base class for all generative services in AI Studio Galileo Templates."""
+    """Base class for all generative services in AI Studio Templates."""
 
     def __init__(self):
         """Initialize the base service with empty configuration."""
@@ -67,13 +67,9 @@ class BaseGenerativeService(PythonModel):
             
         # Merge configurations
         self.model_config = {
-            "galileo_key": secrets.get("GALILEO_API_KEY", ""),
             "hf_key": secrets.get("HUGGINGFACE_API_KEY", ""),
-            "galileo_url": config.get("galileo_url", "https://console.hp.galileocloud.io/"),
             "proxy": config.get("proxy", None),
             "model_source": config.get("model_source", "local"),
-            "observe_project": f"{self.__class__.__name__}_Observations",
-            "protect_project": f"{self.__class__.__name__}_Protection",
         }
         
         return self.model_config
@@ -95,13 +91,12 @@ class BaseGenerativeService(PythonModel):
                 else:
                     logger.warning("No proxy configuration found in config or environment variables.")
                     
-            # Set up Galileo environment
-            if not self.model_config.get("galileo_key"):
-                logger.warning("No Galileo API key found. Galileo services will not function.")
+            # Set up model environment variables
+            if not self.model_config.get("hf_key"):
+                logger.warning("No HuggingFace API key found. Some models may not function properly.")
             else:
-                logger.info("Setting up Galileo environment variables.")
-                os.environ["GALILEO_API_KEY"] = self.model_config["galileo_key"]
-                os.environ["GALILEO_CONSOLE_URL"] = self.model_config["galileo_url"]
+                logger.info("Setting up HuggingFace environment variables.")
+                os.environ["HUGGINGFACE_API_KEY"] = self.model_config["hf_key"]
                 
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
@@ -125,104 +120,34 @@ class BaseGenerativeService(PythonModel):
         raise NotImplementedError("Each service must implement its own chain creation logic")
     
     def setup_protection(self) -> None:
-        """Set up protection with Galileo Protect."""
-        try:
-            import galileo_protect as gp
-            from galileo_protect import ProtectTool, ProtectParser, Ruleset
-            
-            logger.info(f"Setting up Galileo Protect for project: {self.model_config['protect_project']}")
-            
-            # Create project and stage
-            project = gp.create_project(self.model_config["protect_project"])
-            project_id = project.id
-            
-            timestamp = datetime.datetime.now()
-            stage_name = f"{self.model_config['protect_project']}_stage" + timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            stage = gp.create_stage(name=stage_name, project_id=project_id)
-            stage_id = stage.id
-            
-            # Create default ruleset for PII protection
-            ruleset = Ruleset(
-                rules=[
-                    {
-                        "metric": "pii",
-                        "operator": "contains",
-                        "target_value": "ssn",
-                    },
-                ],
-                action={
-                    "type": "OVERRIDE",
-                    "choices": [
-                        "Personal Identifiable Information detected in the model output. Sorry, I cannot answer that question."
-                    ]
-                }
-            )
-            
-            # Create protection tool
-            self.protect_tool = ProtectTool(
-                stage_id=stage_id,
-                prioritized_rulesets=[ruleset],
-                timeout=10
-            )
-            
-            # Set up protection parser and chain
-            protect_parser = ProtectParser(chain=self.chain)
-            self.protected_chain = self.protect_tool | protect_parser.parser
-            logger.info("Galileo Protect setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Protect: {str(e)}")
-            # Fallback to unprotected chain if protection setup fails
-            logger.warning("Using unprotected chain as fallback.")
-            self.protected_chain = self.chain
+        """Set up model output protection."""
+        # This is a stub method that used to set up Galileo Protect
+        # For now, we'll just use the unprotected chain
+        logger.info("Using standard chain without additional protection.")
+        self.protected_chain = self.chain
     
     def setup_monitoring(self) -> None:
-        """Set up monitoring with Galileo Observe."""
-        try:
-            from galileo_observe import GalileoObserveCallback
-            
-            logger.info(f"Setting up Galileo Observe for project: {self.model_config['observe_project']}")
-            self.monitor_handler = GalileoObserveCallback(
-                project_name=self.model_config["observe_project"]
-            )
-            logger.info("Galileo Observe setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Observe: {str(e)}")
-            # Create a dummy handler that does nothing when Galileo services aren't available
-            self.monitor_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
-                                                              'on_llm_end': lambda *args, **kwargs: None,
-                                                              'on_llm_error': lambda *args, **kwargs: None})()
+        """Set up model usage monitoring."""
+        # This is a stub method that used to set up monitoring
+        logger.info("Monitoring functionality is not available.")
+        # Create a dummy handler that does nothing
+        self.monitor_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
+                                                        'on_llm_end': lambda *args, **kwargs: None,
+                                                        'on_llm_error': lambda *args, **kwargs: None})()
     
     def setup_evaluation(self, scorers=None) -> None:
         """
-        Set up evaluation with Galileo Prompt Quality.
+        Set up evaluation for model outputs.
         
         Args:
             scorers: List of scorer functions to use for evaluation
         """
-        try:
-            import promptquality as pq
-            
-            if scorers is None:
-                scorers = [
-                    pq.Scorers.context_adherence_luna,
-                    pq.Scorers.correctness,
-                    pq.Scorers.toxicity,
-                    pq.Scorers.sexist
-                ]
-            
-            logger.info(f"Setting up Galileo Evaluator for project: {self.model_config['observe_project']}")
-            self.prompt_handler = pq.GalileoPromptCallback(
-                project_name=self.model_config["observe_project"],
-                scorers=scorers
-            )
-            logger.info("Galileo Evaluator setup successfully.")
-        except Exception as e:
-            logger.error(f"Failed to set up Galileo Evaluator: {str(e)}")
-            # Create a dummy handler that does nothing when Galileo services aren't available
-            self.prompt_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
-                                                             'on_llm_end': lambda *args, **kwargs: None,
-                                                             'on_llm_error': lambda *args, **kwargs: None,
-                                                             'finish': lambda *args, **kwargs: None})()
+        logger.info("Evaluation functionality is not available.")
+        # Create a dummy handler that does nothing
+        self.prompt_handler = type('DummyHandler', (), {'on_llm_start': lambda *args, **kwargs: None, 
+                                                         'on_llm_end': lambda *args, **kwargs: None,
+                                                         'on_llm_error': lambda *args, **kwargs: None,
+                                                         'finish': lambda *args, **kwargs: None})()
     
     def load_context(self, context) -> None:
         """
@@ -243,7 +168,7 @@ class BaseGenerativeService(PythonModel):
             self.load_prompt()
             self.load_chain()
             
-            # Set up Galileo integration with error handling
+            # Set up protection, monitoring and evaluation with error handling
             try:
                 self.setup_protection()
             except Exception as e:

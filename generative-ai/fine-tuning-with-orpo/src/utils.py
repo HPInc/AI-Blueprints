@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading and model initialization.
 """
 
 import os
@@ -313,14 +313,16 @@ def initialize_llm(
 
 def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
     """
-    This function is deprecated and maintained for backward compatibility.
+    This function is a stub maintained for backward compatibility only.
+    It previously configured environment variables for Galileo services but now does nothing.
     """
     pass
 
 
 def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
     """
-    This function is deprecated and maintained for backward compatibility.
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized a protection tool for LLM output filtering but now returns dummy values.
     
     Returns:
         Tuple containing (None, "", "").
@@ -330,7 +332,8 @@ def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = No
 
 def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
     """
-    This function is deprecated and maintained for backward compatibility.
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized an evaluator for LLM output scoring but now returns None.
     
     Returns:
         None
@@ -777,7 +780,8 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
 
 def initialize_galileo_observer(project_name: str):
     """
-    This function is deprecated and maintained for backward compatibility.
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized an observer for LLM usage monitoring but now returns None.
     
     Returns:
         None
