@@ -100,7 +100,7 @@ class BaseGenerativeService(PythonModel):
                 
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
-            # Continue without failing to allow the model to still function even without Galileo
+            # Continue without failing to allow the model to still function
     
     def load_model(self, context) -> None:
         """

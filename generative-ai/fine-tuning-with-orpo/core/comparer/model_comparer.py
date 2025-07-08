@@ -16,9 +16,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 class ModelComparer:
     """
     A utility for comparing outputs between a base model and a fine-tuned model locally.
-    
-    This class replaces the previous Galileo-based comparison system with a local
-    evaluation approach that displays results in a human-readable format.
 
     Attributes:
         prompts (list[str]): List of input prompts for inference.
