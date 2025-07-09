@@ -19,6 +19,10 @@ import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser, Document
 from langchain_community.llms import LlamaCpp
+
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
