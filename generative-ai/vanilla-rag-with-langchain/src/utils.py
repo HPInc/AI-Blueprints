@@ -192,7 +192,21 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+        # Disable automatic chat template application by removing it from tokenizer
+        if hasattr(tokenizer, 'chat_template'):
+            tokenizer.chat_template = None
+
+        pipe = pipeline(
+            "text-generation", 
+            model=hf_model, 
+            tokenizer=tokenizer, 
+            max_new_tokens=100, 
+            device=0,
+            return_full_text=False,
+            do_sample=True,
+            temperature=0.1
+        )
+        # Create HuggingFacePipeline without automatic chat template application
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -203,7 +217,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, config.json)
+                model_config = os.path.join(local_model_path, "config.json")
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:

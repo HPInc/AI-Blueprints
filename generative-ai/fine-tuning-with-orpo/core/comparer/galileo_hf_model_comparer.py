@@ -6,13 +6,11 @@ import promptquality as pq
 from core.finetuning_inference.inference_runner import AcceleratedInferenceRunner
 from core.selection.model_selection import ModelSelector
 from datetime import datetime
+from pathlib import Path
 
-# Ensure src directory is in the system path
-src_path = os.path.abspath(os.path.join(os.getcwd(), "../.."))
-if src_path not in sys.path:
-    sys.path.append(src_path)
-
-from src.utils import initialize_galileo_evaluator
+# Import path utilities from src
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+from utils import initialize_galileo_evaluator
 
 class GalileoLocalComparer:
     """
