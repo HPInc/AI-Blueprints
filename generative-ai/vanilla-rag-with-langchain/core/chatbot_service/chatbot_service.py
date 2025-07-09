@@ -13,6 +13,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.llms import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline, HuggingFaceEndpoint
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
