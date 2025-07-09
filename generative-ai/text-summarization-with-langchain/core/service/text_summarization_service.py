@@ -12,6 +12,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain_huggingface import HuggingFaceEndpoint, HuggingFacePipeline
 from langchain_community.llms import LlamaCpp
+
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
