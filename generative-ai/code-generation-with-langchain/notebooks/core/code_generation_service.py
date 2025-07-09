@@ -853,7 +853,7 @@ Question: {question}
             signature=signature,
             code_paths=["./core", "../src"],
             pip_requirements=[
-                "mlflow==2.9.2", 
+                "mlflow>=2.11", 
                 "langchain", 
                 "chromadb",
                 "langchain_core",
