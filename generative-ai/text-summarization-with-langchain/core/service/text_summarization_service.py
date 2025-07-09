@@ -214,7 +214,7 @@ class TextSummarizationService(BaseGenerativeService):
             text = model_input["text"][0]
             
             # Run the input through the summarization chain
-            result = self.chain.invoke({"input": text})
+            result = self.chain.invoke({"context": text})
             
             logger.info("Successfully processed summarization request")
             
