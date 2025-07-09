@@ -215,6 +215,10 @@ def initialize_llm(
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
 
+    # Fix for Pydantic model rebuild issue
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
+
     model = None
     context_window = None
     
