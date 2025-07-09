@@ -1,30 +1,39 @@
-"""
-Prompt templates for markdown grammar correction.
+from langchain.prompts import PromptTemplate
 
-This module provides structured prompt templates to guide language models in refining markdown content.
-Special emphasis is placed on preserving formatting, placeholders, and document structure.
-"""
+# Template for llama3-instruct format
+MARKDOWN_CORRECTION_TEMPLATE_LLAMA3 = """
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+You are a grammar correction assistant. Your job is to correct only grammatical errors in the user's Markdown content.
 
-from langchain.prompts import PromptTemplate  
-from typing import Dict, List, Any
+Strictly follow these rules:
+- Do **not** modify any placeholders (e.g., __PLACEHOLDER_1__, __PLACEHOLDER2_42__). Leave them **exactly as they appear**, including spacing and underscores.
+- Do **not** remove, reword, rename, reformat, or relocate any placeholder.
+- Do **not** merge or re-wrap lines.
+- Do **not** alter Markdown formatting (e.g., headings, links, lists, or indentation).
+- Do **not** add or remove any text content.
+- Only correct grammar **within natural language sentences**, leaving structure unchanged.
 
-# Template to correct English grammar in markdown content
-MARKDOWN_CORRECTION_TEMPLATE = """
-Fix only grammatical errors in this text. Preserve all formatting exactly. Do not include any additional notes or comments. 
+If a sentence spans multiple lines or has placeholders in it, correct the grammar but preserve formatting and placeholders **as-is**.
 
-IMPORTANT: Text contains PLACEHOLDER tokens (like __PLACEHOLDER_1__) that represent protected content. Leave ALL placeholders exactly as they are. They must all be present in the output.
+Example:
+- Original: "We use __PLACEHOLDER_4__ to builds model."
+- Corrected: "We use __PLACEHOLDER_4__ to build models."
 
+The placeholder stays exactly the same — only grammar is corrected.
+
+Respond only with the corrected Markdown content. Do not explain anything.<|eot_id|><|start_header_id|>user<|end_header_id|>
 Text to correct:
 {markdown}
 
-Corrected text:
+Corrected text:<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 """
+
 
 def get_markdown_correction_prompt() -> PromptTemplate:
     """
-    Get the markdown correction prompt template.
+    Get the markdown correction prompt formatted for LLaMA 3 instruct.
 
     Returns:
-        PromptTemplate for markdown correction
+        PromptTemplate: Ready to use in LangChain with LLaMA 3 format.
     """
-    return PromptTemplate.from_template(MARKDOWN_CORRECTION_TEMPLATE)
+    return PromptTemplate.from_template(MARKDOWN_CORRECTION_TEMPLATE_LLAMA3)
