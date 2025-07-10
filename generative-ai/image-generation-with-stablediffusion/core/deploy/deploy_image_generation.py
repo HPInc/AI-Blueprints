@@ -19,19 +19,10 @@ try:
 except ImportError:
     _XFORMERS_AVAILABLE = False
 
-def get_project_root():
-    """Get the project root directory (image-generation-with-stablediffusion)"""
-    return Path(__file__).parent.parent.parent
-
-def get_config_dir():
-    """Get the config directory"""
-    return get_project_root() / "config"
-
-def get_output_dir():
-    """Get or create the output directory for generated images"""
-    output_dir = get_project_root() / "output"
-    output_dir.mkdir(exist_ok=True)
-    return output_dir
+# Import utility functions from src
+# Add the project root to the path for proper src module import resolution
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from src.utils import get_project_root, get_config_dir, get_output_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
@@ -213,6 +204,14 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
 
         core = Path(__file__).resolve().parent.parent
         (core / "__init__.py").touch(exist_ok=True)
+        
+        # Include both core and src directories, with src at the project root level
+        project_root = Path(__file__).resolve().parent.parent.parent
+        src_dir = project_root / "src"
+        
+        # Ensure __init__.py files exist
+        (core / "__init__.py").touch(exist_ok=True)
+        (src_dir / "__init__.py").touch(exist_ok=True)
 
         # Essential pip requirements
         pip_requirements = [
@@ -233,7 +232,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 "model_no_finetuning": model_no_finetuning_path,
             },
             signature=signature,
-            code_paths=[str(core)],
+            code_paths=[str(core), str(src_dir)],
             pip_requirements=pip_requirements,
         )
         logging.info("✅ Model logged to MLflow at '%s'", artifact_path)
