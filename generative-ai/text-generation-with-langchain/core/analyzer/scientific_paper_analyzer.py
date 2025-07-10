@@ -9,18 +9,20 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 class ScientificPaperAnalyzer:
     """
-    Class for analyzing scientific papers using LLMs and vector retrievers.
+    Class for analyzing scientific papers using LLMs and vector retrievers with model-specific prompt formatting.
     """
 
     def __init__(
         self,
         retriever: VectorStoreRetriever,
         llm: BaseChatModel,
+        model_source: str = "local",
         prompt_template: Optional[PromptTemplate] = None,
         logging_enabled: bool = False
     ):
         self.retriever = retriever
         self.llm = llm
+        self.model_source = model_source
         self.prompt_template = prompt_template or self._default_prompt()
         self.logger = logging.getLogger(__name__)
         self.logging_enabled = logging_enabled
@@ -33,12 +35,10 @@ class ScientificPaperAnalyzer:
         self.chain = self._build_chain()
 
     def _default_prompt(self) -> PromptTemplate:
-        template = (
-            "You are analyzing the following scientific paper:\n\n"
-            "{context}\n\n"
-            "Instruction: {prompt}\n\n"
-        )
-        return PromptTemplate.from_template(template)
+        """Create a default prompt template with model-specific formatting."""
+        # Import here to avoid circular imports
+        from src.prompt_templates import format_scientific_paper_analysis_prompt
+        return format_scientific_paper_analysis_prompt(self.model_source)
 
     def _format_docs(self, docs: List[Document]) -> str:
         content = "\n\n".join([d.page_content for d in docs])

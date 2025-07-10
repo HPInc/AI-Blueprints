@@ -1,5 +1,13 @@
 # 😷 COVID Movement Patterns with VAR
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Pandas](https://img.shields.io/badge/Pandas-used-150458.svg?logo=pandas)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -18,6 +26,9 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 # Project Structure
 
 ```
+├── docs/
+│   └── swagger_UI_data_analysis_with_var.pdf                   # Swagger screenshot
+│   └── swagger_UI_data_analysis_with_var.png                   # Swagger screenshot
 ├── notebooks
 │   └── covid_movement_patterns_with_var.ipynb                  # Main notebook for the project              
 ├── README.md                                                   # Project documentation
@@ -60,10 +71,11 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 1 ▪ Run the Notebook
 
-Execute the notebook inside the `notebooks` folder:
+
+Execute the run-workflow notebook first inside the `notebooks` folder:
 
 ```bash
-notebooks/covid_movement_patterns_with_var.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
@@ -80,8 +92,79 @@ This will:
 - Analyze Autocorrelation of Residuals
 - Forecast
 - Evaluate the model
-- Integrate MLflow 
+- Save model artifacts as pkl files and training metrics as a json file to the artifacts folder
 
+
+Execute the register-model notebook second inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This will:
+
+- Load and prepare the data for viewing
+- Load the saved models as well as the training metrics
+- Integrate MLflow
+
+
+### 2 ▪ Deploy the COVID Movement Patterns with VAR Service
+
+- Go to **Deployments > New Service** in AI Studio.
+- Name the service and select the registered model.
+- Choose a model version and **GPU** it's **not necessary**.
+- Choose the workspace.
+- Start the deployment.
+- Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
+
+### 3 ▪ Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "city": [
+      "New York"
+    ],
+    "steps": [
+      2
+    ]
+  },
+  "params": {}
+}
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    {
+      "retail_forecast": -33.728463233848125,
+      "pharmacy_forecast": -30.846298674683787,
+      "parks_forecast": 10.141207881911434,
+      "transit_station_forecast": -22.428499788561272,
+      "workplaces_forecast": -22.99469300562751,
+      "case_count_forecast": 2408.7536947190256,
+      "hospitalized_count_forecast": 98.59975487297108,
+      "death_count_forecast": 11.877680770250993
+    },
+    {
+      "retail_forecast": -38.21554995618252,
+      "pharmacy_forecast": -30.56449061598022,
+      "parks_forecast": -4.27564275594397,
+      "transit_station_forecast": -39.14454598096768,
+      "workplaces_forecast": -56.921910023079036,
+      "case_count_forecast": 4896.93595036146,
+      "hospitalized_count_forecast": 116.0842596188819,
+      "death_count_forecast": 10.01707228744587
+    }
+  ]
+}
+```
 
 ---
 
