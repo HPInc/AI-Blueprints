@@ -1,5 +1,13 @@
 # 😷 COVID Movement Patterns with VAR
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Pandas](https://img.shields.io/badge/Pandas-used-150458.svg?logo=pandas)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -63,10 +71,11 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 1 ▪ Run the Notebook
 
-Execute the notebook inside the `notebooks` folder:
+
+Execute the run-workflow notebook first inside the `notebooks` folder:
 
 ```bash
-notebooks/covid_movement_patterns_with_var.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
@@ -83,7 +92,20 @@ This will:
 - Analyze Autocorrelation of Residuals
 - Forecast
 - Evaluate the model
-- Integrate MLflow 
+- Save model artifacts as pkl files and training metrics as a json file to the artifacts folder
+
+
+Execute the register-model notebook second inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This will:
+
+- Load and prepare the data for viewing
+- Load the saved models as well as the training metrics
+- Integrate MLflow
 
 
 ### 2 ▪ Deploy the COVID Movement Patterns with VAR Service

@@ -1,7 +1,7 @@
 """
 Chatbot Service implementation that extends the BaseGenerativeService.
 This service provides a RAG (Retrieval-Augmented Generation) chatbot with 
-Galileo integration for protection, observation, and evaluation.
+support for document retrieval and conversational AI capabilities.
 """
 import os
 import uuid
@@ -13,6 +13,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.llms import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline, HuggingFaceEndpoint
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
@@ -20,7 +24,6 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda, RunnableMap
 from langchain.schema.document import Document
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from galileo_protect import ProtectParser
 
 # Import base service class from the shared location
 import sys
@@ -267,14 +270,15 @@ class ChatbotService(BaseGenerativeService):
 
     def load_prompt(self) -> None:
         """Load the prompt template for the chatbot."""
-        self.prompt_str = """You are a chatbot assistant for a Data Science platform created by HP, called 'Z by HP AI Studio'. 
-            Do not hallucinate and answer questions only if they are related to 'Z by HP AI Studio'. 
-            Now, answer the question perfectly based on the following context:
-
-            {context}
-
-            Question: {query}
-            """
+        # Import the prompt formatting function
+        from src.prompt_templates import format_rag_chatbot_prompt
+        
+        # Get the model source from configuration
+        model_source = self.model_config.get("model_source", "local")
+        
+        # Format the prompt template based on the model source
+        self.prompt_str = format_rag_chatbot_prompt(model_source)
+        
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
     def load_chain(self) -> None:
@@ -337,10 +341,6 @@ class ChatbotService(BaseGenerativeService):
             self.load_vector_database()
             self.load_prompt()
             self.load_chain()
-
-            # Set up Galileo integration
-            self.setup_protection()
-            self.setup_monitoring()
 
             logger.info(f"{self.__class__.__name__} successfully loaded and configured.")
         except Exception as e:
@@ -430,7 +430,6 @@ class ChatbotService(BaseGenerativeService):
 
             # Rebuild the chain with the new prompt
             self.load_chain()
-            self.setup_protection()
 
             return {
                 "chunks": [],
@@ -479,10 +478,9 @@ class ChatbotService(BaseGenerativeService):
             # Get the model context window for optimized retrieval
             context_window = get_context_window(self.llm)
             
-            # Run the query through the protected chain with monitoring
-            response = self.protected_chain.invoke(
-                {"input": user_query, "output": ""},
-                config={"callbacks": [self.monitor_handler]}
+            # Run the query through the chain
+            response = self.chain.invoke(
+                {"input": user_query, "output": ""}
             )
             
             # Get relevant documents using context-aware retrieval

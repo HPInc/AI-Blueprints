@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading and model initialization.
 """
 
 import os
@@ -10,11 +10,70 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from .trt_llm_langchain import TensorRTLangchain
+
+try:
+    # First try absolute import
+    from trt_llm_langchain import TensorRTLangchain
+except ImportError:
+    # If that fails, try adding the src directory to path and import
+    import sys
+    src_dir = str(Path(__file__).parent)
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+    from trt_llm_langchain import TensorRTLangchain
 
 _PROJECT_ROOT   = Path(__file__).resolve().parents[1]         
 _DEFAULT_CONFIG = _PROJECT_ROOT / "configs" / "config.yaml"
 _DEFAULT_SECRETS = _PROJECT_ROOT / "configs" / "secrets.yaml"
+
+
+# Simple path utilities for project-relative paths
+def get_project_root():
+    """Get the project root directory (fine-tuning-with-orpo)"""
+    return Path(__file__).parent.parent
+
+def get_config_dir():
+    """Get the config directory"""
+    return get_project_root() / "config"
+
+def get_configs_dir():
+    """Get the configs directory"""
+    return get_project_root() / "configs"
+
+def get_output_dir():
+    """Get or create the output directory for generated models and artifacts"""
+    output_dir = get_project_root() / "output"
+    output_dir.mkdir(exist_ok=True)
+    return output_dir
+
+def get_models_dir():
+    """Get or create the models directory for downloaded models"""
+    models_dir = get_project_root() / "models"
+    models_dir.mkdir(exist_ok=True)
+    return models_dir
+
+def get_fine_tuned_models_dir():
+    """Get or create the directory for fine-tuned models"""
+    fine_tuned_dir = get_output_dir() / "fine_tuned_models"
+    fine_tuned_dir.mkdir(exist_ok=True)
+    return fine_tuned_dir
+
+def get_model_cache_dir():
+    """Get the directory for caching downloaded models"""
+    cache_dir = get_models_dir() / "cache"
+    cache_dir.mkdir(exist_ok=True)
+    return cache_dir
+
+def format_model_path(model_id: str) -> Path:
+    """Convert a HuggingFace model ID to a local path"""
+    return get_models_dir() / model_id.replace("/", "__")
+
+def setup_model_environment():
+    """Setup model-related environment variables for the project"""
+    # Configure HuggingFace cache to use project directory
+    hf_cache_dir = str(get_model_cache_dir())
+    os.environ["HF_HOME"] = hf_cache_dir
+    os.environ["HF_HUB_CACHE"] = hf_cache_dir
 
 
 #Default models to be loaded in our examples:
@@ -61,13 +120,16 @@ MODEL_CONTEXT_WINDOWS = {
     "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
-def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+def configure_hf_cache(cache_dir: str = None) -> None:
     """
     Configure HuggingFace cache directories to persist models locally.
 
     Args:
-        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+        cache_dir: Base directory for HuggingFace cache. Uses project's cache directory by default.
     """
+    if cache_dir is None:
+        cache_dir = str(get_model_cache_dir())
+    
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
@@ -152,6 +214,10 @@ def initialize_llm(
     from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
+
+    # Fix for Pydantic model rebuild issue
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
 
     model = None
     context_window = None
@@ -251,84 +317,32 @@ def initialize_llm(
 
 def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
     """
-    Configure environment variables for Galileo services.
-
-    Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
-
-    Raises:
-        ValueError: If Galileo API key is not found in secrets.
+    This function is a stub maintained for backward compatibility only.
+    It previously configured environment variables for Galileo services but now does nothing.
     """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
+    pass
 
 
 def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
     """
-    Initialize Galileo Protect project and stage.
-
-    Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
-
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized a protection tool for LLM output filtering but now returns dummy values.
+    
     Returns:
-        Tuple containing (project object, project_id, stage_id).
-
-    Raises:
-        ImportError: If galileo_protect is not installed.
+        Tuple containing (None, "", "").
     """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
+    return None, "", ""
 
 
 def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
     """
-    Initialize a Galileo Prompt Callback for evaluation.
-
-    Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
-
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized an evaluator for LLM output scoring but now returns None.
+    
     Returns:
-        Galileo prompt callback object.
-
-    Raises:
-        ImportError: If promptquality is not installed.
+        None
     """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
+    return None
     
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
@@ -770,20 +784,10 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
 
 def initialize_galileo_observer(project_name: str):
     """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
+    This function is a stub maintained for backward compatibility only.
+    It previously initialized an observer for LLM usage monitoring but now returns None.
     
-    return GalileoObserveCallback(project_name=project_name)
+    Returns:
+        None
+    """
+    return None

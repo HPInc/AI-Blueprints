@@ -1,4 +1,14 @@
-# Text Summarization with LangChain and Galileo
+# Text Summarization with LangChain
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
 
 ## 📚 Contents
 
@@ -12,7 +22,7 @@
 
 ## Overview
 
-This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
+This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain** and **Sentence Transformers**. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
 
 ---
 
@@ -28,7 +38,7 @@ This project demonstrates how to build a semantic chunking and summarization pip
 │   ├── I_have_a_dream.txt
 │   └── I_have_a_dream.vtt
 ├── notebooks
-│   └── text-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
+│   └── text-summarization-with-langchain.ipynb                           # Main notebook for the project
 └── requirements.txt                                                        # Python dependencies
 ```
 
@@ -77,7 +87,6 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - Add your API keys to the `secrets.yaml` file under the `configs` folder:
   - `HUGGINGFACE_API_KEY`
-  - `GALILEO_API_KEY`
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -89,14 +98,13 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/text-summarization-with-langchain-and-galileo.ipynb
+notebooks/text-summarization-with-langchain.ipynb
 ```
 
 This will:
 
 - Set up the semantic chunking pipeline
 - Create the summarization chain with LangChain
-- Integrate Galileo evaluation, protection, and observability
 - Register the model in MLflow
 
 ### Step 2: Deploy the Summarization Service
