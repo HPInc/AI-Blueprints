@@ -82,7 +82,7 @@ for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do
   fi
 done
 
-if [[ -z $(yq 'has("ngcconfig") $TESTSCRIPT)' ]]; then
+if [[ -z $(yq 'has("ngcconfig")' $TESTSCRIPT) ]]; then
   echo "No NGC images to run"
   exit 0
 fi

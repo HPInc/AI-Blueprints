@@ -3,9 +3,7 @@ test_folder: "test"
 files: 
 - mnist_test.py
 - bert_test.py
-assets:
-  hurricane: "c:\\Users\\borges\\data\\hurricane"
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
-  deeplearning: "0.13.7"
-  deeplearninggpu: "0.11.5"
+  deeplearning: "0.13.9"
+  deeplearninggpu: "0.11.6"
