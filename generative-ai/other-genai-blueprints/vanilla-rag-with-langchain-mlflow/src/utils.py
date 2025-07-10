@@ -2,7 +2,7 @@
 Utility functions for AI Studio GenAI Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, model initialization, and MLFlow evaluation integration.
 """
 
 import os
@@ -721,24 +721,3 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     formatted_text = "\n\n".join(formatted_docs)
 
     return formatted_text
-
-
-def initialize_galileo_observer(project_name: str):
-    """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
-    
-    return GalileoObserveCallback(project_name=project_name)
