@@ -18,7 +18,7 @@
 
 ## Overview
 
-This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **llama3.1-8b-instruct-Q8_0** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
+This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **MLFlow** for model evaluation and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **InternVL3-8B-Instruct-Q8** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
@@ -36,7 +36,7 @@ INSERT TREE HERE
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
 - RAM: 32 GB 
-- VRAM: 6 GB 
+- VRAM: 12 GB 
 - GPU: NVIDIA GPU 
 
 ### Step 1: Create an AI Studio Project
@@ -46,6 +46,8 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 2: Set Up a Workspace
 
 - Choose **Local GenAI** as the base image.
+- Upload requirements.txt file to the pip packages section of your AI Studio workspace.
+
 
 ### Step 3: Clone the Repository
 
@@ -58,8 +60,8 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 4: Add the Model to Workspace
 
-- Download the **llama3.1-8b-instruct-Q8_0** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Model Name**: `llama3.1-8b-instruct-Q8_0`
+- Download the **InternVL3-8B-Instruct-Q8** model from AWS S3 using the Models tab in your AI Studio project:
+  - **Model Name**: `InternVL3-8B-Instruct-Q8`
   - **Model Source**: `AWS S3`
   - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
   - **Bucket Region**: `us-west-2`
@@ -80,14 +82,14 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/vanilla-rag-with-langchain.ipynb
+notebooks/multimodal-rag-with-langchain-mlflow.ipynb
 ```
 
 This will:
 
 - Run the full RAG pipeline
-- Integrate DeepEval evaluation, protection, and observability
 - Register the model in MLflow
+- Integrate MLFlow evaluation and observability
 
 ### Step 2: Deploy the Chatbot Service
 

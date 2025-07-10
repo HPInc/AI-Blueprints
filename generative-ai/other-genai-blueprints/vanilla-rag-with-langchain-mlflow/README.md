@@ -1,4 +1,4 @@
-# 🤖 MultiModal RAG with LangChain
+# 🤖 Vanilla RAG with LangChain & MLFlow Evaluation
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **llama3.1-8b-instruct-Q8_0** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
+This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **MLFlow** for model evaluation and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **llama3.1-8b-instruct-Q8_0** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
@@ -36,7 +36,7 @@ INSERT TREE HERE
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
 - RAM: 32 GB 
-- VRAM: 6 GB 
+- VRAM: 12 GB 
 - GPU: NVIDIA GPU 
 
 ### Step 1: Create an AI Studio Project
@@ -86,7 +86,7 @@ notebooks/vanilla-rag-with-langchain.ipynb
 This will:
 
 - Run the full RAG pipeline
-- Integrate DeepEval evaluation, protection, and observability
+- Integrate MLFlow evaluation and observability
 - Register the model in MLflow
 
 ### Step 2: Deploy the Chatbot Service
