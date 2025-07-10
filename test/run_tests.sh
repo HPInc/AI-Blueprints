@@ -67,27 +67,40 @@ for ASSET in $(yq ".assets|keys" $TESTSCRIPT); do
 
 for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do  
   if [[ -n "$IMAGE" ]] && [[ $IMAGE != "-" ]] && [[ $IMAGE != "registry" ]]; then
-    echo $IMAGE
-	IMAGE_REGISTRY=$(yq ".baseimages.registry" $TESTSCRIPT)
+    echo ""
+    echo ""
+    echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE} *-*-*-*-*-*-*-*-*-*-*-*"
+    echo ""
+    echo ""
+	  IMAGE_REGISTRY=$(yq ".baseimages.registry" $TESTSCRIPT)
     IMAGE_NAME=$(yq .$IMAGE test/strings.yaml)
-	IMAGE_VERSION=$(yq ".baseimages.${IMAGE}" $TESTSCRIPT)
-	FULL_IMAGE="$IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION"
-	FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
-	FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
-	echo $FULL_COMMAND
-	$FULL_COMMAND
+	  IMAGE_VERSION=$(yq ".baseimages.${IMAGE}" $TESTSCRIPT)
+	  FULL_IMAGE="$IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION"
+	  FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
+	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
+  	$FULL_COMMAND
   fi
 done
 
+if [[ -z $(yq 'has("ngcconfig") $TESTSCRIPT)' ]]; then
+  echo "No NGC images to run"
+  exit 0
+fi
+
 for IMAGE_ENTRY in $(yq ".ngcconfig|keys" $TESTSCRIPT); do  
   if [[ $IMAGE_ENTRY != "-" ]]; then
+    echo ""
+    echo ""
+    echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE_ENTRY} *-*-*-*-*-*-*-*-*-*-*-*"
+    echo ""
+    echo ""
     IMAGE=${IMAGE_ENTRY%version*}
     IMAGE_URL=$(yq .$IMAGE test/strings.yaml)
     IMAGE_VERSION=$(yq ".ngcconfig.${IMAGE_ENTRY}" $TESTSCRIPT)
-	FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
-	FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
-	FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
-	echo $FULL_COMMAND
-	$FULL_COMMAND
+	  FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
+	  FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
+	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
+	  echo $FULL_COMMAND
+	  $FULL_COMMAND
   fi
 done

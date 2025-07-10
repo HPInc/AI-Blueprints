@@ -2,11 +2,10 @@ code_folder: "."
 test_folder: "test"
 files: 
 - mnist_test.py
+- bert_test.py
 assets:
   hurricane: "c:\\Users\\borges\\data\\hurricane"
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
+  deeplearning: "0.13.7"
   deeplearninggpu: "0.11.5"
-ngcconfig:
-  rapidsbaseversionpin: "25.02-cuda12.0-py3.12"
-  rapidsnotebooksversionpin: "25.02-cuda12.0-py3.12"

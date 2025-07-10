@@ -1,4 +1,9 @@
 #!/bin/bash
+echo ""
+echo ""
+echo "*-*-*-*-*-*-*-*-*-*-*-* Started test using the workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+echo ""
+echo ""
 SCRIPT=$(readlink -f $0)
 SCRIPT_FOLDER=$(dirname ${SCRIPT})
 cd $SCRIPT_FOLDER/..
@@ -18,4 +23,8 @@ for TEST_FILE in $(ls $TMP_FOLDER/*test.py ); do
     echo "******************************"	
 done
 
-
+echo ""
+echo ""
+echo "*-*-*-*-*-*-*-*-*-*-*-* Finished test on workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+echo ""
+echo ""
