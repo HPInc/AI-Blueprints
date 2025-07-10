@@ -42,7 +42,8 @@ This notebook performs image generation inference using the Stable Diffusion arc
 │       └── ...                                  # Other image files
 │
 ├── docs/            
-│     ├── Diagram dreambooth.png                 # Image generation diagram example  
+│     ├── Diagram dreambooth.png                                # Image generation diagram example
+│     ├── swagger_UI_data_analysis_with_var.pdf                 # # Swagger screenshot  
 ├── notebooks/
 │   ├── 04-image-generation_with_StableDiffusion.ipynb                          # Main notebook for running image generation inference
 │
