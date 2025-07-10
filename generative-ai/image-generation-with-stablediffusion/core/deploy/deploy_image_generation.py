@@ -19,9 +19,19 @@ try:
 except ImportError:
     _XFORMERS_AVAILABLE = False
 
-# Import path utilities from src
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from src.utils import get_project_root, get_config_dir, get_output_dir
+def get_project_root():
+    """Get the project root directory (image-generation-with-stablediffusion)"""
+    return Path(__file__).parent.parent.parent
+
+def get_config_dir():
+    """Get the config directory"""
+    return get_project_root() / "config"
+
+def get_output_dir():
+    """Get or create the output directory for generated images"""
+    output_dir = get_project_root() / "output"
+    output_dir.mkdir(exist_ok=True)
+    return output_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
