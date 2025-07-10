@@ -142,7 +142,6 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
     def _build_vectordb(self, papers: List[dict], chunk: int, overlap: int):
         from langchain.schema import Document
         from langchain_text_splitters import RecursiveCharacterTextSplitter
-        from langchain_huggingface import HuggingFaceEmbeddings
         from langchain_community.vectorstores import Chroma
 
         uid = hashlib.md5(
@@ -151,9 +150,18 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         path = Path(".vectordb") / uid
         path.mkdir(parents=True, exist_ok=True)
 
+        try:
+            from langchain_huggingface import HuggingFaceEmbeddings
+            embeddings = HuggingFaceEmbeddings()
+        except ImportError:
+            raise ImportError(
+                "Could not import HuggingFaceEmbeddings. Please ensure sentence-transformers "
+                "is installed with: pip install sentence-transformers"
+            )
+
         if any(path.iterdir()):  
             return Chroma(
-                persist_directory=str(path), embedding_function=HuggingFaceEmbeddings()
+                persist_directory=str(path), embedding_function=embeddings
             )
 
         docs = [
@@ -165,7 +173,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         )
         chunks = splitter.split_documents(docs)
         db = Chroma.from_documents(
-            chunks, HuggingFaceEmbeddings(), persist_directory=str(path)
+            chunks, embeddings, persist_directory=str(path)
         )
         db.persist()
         return db
@@ -297,7 +305,12 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                     ]
                 ),
             ),
-            pip_requirements=["PyYAML", "requests", "pymupdf"],
+            pip_requirements=[
+                "PyYAML", 
+                "requests", 
+                "pymupdf",
+                "sentence-transformers"
+            ],
             code_paths=[str(core)] + ([str(src)] if src else []),
         )
 
