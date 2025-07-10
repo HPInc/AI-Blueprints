@@ -60,8 +60,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 32 GB
-- VRAM: 6 GB
+- RAM: 64 GB
+- VRAM: 12 GB
 - GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
