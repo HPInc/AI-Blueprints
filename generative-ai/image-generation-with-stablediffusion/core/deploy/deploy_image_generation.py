@@ -21,7 +21,7 @@ except ImportError:
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_project_root, get_config_dir, get_output_dir
+from src.utils import get_project_root, get_config_dir, get_output_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
