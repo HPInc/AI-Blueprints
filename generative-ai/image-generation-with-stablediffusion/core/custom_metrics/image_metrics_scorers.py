@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 import numpy as np
 import tensorflow as tf
-from promptquality import PromptRow, CustomScorer
 
 # Force TensorFlow to use only the CPU (if necessary)
 tf.config.set_visible_devices([], 'GPU')
@@ -83,60 +82,40 @@ class ImageMetrics:
         gray = convert_to_grayscale(self.image)
         return calculate_complexity(gray)
 
-# --- Executor and Aggregator for Entropy ---
+# --- Image Metric Scorer Functions ---
 
-def executor_entropy(row: PromptRow, **kwargs) -> float:
+def entropy_scorer(image_path: str = None) -> float:
     """
-    Calculates entropy using the path defined in the CUSTOM_IMAGE_PATH variable.Calcula a entropia usando o caminho definido na variável CUSTOM_IMAGE_PATH.
+    Calculate the entropy of an image.
+    
+    Args:
+        image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
+        
+    Returns:
+        float: Entropy value of the image
     """
-    image_path = CUSTOM_IMAGE_PATH  
-    print(f"[executor_entropy] Using image_path: {image_path}")
+    path = image_path if image_path is not None else CUSTOM_IMAGE_PATH
     try:
-        metrics = ImageMetrics(image_path)
-        entropy = metrics.calculate_entropy()
-        print(f"[executor_entropy] Entropy: {entropy}")
-        return entropy
+        metrics = ImageMetrics(path)
+        return metrics.calculate_entropy()
     except Exception as e:
-        print(f"[executor_entropy] Error: {e}")
+        print(f"[entropy_scorer] Error calculating entropy: {e}")
         return 0.0
 
-def aggregator_entropy(scores: List[float], indices: List[int]) -> Dict[str, float]:
-    total = sum(scores)
-    avg = total / len(scores) if scores else 0.0
-    return {"Total Entropy": total, "Average Entropy": avg, "Count": len(scores)}
-
-# --- Executor and Aggregator for Complexity ---
-
-def executor_complexity(row: PromptRow, **kwargs) -> float:
+def complexity_scorer(image_path: str = None) -> float:
     """
-    Calculate the complexity using the path defined in the CUSTOM IMAGE PATH variable.
+    Calculate the complexity of an image.
+    
+    Args:
+        image_path: Path to the image file. If None, uses CUSTOM_IMAGE_PATH.
+        
+    Returns:
+        float: Complexity value of the image
     """
-    image_path = CUSTOM_IMAGE_PATH
-    print(f"[executor_complexity] Using image_path: {image_path}")
+    path = image_path if image_path is not None else CUSTOM_IMAGE_PATH
     try:
-        metrics = ImageMetrics(image_path)
-        complexity = metrics.calculate_complexity()
-        print(f"[executor_complexity] Complexity: {complexity}")
-        return complexity
+        metrics = ImageMetrics(path)
+        return metrics.calculate_complexity()
     except Exception as e:
-        print(f"[executor_complexity] Error: {e}")
+        print(f"[complexity_scorer] Error calculating complexity: {e}")
         return 0.0
-
-def aggregator_complexity(scores: List[float], indices: List[int]) -> Dict[str, float]:
-    total = sum(scores)
-    avg = total / len(scores) if scores else 0.0
-    return {"Total Complexity": total, "Average Complexity": avg, "Count": len(scores)}
-
-# --- Creating Custom Scorers ---
-
-entropy_scorer = CustomScorer(
-    name="Image Entropy",
-    executor=executor_entropy,
-    aggregator=aggregator_entropy
-)
-
-complexity_scorer = CustomScorer(
-    name="Image Complexity",
-    executor=executor_complexity,
-    aggregator=aggregator_complexity
-)
