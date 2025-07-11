@@ -1,9 +1,14 @@
 import os
+import sys
 import gc
 import torch
+from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 from trl import setup_chat_format
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+from utils import get_fine_tuned_models_dir
 
 def merge_lora_and_save(
     base_model_id: str,
@@ -24,7 +29,7 @@ def merge_lora_and_save(
         base_model_id (str): Hugging Face model ID or local path to the base model.
         finetuned_lora_path (str): Directory path containing LoRA adapter weights.
         base_local_dir (str, optional): Base directory where the merged model will be saved. 
-            If None, a default path under `local/models_llora/` will be used.
+            If None, uses the project's fine-tuned models directory.
         use_bfloat16 (bool, optional): If True, uses bfloat16 precision; otherwise uses float16. Defaults to False.
         add_chat_template (bool, optional): Whether to apply a chat template if the tokenizer lacks one. Defaults to True.
 
@@ -78,10 +83,12 @@ def merge_lora_and_save(
     # Define save path
     base_model_name = base_model_id.split("/")[-1]
     merged_model_name = f"Orpo-{base_model_name}-FT"
-    save_path = os.path.join(
-        base_local_dir or os.path.join("..", "..", "..", "local", "models_llora"),
-        merged_model_name
-    )
+    
+    if base_local_dir:
+        save_path = os.path.join(base_local_dir, merged_model_name)
+    else:
+        save_path = str(get_fine_tuned_models_dir() / merged_model_name)
+    
     os.makedirs(save_path, exist_ok=True)
 
     # Save merged model and tokenizer

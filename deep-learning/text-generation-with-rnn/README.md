@@ -1,5 +1,15 @@
 # 📜💬 Shakespeare text generation with RNN
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![PyTorch](https://img.shields.io/badge/PyTorch-used-ee4c2c.svg?logo=pytorch)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
+
 ### 📚 Content
 
 * [🧠 Overview](#overview)
@@ -16,23 +26,28 @@ The objective of this template is to show how to create a simple text generation
 
  ## Project Structure
 ```
-├── code/                                             # Demo code
+├── code/                                                     # Demo code
 │                                   
-├── data/                                             # Data assets used in the project
-│    └── shakespeare.txt                              # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
+├── data/                                                     # Data assets used in the project
+│    └── shakespeare.txt                                      # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
 │
-├── demo/                                             # Compiled Interface Folder
+├── demo/                                                     # Compiled Interface Folder
+├── docs
+│   ├── ui_text_generation_with_rnn.png                       # UI screenshot 
+│   ├── ui_text_generation_with_rnn.png                       # UI screenshot screenshot    
+│   ├── swagger_UI_text_generation_with_rnn.pdf               # Swagger UI screenshot 
+│   └── swagger_UI_text_generation_with_rnn. pdf              # Swagger UI screenshot
 │
 ├── notebooks
     └── models/
-│        └── decoder.pt                               # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
-│        └── dict_torch_rnn_model.pt                  # Trained model for text_generation_with_RNN__Torch.ipynb
-│        └── encoder.pt                               # Compresses the input into a compact representation and detain the most relevant features.
-│        └── tf_rnn_model.h5                          # Trained model for the text_generation_with_RNN_TF.ipynb
-│   ├── text_generation_with_RNN_TF.ipynb             # Notebook for the TensorFlow trained model
-│   ├── text_generation_with_RNN_Torch.ipynb          # Notebook for the Torch trained model
-│   ├── deploy.py                                     # Code to deploy        
-├── README.md                                         # Project documentation
+│        └── decoder.pt                                       # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
+│        └── dict_torch_rnn_model.pt                          # Trained model for text_generation_with_RNN__Torch.ipynb
+│        └── encoder.pt                                       # Compresses the input into a compact representation and detain the most relevant features.
+│        └── tf_rnn_model.h5                                  # Trained model for the text_generation_with_RNN_TF.ipynb
+│   ├── text_generation_with_RNN_TF.ipynb                     # Notebook for the TensorFlow trained model
+│   ├── text_generation_with_RNN_Torch.ipynb                  # Notebook for the Torch trained model
+│   ├── deploy.py                                             # Code to deploy        
+├── README.md                                                 # Project documentation
                                     
 ```
 ## Setup
@@ -117,6 +132,28 @@ Paste a payload like:
 }
 
 ```
+
+And as response:
+
+```
+{
+  "predictions": "love is\n      an one that was a maider, which it is a more a town\n     on the state, that was the state o"
+}
+
+```
+
+### 4 ▪ Use the HTML Demo
+
+From the Swagger page, click the **“Demo”** link to interact via a simple web form:
+
+* Enter your source text.
+* Click **Submit**.
+* View the generated text right in the browser.
+
+### Successful UI demo
+
+- HTML
+![Automated Evaluation React UI](docs/ui_text_generation_with_rnn.png)  
 
 ---
 

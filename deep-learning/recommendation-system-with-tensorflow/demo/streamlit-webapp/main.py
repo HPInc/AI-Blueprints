@@ -70,8 +70,9 @@ movie_id = st.number_input(
 )
 rating = st.number_input(
     "Enter a rating", 
-    min_value = 0,
-    max_value = 5
+    min_value = 0.0,
+    max_value = 5.0,
+    step=0.5
 )
 
 # ─────────────────────────────────────────────────────────────

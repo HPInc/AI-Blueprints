@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, model initialization, and data processing.
 """
 
 import os
@@ -15,7 +15,7 @@ from .trt_llm_langchain import TensorRTLangchain
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -54,6 +54,7 @@ MODEL_CONTEXT_WINDOWS = {
     'microsoft/phi-2': 2048,
     'tiiuae/falcon-7b': 4096,
     "meta-llama/Llama-3.2-3B-Instruct": 128000,
+    "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
@@ -149,6 +150,10 @@ def initialize_llm(
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
 
+    # Fix for Pydantic model rebuild issue
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
+
     model = None
     context_window = None
     
@@ -169,6 +174,7 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
+            task="text-generation",
         )
 
     elif model_source == "hugging-face-local":
@@ -190,7 +196,20 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+        # Disable automatic chat template application by removing it from tokenizer
+        if hasattr(tokenizer, 'chat_template'):
+            tokenizer.chat_template = None
+
+        pipe = pipeline(
+            "text-generation", 
+            model=hf_model, 
+            tokenizer=tokenizer, 
+            max_new_tokens=100, 
+            device=0,
+            return_full_text=False,
+            do_sample=True,
+            temperature=0.1
+        )
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -201,7 +220,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, config.json)
+                model_config = os.path.join(local_model_path, "config.json")
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:
@@ -245,87 +264,6 @@ def initialize_llm(
     return model
 
 
-def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
-    """
-    Configure environment variables for Galileo services.
-
-    Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
-
-    Raises:
-        ValueError: If Galileo API key is not found in secrets.
-    """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
-
-
-def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
-    """
-    Initialize Galileo Protect project and stage.
-
-    Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
-
-    Returns:
-        Tuple containing (project object, project_id, stage_id).
-
-    Raises:
-        ImportError: If galileo_protect is not installed.
-    """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
-
-
-def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
-    """
-    Initialize a Galileo Prompt Callback for evaluation.
-
-    Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
-
-    Returns:
-        Galileo prompt callback object.
-
-    Raises:
-        ImportError: If promptquality is not installed.
-    """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
-    
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.
@@ -764,22 +702,62 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     return formatted_text
 
 
-def initialize_galileo_observer(project_name: str):
+def estimate_tokens_accurate(text: str, model=None) -> int:
     """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
+    More accurate token estimation that can use actual model tokenizer.
     
-    return GalileoObserveCallback(project_name=project_name)
+    Args:
+        text: Text to count tokens for  
+        model: Optional model object with tokenizer
+        
+    Returns:
+        Estimated token count
+    """
+    if not text:
+        return 0
+        
+    try:
+        # Try to use actual tokenizer if available
+        if model and hasattr(model, 'client') and hasattr(model.client, '_model'):
+            # For llama-cpp models
+            if hasattr(model.client._model, 'tokenize'):
+                tokens = model.client._model.tokenize(text.encode('utf-8'))
+                return len(tokens)
+        elif model and hasattr(model, 'pipeline') and hasattr(model.pipeline, 'tokenizer'):
+            # For HuggingFace models
+            tokens = model.pipeline.tokenizer.encode(text, add_special_tokens=False)
+            return len(tokens)
+    except Exception as e:
+        # Fall back to estimation if tokenizer fails
+        pass
+    
+    # Improved character-based estimation based on content analysis
+    # Code and technical content typically has different token density
+    if any(keyword in text.lower() for keyword in ['import', 'def ', 'class ', 'function', 'var ', 'const ', 'package', 'library']):
+        # Code content - more tokens per character due to technical terms
+        return int(len(text) / 3.2)
+    elif any(marker in text for marker in ['```', '---', '##', '**', 'README', '.md']):
+        # Documentation with formatting - medium density
+        return int(len(text) / 3.6)
+    else:
+        # Regular text - standard estimation
+        return int(len(text) / 4.0)
+
+def check_context_fits(text: str, context_window: int, model=None, reserve_tokens: int = 800) -> Tuple[bool, int]:
+    """
+    Check if text fits within context window with safety margin.
+    
+    Args:
+        text: Text to check
+        context_window: Available context window in tokens
+        model: Optional model for accurate tokenization
+        reserve_tokens: Tokens to reserve for prompt and response
+        
+    Returns:
+        Tuple of (fits, estimated_tokens)
+    """
+    estimated_tokens = estimate_tokens_accurate(text, model)
+    available_tokens = context_window - reserve_tokens
+    fits = estimated_tokens <= available_tokens
+    
+    return fits, estimated_tokens

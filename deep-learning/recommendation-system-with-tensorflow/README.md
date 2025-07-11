@@ -1,5 +1,14 @@
 # 🎥 Recommender Systems with Tensorflow
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -21,13 +30,15 @@ It trains on user-item interaction data to predict movie preferences with Model-
 
 ```
 ├── docs/      
-│   └── streamlit_ui_for_recommender_system.pdf               # UI screenshot
-│   └── streamlit_ui_for_recommender_system.png               # UI screenshot
+│   └── streamlit_ui_for_recommender_system.pdf                       # UI screenshot
+│   └── streamlit_ui_for_recommender_system.png                       # UI screenshot
+│   ├── swagger_UI_recommendation_system_with_tensorflow.pdf          # Swagger UI screenshot 
+│   └── swagger_UI_recommendation_system_with_tensorflow. pdf         # Swagger UI screenshot
 ├── demo
-│   └── streamlit-webapp/                                     # Streamlit UI
+│   └── streamlit-webapp/                                             # Streamlit UI
 ├── notebooks
-│   └── recommender_systems_with_tensorflow.ipynb             # Main notebook for the project              
-├── README.md                                                 # Project documentation
+│   └── recommender_systems_with_tensorflow.ipynb                     # Main notebook for the project              
+├── README.md                                                         # Project documentation
 ```
 
 ---
@@ -103,13 +114,42 @@ Paste a payload like:
 {
   "inputs": {
     "movie_id": [
-      5
+      2
     ],
     "rating": [
-      3.5
+      2.5
     ]
   },
   "params": {}
+}
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    [
+      "Á köldum klaka (Cold Fever) (1994)",
+      4.699822846736677
+    ],
+    [
+      "unknown",
+      3.8581945760877083
+    ],
+    [
+      "Zeus and Roxanne (1997)",
+      4.688325397321824
+    ],
+    [
+      "Young Poisoner's Handbook, The (1995)",
+      4.251002418730941
+    ],
+    [
+      "Young Guns II (1990)",
+      1.958771868681974
+    ]
+  ]
 }
 ```
 

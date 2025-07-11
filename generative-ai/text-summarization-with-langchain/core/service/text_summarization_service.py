@@ -1,8 +1,7 @@
 """
 Text Summarization Service implementation that extends the BaseGenerativeService.
 
-This service provides text summarization capabilities using different LLM options
-and integrates with Galileo for protection, observation, and evaluation.
+This service provides text summarization capabilities using different LLM options.
 """
 
 import os
@@ -13,9 +12,12 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain_huggingface import HuggingFaceEndpoint, HuggingFacePipeline
 from langchain_community.llms import LlamaCpp
+
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from galileo_protect import ProtectParser
 
 # Import base service class from the shared location
 import sys
@@ -185,17 +187,15 @@ class TextSummarizationService(BaseGenerativeService):
     
     def load_prompt(self) -> None:
         """Load the prompt template for text summarization."""
-        self.prompt_str = '''
-            The following text is an excerpt of a text:
-
-            ###
-            
-            {context} 
-            
-            ###
-            
-            Please, summarize this text, in a concise and comprehensive manner.
-            '''
+        # Import the prompt formatting function
+        from src.prompt_templates import format_summarization_prompt
+        
+        # Get the model source from configuration
+        model_source = self.model_config.get("model_source", "local")
+        
+        # Format the prompt template based on the model source
+        self.prompt_str = format_summarization_prompt(model_source)
+        
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
     def load_chain(self) -> None:
@@ -217,11 +217,8 @@ class TextSummarizationService(BaseGenerativeService):
             logger.info("Processing summarization request")
             text = model_input["text"][0]
             
-            # Run the input through the protection chain with monitoring
-            result = self.protected_chain.invoke(
-                {"input": text, "output": ""},
-                config={"callbacks": [self.monitor_handler]}
-            )
+            # Run the input through the summarization chain
+            result = self.chain.invoke({"context": text})
             
             logger.info("Successfully processed summarization request")
             
@@ -301,8 +298,6 @@ class TextSummarizationService(BaseGenerativeService):
             signature=signature,
             code_paths=["../core", "../src"],
             pip_requirements=[
-                "galileo-protect==0.15.1",
-                "galileo-observe==1.13.2",
                 "langchain-huggingface==0.2.0",
                 "pyyaml",
                 "pandas",

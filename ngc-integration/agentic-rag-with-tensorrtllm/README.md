@@ -1,5 +1,15 @@
 # 🤖 Agentic RAG for AI Studio with TRT-LLM and LangGraph
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![TensorRT](https://img.shields.io/badge/TensorRT-optimized-green.svg?logo=TensorRT)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![LangGraph](https://img.shields.io/badge/LangGraph-orchestration-blue.svg)
+
+</div>
+
 # 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -113,4 +123,4 @@ Currently, deploying this service locally in AI Studio is not possible due to li
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).

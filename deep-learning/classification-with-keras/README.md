@@ -1,5 +1,15 @@
 # ✍️ Handwritten digit classification with keras
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.13+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![Keras](https://img.shields.io/badge/Keras-used-d00000.svg?logo=keras)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+
+</div>
+
 ## 📚 Contents
 
 - [🧠 Overview](#overview)
@@ -24,6 +34,8 @@ This project shows how to do a image classification, specifically digits of hand
 ├── docs/
 │   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
 │   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
+│   └── swagger_UI_handwritten_digit_classification.pdf               # Swagger screenshot
+│   └── swagger_UI_handwritten_digit_classification.png               # Swagger screenshot
 ├── notebooks
 │   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
 ├── README.md                                                         # Project documentation
@@ -78,7 +90,7 @@ This will:
 - Make inference
 - Integrate MLflow 
 
-### 2 ▪ Deploy the Handwritten Digit Classification Service
+### 2 ▪ Deploy the Handwritten digit classification with keras Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -102,6 +114,17 @@ Paste a payload like:
     ]
   },
   "params": {}
+}
+
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    9
+  ]
 }
 ```
 

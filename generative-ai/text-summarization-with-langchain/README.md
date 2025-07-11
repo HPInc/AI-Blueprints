@@ -1,4 +1,14 @@
-# Text Summarization with LangChain and Galileo
+# Text Summarization with LangChain
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
+![LangChain](https://img.shields.io/badge/LangChain-used-lightgreen.svg?logo=langchain)
+![Streamlit UI](https://img.shields.io/badge/User%20Interface-Streamlit-ff4b4b.svg?logo=streamlit)
+![React UI](https://img.shields.io/badge/User%20Interface-React-61DAFB.svg?logo=react)
+
+</div>
 
 ## 📚 Contents
 
@@ -12,7 +22,7 @@
 
 ## Overview
 
-This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain**, **Sentence Transformers**, and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **LLaMA2-7B** model to generate concise and contextually accurate summaries from text data.
+This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain** and **Sentence Transformers**. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
 
 ---
 
@@ -28,7 +38,7 @@ This project demonstrates how to build a semantic chunking and summarization pip
 │   ├── I_have_a_dream.txt
 │   └── I_have_a_dream.vtt
 ├── notebooks
-│   └── text-summarization-with-langchain-and-galileo.ipynb           # Main notebook for the project
+│   └── text-summarization-with-langchain.ipynb                           # Main notebook for the project
 └── requirements.txt                                                        # Python dependencies
 ```
 
@@ -65,18 +75,18 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ### Step 4: Add the Model to Workspace
 
-- Download the **LLaMA2-7B** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Dataset Name**: `llama2-7b`
-  - **Dataset Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/llama2-7b`
-  - **Bucket Region**: `us-west-2`
+1. Download the Meta Llama 3.1 model with 8B parameters via Models tab:
+
+- **Model Name**: `meta-llama3.1-8b-Q8`
+- **Model Source**: `AWS S3`
+- **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+- **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your workspace.
 
 ### Step 5: Configure Secrets and Paths
 
 - Add your API keys to the `secrets.yaml` file under the `configs` folder:
   - `HUGGINGFACE_API_KEY`
-  - `GALILEO_API_KEY`
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -88,14 +98,13 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/text-summarization-with-langchain-and-galileo.ipynb
+notebooks/text-summarization-with-langchain.ipynb
 ```
 
 This will:
 
 - Set up the semantic chunking pipeline
 - Create the summarization chain with LangChain
-- Integrate Galileo evaluation, protection, and observability
 - Register the model in MLflow
 
 ### Step 2: Deploy the Summarization Service
@@ -111,7 +120,7 @@ This will:
 
 ![text Summarization Demo UI](docs/ui_summarization.png)
 
-:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of suggested local model (i.e. Llama2-7b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
+:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of suggested local model (i.e. Llama3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
 
 ---
 
