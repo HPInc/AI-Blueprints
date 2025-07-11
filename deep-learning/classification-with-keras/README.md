@@ -34,10 +34,11 @@ This project shows how to do a image classification, specifically digits of hand
 ├── docs/
 │   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
 │   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
-│   └── swagger_UI_handwritten_digit_classification.pdf               # Swagger screenshot
-│   └── swagger_UI_handwritten_digit_classification.png               # Swagger screenshot
+│   └── swagger_ui_handwritten_digit_classification.pdf               # Swagger screenshot
+│   └── swagger_ui_handwritten_digit_classification.png               # Swagger screenshot
 ├── notebooks
-│   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project  
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations  
 ├── README.md                                                         # Project documentation
 ```
 
@@ -79,7 +80,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/handwritten_digit_classification_with_keras.ipynb
+run-workflow.ipynb
 ```
 
 This will:
@@ -87,10 +88,19 @@ This will:
 - Load and preprocess the MNIST data 
 - Create the model architecture  
 - Train the model
-- Make inference
+
+### 2 ▪ Run the Notebook
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+register-model.ipynb
+```
+
+This will:
+
 - Integrate MLflow 
 
-### 2 ▪ Deploy the Handwritten digit classification with keras Service
+### 3 ▪ Deploy the Handwritten digit classification with keras Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -110,7 +120,7 @@ Paste a payload like:
 {
   "inputs": {
     "digit": [
-      ""/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAcABwBAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APAACzBVBJJwAO9dnp/wm8damu6Dw5dRjGf9IKw/+hkVPffCnWNJa7XVNV0Kxa1hErrNe/M2cnYqgElsAHpjkc1wlAODkV694W8c654t8M6n4TuvEctrrFw0cun3c0/lq+3AMJcDK5AyOeTkd+fPvGFn4gsvEtzF4m89tUG1ZJJjuMgUBVYN/EMKOe9YVXtK0bUtdvVs9LsZ7y4YgbIULYycZPoPc8V6lpfwh0/w7p66z8RdXj0y2z8llC4aWQ+mRn8lz9RXPfE3x1pvi46TYaPZTQadpMJghluWDSyrhQM9SMBe5Oc5NcBV7Tda1XRZJJNK1O8sXkG12tZ2iLD0JUjNQ3l9eahN517dT3MvTfNIXb16n6mq9Ff/2Q==""
+      "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAcABwBAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL 8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APAACzBVBJJwAO9dnp/wm8damu6Dw5dRjGf9IKw/+hkVPffCnWNJa7XVNV0Kxa1hErrNe/M2cnYqgElsAHpjkc1wlAODkV694W8c654t8M6n4TuvEctrrFw0cun3c0/lq+3AMJcDK5AyOeTkd+fPvGFn4gsvEtzF4m89tUG1ZJJjuMgUBVYN/EMKOe9YVXtK0bUtdvVs9LsZ7y4YgbIULYycZPoPc8V6lpfwh0/w7p66z8RdXj0y2z8llC4aWQ+mRn8lz9RXPfE3x1pvi46TYaPZTQadpMJghluWDSyrhQM9SMBe5Oc5NcBV7Tda1XRZJJNK1O8sXkG12tZ2iLD0JUjNQ3l9eahN517dT3MvTfNIXb16n6mq9Ff/2Q=="
     ]
   },
   "params": {}
