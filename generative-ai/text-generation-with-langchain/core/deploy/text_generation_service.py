@@ -274,6 +274,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         llm_artifact: str = "models/",
         config_yaml: str = "configs/config.yaml",
         secrets_yaml: str = "configs/secrets.yaml",
+
     ):
         core, src = _add_project_to_syspath()
         mlflow.pyfunc.log_model(
@@ -305,22 +306,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                     ]
                 ),
             ),
-            pip_requirements=[
-                "PyYAML", 
-                "requests", 
-                "pymupdf",
-                "sentence-transformers",
-                "feedparser",
-                "newspaper3k",
-                "listparser",
-                "langchain",
-                "langchain-core",
-                "langchain-community",
-                "langchain-text-splitters",
-                "langchain-huggingface",
-                "chromadb",
-                "llama-cpp-python"
-            ],
+            pip_requirements="../requirements.txt",
             code_paths=[str(core)] + ([str(src)] if src else []),
         )
 
