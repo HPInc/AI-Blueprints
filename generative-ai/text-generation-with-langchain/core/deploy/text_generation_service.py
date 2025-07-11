@@ -29,8 +29,6 @@ from mlflow.types import ColSpec, Schema
 
 
 from langchain_community.llms import LlamaCpp
-if hasattr(LlamaCpp, "model_rebuild"):
-    LlamaCpp.model_rebuild()
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
@@ -87,9 +85,6 @@ def _load_llm(artifacts: Dict[str, str]):
     )
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
 
     cfg_dir = Path(artifacts["config"]).parent
     cfg, secrets = load_config_and_secrets(
