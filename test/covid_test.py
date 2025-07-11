@@ -1,19 +1,21 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "deep-learning/question_answering_with_BERT/notebooks/question_answering_system__with_BERT.ipynb"
-#  class_name: BertNotebook
+#  path: "data-science-and-machine-learning/covid_movement_patterns_with_var/notebooks/covid_movement_patterns_with_var.ipynb"
+#  class_name: CovidNotebook
 #workspaces:
+#  - datascience
+#  - datasciencegpu
 #  - deeplearning
 #  - deeplearninggpu
 # ******
 
 import unittest
 
-class TestBertNotebook(unittest.TestCase):
+class TestCovidNotebook(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        cls.notebook = BertNotebook()
+        cls.notebook = CovidNotebook()
         cls.notebook.run()
     
     # Verifies if the notebook runs without errors

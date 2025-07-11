@@ -3,7 +3,12 @@ test_folder: "test"
 files: 
 - mnist_test.py
 - bert_test.py
+- covid_test.py
+assets:
+  tutorial: "c:\\Users\\borges\\data\\tutorial"
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
+  datascience: "0.13.9"
+  datasciencegpu: "0.11.5"
   deeplearning: "0.13.9"
   deeplearninggpu: "0.11.6"
