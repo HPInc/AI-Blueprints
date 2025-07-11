@@ -198,7 +198,7 @@ def initialize_llm(
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,
-            stop=["Text to correct:", "Corrected text:", "IMPORTANT:", "\n\n\n"], #
+            stop=["<|eot_id|>"], #
             streaming=False,
             temperature=0.0, #
         )

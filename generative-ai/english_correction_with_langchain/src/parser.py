@@ -5,12 +5,6 @@ from bs4 import BeautifulSoup
 
 
 def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], str]:
-    """
-    Parses Markdown content for grammar correction.
-
-    Returns:
-        Tuple[Dict[str, str], str]: (placeholder_map, processed_content)
-    """
     md = MarkdownIt()
     tokens = md.parse(md_content)
 
@@ -105,7 +99,8 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         def replace_md_links(match):
             link_text = match.group(1)
             url = match.group(2)
-            if re.match(r'__PLACEHOLDER_\d+__', url):
+            # Prevent wrapping already-wrapped placeholders
+            if re.match(r'^<<__PLACEHOLDER_\d+__>>$', url):
                 return match.group(0)
             return f"[{link_text}]({get_next_placeholder(url)})"
         line = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', replace_md_links, line)
@@ -113,13 +108,25 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         def replace_internal_links(match):
             link_text = match.group(1)
             anchor_target = f"#{match.group(2)}"
-            if re.match(r'__PLACEHOLDER_\d+__', anchor_target):
+            if re.match(r'^<<__PLACEHOLDER_\d+__>>$', anchor_target):
                 return match.group(0)
             return f"[{link_text}]({get_next_placeholder(anchor_target)})"
         line = re.sub(r'\[([^\]]+)\]\(#([^\)]+)\)', replace_internal_links, line)
 
         processed_lines.append(line)
 
+    # Protect list bullets
+    bullet_placeholder_lines = []
+    for line in processed_lines:
+        bullet_match = re.match(r'^(\s*)([-*+]|\d+\.)\s+', line)
+        if bullet_match:
+            indent, bullet = bullet_match.group(1), bullet_match.group(2)
+            placeholder = get_next_placeholder(bullet, prefix="LIST_BULLET")
+            line = re.sub(r'^(\s*)([-*+]|\d+\.)\s+', f"{indent}{placeholder} ", line)
+        bullet_placeholder_lines.append(line)
+
+    processed_lines = bullet_placeholder_lines
+    
     raw_processed = "\n".join(processed_lines)
 
     # Replace horizontal rules
@@ -133,25 +140,27 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
 
     processed_content = ''.join(final_lines)
 
+    # Prevent adjacent placeholder collisions
+    processed_content = re.sub(
+        r'(>>)(\s*<<)',  
+        r'\1<<__PLACEHOLDER_SEPARATOR__>>\2',  
+        processed_content
+    )
+    placeholder_map["__PLACEHOLDER_SEPARATOR__"] = ""  
+
     return placeholder_map, processed_content
 
 
 def restore_placeholders(corrected_text: str, placeholder_map: Dict[str, str]) -> str:
-    """
-    Restores original content from placeholders after grammar correction.
-
-    Args:
-        corrected_text (str): Text containing placeholder tokens.
-        placeholder_map (Dict[str, str]): Mapping of placeholders to original content.
-
-    Returns:
-        str: Text with all placeholders replaced by original content.
-    """
     restored_text = corrected_text
 
-    # Strip boundary wrappers
+    # Replace longer keys first to avoid prefix collisions
     for placeholder, original_content in sorted(placeholder_map.items(), key=lambda x: -len(x[0])):
         wrapped = f"<<{placeholder}>>"
         restored_text = restored_text.replace(wrapped, original_content)
 
+    # Clean up separator
+    restored_text = restored_text.replace('<<__PLACEHOLDER_SEPARATOR__>>', '')
+
     return restored_text
+
