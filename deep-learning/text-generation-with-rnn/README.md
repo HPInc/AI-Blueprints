@@ -115,7 +115,6 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
-
 Paste a payload like:
 
 ```
