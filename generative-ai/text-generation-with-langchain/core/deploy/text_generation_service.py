@@ -30,6 +30,15 @@ from mlflow.types import ColSpec, Schema
 
 from langchain_community.llms import LlamaCpp
 
+# Safely handle model rebuild with proper BaseCache import
+try:
+    from langchain_core.caches import BaseCache
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
+except ImportError:
+    # BaseCache not available, skip model rebuild
+    pass
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
 DEFAULT_LOG_LEVEL = LOGLEVEL_FILE.read_text().strip() if LOGLEVEL_FILE.exists() else "INFO"
@@ -85,6 +94,15 @@ def _load_llm(artifacts: Dict[str, str]):
     )
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+    # Safely handle model rebuild if needed
+    try:
+        from langchain_core.caches import BaseCache
+        if hasattr(LlamaCpp, "model_rebuild"):
+            LlamaCpp.model_rebuild()
+    except ImportError:
+        # BaseCache not available, skip model rebuild
+        pass
 
     cfg_dir = Path(artifacts["config"]).parent
     cfg, secrets = load_config_and_secrets(
@@ -311,7 +329,14 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                 "sentence-transformers",
                 "feedparser",
                 "newspaper3k",
-                "listparser"
+                "listparser",
+                "langchain",
+                "langchain-core",
+                "langchain-community",
+                "langchain-text-splitters",
+                "langchain-huggingface",
+                "chromadb",
+                "llama-cpp-python"
             ],
             code_paths=[str(core)] + ([str(src)] if src else []),
         )
