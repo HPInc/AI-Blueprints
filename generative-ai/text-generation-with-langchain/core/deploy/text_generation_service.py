@@ -27,6 +27,11 @@ import pandas as pd
 from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema
 
+
+from langchain_community.llms import LlamaCpp
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
 DEFAULT_LOG_LEVEL = LOGLEVEL_FILE.read_text().strip() if LOGLEVEL_FILE.exists() else "INFO"
@@ -82,9 +87,8 @@ def _load_llm(artifacts: Dict[str, str]):
     )
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-    from langchain_community.llms import LlamaCpp
 
-    if hasattr(LlamaCpp, "model_rebuild"): 
+    if hasattr(LlamaCpp, "model_rebuild"):
         LlamaCpp.model_rebuild()
 
     cfg_dir = Path(artifacts["config"]).parent
@@ -309,7 +313,10 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                 "PyYAML", 
                 "requests", 
                 "pymupdf",
-                "sentence-transformers"
+                "sentence-transformers",
+                "feedparser",
+                "newspaper3k",
+                "listparser"
             ],
             code_paths=[str(core)] + ([str(src)] if src else []),
         )
