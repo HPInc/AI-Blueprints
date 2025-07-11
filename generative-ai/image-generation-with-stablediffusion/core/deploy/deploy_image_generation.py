@@ -19,9 +19,10 @@ try:
 except ImportError:
     _XFORMERS_AVAILABLE = False
 
-# Import path utilities from src
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_project_root, get_config_dir, get_output_dir
+# Import utility functions from src
+# Add the project root to the path for proper src module import resolution
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from src.utils import get_project_root, get_config_dir, get_output_dir
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
@@ -62,6 +63,9 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
         self.model_no_finetuning_path = context.artifacts["model_no_finetuning"]
         self.model_finetuning_path    = context.artifacts["finetuned_model"]
 
+        # Validate model paths and provide helpful information
+        self._validate_model_paths()
+
         self.num_gpus = torch.cuda.device_count()
         if self.num_gpus >= 2:
             logging.info("Detected %d GPUs (multi-GPU pipeline)", self.num_gpus)
@@ -77,6 +81,32 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             gc.collect()
+
+    def _validate_model_paths(self):
+        """Validate and log information about model paths"""
+        base_path = Path(self.model_no_finetuning_path)
+        finetuned_path = Path(self.model_finetuning_path)
+        
+        logging.info(f"Base model path: {self.model_no_finetuning_path}")
+        logging.info(f"Fine-tuned model path: {self.model_finetuning_path}")
+        
+        # Check if paths are local directories or HuggingFace model identifiers
+        if base_path.exists():
+            logging.info("✅ Base model found locally")
+        else:
+            logging.info("🔄 Base model will be downloaded from HuggingFace Hub")
+            
+        if finetuned_path.exists():
+            logging.info("✅ Fine-tuned model found locally")
+            # Check for common fp16 variant files
+            fp16_files = list(finetuned_path.glob("*fp16*"))
+            if fp16_files:
+                logging.info(f"📁 Found {len(fp16_files)} fp16 variant files in fine-tuned model")
+            else:
+                logging.warning("⚠️  No fp16 variant files found in fine-tuned model - will use standard loading")
+        else:
+            logging.warning("⚠️  Fine-tuned model path does not exist locally")
+            logging.warning("    This may cause errors when use_finetuning=true")
 
     def _load_pipeline(self, use_finetuning: bool):
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -101,19 +131,74 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 torch.cuda.empty_cache()
             gc.collect()
 
-        # Load pipeline with memory management
-        self.current_pipeline = StableDiffusionPipeline.from_pretrained(
-            mdl_path, 
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True,
-            variant="fp16" if torch.cuda.is_available() else None
-        ).to(device)
+        # Load pipeline with model-specific handling
+        logging.info(f"Loading {'fine-tuned' if use_finetuning else 'base'} model from: {mdl_path}")
+        self.current_pipeline = self._load_model_with_fallbacks(mdl_path, device, use_finetuning)
         
         # Apply memory-efficient setup
         self._setup_pipeline(self.current_pipeline)
         self.current_model = target
         
         logging.info("Pipeline loaded for %s", target)
+
+    def _load_model_with_fallbacks(self, mdl_path: str, device: str, use_finetuning: bool):
+        """
+        Load model with targeted fallback strategies based on model type.
+        Fine-tuned models are more likely to lack fp16 variants than base models.
+        """
+        model_type = "fine-tuned" if use_finetuning else "base"
+        
+        # Strategy 1: Try optimal configuration (fp16 variant + fp16 dtype)
+        if torch.cuda.is_available():
+            try:
+                logging.info(f"Attempting to load {model_type} model with fp16 variant and dtype")
+                return StableDiffusionPipeline.from_pretrained(
+                    mdl_path, 
+                    torch_dtype=torch.float16,
+                    low_cpu_mem_usage=True,
+                    variant="fp16"
+                ).to(device)
+            except ValueError as e:
+                if "variant=fp16" in str(e):
+                    logging.warning(f"{model_type.title()} model lacks fp16 variant - this is common for fine-tuned models")
+                else:
+                    logging.warning(f"Failed to load {model_type} model with fp16 variant: {e}")
+            except Exception as e:
+                logging.warning(f"Unexpected error loading {model_type} model with fp16 variant: {e}")
+        
+        # Strategy 2: Try fp16 dtype without variant (most common fallback)
+        try:
+            logging.info(f"Loading {model_type} model with fp16 dtype (no variant)")
+            return StableDiffusionPipeline.from_pretrained(
+                mdl_path, 
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                low_cpu_mem_usage=True
+            ).to(device)
+        except Exception as e:
+            logging.warning(f"Failed to load {model_type} model with fp16 dtype: {e}")
+        
+        # Strategy 3: Try fp32 dtype (compatibility fallback)
+        try:
+            logging.info(f"Loading {model_type} model with fp32 dtype (compatibility mode)")
+            return StableDiffusionPipeline.from_pretrained(
+                mdl_path, 
+                torch_dtype=torch.float32,
+                low_cpu_mem_usage=True
+            ).to(device)
+        except Exception as e:
+            logging.warning(f"Failed to load {model_type} model with fp32 dtype: {e}")
+        
+        # Strategy 4: Minimal configuration (last resort)
+        try:
+            logging.warning(f"Loading {model_type} model with minimal configuration (last resort)")
+            return StableDiffusionPipeline.from_pretrained(
+                mdl_path,
+                low_cpu_mem_usage=True
+            ).to(device)
+        except Exception as e:
+            logging.error(f"Failed to load {model_type} model even with minimal configuration: {e}")
+            raise RuntimeError(f"Unable to load {model_type} model from {mdl_path}. "
+                             f"Please check if the model path is valid and accessible.") from e
 
     def _setup_pipeline(self, pipeline):
         """Apply memory-efficient setup to the pipeline"""
@@ -203,6 +288,14 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
 
         core = Path(__file__).resolve().parent.parent
         (core / "__init__.py").touch(exist_ok=True)
+        
+        # Include both core and src directories, with src at the project root level
+        project_root = Path(__file__).resolve().parent.parent.parent
+        src_dir = project_root / "src"
+        
+        # Ensure __init__.py files exist
+        (core / "__init__.py").touch(exist_ok=True)
+        (src_dir / "__init__.py").touch(exist_ok=True)
 
         # Essential pip requirements
         pip_requirements = [
@@ -223,7 +316,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 "model_no_finetuning": model_no_finetuning_path,
             },
             signature=signature,
-            code_paths=[str(core)],
+            code_paths=[str(core), str(src_dir)],
             pip_requirements=pip_requirements,
         )
         logging.info("✅ Model logged to MLflow at '%s'", artifact_path)
