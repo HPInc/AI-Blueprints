@@ -15,7 +15,7 @@ from .trt_llm_langchain import TensorRTLangchain
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf",
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -54,6 +54,7 @@ MODEL_CONTEXT_WINDOWS = {
     'microsoft/phi-2': 2048,
     'tiiuae/falcon-7b': 4096,
     "meta-llama/Llama-3.2-3B-Instruct": 128000,
+    "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
@@ -149,6 +150,10 @@ def initialize_llm(
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
 
+    # Fix for Pydantic model rebuild issue
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
+
     model = None
     context_window = None
     
@@ -169,6 +174,7 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
+            task="text-generation",
         )
 
     elif model_source == "hugging-face-local":
@@ -190,7 +196,21 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+        # Disable automatic chat template application by removing it from tokenizer
+        if hasattr(tokenizer, 'chat_template'):
+            tokenizer.chat_template = None
+
+        pipe = pipeline(
+            "text-generation", 
+            model=hf_model, 
+            tokenizer=tokenizer, 
+            max_new_tokens=100, 
+            device=0,
+            return_full_text=False,
+            do_sample=True,
+            temperature=0.1
+        )
+        # Create HuggingFacePipeline without automatic chat template application
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -201,7 +221,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, config.json)
+                model_config = os.path.join(local_model_path, "config.json")
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:
@@ -247,84 +267,55 @@ def initialize_llm(
 
 def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
     """
-    Configure environment variables for Galileo services.
+    Configure environment variables for Galileo services (DEPRECATED - This function is no longer used).
 
     Args:
         secrets: Dictionary containing the Galileo API key.
         console_url: URL for the Galileo console.
 
     Raises:
-        ValueError: If Galileo API key is not found in secrets.
+        DeprecationWarning: This function has been deprecated.
     """
-    if "GALILEO_API_KEY" not in secrets:
-        raise ValueError("Galileo API key not found in secrets")
-    
-    os.environ['GALILEO_API_KEY'] = secrets["GALILEO_API_KEY"]
-    os.environ['GALILEO_CONSOLE_URL'] = console_url
+    import warnings
+    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
 
 
 def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
     """
-    Initialize Galileo Protect project and stage.
+    Initialize Galileo Protect project and stage (DEPRECATED - This function is no longer used).
 
     Args:
         project_name: Name for the Galileo Protect project.
         stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
 
     Returns:
-        Tuple containing (project object, project_id, stage_id).
+        Tuple containing (None, "", "") as placeholder.
 
     Raises:
-        ImportError: If galileo_protect is not installed.
+        DeprecationWarning: This function has been deprecated.
     """
-    try:
-        import galileo_protect as gp
-    except ImportError:
-        raise ImportError("galileo_protect is required but not installed. Install it with pip install galileo_protect")
-    
-    if stage_name is None:
-        stage_name = f"{project_name}_stage"
-    
-    project = gp.create_project(project_name)
-    project_id = project.id
-    
-    stage = gp.create_stage(name=stage_name, project_id=project_id)
-    stage_id = stage.id
-    
-    return project, project_id, stage_id
+    import warnings
+    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
+    return None, "", ""
 
 
 def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
     """
-    Initialize a Galileo Prompt Callback for evaluation.
+    Initialize a Galileo Prompt Callback for evaluation (DEPRECATED - This function is no longer used).
 
     Args:
         project_name: Name for the evaluation project.
         scorers: List of scorers to use. If None, uses default scorers.
 
     Returns:
-        Galileo prompt callback object.
+        None as placeholder.
 
     Raises:
-        ImportError: If promptquality is not installed.
+        DeprecationWarning: This function has been deprecated.
     """
-    try:
-        import promptquality as pq
-    except ImportError:
-        raise ImportError("promptquality is required but not installed")
-
-    if scorers is None:
-        scorers = [
-            pq.Scorers.context_adherence_luna,
-            pq.Scorers.correctness,
-            pq.Scorers.toxicity,
-            pq.Scorers.sexist
-        ]
-
-    return pq.GalileoPromptCallback(
-        project_name=project_name,
-        scorers=scorers
-    )
+    import warnings
+    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
+    return None
     
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
@@ -766,20 +757,17 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
 
 def initialize_galileo_observer(project_name: str):
     """
-    Initialize a Galileo Observer for monitoring.
+    Initialize a Galileo Observer for monitoring (DEPRECATED - This function is no longer used).
 
     Args:
         project_name: Name for the observation project.
 
     Returns:
-        Galileo observe callback object.
+        None as placeholder.
 
     Raises:
-        ImportError: If galileo_observe is not installed.
+        DeprecationWarning: This function has been deprecated.
     """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
-    
-    return GalileoObserveCallback(project_name=project_name)
+    import warnings
+    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
+    return None

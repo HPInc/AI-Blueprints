@@ -1,0 +1,64 @@
+# .github/labeler.yml
+
+# Map all existing folders to current repo labels only
+
+bug:
+  - '*/**/bugfix*'
+
+ci/cd:
+  - '.github/workflows/**'
+
+dependencies:
+  - '**/requirements.txt'
+  - '**/environment.yml'
+  - '**/package-lock.json'
+  - '**/Pipfile.lock'
+
+design:
+  - 'demo/**'
+  - '**/*.html'
+  - '**/*.css'
+
+documentation:
+  - 'docs/**'
+  - '**/*.md'
+  - '**/*.pdf'
+  - '**/*.png'
+  - '**/*.jpg'
+
+duplicate:
+  - '**/*duplicate*'
+
+enhancement:
+  - 'data-science/**'
+  - 'deep-learning/**'
+  - 'generative-ai/**'
+  - 'ngc-integration/**'
+
+feature:
+  - '**/feature/**'
+  - '**/new/**'
+  - 'notebooks/**'
+
+invalid:
+  - '**/broken*'
+  - '**/deprecated*'
+
+javascript:
+  - '**/*.js'
+
+performance:
+  - '**/performance*/**'
+  - '**/*optimized*/**'
+
+python:
+  - '**/*.py'
+  - '**/*.ipynb'
+
+refactor:
+  - '**/refactor*/**'
+
+test:
+  - '**/test*/**'
+  - '**/tests/**'
+  - '**/unittest/**'
