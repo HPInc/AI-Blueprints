@@ -1,4 +1,4 @@
-# 🤖 Vanilla RAG with LangChain and Galileo
+# 🤖 Vanilla RAG with LangChain
 
 <div align="center">
 
@@ -23,7 +23,7 @@
 
 ## Overview
 
-This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **Galileo** for model evaluation, protection, and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
+This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain**. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
 
 ---
 
@@ -46,7 +46,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 │   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
 │   └── successful streamlit ui result for vanilla rag.pdf              # Successful Streamlit UI Screenshot
 ├── notebooks
-│   └── vanilla-rag-with-langchain-and-galileo.ipynb                    # Main notebook for the project
+│   ├── register-model.ipynb                                             # Model registration notebook
+│   └── run-workflow.ipynb                                               # Main workflow notebook
 ├── README.md                                                           # Project documentation
 └── requirements.txt                                                    # Python dependencies
 ```
@@ -59,8 +60,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 32 GB
-- VRAM: 6 GB
+- RAM: 64 GB
+- VRAM: 12 GB
 - GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
@@ -94,7 +95,6 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - Add your API keys to the `secrets.yaml` file located in the `configs` folder:
   - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
-  - `GALILEO_API_KEY`: Required to connect to Galileo for evaluation, protection, and observability features.
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -106,13 +106,12 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/vanilla-rag-with-langchain-and-galileo.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
 
 - Run the full RAG pipeline
-- Integrate Galileo evaluation, protection, and observability
 - Register the model in MLflow
 
 ### Step 2: Deploy the Chatbot Service

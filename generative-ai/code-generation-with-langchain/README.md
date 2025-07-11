@@ -1,4 +1,4 @@
-# Code Generation RAG with Langchain and Galileo
+# Code Generation RAG with Langchain
 
 <div align="center">
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and integrates with PromptQuality and Galileo for evaluation and tracking. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
+This notebook performs automatic code explanation by extracting code snippets from Jupyter notebooks and generating natural language descriptions using LLMs. It supports contextual enrichment based on adjacent markdown cells, enables configurable prompt templating, and integrates with evaluation and tracking frameworks. The pipeline is modular, supports local or hosted model inference, and is compatible with LLaMA, Mistral, and Hugging Face-based models. It also includes GitHub notebook crawling, metadata structuring, and vector store integration for downstream tasks like RAG and semantic search.
 
 ---
 
@@ -110,7 +110,6 @@ To ensure smooth execution, make sure your system meets the following minimum ha
 1. Add your API keys to the `secrets.yaml` file under the `configs` folder:
 
 - `HUGGINGFACE_API_KEY`
-- `GALILEO_API_KEY`
 - Edit `config.yaml` with relevant configuration details.
 
 ---
@@ -128,7 +127,6 @@ notebooks/code-generation-with-langchain.ipynb
 This will:
 
 - Run the full RAG pipeline
-- Integrate Galileo evaluation, protection, and observability
 - Register the model in MLflow
 
 ### Step 2: Deploy the Chatbot Service
