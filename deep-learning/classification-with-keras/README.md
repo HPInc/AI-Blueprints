@@ -33,10 +33,10 @@ This project shows how to do a image classification, specifically digits of hand
 │   └── streamlit-webapp/                                             # Streamlit UI
 │   │  └── assets/                                                    # Logo assets
 ├── docs/
-│   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
-│   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
-│   └── swagger_ui_handwritten_digit_classification.pdf               # Swagger screenshot
-│   └── swagger_ui_handwritten_digit_classification.png               # Swagger screenshot
+│   └── streamlit-ui-handwritten-digit-classification.pdf             # UI screenshot
+│   └── streamlit-ui-handwritten-digit-classification.png             # UI screenshot
+│   └── swagger-ui-handwritten-digit-classification.pdf               # Swagger screenshot
+│   └── swagger-ui-handwritten-digit-classification.png               # Swagger screenshot
 ├── notebooks
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations  
