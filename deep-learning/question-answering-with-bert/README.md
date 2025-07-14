@@ -32,9 +32,12 @@
 ├── demo/                                        # Compiled Interface Folder
 │
 ├── notebooks
-│   ├── Testing Mlflow Server.ipynb              # Notebook for testing the Mlflow server
-│   ├── question_answering_with_BERT.ipynb       # Main notebook for the project
-│   ├── deploy.py                                # Code to deploy                          
+│   ├── other-notebooks                          
+│   │     └── deploy.py                          # Code to deploy 
+│   │     └── Testing Mlflow Server.ipynb        # Notebook for testing the Mlflow server  
+│   │
+│   ├── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   ├── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                         
 │
 ├── README.md                                    # Project documentation
 │                                        
