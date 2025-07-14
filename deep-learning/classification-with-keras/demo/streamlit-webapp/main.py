@@ -4,6 +4,8 @@ import base64
 import requests
 from io import BytesIO
 import numpy as np
+from pathlib import Path
+
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
@@ -14,38 +16,72 @@ st.set_page_config(
 )
 
 # --- Custom Styling ---
+
 st.markdown("""
-    <style>
-        .block-container {
-            padding-top: 0 !important;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-        }
-        .stButton>button {
-            background-color: #4CAF50 !important;
-            color: white !important;
-            font-size: 18px !important;
-            border-radius: 8px !important;
-            padding: 10px 24px !important;
-            border: none !important;
-        }
-        .stTextInput>div>div>input {
-            font-size: 16px !important;
-            padding: 10px !important;
-        }
-        .stMarkdown {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            margin: 10px 0px;
-        }
-    </style>
+    <style>
+        .block-container {
+            padding-top: 0 !important;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .stButton>button {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            font-size: 18px !important;
+            border-radius: 8px !important;
+            padding: 10px 24px !important;
+            border: none !important;
+        }
+        .stTextInput>div>div>input {
+            font-size: 16px !important;
+            padding: 10px !important;
+        }
+        .stMarkdown {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px 0px;
+        }
+        hr, .stHorizontalRule {
+            border-color: rgba(0,77,204,0.20);
+        }
+        img[alt="HP Logo"],
+        img[alt="AI Studio Logo"],
+        img[alt="Z by HP Logo"] {
+    width: 50px !important;
+    height: auto !important;
+}
+
+    </style>
 """, unsafe_allow_html=True)
 
-# --- Header ---
+
+def uri_from(path: Path) -> str:
+    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+
+# Caminho para os logos (ajuste conforme necessário)
+assets = Path("assets")
+hp_uri = uri_from(assets / "HP-Logo.png")
+ais_uri = uri_from(assets / "AI-Studio.png")
+zhp_uri = uri_from(assets / "Z-HP-logo.png")
+
+# Linha de logos
+st.markdown(f"""
+    <div style="display:flex;justify-content:space-between;
+                align-items:center;margin-bottom:1.5rem">
+        <img src="{hp_uri}"  alt="HP Logo" style="width:90px;height:auto;">
+        <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
+        <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
+    </div>
+""", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────
+# Header 
+# ─────────────────────────────────────────────────────────────
 st.markdown("<h1 style='text-align: center; color: #2C3E50;'>✍️ Handwritten Digit Classification</h1>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────

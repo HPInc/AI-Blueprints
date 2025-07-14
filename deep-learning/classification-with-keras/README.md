@@ -31,6 +31,7 @@ This project shows how to do a image classification, specifically digits of hand
 ```
 ├── demo
 │   └── streamlit-webapp/                                             # Streamlit UI
+│   │  └── assets/                                                    # Logo assets
 ├── docs/
 │   └── streamlit_ui_handwritten_digit_classification.pdf             # UI screenshot
 │   └── streamlit_ui_handwritten_digit_classification.png             # UI screenshot
