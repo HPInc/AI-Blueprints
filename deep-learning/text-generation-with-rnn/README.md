@@ -44,9 +44,9 @@ The objective of this template is to show how to create a simple text generation
 │        └── dict_torch_rnn_model.pt                          # Trained model for text_generation_with_RNN__Torch.ipynb
 │        └── encoder.pt                                       # Compresses the input into a compact representation and detain the most relevant features.
 │        └── tf_rnn_model.h5                                  # Trained model for the text_generation_with_RNN_TF.ipynb
-│   ├── text_generation_with_RNN_TF.ipynb                     # Notebook for the TensorFlow trained model
-│   ├── text_generation_with_RNN_Torch.ipynb                  # Notebook for the Torch trained model
-│   ├── deploy.py                                             # Code to deploy        
+│   ├── run-workflow-TF.ipynb                                 # Notebook for the TensorFlow trained model
+│   ├── run-workflow-Torch.ipynb                              # Notebook for the Torch trained model
+│   ├── register-model.ipynb                                  # Code to deploy        
 ├── README.md                                                 # Project documentation
                                     
 ```
@@ -81,7 +81,7 @@ https://github.com/HPInc/AI-Blueprints.git
 ## Usage
 
 ### 1.1 ▪ Run the Notebook (Optional):
-Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
+Run the following notebook `/run-workflow-TF.ipynb`:
 1. Obtain Text Data from the shakespeare.txt.
 2. Prepare the textual data. It's needed to encode the data to provide the model a proper numerical representation of the text.
 3. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
@@ -92,7 +92,7 @@ Run the following notebook `/RNN_for_text_generation_TF.ipynb`:
 6. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### 1.2 ▪ Run the Notebook (Optional):
-Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
+Run the following notebook `/run-workflow-Torch.ipynb`:
 1. Obtain Text Data from the shakespeare.txt.
 2. Prepare the textual data. It's needed to decode and encode the data to give the model a proper numerical representation of the text.
 3. One Hot Encoding to convert categorical data into a fixed-size vector of numerical values.
@@ -100,10 +100,9 @@ Run the following notebook `/RNN_for_text_generation_Torch.ipynb`:
 5. Create the LSTM Model with the decoder and encoder files
 6. Train the Network to do the Predictions
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
-8. Integrate MLflow 
 
 ### Step 2: Deploy the Service  
-1. Execute `/RNN_for_text_generation_Torch.ipynb` to register the model in MLflow and create the API logic.  
+1. Execute `/register-model.ipynb ` to register the model in MLflow and create the API logic.  
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
