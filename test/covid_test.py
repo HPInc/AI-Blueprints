@@ -1,6 +1,6 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "data-science-and-machine-learning/covid_movement_patterns_with_var/notebooks/covid_movement_patterns_with_var.ipynb"
+#  path: "data-science/data-analysis-with-var/notebooks/run-workflow.ipynb"
 #  class_name: CovidNotebook
 #workspaces:
 #  - datascience

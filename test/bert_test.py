@@ -1,6 +1,6 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "deep-learning/question_answering_with_BERT/notebooks/question_answering_system__with_BERT.ipynb"
+#  path: "deep-learning/question-answering-with-bert/notebooks/question_answering_system__with_BERT.ipynb"
 #  class_name: BertNotebook
 #workspaces:
 #  - deeplearning

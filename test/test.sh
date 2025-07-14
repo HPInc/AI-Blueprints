@@ -19,7 +19,14 @@ python ${SCRIPT_FOLDER}/py_utils/main.py -s $1 -o $TMP_FOLDER -w $2
 for TEST_FILE in $(ls $TMP_FOLDER/*test.py ); do
     echo "******************************"	
     echo "Running tests on ${TEST_FILE}"	
-    ipython $TEST_FILE
+    ## Create a virtual environment for each test file with a random name
+    $ENV_FOLDER=$(mktemp -d ${TMP_FOLDER}/env_XXXXXX)
+    python -m venv ${ENV_FOLDER}/venv --system-site-packages
+    source ${ENV_FOLDER}/venv/bin/activate
+    pip install -r ${TMP_FOLDER}/requirements.txt
+    # Run the test file using IPython
+    
+    source ${ENV_FOLDER}/venv/bin/deactivate
     echo "******************************"	
 done
 

@@ -5,7 +5,7 @@ files:
 - bert_test.py
 - covid_test.py
 assets:
-  tutorial: "c:\\Users\\borges\\data\\tutorial"
+  tutorial: "C:\\Users\\borges\\AppData\\Local\\HP\\AIStudio\\tutorial"
 baseimages:
   registry: public.ecr.aws/hpphoenixdsp/itg/base-images
   datascience: "0.13.9"
