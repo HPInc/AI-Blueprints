@@ -20,14 +20,18 @@
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two sets of notebooks: one set using Pandas (CPU) and the other set using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ## Project Structure  
 ```
 ├── README.md                                             # Project documentation
 ├── notebooks                                             # Main notebooks for the project
-│   ├── stock_analysis_with_pandas.ipynb
-│   └── stock_analysis_with_pandas_and_cuDF.ipynb
+│   ├── stock-analysis-with-pandas                        # Set of notebooks using Pandas (CPU)
+|   |   ├── register-model.ipynb
+|   |   └── run-workflow.ipynb  
+│   └── stock-analysis-with-pandas-and-cudf               # Set of notebooks using cuDF (GPU)
+|       ├── register-model.ipynb
+|       └── run-workflow.ipynb  
 └── requirements.txt                                      # Python dependencies (used with pip install)
 ```  
 
@@ -75,9 +79,9 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ### Step 1: Run the Notebooks
 
-You can choose to run the **two data analysis notebooks** located in the `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
+You can choose to run the **two data analysis 'run-workflow' notebooks** located in their respective directories inside the  `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
 
-For the two data analysis notebooks, results are available both **within the notebook** and through **MLflow tracking**.
+For the two data analysis *run-workflow* notebooks, results are available **within the notebook**. For the two data analysis *register-model* notebooks, results are available through **MLflow tracking**.
 
 ---
 
