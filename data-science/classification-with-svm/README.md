@@ -68,10 +68,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 1 ▪ Run the Notebook
 
-Execute the notebook inside the `notebooks` folder:
+Execute the run-workflow notebook first inside the `notebooks` folder first.
 
 ```bash
-notebooks/iris_flowers_classification_with_svm.ipynb
+notebooks/eun-workllow.ipynb
+```
+
+Execute the register-model notebook second inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
 ```
 
 This will:
@@ -82,7 +88,7 @@ This will:
 - Build the Model and Measure Model.
 - Integrate MLflow
 
-### 2 ▪ Deploy the Iris flowers classification with SVM Service
+### 2 ▪ Deploy the Iris flowers classification with SVM and LDA Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
