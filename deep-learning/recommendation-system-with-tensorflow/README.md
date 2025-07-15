@@ -36,8 +36,10 @@ It trains on user-item interaction data to predict movie preferences with Model-
 │   └── swagger_UI_recommendation_system_with_tensorflow. pdf         # Swagger UI screenshot
 ├── demo
 │   └── streamlit-webapp/                                             # Streamlit UI
+│   │  └── assets/                                                    # Logo assets
 ├── notebooks
-│   └── recommender_systems_with_tensorflow.ipynb                     # Main notebook for the project              
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                
 ├── README.md                                                         # Project documentation
 ```
 
