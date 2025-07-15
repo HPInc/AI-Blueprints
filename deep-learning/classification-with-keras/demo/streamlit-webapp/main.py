@@ -62,13 +62,11 @@ st.markdown("""
 def uri_from(path: Path) -> str:
     return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
 
-# Caminho para os logos (ajuste conforme necessário)
 assets = Path("assets")
 hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-# Linha de logos
 st.markdown(f"""
     <div style="display:flex;justify-content:space-between;
                 align-items:center;margin-bottom:1.5rem">
