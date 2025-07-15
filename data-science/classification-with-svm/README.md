@@ -20,7 +20,9 @@
 
 # Overview
 
-This Project shows how to do machine learning classification using a Iris Flower dataset. The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor).
+This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+
+It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
 ---
 
