@@ -1,4 +1,4 @@
-# 🌷 Iris flowers classification with SVM
+# 🌷 Classification with SVM
 
 <div align="center">
 
