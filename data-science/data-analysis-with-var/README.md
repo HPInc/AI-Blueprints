@@ -19,7 +19,9 @@
 
 # Overview
 
-This project shows an visual data analysis of the effects of COVID-19 in two different cities: New York and London, using Vector Autoregression (VAR)
+This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
+
+It highlights how city-level movement patterns changed during the crisis. The project runs on the **Data Science Workspace**.
 
 ---
 
