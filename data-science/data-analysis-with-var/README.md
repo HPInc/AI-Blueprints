@@ -1,4 +1,4 @@
-# 😷 COVID Movement Patterns with VAR
+# 😷 Data Analysis with VAR
 
 <div align="center">
 
@@ -19,7 +19,9 @@
 
 # Overview
 
-This project shows an visual data analysis of the effects of COVID-19 in two different cities: New York and London, using Vector Autoregression (VAR)
+This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
+
+It highlights how city-level movement patterns changed during the crisis. The project runs on the **Data Science Workspace**.
 
 ---
 
@@ -98,7 +100,7 @@ This will:
 Execute the run-workflow notebook first inside the `notebooks` folder which will save model artifacts as pkl files and training metrics as a json file to the artifacts folder :
 
 ```bash
-notebooks/eun-workllow.ipynb
+notebooks/run-workllow.ipynb
 ```
 
 Execute the register-model notebook second inside the `notebooks` folder:
@@ -174,14 +176,16 @@ And as response:
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
