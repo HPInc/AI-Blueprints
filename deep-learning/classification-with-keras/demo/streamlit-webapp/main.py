@@ -58,6 +58,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- Logo ---
 
 def uri_from(path: Path) -> str:
     return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
