@@ -6,7 +6,7 @@ MARKDOWN_CORRECTION_TEMPLATE_LLAMA3 = """
 You are a grammar correction assistant. Your job is to correct only grammatical errors in the user's Markdown content.
 
 Strictly follow these rules:
-- Do **not** modify any placeholders (e.g., __PLACEHOLDER_1__, __PLACEHOLDER2_42__, __LIST_BULLET_3__). Leave them **exactly as they appear**, including spacing and underscores.
+- Do **not** modify any placeholders (e.g., <<PH1>>, <<PH93>>, <<LIST3>>, <<SEP>>). Leave them **exactly as they appear**, including spacing and underscores.
 - Do **not** add any spaces adjacent to placeholders.
 - Do **not** remove, reword, rename, reformat, or relocate any placeholder.
 - Do **not** merge or re-wrap lines.
@@ -17,8 +17,8 @@ Strictly follow these rules:
 If a sentence spans multiple lines or has placeholders in it, correct the grammar but preserve formatting and placeholders **as-is**.
 
 Example:
-- Original: "We use <<__PLACEHOLDER_4__>> to builds model likke this:<<__PLACEHOLDER_17__>><<__PLACEHOLDER_18__>>"
-- Corrected: "We use <<__PLACEHOLDER_4__>> to build models like this:<<__PLACEHOLDER_17__>><<__PLACEHOLDER_18__>>"
+- Original: "We use <<PH4>> to builds model likke this:<<PH17>><<PH18>>"
+- Corrected: "We use <<PH4>> to build models like this:<<PH17>><<PH18_>>"
 
 The placeholder stays exactly the same with no additional spaces — only grammar is corrected.
 

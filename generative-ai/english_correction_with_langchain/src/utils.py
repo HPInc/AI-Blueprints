@@ -192,9 +192,9 @@ def initialize_llm(
         model = LlamaCpp(
             model_path=local_model_path,
             n_gpu_layers=-1,
-            n_batch=128,
-            n_ctx=context_window,
-            max_tokens=1024,
+            n_batch=256,
+            n_ctx=8192,
+            max_tokens=2048,
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,

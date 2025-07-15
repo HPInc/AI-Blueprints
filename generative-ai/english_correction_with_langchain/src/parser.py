@@ -3,7 +3,6 @@ import re
 from markdown_it import MarkdownIt
 from bs4 import BeautifulSoup
 
-
 def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], str]:
     md = MarkdownIt()
     tokens = md.parse(md_content)
@@ -11,10 +10,10 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
     placeholder_map = {}
     counter = 0
 
-    def get_next_placeholder(value: str, prefix="PLACEHOLDER") -> str:
+    def get_next_placeholder(value: str, prefix="PH") -> str:
         nonlocal counter
         counter += 1
-        key = f"__{prefix}_{counter}__"
+        key = f"{prefix}{counter}"
         placeholder_map[key] = value
         return f"<<{key}>>"
 
@@ -88,46 +87,36 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
     # Inline protections
     processed_lines = []
     for line in lines:
-        def replace_inline_code(match):
-            return f"`{get_next_placeholder(match.group(1))}`"
-        line = re.sub(r'`([^`]+)`', replace_inline_code, line)
-
-        def replace_urls(match):
-            return get_next_placeholder(match.group(0))
-        line = re.sub(r'https?://[^\s\)\]\}]+', replace_urls, line)
+        line = re.sub(r'`([^`]+)`', lambda m: f"`{get_next_placeholder(m.group(1))}`", line)
+        line = re.sub(r'https?://[^\s)\]}]+', lambda m: get_next_placeholder(m.group(0)), line)
 
         def replace_md_links(match):
-            link_text = match.group(1)
-            url = match.group(2)
-            # Prevent wrapping already-wrapped placeholders
-            if re.match(r'^<<__PLACEHOLDER_\d+__>>$', url):
+            text, url = match.group(1), match.group(2)
+            if re.match(r'^<<PH\d+>>$', url):
                 return match.group(0)
-            return f"[{link_text}]({get_next_placeholder(url)})"
-        line = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', replace_md_links, line)
+            return f"[{text}]({get_next_placeholder(url)})"
 
         def replace_internal_links(match):
-            link_text = match.group(1)
-            anchor_target = f"#{match.group(2)}"
-            if re.match(r'^<<__PLACEHOLDER_\d+__>>$', anchor_target):
+            text, anchor = match.group(1), f"#{match.group(2)}"
+            if re.match(r'^<<PH\d+>>$', anchor):
                 return match.group(0)
-            return f"[{link_text}]({get_next_placeholder(anchor_target)})"
-        line = re.sub(r'\[([^\]]+)\]\(#([^\)]+)\)', replace_internal_links, line)
+            return f"[{text}]({get_next_placeholder(anchor)})"
 
+        line = re.sub(r'\[([^\]]+)]\(([^)]+)\)', replace_md_links, line)
+        line = re.sub(r'\[([^\]]+)]\(#([^)]+)\)', replace_internal_links, line)
         processed_lines.append(line)
 
     # Protect list bullets
     bullet_placeholder_lines = []
     for line in processed_lines:
-        bullet_match = re.match(r'^(\s*)([-*+]|\d+\.)\s+', line)
-        if bullet_match:
-            indent, bullet = bullet_match.group(1), bullet_match.group(2)
-            placeholder = get_next_placeholder(bullet, prefix="LIST_BULLET")
+        match = re.match(r'^(\s*)([-*+]|\d+\.)\s+', line)
+        if match:
+            indent, bullet = match.group(1), match.group(2)
+            placeholder = get_next_placeholder(bullet, prefix="LIST")
             line = re.sub(r'^(\s*)([-*+]|\d+\.)\s+', f"{indent}{placeholder} ", line)
         bullet_placeholder_lines.append(line)
 
-    processed_lines = bullet_placeholder_lines
-    
-    raw_processed = "\n".join(processed_lines)
+    raw_processed = "\n".join(bullet_placeholder_lines)
 
     # Replace horizontal rules
     raw_processed = re.sub(r'^\s*---\s*$', lambda m: get_next_placeholder(m.group(0)), raw_processed, flags=re.MULTILINE)
@@ -135,19 +124,19 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
     # Replace newlines with unified placeholders
     final_lines = []
     for line in raw_processed.splitlines(keepends=True):
-        newline_placeholder = get_next_placeholder("\n", prefix="PLACEHOLDER2")
+        newline_placeholder = get_next_placeholder("\n", prefix="PH")
         final_lines.append(line.rstrip('\n') + newline_placeholder)
 
     processed_content = ''.join(final_lines)
 
-    # Prevent adjacent placeholder collisions
+    # Add <<SEP>> only after <<PHn>> when not followed by another <<placeholder>>
     processed_content = re.sub(
-        r'(>>)(\s*<<)',  
-        r'\1<<__PLACEHOLDER_SEPARATOR__>>\2',  
+        r'(<<PH\d+>>)(?!<<)(?=\w)',
+        r'\1<<SEP>>',
         processed_content
     )
-    placeholder_map["__PLACEHOLDER_SEPARATOR__"] = ""  
 
+    placeholder_map["SEP"] = ""
     return placeholder_map, processed_content
 
 
@@ -155,12 +144,10 @@ def restore_placeholders(corrected_text: str, placeholder_map: Dict[str, str]) -
     restored_text = corrected_text
 
     # Replace longer keys first to avoid prefix collisions
-    for placeholder, original_content in sorted(placeholder_map.items(), key=lambda x: -len(x[0])):
-        wrapped = f"<<{placeholder}>>"
-        restored_text = restored_text.replace(wrapped, original_content)
+    for placeholder, original in sorted(placeholder_map.items(), key=lambda x: -len(x[0])):
+        restored_text = restored_text.replace(f"<<{placeholder}>>", original)
 
-    # Clean up separator
-    restored_text = restored_text.replace('<<__PLACEHOLDER_SEPARATOR__>>', '')
+    # Remove separator tokens
+    restored_text = restored_text.replace('<<SEP>>', '')
 
     return restored_text
-
