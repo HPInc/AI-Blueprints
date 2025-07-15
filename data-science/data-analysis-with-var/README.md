@@ -98,7 +98,7 @@ This will:
 Execute the run-workflow notebook first inside the `notebooks` folder which will save model artifacts as pkl files and training metrics as a json file to the artifacts folder :
 
 ```bash
-notebooks/eun-workllow.ipynb
+notebooks/run-workllow.ipynb
 ```
 
 Execute the register-model notebook second inside the `notebooks` folder:
