@@ -32,9 +32,11 @@ In this template, our objective is to increase the resolution of images, that is
 │   └── swagger_UI_image_super_resolution_with_fsrcnn.pdf               # Swagger screenshot
 │   └── swagger_UI_image_super_resolution_with_fsrcnn.png               # Swagger screenshot 
 ├── demo
-│   └── streamlit-webapp/                                               # Streamlit UI
+│   └── streamlit-webapp/                                             # Streamlit UI
+│   │  └── assets/                                                    # Logo assets
 ├── notebooks
-│   ├── image_super_resolution_with_FSRCNN.ipynb                        # Main notebook for the project
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations  
 │
 ├── README.md                                                           # Project documentation
 ```
@@ -74,7 +76,8 @@ https://github.com/HPInc/AI-Blueprints.git
 ## Usage
 
 ### 1 ▪ Run the Notebook
-Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
+
+Run the following notebook `run-workflow.ipynb`:
 1. Model:
 - Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding and deconvolution.
 2. Dataloader / preprocessing:
@@ -87,7 +90,14 @@ Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 5. HR and LR image comparison:
 - Compare the low-resolution and high-resolution images after training.
 
-### 2 ▪ Deploy the Image Super Resolution with FSRCNN Service
+### 2 ▪ Run the Notebook
+
+Run the following notebook `register-model.ipynb`:
+- Log Model to MLflow
+- Fetch the Latest Model Version from MLflow
+- Load the Model and Run Inference
+
+### 3 ▪ Deploy the Image Super Resolution with FSRCNN Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -96,7 +106,7 @@ Run the following notebook `FSRCNN_DIV2K_AISTUDIO.ipynb`:
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
-### 3 ▪ Swagger / raw API
+### 4 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
@@ -122,7 +132,7 @@ And as response:
 }
 ```
 
-### 4 ▪ Launch the Streamlit UI
+### 5 ▪ Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 
