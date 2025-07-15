@@ -27,21 +27,21 @@
 
 ## Project Structure
 ```
-├── code/                                        # Demo code
+├── code/                                                             # Demo code
 │
-├── demo/                                        # Compiled Interface Folder
+├── demo/                                                             # Compiled Interface Folder
 │
 ├── docs/
 │   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
-│   └── swagger-ui-question-answering-with-bert.pdf               # Swagger screenshot
+│   └── swagger-ui-question-answering-with-bert.pdf                   # Swagger screenshot
 │
 ├── notebooks
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                           
 │
-├── README.md                                    # Project documentation
+├── README.md                                                         # Project documentation
 │                                        
-├── requirements.txt                             # Dependency file for installing required packages
+├── requirements.txt                                                  # Dependency file for installing required packages
                                     
 ```
 
@@ -76,7 +76,7 @@ https://github.com/HPInc/AI-Blueprints.git
 ## Usage
 
 ### 1 ▪ Run the Notebook
-Run the following notebook `/Training.ipynb`:
+Run the following notebook `/run-workflow.ipynb`:
 1. Download the dataset from the HuggingFace datasets repository.
 2. Tokenize, preparing the inputs for the model.
 3. Load metrics and transforms the output model(Logits) to numbers.
@@ -87,10 +87,15 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 ```
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
-7. Integrate MLflow 
 
-### 2 ▪ Deploy
-1. Run the following notebook `/question_answering_with_BERT.ipynb`(The same deployment can be achieved by running the deploy.py file): 
+### 2 ▪ Run the Notebook
+Run the following notebook `/register-model.ipynb`:
+1. Log Model to MLflow
+2. Fetch the Latest Model Version from MLflow
+3. Load the Model and Run Inference
+
+### 3 ▪ Deploy
+1. Run the following notebook `/register-model.ipynb`: 
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
