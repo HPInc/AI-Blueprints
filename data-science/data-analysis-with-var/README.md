@@ -1,4 +1,4 @@
-# 😷 COVID Movement Patterns with VAR
+# 😷 Data Analysis with VAR
 
 <div align="center">
 
