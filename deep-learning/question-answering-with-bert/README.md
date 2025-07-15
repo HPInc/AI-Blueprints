@@ -31,13 +31,13 @@
 │
 ├── demo/                                        # Compiled Interface Folder
 │
+├── docs/
+│   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
+│   └── swagger-ui-question-answering-with-bert.pdf               # Swagger screenshot
+│
 ├── notebooks
-│   ├── other-notebooks                          
-│   │     └── deploy.py                          # Code to deploy 
-│   │     └── Testing Mlflow Server.ipynb        # Notebook for testing the Mlflow server  
-│   │
-│   ├── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   ├── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                         
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                           
 │
 ├── README.md                                    # Project documentation
 │                                        
