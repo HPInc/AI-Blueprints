@@ -150,7 +150,7 @@ And as response:
 ### Successful UI demo
 
 - Streamlit
-![Handwritten Digit Classification Streamlit UI](docs/streamlit_ui_handwritten_digit_classification.png)
+![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-handwritten-digit-classification.png)
 
 ---
 
