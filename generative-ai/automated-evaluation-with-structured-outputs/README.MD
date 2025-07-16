@@ -78,6 +78,7 @@ git clone https://github.com/HPInc/AI-Blueprints.git
   - **Model Name**: `meta-llama3.1-8b-Q8`
   - **Model Source**: `AWS S3`
   - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+  - **Resource Type**: `public`
   - **Bucket Region**: `us-west-2`
 
 - Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
