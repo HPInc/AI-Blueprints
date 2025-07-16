@@ -31,8 +31,7 @@ You can explore cell tower distributions by radio type, operator, country, and t
 ## Project Structure
 
 ```
-├── docs
-│   └── ui_opencellid.png          # opencellid UI screenshot
+├── docs                           # Directory containing UI screenshots of the logged results
 ├── notebooks                                                 
 │   └── run-workflow.ipynb         # Notebook used for executing the pipeline using custom inputs and configurations
 ├── src                            # Core Python modules
