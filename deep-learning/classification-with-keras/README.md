@@ -99,7 +99,9 @@ register-model.ipynb
 
 This will:
 
-- Integrate MLflow 
+- Logg Model to MLflow
+- Fetch the Latest Model Version from MLflow
+- Load the Model and Running Inference
 
 ### 3 ▪ Deploy the Handwritten digit classification with keras Service
 
