@@ -32,13 +32,13 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ```
 ├── docs
-│   └── ui_opencellid.png                                      # opencellid UI screenshot
+│   └── ui_opencellid.png          # opencellid UI screenshot
 ├── notebooks                                                 
-│   └── run-workflow.ipynb                                     # Executing the pipeline using custom inputs 
-├── src                                                        # Core Python modules
+│   └── run-workflow.ipynb         # Notebook used for executing the pipeline using custom inputs and configurations
+├── src                            # Core Python modules
 │   └── opencellid_downloader.py               
-├── README.md                                                  # Project documentation
-└── requirements.txt                                           # Python dependencies (used with pip install)
+├── README.md                      # Project documentation
+└── requirements.txt               # Python dependencies (used with pip install)
 ```
 
 ---
