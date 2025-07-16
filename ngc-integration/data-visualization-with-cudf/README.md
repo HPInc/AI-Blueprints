@@ -33,8 +33,9 @@ You can explore cell tower distributions by radio type, operator, country, and t
 ```
 ├── docs
 │   └── ui_opencellid.png                                      # opencellid UI screenshot
-├── notebooks
-│   └── opencellid_eda_with_panel_and_cuDF.ipynb               # Main notebook for the project
+├── notebooks                                                  # Main notebooks for the project
+|   ├── register-model.ipynb
+│   └── run-workflow.ipynb               
 ├── src                                                        # Core Python modules
 │   └── opencellid_downloader.py               
 ├── README.md                                                  # Project documentation
@@ -73,12 +74,12 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ## Usage
 
-### Step 1: Run the Notebook
+### Step 1: Run the Workflow Notebook
 
-Execute the notebook inside the `notebooks` folder:
+Execute the *run-workflow* notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/opencellid_eda_with_panel_and_cuDF.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
@@ -101,6 +102,23 @@ The notebook launches an embedded interactive dashboard featuring:
 ![Opencellid Dashboard UI](docs/ui_opencellid.png) 
 
 ---
+
+### Step 3: Run the Register Notebook
+
+Execute the *register-model* notebook inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This will:
+
+- Measure the execution time of each analysis step (loading, describing, aggregating, dashboard build) and log those numbers as **MLflow metrics**.
+- Save the generated dashboard (`dashboard.html`) and any summary CSV / Parquet files as **MLflow artifacts** so you can download or preview them later.
+- Wrap the dashboard in a minimal `mlflow.pyfunc.PythonModel` called **OpenCellID-EDA** and register it in the **MLflow Model Registry**.  
+  Loading this model later (`mlflow.pyfunc.load_model("models:/OpenCellID-EDA/latest")`) returns the HTML dashboard, letting you serve or embed it without rerunning the notebook.
+- In short, the notebook turns the exploratory workflow into a version-controlled, reproducible asset that can be compared across hardware, datasets or code changes via MLflow’s UI.
+
 
 ## Contact and Support
 
