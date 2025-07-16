@@ -29,14 +29,14 @@ Simple text, specifically spam, classification using Natural Language Processing
 
 ```
 ├── docs/
-│   └── swagger_UI_spam_detection_with_nlp.pdf           # Swagger screenshot
-│   └── swagger_UI_spam_detection_with_nlp.png           # Swagger screenshot
+│   └── swagger-ui-spam-detection-with-nlp.pdf                    # Swagger screenshot
+│   └── swagger-ui-spam-detection-with-nlp.png                    # Swagger screenshot
 ├── notebooks
-│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations             
-├── README.md                                            # Project documentation
+│   └── register-model.ipynb                                      # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                        # Notebook for executing the pipeline using custom inputs and configurations             
+├── README.md                                                     # Project documentation
 │
-├── requirements.txt                                     # Dependency file for installing required packages
+├── requirements.txt                                              # Dependency file for installing required packages
 ```
 
 ---
