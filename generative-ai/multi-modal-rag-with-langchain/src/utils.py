@@ -74,10 +74,9 @@ def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> No
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
 
-def load_config_and_secrets(
+def load_config(
     config_path: str = "../../configs/config.yaml",
-    secrets_path: str = "../../configs/secrets.yaml"
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> Dict[str, Any]:
     """
     Load configuration and secrets from YAML files.
 
@@ -93,21 +92,14 @@ def load_config_and_secrets(
     """
     # Convert to absolute paths if needed
     config_path = os.path.abspath(config_path)
-    secrets_path = os.path.abspath(secrets_path)
-
-    if not os.path.exists(secrets_path):
-        raise FileNotFoundError(f"secrets.yaml file not found in path: {secrets_path}")
 
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
 
     with open(config_path) as file:
         config = yaml.safe_load(file)
-
-    with open(secrets_path) as file:
-        secrets = yaml.safe_load(file)
-
-    return config, secrets
+        
+    return config
 
 
 def configure_proxy(config: Dict[str, Any]) -> None:
@@ -721,24 +713,3 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     formatted_text = "\n\n".join(formatted_docs)
 
     return formatted_text
-
-
-def initialize_galileo_observer(project_name: str):
-    """
-    Initialize a Galileo Observer for monitoring.
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        Galileo observe callback object.
-
-    Raises:
-        ImportError: If galileo_observe is not installed.
-    """
-    try:
-        from galileo_observe import GalileoObserveCallback
-    except ImportError:
-        raise ImportError("galileo_observe is required but not installed")
-    
-    return GalileoObserveCallback(project_name=project_name)

@@ -1,4 +1,11 @@
-data/images
-data/wiki_full_structure.json
-data/wiki_flat_structure.json
+data/context/wiki_full_structure.json
+data/context/wiki_flat_structure.json
+data/context/images
+
+data/chroma_store/*
+!data/chroma_store/.gitkeep
+
+data/memory/*
+!data/memory/.gitkeep
+
 configs/secrets.yaml
