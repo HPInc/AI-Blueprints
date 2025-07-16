@@ -24,8 +24,12 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 ## Project Structure  
 ```
-├── docs                                                  # Directory containing UI screenshots of the logged results
-├── notebooks                                             # Main notebooks for the project
+├── docs                                                  
+|   ├── Analysis-with-Pandas-5M.png                       # Stock analysis using Pandas UI screenshot (5M dataset size)
+|   ├── Analysis-with-Pandas-10M.png                      # Stock analysis using Pandas UI screenshot (10M dataset size)
+|   ├── Analysis-with-Pandas-and-cuDF-5M.png              # Stock analysis using Pandas and cuDF UI screenshot (5M dataset size)
+|   └── Analysis-with-Pandas-and-cuDF-10M.png             # Stock analysis using Pandas and cuDF UI screenshot (10M dataset size)
+├── notebooks                                            
 │   ├── stock-analysis-with-pandas                        # Directory of notebooks using Pandas only (CPU)
 |   |   └── run-workflow.ipynb                            # Notebook used for executing the pipeline using custom inputs and configurations
 │   └── stock-analysis-with-pandas-and-cudf               # Directory of notebooks using cuDF (GPU)
