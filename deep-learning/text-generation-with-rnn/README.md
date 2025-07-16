@@ -33,10 +33,10 @@ The objective of this template is to show how to create a simple text generation
 │
 ├── demo/                                                     # Compiled Interface Folder
 ├── docs
-│   ├── ui_text_generation_with_rnn.png                       # UI screenshot 
-│   ├── ui_text_generation_with_rnn.png                       # UI screenshot screenshot    
-│   ├── swagger_UI_text_generation_with_rnn.pdf               # Swagger UI screenshot 
-│   └── swagger_UI_text_generation_with_rnn. pdf              # Swagger UI screenshot
+│   ├── html-ui-text-generation-with-rnn.png                       # UI screenshot 
+│   ├── html-ui-text-generation-with-rnn.png                       # UI screenshot screenshot    
+│   ├── swagger-ui-text-generation-with-rnn.pdf               # Swagger UI screenshot 
+│   └── swagger-ui-text-generation-with-rnn. pdf              # Swagger UI screenshot
 │
 ├── notebooks
     └── models/
@@ -151,7 +151,7 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 ### Successful UI demo
 
 - HTML
-![Automated Evaluation React UI](docs/ui_text_generation_with_rnn.png)  
+![Automated Evaluation React UI](docs/html-ui-text-generation-with-rnn.png)  
 
 ---
 
