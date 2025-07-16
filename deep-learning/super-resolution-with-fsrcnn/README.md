@@ -27,16 +27,16 @@ In this template, our objective is to increase the resolution of images, that is
 
  ```
 ├── docs/
-│   └── streamlit_ui_image_super_resolution_with_fsrcnn.pdf             # UI screenshot
-│   └── streamlit_ui_image_super_resolution_with_fsrcnn.png             # UI screenshot
+│   └── streamlit-ui-image-super-resolution-with-fsrcnn.pdf             # UI screenshot
+│   └── streamlit-ui-image-super-resolution-with-fsrcnn.png             # UI screenshot
 │   └── swagger_UI_image_super_resolution_with_fsrcnn.pdf               # Swagger screenshot
 │   └── swagger_UI_image_super_resolution_with_fsrcnn.png               # Swagger screenshot 
 ├── demo
-│   └── streamlit-webapp/                                             # Streamlit UI
-│   │  └── assets/                                                    # Logo assets
+│   └── streamlit-webapp/                                               # Streamlit UI
+│   │  └── assets/                                                      # Logo assets
 ├── notebooks
-│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations  
+│   └── register-model.ipynb                                            # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                              # Notebook for executing the pipeline using custom inputs and configurations  
 │
 ├── README.md                                                           # Project documentation
 ```
@@ -100,7 +100,7 @@ Run the following notebook `register-model.ipynb`:
 ### 3 ▪ Deploy the Image Super Resolution with FSRCNN Service
 
 - Go to **Deployments > New Service** in AI Studio.
-- Name the service and select the registered model.
+- Name the service and select the registered model of register-model notebook.
 - Choose a model version with **GPU**.
 - Choose the workspace.
 - Start the deployment.
@@ -141,7 +141,7 @@ And as response:
 ### Successful UI demo
 
 - Streamlit
-![Handwritten Digit Classification Streamlit UI](docs/streamlit_ui_image_super_resolution_with_fsrcnn.png)
+![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-image-super-resolution-with-fsrcnn.png)
 
 ---
 
