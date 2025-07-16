@@ -1,4 +1,4 @@
-# 🌷 Iris flowers classification with SVM
+# 🌷 Classification with SVM
 
 <div align="center">
 
@@ -20,7 +20,9 @@
 
 # Overview
 
-This Project shows how to do machine learning classification using a Iris Flower dataset. The goal is to create a model that classifies the categorical variable (setosa, virginica or versicolor).
+This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+
+It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
 ---
 
@@ -68,10 +70,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 1 ▪ Run the Notebook
 
-Execute the notebook inside the `notebooks` folder:
+Execute the run-workflow notebook first inside the `notebooks` folder first.
 
 ```bash
-notebooks/iris_flowers_classification_with_svm.ipynb
+notebooks/eun-workllow.ipynb
+```
+
+Execute the register-model notebook second inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
 ```
 
 This will:
@@ -82,7 +90,7 @@ This will:
 - Build the Model and Measure Model.
 - Integrate MLflow
 
-### 2 ▪ Deploy the Iris flowers classification with SVM Service
+### 2 ▪ Deploy the Iris flowers classification with SVM and LDA Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -129,14 +137,16 @@ And as response:
 ```
 ---
 
-# Contact and Support  
+# Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
