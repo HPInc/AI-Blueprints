@@ -24,14 +24,13 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 ## Project Structure  
 ```
-├── README.md                                             # Project documentation
+├── docs                                                  # Directory containing UI screenshots of the logged results
 ├── notebooks                                             # Main notebooks for the project
-│   ├── stock-analysis-with-pandas                        # Set of notebooks using Pandas (CPU)
-|   |   ├── register-model.ipynb
-|   |   └── run-workflow.ipynb  
-│   └── stock-analysis-with-pandas-and-cudf               # Set of notebooks using cuDF (GPU)
-|       ├── register-model.ipynb
-|       └── run-workflow.ipynb  
+│   ├── stock-analysis-with-pandas                        # Directory of notebooks using Pandas only (CPU)
+|   |   └── run-workflow.ipynb                            # Notebook used for executing the pipeline using custom inputs and configurations
+│   └── stock-analysis-with-pandas-and-cudf               # Directory of notebooks using cuDF (GPU)
+|       └── run-workflow.ipynb                            # Notebook used for executing the pipeline using custom inputs and configurations
+├── README.md                                             # Project documentation
 └── requirements.txt                                      # Python dependencies (used with pip install)
 ```  
 
@@ -81,7 +80,7 @@ https://github.com/HPInc/AI-Blueprints.git
 
 You can choose to run the **two data analysis 'run-workflow' notebooks** located in their respective directories inside the  `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
 
-For the two data analysis *run-workflow* notebooks, results are available **within the notebook**. For the two data analysis *register-model* notebooks, results are available through **MLflow tracking**.
+For the two data analysis *run-workflow* notebooks, results are available both **within the notebook** and through **MLflow tracking**.
 
 ---
 
