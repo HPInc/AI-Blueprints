@@ -31,13 +31,15 @@ You can explore cell tower distributions by radio type, operator, country, and t
 ## Project Structure
 
 ```
-├── docs                           # Directory containing UI screenshots of the logged results
-├── notebooks                                                 
-│   └── run-workflow.ipynb         # Notebook used for executing the pipeline using custom inputs and configurations
-├── src                            # Core Python modules
+├── docs
+|   ├── ui-opencellid-EU.png                                   # opencellid UI screenshot (European Union map)
+│   └── ui-opencellid-US.png                                   # opencellid UI screenshot (United States map)
+├── notebooks
+│   └── opencellid_eda_with_panel_and_cuDF.ipynb               # Main notebook for the project
+├── src                                                        # Core Python modules
 │   └── opencellid_downloader.py               
-├── README.md                      # Project documentation
-└── requirements.txt               # Python dependencies (used with pip install)
+├── README.md                                                  # Project documentation
+└── requirements.txt                                           # Python dependencies (used with pip install)
 ```
 
 ---
@@ -72,12 +74,12 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ## Usage
 
-### Step 1: Run the Workflow Notebook
+### Step 1: Run the Notebook
 
-Execute the *run-workflow* notebook inside the `notebooks` folder:
+Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/run-workflow.ipynb
+notebooks/opencellid_eda_with_panel_and_cuDF.ipynb
 ```
 
 This will:
