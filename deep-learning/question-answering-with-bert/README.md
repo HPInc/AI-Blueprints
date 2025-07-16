@@ -33,7 +33,9 @@
 │
 ├── docs/
 │   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
+│   └── html-ui-handwritten-digit-classification.png                  # UI screenshot
 │   └── swagger-ui-question-answering-with-bert.pdf                   # Swagger screenshot
+│   └── swagger-ui-question-answering-with-bert.png                   # Swagger screenshot
 │
 ├── notebooks
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
@@ -103,7 +105,42 @@ Run the following notebook `/register-model.ipynb`:
 6. Once deployed, click on the **Service URL** to access the Swagger API page.  
 7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
 
+### 3 ▪ Swagger / raw API
 
+Once deployed, access the **Swagger UI** via the Service URL.
+
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "context": [
+      "Gabriela has a dog called Liz"
+    ],
+    "question": [
+      "what is the name of Gabriela`s dog"
+    ]
+  },
+  "params": {
+    "show_score": true
+  }
+}
+
+```
+
+And as response:
+
+```
+{
+  "predictions": {
+    "score": 0.9800336360931396,
+    "start": 26,
+    "end": 29,
+    "answer": "Liz"
+  }
+}
+```
 ---
 
 # Contact and Support  
