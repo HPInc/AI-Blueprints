@@ -35,20 +35,21 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 ## Project Structure
 
 ```
-├── data                                                                    # Data assets used in the project
+├── data                                                            # Data assets used in the project
 │   ├── ForrestGump.mp3
 │   └── June18.mp3
-├── demo                                                                    # UI-related files
+├── demo                                                            # UI-related files
 │   └── ...
 ├── docs
-│   ├── react_ui_for_audio_translation.png                                  # React UI screenshot 
-│   ├── streamlit_ui_for_audio_translation.png                              # Streamlit UI screenshot screenshot    
-│   ├── successful react ui result for audio translation.pdf                # React UI screenshot 
-│   └── successful streamlit ui result for audio translation. pdf           # Streamlit UI screenshot
+│   ├── react_ui_for_audio_translation.png                          # React UI screenshot 
+│   ├── streamlit_ui_for_audio_translation.png                      # Streamlit UI screenshot screenshot    
+│   ├── successful react ui result for audio translation.pdf        # React UI screenshot 
+│   └── successful streamlit ui result for audio translation.pdf    # Streamlit UI screenshot
 ├── notebooks
-│   └── english_to_spanish.ipynb                                            # Main notebook for the project
-├── README.md                                                               # Project documentation
-└── requirements.txt                                                        # Python dependencies (used with pip install)
+|   ├── register-model.ipynb                                        # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                          # Notebook for executing the pipeline using custom inputs and configurations
+├── README.md                                                       # Project documentation
+└── requirements.txt                                                # Python dependencies (used with pip install)
 ```
 
 ---
@@ -97,32 +98,45 @@ Make sure these models are downloaded and available in the `datafabric` folder i
 
 ## Usage
 
-### 1 ▪ Run the Notebook
+### 1 ▪ Run the Workflow Notebook
 
 Open and run the notebook located at:
 
 ```bash
-notebooks/english_to_spanish.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
 
-- Load STT, Helsinki-NLP, and TTS models from the NGC assets  
-- Convert an English audio file to English text  
-- Translate the text into Spanish  
-- Synthesize spoken Spanish audio from the translated text  
-- Log the entire workflow as a composite model in **MLflow**
+- Load STT, Helsinki-NLP, and TTS models from the NGC assets
+- Convert an English audio file to English text
+- Translate the text into Spanish
+- Synthesize spoken Spanish audio from the translated text
 
 Ensure that in **Translate the Text**, you include the step **Extract the text from the first hypothesis**, according to the NeMo version.
 
-### 2 ▪ Deploy the Nemo Translation Service
+### 2 ▪ Run the Register Model Notebook
+
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+register-model.ipynb
+```
+
+This will:
+
+- Log the entire workflow as a composite model in **MLflow**
+- Fetch the Latest Model Version from MLflow
+- Load the Model and Run Inference
+
+### 3 ▪ Deploy the Nemo Translation Service
 
 - In AI Studio, navigate to **Deployments > New Service**.  
 - Give your service a name (e.g. “NemoTranslation”), then select the registered NemoTranslationModel.  
 - Pick the desired model version and enable **GPU acceleration** for best performance.  
 - Click **Deploy** to launch the service.
 
-### 3 ▪ Swagger / Raw API
+### 4 ▪ Swagger / Raw API
 
 Once your service is running, open the **Swagger UI** from its Service URL.  
 
@@ -143,7 +157,7 @@ Once your service is running, open the **Swagger UI** from its Service URL.
 
 Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
 
-### 4 ▪ Use the HTML Demo
+### 5 ▪ Use the HTML Demo
 
 From the Swagger page, click the **“Demo”** link to interact via a simple web form:
 
@@ -151,7 +165,7 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 * Click **Translate**.
 * View the translated text right in the browser.
 
-### 5 ▪ Launch the Streamlit UI
+### 6 ▪ Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 2. Enter text to translate, hit **Translate**, and enjoy the live results!
