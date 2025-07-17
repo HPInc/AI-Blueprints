@@ -60,8 +60,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - Choose **Deep Learning** as the base image.
 
 ### 3 ▪ Download the Dataset
-1. This experiment requires the **DIV2K dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/div2k-data` into an asset called DIV2K and ensure that the AWS region is set to ```us-west-2```.
+
+- Download the `DIV2K dataset`
+
+  - **Asset Name**: `DIV2K` 
+  - **Source**: `AWS S3`
+  - **S3 URI**: `s3://dsp-demo-bucket/div2k-data`
+  - **Resource Type**: `public`
+  - **Bucket Region**: `us-west-2`
+
+- Make sure that the model is in the datafabric folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
 
 ### 4 ▪ Clone the Repositoryy
 
