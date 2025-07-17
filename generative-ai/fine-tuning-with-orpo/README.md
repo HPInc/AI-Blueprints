@@ -14,7 +14,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -35,13 +36,14 @@ We incorporate:
 
 ## Project Structure
 
-```
-├── config                                         # Configuration files
+```text
+├── config                                                              # Configuration files
 │   ├── default_config_cpu.yaml
 │   ├── default_config_multi-gpu.yaml
 │   └── default_config_one-gpu.yaml
-│
-├── core                                           # Core Python modules
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
+├── core                                                                # Core Python modules
 │   ├── comparer
 │   │   └── model_comparer.py
 │   ├── data_visualizer
@@ -59,13 +61,41 @@ We incorporate:
 │   │   └── model_selection.py
 │   ├── target_mapper
 │   │   └── lora_target_mapper.py
-│
+│   └── fine_tuning_service.py                                          # Fine-tuning service implementation
+├── demo
+│   ├── static/                                                         # Static HTML UI files
+│   └── streamlit/                                                      # Streamlit webapp files
+├── docs
+│   ├── sample-html-ss.png                                             # HTML UI screenshot
+│   ├── sample-html-ui.pdf                                             # HTML UI page
+│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
+│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
 ├── notebooks
-│   └── fine_tuning_orpo.ipynb                   # Main notebook for the project
-│
-├── README.md                                    # Project documentation
-└── requirements.txt                             # Required dependencies
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── fine_tuning_orpo.ipynb                                         # Main notebook for the project
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
+```
 
+---
+
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
 ```
 
 ---

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging, re, pandas as pd, torch, mlflow, sys
 from pathlib import Path
-from typing import Union
+from typing import Dict, Any, List, Optional, Tuple, Union
 
 # Add project root to path for imports
 project_root = Path(__file__).resolve().parents[2]
@@ -132,6 +132,7 @@ def register_llm_comparison_model(
     experiment: str,
     run_name: str,
     registry_name: str,
+    config_path: str = "../configs/config.yaml",
 ):
     """
     Register an LLM comparison model with MLflow.
@@ -142,6 +143,7 @@ def register_llm_comparison_model(
         experiment: MLflow experiment name
         run_name: MLflow run name
         registry_name: Model registry name
+        config_path: Path to configuration file (default: ../configs/config.yaml)
     """
     # Validate and resolve paths
     def resolve_model_path(path_str: str) -> str:
@@ -206,6 +208,7 @@ def register_llm_comparison_model(
             artifacts={
                 "model_no_finetuning": resolved_base_path,
                 "finetuned_model":     resolved_ft_path,
+                "config": str(Path(config_path).resolve()),
             },
             signature=signature,
             code_paths=[str(core)],

@@ -12,7 +12,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -26,11 +27,11 @@ This notebook performs automatic code explanation by extracting code snippets fr
 
 ## Project Structure
 
-```
-├── README.md                                       # Project documentation
-├── notebooks
-│   └── code-generation-with-langchain.ipynb        # Main notebook for the project
-├── core                                            # Core Python modules
+```text
+├── configs
+│   ├── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
+│   └── secrets.yaml                                                    # API keys and secrets
+├── core                                                                # Core Python modules
 │   ├── dataflow
 │   │   └── dataflow.py
 │   ├── extract_text
@@ -40,11 +41,40 @@ This notebook performs automatic code explanation by extracting code snippets fr
 │   ├── vector_database
 │   │   └── vector_store_writer.py
 │   └── code_generation_service.py
-├── configs                                         # Configuration files
-│   ├── config.yaml
-│   └── secrets.yaml
+├── demo
+│   ├── static/                                                         # Static HTML UI files
+│   └── streamlit/                                                      # Streamlit webapp files
+├── docs
+│   ├── sample-html-ss.png                                             # HTML UI screenshot
+│   ├── sample-html-ui.pdf                                             # HTML UI page
+│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
+│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
+├── notebooks
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── code-generation-with-langchain.ipynb                           # Main notebook for the project
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
+```
 
+---
 
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
 ```
 
 ---
