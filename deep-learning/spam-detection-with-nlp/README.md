@@ -63,6 +63,8 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 1. This experiment requires the **tutorial_data dataset** to run.
 2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
+- Make sure that the model is in the datafabric folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
+
 ### 4 ▪ Clone the Repositoryy
 
 1. Clone the GitHub repository:  
