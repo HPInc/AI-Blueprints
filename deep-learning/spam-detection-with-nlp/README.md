@@ -21,7 +21,7 @@
 
 # Overview
 
-Simple text, specifically spam, classification using Natural Language Processing (NPL).
+Text classification model capable of accurately distinguishing between spam and ham (non-spam) messages using Natural Language Processing (NLP) techniques and the Natural Language Toolkit (NLTK). The model is trained and evaluated using the spam_utf8.csv dataset, which contains labeled messages. Each entry in the dataset includes two columns: label, indicating whether the message is "spam" or "ham", and text, containing the actual content of the message.
 
 ---
 
