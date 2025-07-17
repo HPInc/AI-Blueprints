@@ -69,7 +69,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
   - **Resource Type**: `public`
   - **Bucket Region**: `us-west-2`
 
-- Make sure that the model is in the datafabric folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
+- Make sure that the dataset is in the datafabric folder inside your workspace. If the dataset does not appear after downloading, please restart your workspace.
 
 ### 4 ▪ Clone the Repositoryy
 
