@@ -64,8 +64,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - Choose **Deep Learning** as the base image.
 
 ### Step 3 ▪ Download the Dataset
-1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
+
+- Download the `tutorial_data dataset`
+
+  - **Asset Name**: `tutorial` 
+  - **Source**: `AWS S3`
+  - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
+  - **Resource Type**: `public`
+  - **Bucket Region**: `us-west-2`
+
+- Make sure that the dataset is in the datafabric folder inside your workspace. If the dataset does not appear after downloading, please restart your workspace.
 
 ### Step 4: Clone the Repository
 
