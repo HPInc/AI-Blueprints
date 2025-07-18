@@ -21,7 +21,7 @@
 
 # Overview
 
-Simple text, specifically spam, classification using Natural Language Processing (NPL).
+Text classification model capable of accurately distinguishing between spam and ham (non-spam) messages using Natural Language Processing (NLP) techniques and the Natural Language Toolkit (NLTK). The model is trained and evaluated using the spam_utf8.csv dataset, which contains labeled messages. Each entry in the dataset includes two columns: label, indicating whether the message is "spam" or "ham", and text, containing the actual content of the message.
 
 ---
 
@@ -29,13 +29,14 @@ Simple text, specifically spam, classification using Natural Language Processing
 
 ```
 ├── docs/
-│   └── swagger_UI_spam_detection_with_nlp.pdf           # Swagger screenshot
-│   └── swagger_UI_spam_detection_with_nlp.png           # Swagger screenshot
+│   └── swagger-ui-spam-detection-with-nlp.pdf                    # Swagger screenshot
+│   └── swagger-ui-spam-detection-with-nlp.png                    # Swagger screenshot
 ├── notebooks
-│   └── spam_detection_with_NLP.ipynb                    # Main notebook for the project             
-├── README.md                                            # Project documentation
+│   └── register-model.ipynb                                      # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                        # Notebook for executing the pipeline using custom inputs and configurations             
+├── README.md                                                     # Project documentation
 │
-├── requirements.txt                                     # Dependency file for installing required packages
+├── requirements.txt                                              # Dependency file for installing required packages
 ```
 
 ---
@@ -59,10 +60,18 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - Choose **Deep Learning** as the base image.
 
 ### 3 ▪ Download the Dataset
-1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
 
-### 4 ▪ Clone the Repositoryy
+- Download the `tutorial_data dataset`
+
+  - **Asset Name**: `tutorial` 
+  - **Source**: `AWS S3`
+  - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
+  - **Resource Type**: `public`
+  - **Bucket Region**: `us-west-2`
+
+- Make sure that the dataset is in the datafabric folder inside your workspace. If the dataset does not appear after downloading, please restart your workspace.
+
+### 4 ▪ Clone the Repository
 
 1. Clone the GitHub repository:  
    ```
@@ -80,7 +89,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/spam_detection_with_NLP.ipynb
+run-workflow.ipynb
 ```
 
 This will:
@@ -92,9 +101,23 @@ This will:
 - Evaluate the Model
 - Train Test Split
 - Create a Data Pipeline
-- Integrate MLflow
 
-### 2 ▪ Deploy the Spam Detection with NLP SVM Service
+### 2 ▪ Run the Notebook
+
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+register-model.ipynb
+```
+
+This will:
+
+- Log Model to MLflow
+- Fetch the Latest Model Version from MLflow
+- Load the Model and Run Inference
+
+
+### 3 ▪ Deploy the Spam Detection with NLP SVM Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -103,10 +126,9 @@ This will:
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
-### 3 ▪ Swagger / raw API
+### 4 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
-
 
 Paste a payload like:
 
@@ -133,14 +155,16 @@ And as response:
 ```
 ---
 
-# Contact and Support  
+# Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
