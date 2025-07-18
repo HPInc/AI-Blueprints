@@ -37,16 +37,17 @@ agentic_rag_with_trt-llm_and_langgraph/
 │   └── context/
 │       └── aistudio
 ├── docs/
-|   ├──
-|   ├──
-|   ├──
+|   ├── architecture-for-agentic-rag.png              # Architecture screenshot of the agentic RAG system
+|   ├── Build Custom Agentic RAG Systems.pptx         # Powerpoint walkthrough slides for building general agentic RAG systems
+|   ├── 
 |   
 ├── notebooks/
 |   ├── register-model.ipynb                          # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                            # Notebook for executing the pipeline using custom inputs and configurations
 ├── src/                                              # Core Python modules
 │   ├── __init__.py
-│   └── trt_llm_langchain.py
+│   ├── trt_llm_langchain.py
+|   └── workspace.sh
 ├── README.md                                         # Project documentation
 └── requirements.txt                                  # Python dependencies
 ```  
