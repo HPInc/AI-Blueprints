@@ -632,7 +632,7 @@ class ChatbotService(BaseGenerativeService):
             signature=signature,
             code_paths=["../core", "../src"],
             pip_requirements=[
-                "PyPDF",
+                "pypdf",
                 "pyyaml",
                 "tokenizers>=0.13.0",
                 "httpx>=0.24.0",
