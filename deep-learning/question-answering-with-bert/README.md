@@ -27,18 +27,23 @@
 
 ## Project Structure
 ```
-├── code/                                        # Demo code
+├── code/                                                             # Demo code
 │
-├── demo/                                        # Compiled Interface Folder
+├── demo/                                                             # Compiled Interface Folder
+│
+├── docs/
+│   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
+│   └── html-ui-handwritten-digit-classification.png                  # UI screenshot
+│   └── swagger-ui-question-answering-with-bert.pdf                   # Swagger screenshot
+│   └── swagger-ui-question-answering-with-bert.png                   # Swagger screenshot
 │
 ├── notebooks
-│   ├── Testing Mlflow Server.ipynb              # Notebook for testing the Mlflow server
-│   ├── question_answering_with_BERT.ipynb       # Main notebook for the project
-│   ├── deploy.py                                # Code to deploy                          
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                           
 │
-├── README.md                                    # Project documentation
+├── README.md                                                         # Project documentation
 │                                        
-├── requirements.txt                             # Dependency file for installing required packages
+├── requirements.txt                                                  # Dependency file for installing required packages
                                     
 ```
 
@@ -73,7 +78,7 @@ https://github.com/HPInc/AI-Blueprints.git
 ## Usage
 
 ### 1 ▪ Run the Notebook
-Run the following notebook `/Training.ipynb`:
+Run the following notebook `/run-workflow.ipynb`:
 1. Download the dataset from the HuggingFace datasets repository.
 2. Tokenize, preparing the inputs for the model.
 3. Load metrics and transforms the output model(Logits) to numbers.
@@ -84,10 +89,15 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 ```
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
-7. Integrate MLflow 
 
-### 2 ▪ Deploy
-1. Run the following notebook `/question_answering_with_BERT.ipynb`(The same deployment can be achieved by running the deploy.py file): 
+### 2 ▪ Run the Notebook
+Run the following notebook `/register-model.ipynb`:
+1. Log Model to MLflow
+2. Fetch the Latest Model Version from MLflow
+3. Load the Model and Run Inference
+
+### 3 ▪ Deploy
+1. Run the following notebook `/register-model.ipynb`: 
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
@@ -95,7 +105,42 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 6. Once deployed, click on the **Service URL** to access the Swagger API page.  
 7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
 
+### 3 ▪ Swagger / raw API
 
+Once deployed, access the **Swagger UI** via the Service URL.
+
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "context": [
+      "Gabriela has a dog called Liz"
+    ],
+    "question": [
+      "what is the name of Gabriela`s dog"
+    ]
+  },
+  "params": {
+    "show_score": true
+  }
+}
+
+```
+
+And as response:
+
+```
+{
+  "predictions": {
+    "score": 0.9800336360931396,
+    "start": 26,
+    "end": 29,
+    "answer": "Liz"
+  }
+}
+```
 ---
 
 # Contact and Support  
