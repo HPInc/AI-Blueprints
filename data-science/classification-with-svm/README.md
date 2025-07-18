@@ -38,7 +38,7 @@ It runs on the **Data Science Workspace**, demonstrating basic supervised learni
 │   └── streamlit-webapp/                                                   # Streamlit UI
 │   └── assets/                                                             # Assets for the streamlit UI
 ├── notebooks/
-│   └── run-workflow.ipynb                                                   # One‑click notebook for executing the pipeline using custom inputs
+│   └── run-workflow.ipynb                                                  # One‑click notebook for executing the pipeline using custom inputs
 │   └── register-model.ipynb                                                # One‑click notebook for registering trained models to MLflow, generating API
 ├── README.md                                                               # Project documentation
                                                                     
@@ -107,7 +107,7 @@ This will:
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
-### 3 ▪ Swagger / Raw API
+### 3 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
 

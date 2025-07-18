@@ -30,7 +30,7 @@ It highlights how city-level movement patterns changed during the crisis. The pr
 
 ```
 ├── docs/
-│   └── swagger-UI-data-analysis-with-var.pdf                       # Swagger screenshot(PDF)
+│   └── swagger-UI-data-analysis-with-var.pdf                      # Swagger screenshot(PDF)
 │   └── swagger-UI_data-analysis-with-var.png                      # Swagger screenshot(PNG)
 │   └── successful-streamlit-ui_for-data-analysis-with-var.pdf     # Streamlit screenshot(PDF)
 │   └── successful-streamlit-ui-for-data-analysis-with-var.png     # Streamlit screenshot(PNG)
