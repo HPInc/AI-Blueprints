@@ -1,4 +1,4 @@
-# 🤖 MultiModal RAG with LangChain
+# 🤖 MultiModal RAG with LangChain, Transformers and Torch
 
 <div align="center">
 
@@ -18,14 +18,44 @@
 
 ## Overview
 
-This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** chatbot built using **LangChain** and **MLFlow** for model evaluation and observability. It leverages the **Z by HP AI Studio Local GenAI image** and the **InternVL3-8B-Instruct-Q8** model to generate contextual and document-grounded answers to user queries about **Z by HP AI Studio**.
+🤖 MultiModal RAG with LangChain, Transformers and Torch
+📚 Contents
+🧠 Overview
+
+🗂 Project Structure
+
+⚙️ Setup
+
+🚀 Usage
+
+📞 Contact and Support
+
+Overview
+This project implements an AI-powered Multimodal **RAG (Retrieval-Augmented Generation)** chatbot. It's built using **LangChain** for orchestration, **Hugging Face Transformers** and **PyTorch** for the underlying multimodal model, and **MLflow** for model evaluation and observability. The chatbot leverages the **Z by HP AI Studio Local GenAI image** and the **`InternVL3-8B-Instruct`** model to generate contextual answers, grounded in both documents and images, to user queries about internal documentation. In this example, the primary data source is an Azure DevOps Wiki.
 
 ---
 
 ## Project Structure
 
 ```
-INSERT TREE HERE
+multimodal-rag-with-langchain-mlflow/
+├── data/                                              # Data assets used in the project
+│   ├── context/
+│   │   ├── images/                                    # Directory for images referenced in wiki pages
+│   │   └── wiki_flat_structure.json                   # JSON metadata for ADO Wiki data
+│   ├── chroma_store/                                  # Persistent directory for ChromaDB vector stores
+│   │   └── manifest.json                              # Manifest file for tracking indexed context files
+│   └── memory/
+│       └── memory.json                                # Lightweight on-disk key-value store for caching
+├── notebooks/
+│   └── multimodal-rag-with-langchain-mlflow.ipynb     # Main notebook for the project
+├── src/                                               # Core Python modules
+│   ├── __init__.py
+│   └── utils.py                                       # Utility functions for configuration and caching
+├── configs/
+│   └── config.yaml                                    # Configuration parameters (non-sensitive)
+├── README.md                                          # Project documentation
+└── requirements.txt                                   # Python dependencies
 ```
 
 ---
@@ -35,9 +65,9 @@ INSERT TREE HERE
 ### Step 0: Minimum Hardware Requirements
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
-- RAM: 32 GB 
-- VRAM: 12 GB 
-- GPU: NVIDIA GPU 
+- RAM: 32 GB
+- VRAM: 24 GB
+- GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
 
@@ -56,7 +86,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
 
-2. Ensure all files are available after workspace creation.
+2. `Navigate to generative-ai/multimodal-rag-with-langchain-mlflow to ensure all files are cloned correctly after workspace creation.`
 
 ### Step 4: Add the Model to Workspace
 
@@ -67,44 +97,38 @@ To ensure smooth execution and reliable model deployment, make sure your system 
   - **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
   
-### Step 5: Configure Secrets and Paths
-
-- Add your API keys to the `secrets.yaml` file located in the `configs` folder:
-  - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
-- Edit `config.yaml` with relevant configuration details.
+### Step 5: Configure Paths and Config
+- Edit `config.yaml` with relevant configuration details. (Currently no config required)
 
 ---
 
 ## Usage
 
-### Step 1: Run the Notebook
+### Step 1: Run the Multimodal RAG Workflow
 
-Execute the notebook inside the `notebooks` folder:
+Execute the following notebook inside the `notebooks/` folder to see the Multimodal RAG workflow in action:
 
-```bash
-notebooks/multimodal-rag-with-langchain-mlflow.ipynb
-```
+- **`run-workflow.ipynb`**
 
-This will:
+### Step 2: Register the Multimodal RAG Model in MLflow
 
-- Run the full RAG pipeline
-- Register the model in MLflow
-- Integrate MLFlow evaluation and observability
+Run the following notebook in the `notebooks/` folder to register the Multimodal RAG model in MLflow:
 
-### Step 2: Deploy the Chatbot Service
+- **`register-model.ipynb`**
 
+### Step 3: Deploy the Multimodal RAG Service Locally
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
-- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
+- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via the Streamlit UI.
 
 ### Successful Demonstration of the User Interface  
 
-![Vanilla RAG HTML UI](docs/html_ui_for_vanilla_rag.png)  
+![Multimodal RAG HTML UI]()  
 
-![Vanilla RAG Streamlit UI](docs/streamlit_ui_for_vanilla_rag.png.png)  
+![Multimodal RAG Streamlit UI]()  
 
 ---
 

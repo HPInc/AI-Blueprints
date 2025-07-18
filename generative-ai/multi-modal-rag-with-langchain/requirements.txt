@@ -9,12 +9,10 @@ langchain_huggingface==0.3.0
 hf-xet==1.1.4
 opencv-python-headless==4.11.0.86
 jq==1.9.1
-pymupdf==1.25.5
 transformers==4.53.1
 promptquality==1.13.0
 sentence-transformers==5.0.0
 tf-keras==2.19.0
-llama-cpp-python==0.3.12
 einops==0.8.1
 timm==1.0.17
 accelerate==1.9.0
