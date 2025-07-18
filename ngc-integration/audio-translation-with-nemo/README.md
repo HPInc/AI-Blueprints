@@ -40,11 +40,9 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 │   └── June18.mp3
 ├── demo                                                            # UI-related files
 │   └── ...
-├── docs
-│   ├── react_ui_for_audio_translation.png                          # React UI screenshot 
-│   ├── streamlit_ui_for_audio_translation.png                      # Streamlit UI screenshot screenshot    
-│   ├── successful react ui result for audio translation.pdf        # React UI screenshot 
-│   └── successful streamlit ui result for audio translation.pdf    # Streamlit UI screenshot
+├── docs  
+│   ├── successful-streamlit-ui-audio-translation-result.pdf        # Streamlit UI screenshot pdf file
+│   └── successful-swagger-ui-audio-translation-result.pdf          # Swagger UI screenshot pdf file
 ├── notebooks
 |   ├── register-model.ipynb                                        # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                                          # Notebook for executing the pipeline using custom inputs and configurations
