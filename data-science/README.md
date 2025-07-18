@@ -2,15 +2,15 @@
 
 The blueprint projects in this folder demonstrate how to create **Data Science projects** using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **2 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **two blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
-# 🌷 Classification with SVM
+# 🌷 Classification with Support Vector Machine (SVM) and Linear Discriminant Analysis (LDA)
 
 This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
-# 😷 Data Analysis with VAR
+# 😷 Data Analysis with Vector Auto Regression (VAR)
 
 This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
 
