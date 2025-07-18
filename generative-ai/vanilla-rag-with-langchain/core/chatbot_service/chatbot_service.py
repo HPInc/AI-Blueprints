@@ -631,12 +631,7 @@ class ChatbotService(BaseGenerativeService):
             artifacts=artifacts,
             signature=signature,
             code_paths=["../core", "../src"],
-            pip_requirements=[
-                "pypdf",
-                "pyyaml",
-                "tokenizers>=0.13.0",
-                "httpx>=0.24.0",
-            ]
+            pip_requirements="../requirements.txt",
         )
         logger.info("Model and artifacts successfully registered in MLflow.")
 

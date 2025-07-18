@@ -2,3 +2,13 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 pymupdf==1.25.5
+pypdf
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-text-splitters
+chromadb
+sentence-transformers
+pyyaml
+tokenizers>=0.13.0
+httpx>=0.24.0
