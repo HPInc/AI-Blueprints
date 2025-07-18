@@ -1,4 +1,4 @@
-transformers==4.50.0
+transformers==4.53.2
 tf_keras==2.19.0
 evaluate==0.4.3
 accelerate==1.5.2
