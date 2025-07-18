@@ -33,16 +33,22 @@ This project contains a single integrated pipeline—**Agentic RAG for AI Studio
 ## Project Structure
 ```
 agentic_rag_with_trt-llm_and_langgraph/
-├── data/                                                                  # Data assets used in the project
+├── data/                                             # Data assets used in the project
 │   └── context/
 │       └── aistudio
+├── docs/
+|   ├──
+|   ├──
+|   ├──
+|   
 ├── notebooks/
-│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb         # Main notebook for the project
-├── src/                                                                   # Core Python modules
+|   ├── register-model.ipynb                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                            # Notebook for executing the pipeline using custom inputs and configurations
+├── src/                                              # Core Python modules
 │   ├── __init__.py
 │   └── trt_llm_langchain.py
-├── README.md                                                              # Project documentation
-└── requirements.txt                                                       # Python dependencies
+├── README.md                                         # Project documentation
+└── requirements.txt                                  # Python dependencies
 ```  
 
 ---
