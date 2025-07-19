@@ -78,7 +78,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    ngcconfig:
 	   nemoversionpin: "25.04"
    ```
-3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `docs/` folder.
+3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `src/` folder.
 
 - On **Windows**, the file is located at:  
   `C:\Program Files\HP\AIStudio\util\container-setup\workspace.sh`
@@ -92,7 +92,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-3. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
+3. Navigate to `ngc-integration/agentic-rag-with-tensorrtllm` to ensure all files are cloned correctly after workspace creation.  
 
 ---
 
