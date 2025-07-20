@@ -38,8 +38,7 @@ agentic_rag_with_trt-llm_and_langgraph/
 │       └── aistudio
 ├── docs/
 |   ├── architecture-for-agentic-rag.png              # Architecture screenshot of the agentic RAG system
-|   ├── Build Custom Agentic RAG Systems.pptx         # Powerpoint walkthrough slides for building general agentic RAG systems
-|   ├── 
+|   └── Build Custom Agentic RAG Systems.pptx         # Powerpoint walkthrough slides for building general agentic RAG systems
 |   
 ├── notebooks/
 |   ├── register-model.ipynb                          # Notebook for registering trained models to MLflow
