@@ -1,4 +1,4 @@
-# 😷 COVID Movement Patterns with VAR
+# 😷 Data Analysis with VAR
 
 <div align="center">
 
@@ -19,19 +19,29 @@
 
 # Overview
 
-This project shows an visual data analysis of the effects of COVID-19 in two different cities: New York and London, using Vector Autoregression (VAR)
+This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
+
+It highlights how city-level movement patterns changed during the crisis. The project runs on the **Data Science Workspace**.
 
 ---
 
 # Project Structure
 
+
 ```
 ├── docs/
-│   └── swagger_UI_data_analysis_with_var.pdf                   # Swagger screenshot
-│   └── swagger_UI_data_analysis_with_var.png                   # Swagger screenshot
-├── notebooks
-│   └── covid_movement_patterns_with_var.ipynb                  # Main notebook for the project              
-├── README.md                                                   # Project documentation
+│   └── swagger-UI-data-analysis-with-var.pdf                      # Swagger screenshot(PDF)
+│   └── swagger-UI_data-analysis-with-var.png                      # Swagger screenshot(PNG)
+│   └── successful-streamlit-ui_for-data-analysis-with-var.pdf     # Streamlit screenshot(PDF)
+│   └── successful-streamlit-ui-for-data-analysis-with-var.png     # Streamlit screenshot(PNG)
+├── demo/
+│   └── streamlit-webapp/                                          # Streamlit UI
+│   └── assets/                                                    # Assets for the streamlit UI
+├── notebooks/
+│   └── run-workflow.ipynb                                         # One‑click notebook for executing the pipeline using custom inputs
+│   └── register-model.ipynb                                       # One‑click notebook for registering trained models to MLflow, generating API
+├── README.md                                                      # Project documentation
+                                                                    
 ```
 
 ---
@@ -40,7 +50,7 @@ This project shows an visual data analysis of the effects of COVID-19 in two dif
 
 ### 0 ▪ Minimum Hardware Requirements
 
-Ensure your environment meets the minimum compute requirements for smooth image classification performance:
+Ensure your environment meets the minimum compute requirements for smooth analysis performance and running of a regression algorithm:
 
 - **RAM**: 4 GB  
 
@@ -54,7 +64,13 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 3 ▪ Download the Dataset
 1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
+2. Download the dataset by going to the **Datasets** tab of AI Studio, click on **Add Dataset** button and fill in the following:
+   - **Asset/Dataset Name**: tutorial
+   - **Dataset Source**: AWS S3
+   - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
+   - **Resource Type**: Public(No credentials required)
+   - **Bucket Region**: `us-west-2`
+
 
 ### 4 ▪ Clone the Repository
 
@@ -72,7 +88,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 ### 1 ▪ Run the Notebook
 
 
-Execute the run-workflow notebook first inside the `notebooks` folder:
+Execute the run-workflow notebook first inside the `notebooks` folder which will save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder :
 
 ```bash
 notebooks/run-workflow.ipynb
@@ -81,7 +97,7 @@ notebooks/run-workflow.ipynb
 This will:
 
 - Load and prepare the data
-- Analyze the data Univariately and Bivariately
+- Perform univariate and bivariate data analysis
 - Analyze the correlations between the features
 - Decompose Time-Series
 - Perform Exponential Smoothing Prediction Methods
@@ -92,7 +108,7 @@ This will:
 - Analyze Autocorrelation of Residuals
 - Forecast
 - Evaluate the model
-- Save model artifacts as pkl files and training metrics as a json file to the artifacts folder
+- Save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder
 
 
 Execute the register-model notebook second inside the `notebooks` folder:
@@ -106,13 +122,14 @@ This will:
 - Load and prepare the data for viewing
 - Load the saved models as well as the training metrics
 - Integrate MLflow
+- Run a trial inference with logged model
 
 
 ### 2 ▪ Deploy the COVID Movement Patterns with VAR Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
-- Choose a model version and **GPU** it's **not necessary**.
+- Choose a model version. A **GPU** is **not necessary**.
 - Choose the workspace.
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
@@ -168,14 +185,16 @@ And as response:
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
