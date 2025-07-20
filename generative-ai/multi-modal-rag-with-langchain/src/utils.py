@@ -13,6 +13,9 @@ from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
 from langchain.chat_models import ChatOpenAI
 import mlflow
+import math
+import matplotlib.pyplot as plt
+from PIL import Image as PILImage
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
@@ -62,6 +65,59 @@ META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_
 {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 """
 
+def display_images(image_paths: List[str], max_cols: int = 4):
+    """
+    Opens and displays a list of images from their file paths in a grid.
+
+    Args:
+        image_paths: A list of file paths to the images.
+        max_cols: The maximum number of columns in the display grid.
+    """
+    if not image_paths:
+        print("▶ No images to display.")
+        return
+
+    print(f"🖼️ Displaying {len(image_paths)} image(s):")
+    
+    # --- Calculate grid size ---
+    num_images = len(image_paths)
+    cols = min(num_images, max_cols)
+    rows = math.ceil(num_images / cols)
+
+    # --- Create figure and axes ---
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+    
+    # Flatten the axes array for easy iteration, and handle the case of a single image
+    if num_images == 1:
+        axes = [axes]
+    else:
+        axes = axes.flatten()
+
+    # --- Loop through images and display them ---
+    for i, path in enumerate(image_paths):
+        ax = axes[i]
+        try:
+            # Open the image file
+            img = PILImage.open(path)
+            
+            # Display the image on the appropriate subplot
+            ax.imshow(img)
+            ax.set_title(path.split('/')[-1], fontsize=8) # Use filename as title
+            
+        except FileNotFoundError:
+            ax.text(0.5, 0.5, 'Image not found', ha='center', va='center', fontsize=9)
+        except Exception as e:
+            ax.text(0.5, 0.5, 'Error loading image', ha='center', va='center', fontsize=9)
+            print(f"  - Error loading image '{path}': {e}")
+        
+        ax.axis('off') # Hide the x/y axis for a cleaner look
+
+    # --- Hide any unused subplots ---
+    for j in range(num_images, len(axes)):
+        axes[j].axis('off')
+
+    plt.tight_layout()
+    plt.show()
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
     """
