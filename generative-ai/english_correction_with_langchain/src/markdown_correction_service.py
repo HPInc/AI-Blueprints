@@ -7,7 +7,7 @@ from mlflow.types import Schema, ColSpec
 class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
         from src.utils import load_config_and_secrets, initialize_llm
-        from core.prompt_templates import get_markdown_correction_prompt
+        from src.prompt_templates import get_markdown_correction_prompt
 
         config_path = context.artifacts["config"]
         secrets_path = context.artifacts["secrets"]
@@ -54,5 +54,5 @@ class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
                 "pydantic",  # for langchain/transformers
                 "textstat", # for ari_grade_level eval
             ],
-            code_paths=["core", "../src"],
+            code_paths=["../src"],
         )
