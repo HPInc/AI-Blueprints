@@ -85,10 +85,8 @@ st.markdown(
 with st.sidebar:
     st.header("⚙️ Settings")
 
-    api_url = st.text_input(
-        "MLflow endpoint URL (must end with `/invocations`)",
-        value="https://localhost:5000/invocations",
-    )
+    # MLflow API Configuration
+    api_url = "http://localhost:5002/invocations"
 
     st.markdown("---")
     st.subheader("Steps")
@@ -127,10 +125,6 @@ chunk_overlap = cols[2].number_input("Chunk overlap",          0,  800,  400, st
 
 # ───────────────────────────── submission ──────────────────────────────
 if st.button("🚀 Run"):
-    if not api_url.lower().startswith(("http://", "https://")):
-        st.error("Invalid URL – it must start with http:// or https://.")
-        st.stop()
-
     # Use the default prompt only when the field is empty
     generation_prompt_final = generation_prompt.strip() or DEFAULT_SCRIPT_PROMPT
 
