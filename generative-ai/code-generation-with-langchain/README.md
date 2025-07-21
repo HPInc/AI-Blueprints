@@ -29,8 +29,7 @@ This notebook performs automatic code explanation by extracting code snippets fr
 
 ```text
 ├── configs
-│   ├── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-│   └── secrets.yaml                                                    # API keys and secrets
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core                                                                # Core Python modules
 │   ├── dataflow
 │   │   └── dataflow.py
