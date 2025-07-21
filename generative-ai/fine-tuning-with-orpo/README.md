@@ -62,14 +62,6 @@ We incorporate:
 │   ├── target_mapper
 │   │   └── lora_target_mapper.py
 │   └── fine_tuning_service.py                                          # Fine-tuning service implementation
-├── demo
-│   ├── static/                                                         # Static HTML UI files
-│   └── streamlit/                                                      # Streamlit webapp files
-├── docs
-│   ├── sample-html-ss.png                                             # HTML UI screenshot
-│   ├── sample-html-ui.pdf                                             # HTML UI page
-│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
-│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
 ├── notebooks
 │   ├── register-model.ipynb                                           # Model registration notebook
 │   └── fine_tuning_orpo.ipynb                                         # Main notebook for the project

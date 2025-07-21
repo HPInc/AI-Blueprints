@@ -30,24 +30,31 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ```text
 ├── configs
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-├── core                                                                # Core Python modules
-│   ├── dataflow
-│   │   └── dataflow.py
-│   ├── extract_text
-│   │   └── github_repository_extractor.py
-│   ├── generate_metadata
-│   │   └── llm_context_updater.py
-│   ├── vector_database
-│   │   └── vector_store_writer.py
-│   └── code_generation_service.py
-├── demo
-│   ├── static/                                                         # Static HTML UI files
-│   └── streamlit/                                                      # Streamlit webapp files
 ├── docs
 │   ├── sample-html-ss.png                                             # HTML UI screenshot
 │   ├── sample-html-ui.pdf                                             # HTML UI page
 │   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
 │   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
+├── notebooks
+│   ├── core/                                                          # Core modules within notebooks
+│   │   ├── chroma_embedding_adapter.py
+│   │   ├── code_generation_service.py
+│   │   ├── dataflow/
+│   │   ├── extract_text/
+│   │   ├── generate_metadata/
+│   │   ├── prompt_templates.py
+│   │   └── vector_database/
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── run-workflow.ipynb                                             # Main workflow notebook
+├── src
+│   ├── service/
+│   │   ├── __init__.py
+│   │   └── base_service.py
+│   ├── __init__.py
+│   ├── trt_llm_langchain.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
 ├── notebooks
 │   ├── register-model.ipynb                                           # Model registration notebook
 │   └── code-generation-with-langchain.ipynb                           # Main notebook for the project

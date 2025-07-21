@@ -32,24 +32,20 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ├── configs
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core
-│   ├── __init__.py
-│   └── image_generation_service.py                                     # Image generation service implementation
+│   ├── common/                                                         # Common utilities
+│   ├── custom_metrics/                                                 # Custom metrics implementations
+│   ├── deploy/                                                         # Deployment utilities
+│   ├── dreambooth_inference/                                           # DreamBooth inference modules
+│   ├── local_inference/                                                # Local inference implementations
+│   └── train/                                                          # Training modules
 ├── data
 │   ├── inputs/                                                         # Input data directory
 │   └── outputs/                                                        # Generated images directory
-├── demo
-│   ├── static/                                                         # Static HTML UI files
-│   └── streamlit/                                                      # Streamlit webapp files
 ├── docs
-│   ├── sample-html-ss.png                                             # HTML UI screenshot
-│   ├── sample-html-ui.pdf                                             # HTML UI page
-│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
-│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
+│   ├── Diagram dreambooth.png                                          # DreamBooth architecture diagram
+│   └── swagger_UI_image_generation_with_stablediffusion.pdf            # Swagger UI documentation
 ├── notebooks
-│   ├── register-model.ipynb                                           # Model registration notebook
-│   └── image-generation-with-stablediffusion.ipynb                    # Main image generation notebook
-├── output
-│   └── generated_images/                                               # Generated images directory
+│   └── image-generation_with_StableDiffusion.ipynb                     # Main image generation notebook
 ├── src
 │   ├── __init__.py
 │   └── utils.py                                                        # Utility functions for config loading
