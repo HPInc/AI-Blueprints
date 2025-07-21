@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import logging, re, pandas as pd, torch, mlflow, sys
@@ -7,9 +6,10 @@ from typing import Dict, Any, List, Optional, Tuple, Union
 
 # Add project root to path for imports
 project_root = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root))
 
-from utils import get_fine_tuned_models_dir, get_models_dir, get_project_root
+from src.utils import get_fine_tuned_models_dir, get_models_dir, get_project_root
+
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from mlflow.types import Schema, ColSpec
 from mlflow.models import ModelSignature
