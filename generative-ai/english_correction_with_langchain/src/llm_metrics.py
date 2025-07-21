@@ -1,4 +1,3 @@
-import openai
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -38,20 +37,6 @@ class LocalJudgeLlamaClient:
 
 # Preload model
 LocalJudgeLlamaClient.get_client(model_path=LOCAL_LLAMA_JUDGE_PATH)
-
-class OpenAIClient:
-    """Singleton-like class to manage OpenAI client initialization"""
-    _client = None
-    
-    @classmethod
-    def get_client(cls, api_key=None):
-        if cls._client is None:
-            if api_key:
-                cls._client = openai.OpenAI(api_key=api_key)
-            else:
-                cls._client = openai.OpenAI()  # Uses environment variable
-        return cls._client
-
 
 # Simple grammar checking without external dependencies
 def simple_grammar_check(text):
@@ -207,50 +192,6 @@ def readability_improvement_eval_fn(predictions, targets):
     
     return np.mean(improvements)
 
-def llm_judge_eval_fn(predictions):
-    """
-    Use GPT to judge the grammar quality of standalone sentences.
-    Returns a score from 0-10 where 10 is perfect grammar.
-    """
-    import re
-    client = OpenAIClient.get_client()
-    scores = []
-
-    for pred in predictions:
-        prompt = f"""You are an expert evaluator. Rate the text below based solely on its grammatical correctness.
-        Provide a single integer from 1 to 10 (inclusive).
-        Output only the number - no words, labels, punctuation, or explanations.
-        text: {pred}"""
-
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=20,
-                temperature=0
-            )
-
-            score_text = response.choices[0].message.content.strip()
-
-            # Save response
-            try:
-                import os
-                os.makedirs("llm_eval_logs", exist_ok=True)
-                with open("llm_eval_logs/gpt_responses.txt", 'a', encoding='utf-8') as f:
-                    f.write(f"Response: {score_text}\n")
-            except:
-                pass
-
-            match = re.search(r'\b(?:10(?:\.0)?|[0-9](?:\.\d+)?)\b', score_text)
-            score = float(match.group(0)) if match else 5.0
-            scores.append(score)
-
-        except Exception as e:
-            print(f"Error with OpenAI API: {e}")
-            scores.append(5.0)
-
-    return sum(scores) / len(scores) if scores else 0.0
-
 def llm_judge_eval_fn_local(predictions):
     """
     Use a local LLaMA model to rate standalone grammar quality of sentences.
@@ -294,39 +235,6 @@ Answer:"""
             scores.append(5.0)
 
     return sum(scores) / len(scores)
-    
-def generate_gpt_gold_standards(original_texts, api_key=None):
-    """Generate gold standard corrections using GPT"""
-    client = OpenAIClient.get_client(api_key)
-    gold_standards = []
-    
-    for original in original_texts:
-        prompt = f"""Fix only grammatical errors in this text. Preserve all formatting exactly. Do not include any additional notes or comments. 
-
-IMPORTANT: Text contains PLACEHOLDER tokens (like __PLACEHOLDER_1__) that represent protected content. Leave ALL placeholders exactly as they are. They must all be present in the output.
-
-Text to correct:
-{original}
-
-Corrected text:"""
-        
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-                temperature=0.1
-            )
-            
-            corrected = response.choices[0].message.content.strip()
-            gold_standards.append(corrected)
-            
-        except Exception as e:
-            print(f"Error generating gold standard: {e}")
-            gold_standards.append(original)  # Fallback
-    
-    return gold_standards
-
 
 # Create all the metric instances
 semantic_similarity_metric = make_metric(
@@ -363,12 +271,6 @@ readability_improvement_metric = make_metric(
     eval_fn=readability_improvement_eval_fn,
     greater_is_better=True,
     name="readability_improvement"
-)
-
-llm_judge_metric = make_metric(
-    eval_fn=llm_judge_eval_fn,
-    greater_is_better=True,
-    name="llm_judge_score"
 )
 
 llm_judge_metric_local = make_metric(
