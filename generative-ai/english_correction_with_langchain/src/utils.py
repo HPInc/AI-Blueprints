@@ -194,7 +194,7 @@ def initialize_llm(
             n_gpu_layers=-1,
             n_batch=256,
             n_ctx=8192,
-            max_tokens=2048,
+            max_tokens=8192,
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,

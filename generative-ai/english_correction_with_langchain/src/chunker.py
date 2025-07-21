@@ -82,5 +82,49 @@ def chunk_markdown(markdown: str, max_tokens: int = 1000) -> List[str]:
         else:
             final_chunks.extend(chunk_large_section(section, max_tokens=max_tokens))
 
-    return final_chunks
+    # Post-process chunks: split any that exceed 1000 characters
+    def split_long_chunk(chunk: str, max_chars: int = 3500) -> List[str]:
+        if len(chunk) <= max_chars:
+            return [chunk]
 
+        # Try splitting on newlines first
+        parts = re.split(r'(?<=\n)', chunk)
+        subchunks = []
+        buffer = ""
+
+        for part in parts:
+            if len(buffer) + len(part) > max_chars:
+                if buffer:
+                    subchunks.append(buffer.strip())
+                buffer = part
+            else:
+                buffer += part
+
+        if buffer.strip():
+            subchunks.append(buffer.strip())
+
+        # If still too long, split on sentence boundary
+        final_subchunks = []
+        for sub in subchunks:
+            if len(sub) <= max_chars:
+                final_subchunks.append(sub)
+            else:
+                sentences = re.split(r'(?<=[.!?])\s+', sub)
+                sentence_buffer = ""
+                for s in sentences:
+                    if len(sentence_buffer) + len(s) > max_chars:
+                        final_subchunks.append(sentence_buffer.strip())
+                        sentence_buffer = s
+                    else:
+                        sentence_buffer += (" " if sentence_buffer else "") + s
+                if sentence_buffer.strip():
+                    final_subchunks.append(sentence_buffer.strip())
+
+        return final_subchunks
+
+    # Apply the splitting to each chunk
+    adjusted_chunks = []
+    for chunk in final_chunks:
+        adjusted_chunks.extend(split_long_chunk(chunk))
+
+    return adjusted_chunks
