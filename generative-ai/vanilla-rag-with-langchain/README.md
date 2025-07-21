@@ -31,8 +31,7 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 
 ```
 ├── configs
-│   ├── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-│   └── secrets.yaml                                                    # API keys and secrets
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core
 │   └── chatbot_service                                                 # Core Python modules
 │       ├── __init__.py
@@ -138,9 +137,11 @@ This will:
 Choose from multiple UI options:
 
 #### Option A: Static HTML UI
+
 - From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via a static HTML interface.
 
 #### Option B: Streamlit UI
+
 - Navigate to the `demo/streamlit/` folder and follow the instructions in the README to launch the Streamlit webapp.
 - The Streamlit UI provides an interactive and user-friendly interface for the RAG chatbot.
 
