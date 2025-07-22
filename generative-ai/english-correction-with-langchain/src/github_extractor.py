@@ -47,7 +47,6 @@ class GitHubMarkdownProcessor:
         self.repo_name = repo
         self.api_base_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}"
 
-    # Input URL parser to extract owner and repo
     def parse_url(self) -> Tuple[Optional[str], Optional[str], Optional[str]] :
         """
         Parses a GitHub URL and extracts the repository owner and name.
@@ -71,7 +70,6 @@ class GitHubMarkdownProcessor:
         # Return owner and repo
         return path_parts[0], path_parts[1], None
     
-    # Repo access checker
     def check_repo(self) -> str:
         """
         Determines the visibility (public or private) of a GitHub repository.
@@ -111,7 +109,6 @@ class GitHubMarkdownProcessor:
         else:
             return f"Error: {response.status_code}, {response.text}"
         
-    # Repo traverser to extract md files and save repo structure
     def extract_md_files(self) -> Tuple[Optional[Dict], Optional[str]]:
         """
         Traverses a GitHub repository to extract all Markdown (.md) files and organize them in a nested directory structure.
@@ -187,40 +184,7 @@ class GitHubMarkdownProcessor:
             current[parts[-1]] = content 
     
         return dir_structure, None
-
-    # Semantically chunk md file content
-    def chunk_markdown(self, markdown_text: str, max_chunk_tokens: int = 500) -> list:
-        md = MarkdownIt()
-        tokens = md.parse(markdown_text)
     
-        chunks = []
-        current_chunk = []
-        current_token_count = 0
-    
-        for token in tokens:
-            if token.type == "inline":
-                line = token.content
-            elif token.type.endswith("_open") or token.type.endswith("_close"):
-                # Skip structural open/close tokens — they add formatting noise
-                continue
-            else:
-                line = token.content
-    
-            current_chunk.append(line)
-            current_token_count += len(line) // 4 + 1
-    
-            if current_token_count > max_chunk_tokens:
-                chunks.append("\n".join(current_chunk).strip())
-                current_chunk = []
-                current_token_count = 0
-    
-        if current_chunk:
-            chunks.append("\n".join(current_chunk).strip())
-    
-        return chunks
-
-    
-    # Top-level function to encapsulate workflow
     def run(self) -> Dict[str, str]:
         """
         High-level method to:
@@ -243,7 +207,17 @@ class GitHubMarkdownProcessor:
     
         raw_data = {}
     
-        def process_structure(structure, path=""):
+        def process_structure(structure: Dict[str, Union[str, dict]], path: str = "") -> None:
+            """
+            Recursively flattens a nested directory structure of markdown files.
+        
+            Args:
+                structure (Dict[str, Union[str, dict]]): Nested dictionary representing directories and markdown file contents.
+                path (str, optional): Current path used to build the full file path during traversal. Defaults to "".
+        
+            Returns:
+                None: Updates the outer `raw_data` dictionary in-place with path-to-content mappings.
+            """
             for name, content in structure.items():
                 current_path = os.path.join(path, name)
                 if isinstance(content, dict):

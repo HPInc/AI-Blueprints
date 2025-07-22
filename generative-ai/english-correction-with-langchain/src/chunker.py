@@ -2,11 +2,31 @@ import re
 from typing import List
 
 def estimate_token_count(text: str) -> int:
-    return len(text) // 4  # Approximation: 4 characters per token
+    '''
+    Estimate the number of tokens in a given string.
+
+    Args:
+        text (str): Input text.
+
+    Returns:
+        int: Approximate number of tokens, assuming 4 characters per token
+    '''
+    return len(text) // 4 
 
 def split_by_top_level_headers(markdown: str) -> List[str]:
+    """
+    Split markdown into sections using top-level headers (e.g., #, ##, ..., ######).
+
+    Args:
+        markdown (str): The input markdown text.
+
+    Returns:
+        List[str]: A list of sections split by top-level headers.
+    """
+    # Find all headers from # to ###### at the beginning of a line
     matches = list(re.finditer(r'^\s*#{1,6}\s.*', markdown, flags=re.MULTILINE))
     if not matches:
+        # No headers found, return whole content
         return [markdown]
 
     sections = []
@@ -20,12 +40,18 @@ def split_by_top_level_headers(markdown: str) -> List[str]:
 def smart_sentence_split(text: str) -> List[str]:
     """
     Split text at sentence boundaries or placeholder boundaries.
-    This avoids variable-width lookbehind issues in Python.
+
+    Args: 
+        text (str): The input text.
+
+    Returns:
+        List[str]: A list of sentence-level parts, preserving placeholder boundaries.
     """
+    # Pattern to capture sentence boundaries and placeholder boundaries
     pattern = r'([.!?]\s+(?=[A-Z]))|(__PLACEHOLDER\d+__)'
     matches = re.split(pattern, text)
 
-    # Reconstruct full sentences while preserving split points
+    # Reconstruct complete sentence or placeholder segments
     parts = []
     buffer = ''
     for chunk in matches:
@@ -43,11 +69,19 @@ def smart_sentence_split(text: str) -> List[str]:
 def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
     """
     Chunk a section while avoiding breaks mid-sentence or mid-placeholder.
+
+    Args:
+        section (str): A section of text to be chunked.
+        max_tokens (int): Maximum token count per chunk.
+
+    Returns:
+        List[str]: A list of token-limited chunks.
     """
     chunks = []
     current_chunk = []
     current_token_count = 0
 
+    # Split section into sentence-safe pieces
     parts = smart_sentence_split(section)
 
     for part in parts:
@@ -57,7 +91,7 @@ def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
 
         part_token_count = estimate_token_count(part)
 
-        # If adding this part would exceed max tokens, finalize current chunk
+        # Finalize current chunk if adding this part would exceed max tokens
         if current_token_count + part_token_count > max_tokens:
             if current_chunk:
                 chunks.append(' '.join(current_chunk).strip())
@@ -73,17 +107,39 @@ def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
     return chunks
 
 def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
+    '''
+    Chunk a full markdown document into smaller parts based on headers and token limits.
+
+    Args:
+        markdown (str): The complete markdown content.
+        max_tokens (int): Maximum allowed tokens per chunk.
+
+    Returns:
+        List[str]: A list of markdown chunks that are token-limited and structured.
+    '''
+    # Split by top level headers
     sections = split_by_top_level_headers(markdown)
     final_chunks = []
 
     for section in sections:
+        # If the section is small enough, keep it as is
         if estimate_token_count(section) <= max_tokens:
             final_chunks.append(section.strip())
         else:
+            # Otherwise, chunk it further based on sentence boundaries
             final_chunks.extend(chunk_large_section(section, max_tokens=max_tokens))
 
-    # Post-process chunks: split any that exceed 1000 characters
     def split_long_chunk(chunk: str, max_chars: int = 3500) -> List[str]:
+        """
+        Split a long chunk into smaller character-limited subchunks, preferring newline or sentence boundaries.
+
+        Args:
+            chunk (str): A markdown chunk that may be too long.
+            max_chars (int): Maximum number of characters per subchunk.
+
+        Returns:
+            List[str]: Subchunks of the input chunk that fit the character limit.
+        """
         if len(chunk) <= max_chars:
             return [chunk]
 
@@ -103,7 +159,7 @@ def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
         if buffer.strip():
             subchunks.append(buffer.strip())
 
-        # If still too long, split on sentence boundary
+        # If subchunks are still too long, split on sentence boundary
         final_subchunks = []
         for sub in subchunks:
             if len(sub) <= max_chars:
@@ -122,7 +178,7 @@ def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
 
         return final_subchunks
 
-    # Apply the splitting to each chunk
+    # Apply post-splitting to each chunk to enforce character limits
     adjusted_chunks = []
     for chunk in final_chunks:
         adjusted_chunks.extend(split_long_chunk(chunk))

@@ -1,48 +1,62 @@
+import os
+import re
 import numpy as np
+from typing import List, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import re
 from mlflow.metrics import make_metric
-import os
+from llama_cpp import Llama
 
-# Initialize tools (do this once at startup)
+# Initialize TF-IDF vertorizer for semantic similarity
 tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
 
-# Constants
-LOCAL_LLAMA_JUDGE_PATH = "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf" #"/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-
-from llama_cpp import Llama
+# Path to local judge model
+LOCAL_LLAMA_JUDGE_PATH = "/home/jovyan/datafabric/llama2-7b/ggml-model-f16-Q5_K_M.gguf" 
 
 class LocalJudgeLlamaClient:
     """Singleton wrapper for local judge-specific LLaMA."""
     _client = None
 
     @classmethod
-    def get_client(cls, model_path=None):
+    def get_client(cls, model_path: Optional[str] = None) -> Llama:
+        """
+        Get or initialize the singleton LLaMA client.
+
+        Args:
+            model_path (Optional[str]): Path to the local gguf LLaMA model.
+
+        Returns:
+            Llama: Loaded LLaMA instance.
+        """
         if cls._client is None:
             if model_path is None:
                 raise ValueError("Must provide model_path to initialize local LLaMA judge.")
 
             cls._client = Llama(
                 model_path=model_path,
-                n_ctx=512,           # smaller context window for short prompts
+                n_ctx=512,           
                 n_gpu_layers=-1,
                 n_batch=8,
                 f16_kv=True,
-                temperature=0.0,     # deterministic outputs for judging
+                temperature=0.0,     
                 max_tokens=32,
                 stop=["\n"]
             )
         return cls._client
 
-# Preload model
+# Preload model at module load
 LocalJudgeLlamaClient.get_client(model_path=LOCAL_LLAMA_JUDGE_PATH)
 
-# Simple grammar checking without external dependencies
-def simple_grammar_check(text):
+def simple_grammar_check(text: str) -> int:
     """
-    Basic grammar checks without external libraries.
-    Returns a count of potential issues.
+    Basic grammar checking without external libraries.
+    Detects repeated words, double spaces, and capitalization issues.
+
+    Args:
+        text (str): Input sentence to analyze.
+
+    Returns:
+        int: Count of potential grammar issues.
     """
     issues = 0
     text = str(text).strip()
@@ -69,7 +83,7 @@ def simple_grammar_check(text):
             # Basic subject-verb agreement checks
             if word == 'i' and i < len(words) - 1:
                 if words[i + 1] in ['are', 'were']:
-                    issues += 1  # "I are" or "I were"
+                    issues += 1  
                     
             # Check for repeated words
             if i > 0 and word == words[i-1]:
@@ -77,11 +91,16 @@ def simple_grammar_check(text):
                 
     return issues
 
-def semantic_similarity_eval_fn(predictions, targets):
+def semantic_similarity_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
-    Calculate semantic similarity between input (targets) and output (predictions).
-    Uses TF-IDF vectors instead of transformer models for compatibility.
-    Higher score means meaning is better preserved.
+    Compute semantic similarity between predictions and targets using TF-IDF and cosine similarity.
+
+    Args:
+        predictions (List[str]): Model-generated texts.
+        targets (List[str]): Ground truth references.
+
+    Returns:
+        float: Mean cosine similarity between matched pairs.
     """
     # Combine all texts to fit the vectorizer
     all_texts = list(targets) + list(predictions)
@@ -110,8 +129,14 @@ def semantic_similarity_eval_fn(predictions, targets):
 
 def grammar_error_count_eval_fn(predictions, targets):
     """
-    Count grammar errors in the output text using simple grammar checking.
-    Lower is better (fewer errors).
+    Count grammar issues in the predictions.
+
+    Args:
+        predictions (List[str]): Model outputs.
+        targets (List[str]): Reference texts (unused here).
+
+    Returns:
+        float: Average number of issues per prediction.
     """
     error_counts = []
     for pred in predictions:
@@ -120,10 +145,16 @@ def grammar_error_count_eval_fn(predictions, targets):
     
     return np.mean(error_counts)
 
-def grammar_error_rate_eval_fn(predictions, targets):
+def grammar_error_rate_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
-    Calculate grammar error rate (errors per word) in output text.
-    Lower is better.
+    Calculate grammar error rate (issues per word) for predictions.
+
+    Args:
+        predictions (List[str]): Model outputs.
+        targets (List[str]): Reference texts (unused here).
+
+    Returns:
+        float: Mean error rate.
     """
     error_rates = []
     for pred in predictions:
@@ -134,24 +165,36 @@ def grammar_error_rate_eval_fn(predictions, targets):
     
     return np.mean(error_rates)
 
-def grammar_improvement_eval_fn(predictions, targets):
+def grammar_improvement_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
-    Calculate improvement in grammar errors from input to output.
-    Positive values mean improvement (fewer errors in output).
+    Measure improvement in grammar (fewer errors) from targets to predictions.
+
+    Args:
+        predictions (List[str]): Corrected text.
+        targets (List[str]): Original input text.
+
+    Returns:
+        float: Mean improvement (positive = fewer errors in prediction).
     """
     improvements = []
     for pred, target in zip(predictions, targets):
         input_errors = simple_grammar_check(str(target))
         output_errors = simple_grammar_check(str(pred))
-        improvement = input_errors - output_errors  # Positive = improvement
+        improvement = input_errors - output_errors  
         improvements.append(improvement)
     
     return np.mean(improvements)
 
-def grammar_score_eval_fn(predictions, targets):
+def grammar_score_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
-    Calculate a grammar score (0-100) where 100 is perfect grammar.
-    Higher is better.
+    Assign grammar score from 0–100 based on number of issues.
+
+    Args:
+        predictions (List[str]): Model outputs.
+        targets (List[str]): Reference texts (unused here).
+
+    Returns:
+        float: Mean score where 100 = perfect grammar.
     """
     scores = []
     for pred in predictions:
@@ -161,18 +204,35 @@ def grammar_score_eval_fn(predictions, targets):
             scores.append(0)
         else:
             # Simple scoring: start at 100, subtract points for errors
-            error_penalty = min(error_count * 10, 100)  # Max penalty is 100
+            error_penalty = min(error_count * 10, 100)  
             score = max(100 - error_penalty, 0)
             scores.append(score)
     
     return np.mean(scores)
 
-def readability_improvement_eval_fn(predictions, targets):
+def readability_improvement_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
-    Calculate improvement in readability from input to output.
-    Uses sentence length and word complexity as proxies.
+    Estimate improvement in readability using sentence length as proxy.
+
+    Args:
+        predictions (List[str]): Corrected output.
+        targets (List[str]): Original input.
+
+    Returns:
+        float: Average improvement in readability score.
     """
-    def calculate_readability_score(text):
+    def calculate_readability_score(text: str) -> float:
+        """
+        Estimate a basic readability score for a given text.
+    
+        Uses average sentence length as a simple heuristic. Shorter sentences are considered more readable.
+    
+        Args:
+            text (str): The input text to evaluate.
+    
+        Returns:
+            float: Readability score where higher is better.
+        """
         sentences = text.split('.')
         words = text.split()
         if len(sentences) == 0 or len(words) == 0:
@@ -180,7 +240,7 @@ def readability_improvement_eval_fn(predictions, targets):
         
         avg_sentence_length = len(words) / len(sentences)
         # Simple readability: prefer shorter sentences and common words
-        readability = max(20 - avg_sentence_length, 0)  # Penalize long sentences
+        readability = max(20 - avg_sentence_length, 0)  
         return readability
     
     improvements = []
@@ -192,12 +252,16 @@ def readability_improvement_eval_fn(predictions, targets):
     
     return np.mean(improvements)
 
-def llm_judge_eval_fn_local(predictions):
+def llm_judge_eval_fn_local(predictions: List[str]) -> float:
     """
-    Use a local LLaMA model to rate standalone grammar quality of sentences.
-    Returns a score from 0–10.
+    Use a local LLaMA model to rate grammar of predictions from 1 to 10.
+
+    Args:
+        predictions (List[str]): Model outputs.
+
+    Returns:
+        float: Average LLaMA-generated grammar rating.
     """
-    import re
     llama = LocalJudgeLlamaClient.get_client()
     scores = []
 
@@ -236,7 +300,8 @@ Answer:"""
 
     return sum(scores) / len(scores)
 
-# Create all the metric instances
+# ---- Create all the metric wrappers for MLflow ----
+    
 semantic_similarity_metric = make_metric(
     eval_fn=semantic_similarity_eval_fn,
     greater_is_better=True,
