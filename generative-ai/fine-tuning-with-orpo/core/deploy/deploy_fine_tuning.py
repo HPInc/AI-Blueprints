@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional, Tuple, Union
 
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from src.utils import get_project_root, get_config_dir, get_output_dir
+from src.utils import get_fine_tuned_models_dir, get_models_dir, get_project_root
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from mlflow.types import Schema, ColSpec
