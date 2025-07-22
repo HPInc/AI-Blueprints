@@ -72,7 +72,7 @@ def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
 
     return chunks
 
-def chunk_markdown(markdown: str, max_tokens: int = 1000) -> List[str]:
+def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
     sections = split_by_top_level_headers(markdown)
     final_chunks = []
 
