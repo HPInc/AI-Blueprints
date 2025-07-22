@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import logging, re, pandas as pd, torch, mlflow, sys
+import logging, re, pandas as pd, torch, mlflow, sys, os
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple, Union
 
 # Add project root to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.utils import get_fine_tuned_models_dir, get_models_dir, get_project_root
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -185,7 +185,9 @@ def register_llm_comparison_model(
     logging.info(f"Resolved fine-tuned model path: {resolved_ft_path}")
     
     core = Path(__file__).resolve().parent.parent
+    src = core.parent / "src"
     (core / "__init__.py").touch(exist_ok=True)
+    (src / "__init__.py").touch(exist_ok=True)
 
     mlflow.set_experiment(experiment)
     with mlflow.start_run(run_name=run_name) as run:
@@ -209,7 +211,7 @@ def register_llm_comparison_model(
                 "config": str(Path(config_path).resolve()),
             },
             signature=signature,
-            code_paths=[str(core)],
+            code_paths=[str(core), str(src)],
             pip_requirements=[
                 "torch",
                 "transformers==4.51.3",
