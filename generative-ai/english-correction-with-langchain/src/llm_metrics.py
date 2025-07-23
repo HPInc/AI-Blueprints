@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from mlflow.metrics import make_metric
 from llama_cpp import Llama
+import multiprocessing
 
 # Initialize TF-IDF vertorizer for semantic similarity
 tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
@@ -34,13 +35,21 @@ class LocalJudgeLlamaClient:
 
             cls._client = Llama(
                 model_path=model_path,
-                n_ctx=512,           
-                n_gpu_layers=-1,
-                n_batch=8,
+                n_gpu_layers=-1,                             
+                n_batch=512,                                 
+                n_ctx=32000,
+                max_tokens=1024,
                 f16_kv=True,
-                temperature=0.0,     
-                max_tokens=32,
-                stop=["\n"]
+                use_mmap=False,                             
+                low_vram=False,                            
+                rope_scaling=None,
+                temperature=0.0,
+                repeat_penalty=1.0,
+                streaming=False,
+                stop=None,
+                seed=42,
+                num_threads=multiprocessing.cpu_count(),
+                verbose=False
             )
         return cls._client
 

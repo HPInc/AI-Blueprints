@@ -1,6 +1,7 @@
 import os
 import yaml
 import importlib.util
+import multiprocessing
 from typing import Dict, Any, Optional, Union, List, Tuple
 
 #Default models to be loaded in our examples:
@@ -191,16 +192,21 @@ def initialize_llm(
 
         model = LlamaCpp(
             model_path=local_model_path,
-            n_gpu_layers=-1,
-            n_batch=256,
-            n_ctx=8192,
-            max_tokens=8192,
+            n_gpu_layers=-1,                             
+            n_batch=512,                                 
+            n_ctx=32000,
+            max_tokens=1024,
             f16_kv=True,
-            callback_manager=callback_manager,
-            verbose=False,
-            stop=["<|eot_id|>"], #
+            use_mmap=False,                             
+            low_vram=False,                            
+            rope_scaling=None,
+            temperature=0.0,
+            repeat_penalty=1.0,
             streaming=False,
-            temperature=0.0, #
+            stop=None,
+            seed=42,
+            num_threads=multiprocessing.cpu_count(),
+            verbose=False #
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
