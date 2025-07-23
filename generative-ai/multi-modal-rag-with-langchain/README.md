@@ -121,7 +121,12 @@ For optimal performance, especially when working with larger models or datasets,
 
 - Edit `config.yaml` with relevant configuration details.
 
-- Navigate to Project Setup -> Configure Secrets
+- Secrets Configuration:
+  - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
+  - Add the following secrets:
+    - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
+      - **Wiki (Read)**: To read wiki content.
+      - **Code (Read)**: To read code content.
 ---
 
 ## Usage
