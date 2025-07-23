@@ -272,19 +272,27 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         *,
         artifact_path: str = "script_generation_model",
         llm_artifact: str = "models/",
-        config_yaml: str = "configs/config.yaml",
-        secrets_yaml: str = "configs/secrets.yaml",
+        config_path: str = "configs/config.yaml",
+        secrets_path: str = "configs/secrets.yaml",
+        demo_folder: str = None,
 
     ):
         core, src = _add_project_to_syspath()
+        
+        artifacts = {
+            "config": str(Path(config_path).resolve()),
+            "secrets": str(Path(secrets_path).resolve()),
+            "llm": llm_artifact,
+        }
+        
+        # Add demo folder to artifacts if provided
+        if demo_folder:
+            artifacts["demo"] = str(Path(demo_folder).resolve())
+        
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,
             python_model=cls(),
-            artifacts={
-                "config": str(Path(config_yaml).resolve()),
-                "secrets": str(Path(secrets_yaml).resolve()),
-                "llm": llm_artifact,
-            },
+            artifacts=artifacts,
             signature=ModelSignature(
                 inputs=Schema(
                     [

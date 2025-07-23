@@ -30,6 +30,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ## Project Structure
 
 ```
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core
 │   └── chatbot_service                                                 # Core Python modules
 │       ├── __init__.py
@@ -37,10 +39,8 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ├── data                                                                # Data assets
 │   └── AIStudioDoc.pdf                                                 # AIStudio documentation
 ├── demo                                                                # UI-related files
-│   ├── assets
-│   ├── index.html
-│   ├── source
-│   └── streamlit-webapp
+│   ├── static/                                                         # Static HTML UI files
+│   └── streamlit/                                                      # Streamlit webapp files
 ├── docs
 │   ├── html_ui_for_vanilla_rag.png                                     # HTML UI Screenshot
 │   ├── streamlit_ui_for_vanilla_rag.png.png                            # Streamlit UI Screenshot
@@ -48,6 +48,10 @@ This project is an AI-powered vanilla **RAG (Retrieval-Augmented Generation)** c
 ├── notebooks
 │   ├── register-model.ipynb                                             # Model registration notebook
 │   └── run-workflow.ipynb                                               # Main workflow notebook
+├── src
+│   ├── __init__.py
+│   ├── prompt_templates.py                                             # Custom prompt templates
+│   └── utils.py                                                        # Utility functions
 ├── README.md                                                           # Project documentation
 └── requirements.txt                                                    # Python dependencies
 ```
@@ -95,7 +99,12 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - Add your API keys to the `secrets.yaml` file located in the `configs` folder:
   - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
-- Edit `config.yaml` with relevant configuration details.
+- Edit `config.yaml` with relevant configuration details:
+  - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
+  - `ui.mode`: Set UI mode to `streamlit` or `static`
+  - `ports`: Configure external and internal port mappings
+  - `service`: Adjust MLflow timeout and health check settings
+  - `proxy`: Set proxy settings if needed for restricted networks
 
 ---
 
@@ -121,7 +130,22 @@ This will:
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
-- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via UI.
+- The service will automatically use the configuration logged as an artifact during model registration.
+
+### Step 3: Access the User Interface
+
+Choose from multiple UI options:
+
+#### Option A: Static HTML UI
+
+- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via a static HTML interface.
+
+#### Option B: Streamlit UI
+
+- Navigate to the `demo/streamlit/` folder and follow the instructions in the README to launch the Streamlit webapp.
+- The Streamlit UI provides an interactive and user-friendly interface for the RAG chatbot.
+
+The UI mode is configured in `config.yaml` under `ui.mode` and can be set to `streamlit` or `static`.
 
 ### Successful Demonstration of the User Interface
 

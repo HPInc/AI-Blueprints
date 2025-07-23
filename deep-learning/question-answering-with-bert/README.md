@@ -53,8 +53,8 @@
 
 Ensure your environment meets the minimum compute requirements for smooth performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 64 GB  
+- **VRAM**: 16 GB  
 - **GPU**: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
