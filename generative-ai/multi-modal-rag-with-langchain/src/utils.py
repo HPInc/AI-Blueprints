@@ -65,6 +65,41 @@ META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_
 {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 """
 
+def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+    """
+    Configure HuggingFace cache directories to persist models locally.
+
+    Args:
+        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+    """
+    os.environ["HF_HOME"] = cache_dir
+    os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
+
+
+def load_config(
+    config_path: str = "../../configs/config.yaml",
+) -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
+
+    Args:
+        config_path: Path to the configuration YAML file.
+    Returns:
+        Config as dictionary.
+    Raises:
+        FileNotFoundError: If the config file is not found.
+    """
+    # Convert to absolute paths if needed
+    config_path = os.path.abspath(config_path)
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+
+    with open(config_path) as file:
+        config = yaml.safe_load(file)
+        
+    return config
+
 def display_images(image_paths: List[str], max_cols: int = 4):
     """
     Opens and displays a list of images from their file paths in a grid.
@@ -119,45 +154,29 @@ def display_images(image_paths: List[str], max_cols: int = 4):
     plt.tight_layout()
     plt.show()
 
-def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+def mlflow_evaluate_setup(
+    secrets: dict,
+    mlflow_tracking_uri: str = "/phoenix/mlflow"
+) -> None:
     """
-    Configure HuggingFace cache directories to persist models locally.
-
+    Prepare the environment for MLflow LLM-judge evaluation in MLflow 2.21.2.
     Args:
-        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+        secrets (dict): Dictionary loaded from your secrets.yaml.
+        mlflow_tracking_uri (str, optional): If provided, sets MLflow's tracking URI.
     """
-    os.environ["HF_HOME"] = cache_dir
-    os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
+    # Set MLflow tracking URI
+    if mlflow_tracking_uri:
+        mlflow.set_tracking_uri(mlflow_tracking_uri)
+    else:
+        raise ValueError("❌ Tracking URI is missing")
+
+    # Informational log
+    print(f"✅ Environment ready for MLflow evaluation.")
 
 
-def load_config(
-    config_path: str = "../../configs/config.yaml",
-) -> Dict[str, Any]:
-    """
-    Load configuration and secrets from YAML files.
-
-    Args:
-        config_path: Path to the configuration YAML file.
-        secrets_path: Path to the secrets YAML file.
-
-    Returns:
-        Tuple containing (config, secrets) as dictionaries.
-
-    Raises:
-        FileNotFoundError: If either the config or secrets file is not found.
-    """
-    # Convert to absolute paths if needed
-    config_path = os.path.abspath(config_path)
-
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
-
-    with open(config_path) as file:
-        config = yaml.safe_load(file)
-        
-    return config
-
-
+# =========================================UNUSED FUNCTIONS=========================================
+# These functions are not currently used in the main codebase but are kept for potential future use.
+# ==================================================================================================
 def configure_proxy(config: Dict[str, Any]) -> None:
     """
     Configure proxy settings based on provided configuration.
@@ -313,25 +332,6 @@ def initialize_llm(
         model.__dict__['_context_window'] = context_window
 
     return model
-
-def mlflow_evaluate_setup(
-    secrets: dict,
-    mlflow_tracking_uri: str = "/phoenix/mlflow"
-) -> None:
-    """
-    Prepare the environment for MLflow LLM-judge evaluation in MLflow 2.21.2.
-    Args:
-        secrets (dict): Dictionary loaded from your secrets.yaml.
-        mlflow_tracking_uri (str, optional): If provided, sets MLflow's tracking URI.
-    """
-    # Set MLflow tracking URI
-    if mlflow_tracking_uri:
-        mlflow.set_tracking_uri(mlflow_tracking_uri)
-    else:
-        raise ValueError("❌ Tracking URI is missing")
-
-    # Informational log
-    print(f"✅ Environment ready for MLflow evaluation.")
 
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """

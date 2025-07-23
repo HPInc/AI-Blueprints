@@ -92,6 +92,10 @@ For optimal performance, especially when working with larger models or datasets,
 
 2. Navigate to `generative-ai/multimodal-rag-with-langchain-mlflow` to ensure all files are cloned correctly after workspace creation.
 
+3. Configure the `requirements.txt` torch packages to your corresponding cuda version
+  - Verify cuda version by pasting `nvidia-smi` in your terminal
+  - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
+
 ### Step 4: Add the Model to the Workspace
 
 - Download the **InternVL3-8B-Instruct** model from AWS S3 using the Models tab in your AI Studio project:
@@ -113,10 +117,11 @@ For optimal performance, especially when working with larger models or datasets,
   - **Model Path**: `C:\path_to_your_model\InternVL3-8B-Instruct`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
-### Step 5: Configure Paths and Config
+### Step 5: Configure Configs and Secrets Manager
 
-- Edit `config.yaml` with relevant configuration details. (Currently no config required)
+- Edit `config.yaml` with relevant configuration details.
 
+- Navigate to Project Setup -> Configure Secrets
 ---
 
 ## Usage
