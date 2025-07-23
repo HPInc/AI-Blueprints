@@ -1,41 +1,33 @@
-<h1 style="text-align: center; font-size: 40px;"> Data Science and Machine Learning for Z by HP AI Studio </h1>
+<h1 style="text-align: center; font-size: 40px;"> Data Science for HP AI Studio </h1>
 
-The sample projects in this folder demonstrate how to perform **Data Science and Machine Learning projects**
+The blueprint projects in this folder demonstrate how to create **Data Science projects** using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **five distinct sample projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **two blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
-# 😷 COVID movement patterns with VAR
+# 🌷 Classification with Support Vector Machine (SVM) and Linear Discriminant Analysis (LDA)
 
-This project shows a visual data analysis of the effects of COVID-19 and how the population responded to the disease in two different cities: New York and London. It uses fundamental statistical operations for better analysis.
+This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
 
-# 🌷 Iris flowers classification with SVM
+It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
-This Project shows a famous machine learning classification problem using Iris Flower Dataset. The goal of the iris flower classification is to predict flowers based on their specific features. It uses fundamental predictive **machine learning models** such as Logistic Regression for classification.
+# 😷 Data Analysis with Vector Auto Regression (VAR)
 
+This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
 
-# 🎥 Recommender Systems with Tensorflow
-
-The Recommender Systems is an AI-powered system designed to provide personalized movie recommendations using **Memory-Based Collaborative Filtering**.
-
-
-# 🚫 Spam Detection with NLP
-
-Spam Detection and NLP shows how computer systems can analyze and interpret texts, more specifically spam, using the **Natural Language Processing (NLP)**. 
-
-# ✍️ Handwritten digit classification with keras
-
-This Projects shows how to do a simple image classification using **TensorFlow** and MNIST(Modified National Institute of Standards and Technology) database of handwritten digits. The goal is to construct and train an artificial neural network and successfully identify handwritten digits.
+It highlights how city-level movement patterns changed during the crisis. The experiment runs on the **Data Science Workspace**.
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).

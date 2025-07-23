@@ -14,7 +14,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -35,13 +36,14 @@ We incorporate:
 
 ## Project Structure
 
-```
-├── config                                         # Configuration files
+```text
+├── config                                                              # Configuration files
 │   ├── default_config_cpu.yaml
 │   ├── default_config_multi-gpu.yaml
 │   └── default_config_one-gpu.yaml
-│
-├── core                                           # Core Python modules
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
+├── core                                                                # Core Python modules
 │   ├── comparer
 │   │   └── model_comparer.py
 │   ├── data_visualizer
@@ -59,13 +61,33 @@ We incorporate:
 │   │   └── model_selection.py
 │   ├── target_mapper
 │   │   └── lora_target_mapper.py
-│
+│   └── fine_tuning_service.py                                          # Fine-tuning service implementation
 ├── notebooks
-│   └── fine_tuning_orpo.ipynb                   # Main notebook for the project
-│
-├── README.md                                    # Project documentation
-└── requirements.txt                             # Required dependencies
+│   ├── register-model.ipynb                                           # Model registration and deployment notebook
+│   └── run-workflow.ipynb                                             # Main workflow notebook for ORPO fine-tuning
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
+```
 
+---
+
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
 ```
 
 ---
@@ -120,29 +142,50 @@ git clone https://github.com/HPInc/AI-Blueprints.git
 
 ## Usage
 
-### Step 1: Run the Notebook
+### Step 1: Run the Main Workflow
 
-Execute the notebook inside the `notebooks` folder:
+Execute the main workflow notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/fine_tuning_orpo.ipynb
+notebooks/run-workflow.ipynb
 ```
 
-This will:
+This notebook will:
 
 - Select and download a compatible model from Hugging Face
 - Apply QLoRA configuration and prepare the model for training
-- Run the fine-tuning using ORPO
+- Run the fine-tuning using ORPO (Optimal Reward Preferring Optimization)
 - Perform evaluation and comparison between the base and fine-tuned models
-- Register and serve both base and fine-tuned models via MLflow
+- Generate comparative analysis and metrics
 
-### Step 2: Deploy the Chatbot Service
+### Step 2: Register the Models for Deployment
+
+Execute the model registration notebook:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This notebook will:
+
+- Register both base and fine-tuned models in MLflow Model Registry
+- Create a comparison service that can switch between base and fine-tuned models
+- Provide deployment-ready model artifacts with proper versioning
+- Include usage examples and API documentation
+
+### Step 3: Deploy the Model Service
 
 - Go to **Deployments > New Service** in AI Studio.
-- Name the service and select the registered model.
+- Name the service and select the registered model from MLflow.
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
+
+The deployed service will allow you to:
+
+- Send prompts to either the base or fine-tuned model
+- Compare outputs between both models
+- Use the same API endpoint for both model variants
 
 ---
 
