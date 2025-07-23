@@ -127,23 +127,26 @@ For optimal performance, especially when working with larger models or datasets,
     - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
       - **Wiki (Read)**: To read wiki content.
       - **Code (Read)**: To read code content.
+      - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
 ---
 
 ## Usage
 
-### Step 1: Run the Multimodal RAG Workflow
+### Step 1: First Run the Multimodal RAG Workflow
 
 Execute the following notebook inside the `notebooks/` folder to see the Multimodal RAG workflow in action:
 
 - **`run-workflow.ipynb`**
 
-### Step 2: Register the Multimodal RAG Model in MLflow
+### Step 2: Second Register the Multimodal RAG Model in MLflow
 
 Run the following notebook in the `notebooks/` folder to register the Multimodal RAG model in MLflow:
 
 - **`register-model.ipynb`**
 
-### Step 3: Deploy the Multimodal RAG Service Locally
+_Note: This step requires the `run-workflow.ipynb` file to be ran first at least once._
+
+### Step 3: Third Deploy the Multimodal RAG Service Locally
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -167,6 +170,7 @@ Run the following notebook in the `notebooks/` folder to register the Multimodal
   "params": {}
 }
 ```
+You can make a inference query in the Swagger UI by altering the string field to your question.
 
 ### Successful Demonstration of the User Interface
 
