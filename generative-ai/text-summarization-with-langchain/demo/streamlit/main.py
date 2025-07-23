@@ -14,17 +14,11 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────
-# 1 ▸ Sidebar – server settings & runtime params
+# 1 ▸ Sidebar – runtime params
 # ─────────────────────────────────────────────────────────────
-st.sidebar.header("⚙️ Model API Settings")
+# MLflow API Configuration
+api_url = "http://localhost:5002/invocations"
 
-api_url = st.sidebar.text_input(
-    "MLflow /invocations URL",
-    value="https://localhost:5000/invocations",
-    help="Endpoint where the MLflow model is served for text summarization."
-)
-
-st.sidebar.markdown("---")
 st.sidebar.header("📋 Display Options")
 
 show_original_text = st.sidebar.checkbox(

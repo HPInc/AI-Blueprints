@@ -792,7 +792,7 @@ Question: {question}
             return pd.DataFrame([{"result": f"# Error during processing\n# {error_message}\n\n# Falling back to basic response\n\n# Your question was: {question}\n\n# Please try again with metadata_only=True or a smaller repository"}])
     
     @classmethod
-    def log_model(cls, secrets_path, config_path, model_path=None, embedding_model_path=None, delay_async_init=True):
+    def log_model(cls, secrets_path, config_path, model_path=None, embedding_model_path=None, delay_async_init=True, demo_folder=None):
         """
         Log the model to MLflow.
         
@@ -804,6 +804,7 @@ Question: {question}
                                  If provided, will be used instead of downloading the model
             delay_async_init: If True, delay thread-based component initialization during serialization (default: True)
                              to prevent MLflow serialization errors with thread locks
+            demo_folder: Path to the demo folder (optional)
             
         Returns:
             None
@@ -835,6 +836,10 @@ Question: {question}
         
         if model_path:
             artifacts["models"] = model_path
+            
+        # Add demo folder to artifacts if provided
+        if demo_folder:
+            artifacts["demo"] = demo_folder
             
         # Add embedding model path to artifacts if provided and exists
         # This will allow us to use a locally saved model instead of downloading it during initialization

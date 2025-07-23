@@ -14,7 +14,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -28,18 +29,49 @@ This project demonstrates how to build a semantic chunking and summarization pip
 
 ## Project Structure
 
-```
-├── README.md                                                               # Project documentation
-├── core                                                                    # Core Python modules
-│   └── service
-│       ├── __init__.py
-│       └── text_summarization_service.py                                   # Code for chatbot service
-├── data                                                                    # Data assets used in the project
-│   ├── I_have_a_dream.txt
-│   └── I_have_a_dream.vtt
+```text
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
+├── core
+│   ├── __init__.py
+│   └── text_summarization_service.py                                   # Text summarization service implementation
+├── data
+│   ├── inputs/                                                         # Input data directory
+│   └── outputs/                                                        # Generated summaries directory
+├── demo
+│   ├── static/                                                         # Static HTML UI files
+│   └── streamlit/                                                      # Streamlit webapp files
+├── docs
+│   ├── sample-html-ss.png                                             # HTML UI screenshot
+│   ├── sample-html-ui.pdf                                             # HTML UI page
+│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
+│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
 ├── notebooks
-│   └── text-summarization-with-langchain.ipynb                           # Main notebook for the project
-└── requirements.txt                                                        # Python dependencies
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── text-summarization-with-langchain.ipynb                        # Main text summarization notebook
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
 ```
 
 ---
