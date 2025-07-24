@@ -81,15 +81,11 @@ st.markdown("<h4 style='text-align: center; color: #555;'> Have a movie recommen
 
 
 # ─────────────────────────────────────────────────────────────
-# 1 ▸ Server Settings
+# 1 ▸ MLflow API Configuration
 # ─────────────────────────────────────────────────────────────
-st.sidebar.header("⚙️ Model API Settings")
-
-api_url = st.sidebar.text_input(
-    "MLflow /invocations URL",
-    value="https://localhost:5000/invocations",
-    help="Endpoint where the MLflow model is served."
-)
+# Standardized MLflow endpoint for containerized deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+api_url = MLFLOW_ENDPOINT
 
     
 # ─────────────────────────────────────────────────────────────
