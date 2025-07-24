@@ -13,7 +13,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -21,22 +22,12 @@
 
 This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It supports multi-source model loading including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
 
-## Proect Struture
+## Project Structure
 
-```
-├── demo/                                             # UI-related files
-│   ├── main.py
-│   ├── poetry.lock
-│   ├── pyproject.toml
-│   └── README.md
-│
-├── docs/
-│   └── streamlit_sucess.png                          # Streamlit Sucess UI Screenshot
-│
-├── notebooks/
-│   └── text-generation-with-langchain.ipynb          # Main notebook for the project
-│
-├── core/                                             # Core Python modules
+```text
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
+├── core                                                                # Core Python modules
 │   ├── analyzer/
 │   │   └── scientific_paper_analyzer.py
 │   ├── deploy/
@@ -45,14 +36,46 @@ This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline fo
 │   │   └── arxiv_search.py
 │   └── generator/
 │       └── script_generator.py
-│
-├── README.md                                         # Project documentation
-├── requirements.txt                                  # Python dependencies
-
-
+├── demo                                                                # UI-related files
+│   ├── static/                                                         # Static HTML UI files
+│   ├── streamlit/                                                      # Streamlit webapp files
+│   ├── main.py
+│   ├── poetry.lock
+│   ├── pyproject.toml
+│   └── README.md
+├── docs
+│   ├── sample-html-ss.png                                             # HTML UI screenshot
+│   ├── sample-html-ui.pdf                                             # HTML UI page
+│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
+│   ├── sample-streamlit-ui.pdf                                        # Streamlit UI page
+│   └── streamlit_sucess.png                                           # Streamlit Success UI Screenshot
+├── notebooks
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── text-generation-with-langchain.ipynb                           # Main notebook for the project
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
+├── README.md
+└── requirements.txt
 ```
 
-## Setup
+---
+
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
+```
 
 ### 0 ▪ Minimum Hardware Requirements
 
@@ -63,6 +86,10 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 - GPU: NVIDIA GPU
 
 ### Quickstart
+
+---
+
+## Setup
 
 ### Step 1: Create an AIstudio Project
 

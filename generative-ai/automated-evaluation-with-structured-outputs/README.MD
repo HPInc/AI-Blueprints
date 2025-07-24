@@ -14,7 +14,8 @@
 
 - [🧠 Overview](#overview)
 - [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
+- [⚙️ Configuration](#configuration)
+- [🔧 Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
 
@@ -32,28 +33,48 @@ The pipeline:
 
 ## Project Structure
 
-```
+```text
+├── configs
+│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── data
 │   ├── inputs
-│   │   ├── 2025 ISEF Project Abstracts.csv    # Data assets for the project
+│   │   ├── 2025 ISEF Project Abstracts.csv                             # Data assets for the project
+│   └── outputs/                                                        # Generated evaluation results
 ├── demo
-│   ├── streamlit-webapp/                      # Streamlit UI
-│   └── index.html                             # Lightweight HTML/JS UI
+│   ├── static/                                                         # Static HTML UI files
+│   └── streamlit/                                                      # Streamlit webapp files
 ├── docs
-│   ├── sample-html-ss.png                     # HTML UI screenshot
-│   ├── sample-html-ui.pdf                     # HTML UI page
-│   ├── sample-streamlit-ss.png                # Streamlit UI screenshot
-│   └── sample-streamlit-ui.pdf                # Streamlit UI page
+│   ├── sample-html-ss.png                                             # HTML UI screenshot
+│   ├── sample-html-ui.pdf                                             # HTML UI page
+│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
+│   └── sample-streamlit-ui.pdf                                        # Streamlit UI page
 ├── notebooks
-│   ├── register-model.ipynb                   # One‑click notebook for registering trained models to MLflow, generating API logic, and testing the registration.
-│   └── run-workflow.ipynb                     # One‑click notebook for executing the pipeline using custom inputs and configurations.
+│   ├── register-model.ipynb                                           # Model registration notebook
+│   └── run-workflow.ipynb                                             # Main workflow notebook
+├── src
+│   ├── __init__.py
+│   └── utils.py                                                        # Utility functions for config loading
 ├── README.md
 └── requirements.txt
 ```
 
 ---
 
-## Setup
+## Configuration
+
+The blueprint uses a centralized configuration system through `configs/config.yaml`:
+
+```yaml
+ui:
+  mode: streamlit # UI mode: streamlit or static
+  ports:
+    external: 8501 # External port for UI access
+    internal: 8501 # Internal container port
+  service:
+    timeout: 30 # Service timeout in seconds
+    health_check_interval: 5 # Health check interval in seconds
+    max_retries: 3 # Maximum retry attempts
+```
 
 ### 0 ▪ Minimum hardware
 
@@ -78,6 +99,7 @@ git clone https://github.com/HPInc/AI-Blueprints.git
   - **Model Name**: `meta-llama3.1-8b-Q8`
   - **Model Source**: `AWS S3`
   - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+  - **Resource Type**: `public`
   - **Bucket Region**: `us-west-2`
 
 - Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
@@ -152,7 +174,7 @@ From the Swagger page, click the demo link to interact with the locally deployed
 
 ---
 
-# Contact and Support
+## Contact and Support
 
 - **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 

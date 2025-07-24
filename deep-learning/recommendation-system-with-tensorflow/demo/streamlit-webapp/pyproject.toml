@@ -9,6 +9,9 @@ package-mode = false
 python = ">=3.11"
 streamlit = "1.45.0"
 requests = "2.32.4"
+pillow = "11.3.0"
+urllib3 = "2.5.0"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

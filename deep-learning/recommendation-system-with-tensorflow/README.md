@@ -30,14 +30,16 @@ It trains on user-item interaction data to predict movie preferences with Model-
 
 ```
 ├── docs/      
-│   └── streamlit_ui_for_recommender_system.pdf                       # UI screenshot
-│   └── streamlit_ui_for_recommender_system.png                       # UI screenshot
-│   ├── swagger_UI_recommendation_system_with_tensorflow.pdf          # Swagger UI screenshot 
-│   └── swagger_UI_recommendation_system_with_tensorflow. pdf         # Swagger UI screenshot
+│   └── streamlit-ui-for-recommender-system.pdf                       # UI screenshot
+│   └── streamlit-ui-for-recommender-system.png                       # UI screenshot
+│   ├── swagger-ui-recommendation-system-with-tensorflow.pdf          # Swagger UI screenshot 
+│   └── swagger-ui-recommendation-system-with-tensorflow. pdf         # Swagger UI screenshot
 ├── demo
 │   └── streamlit-webapp/                                             # Streamlit UI
+│   │  └── assets/                                                    # Logo assets
 ├── notebooks
-│   └── recommender_systems_with_tensorflow.ipynb                     # Main notebook for the project              
+│   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                
 ├── README.md                                                         # Project documentation
 ```
 
@@ -62,8 +64,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 - Choose **Deep Learning** as the base image.
 
 ### Step 3 ▪ Download the Dataset
-1. This experiment requires the **tutorial_data dataset** to run.
-2. Download the dataset from `s3://dsp-demo-bucket/tutorial_data/` into an asset called **tutorial** and ensure that the AWS region is set to ```us-west-2```.
+
+- Download the `tutorial_data dataset`
+
+  - **Asset Name**: `tutorial` 
+  - **Source**: `AWS S3`
+  - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
+  - **Resource Type**: `public`
+  - **Bucket Region**: `us-west-2`
+
+- Make sure that the dataset is in the datafabric folder inside your workspace. If the dataset does not appear after downloading, please restart your workspace.
 
 ### Step 4: Clone the Repository
 
@@ -83,7 +93,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/recommender_systems_with_tensorflow.ipynb
+run-workflow.ipynb
 ```
 
 This will:
@@ -91,10 +101,23 @@ This will:
 - Load and prepare the data
 - Create the model architecture  
 - Train the model
-- Make inference
-- Integrate MLflow  
+- Make inference 
 
-### 2 ▪ Deploy the Movie Recommendation Agent Service
+### 2 ▪ Run the Notebook
+
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+register-model.ipynb
+```
+
+This will:
+
+- Log Model to MLflow
+- Fetch the Latest Model Version from MLflow
+- Load the Model and Run Inference
+
+### 3 ▪ Deploy the Movie Recommendation Agent Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -103,7 +126,7 @@ This will:
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
-### 3 ▪ Swagger / raw API
+### 4 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
@@ -153,7 +176,7 @@ And as response:
 }
 ```
 
-### 4 ▪ Launch the Streamlit UI
+### 5 ▪ Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 
@@ -162,7 +185,7 @@ And as response:
 ### Successful UI demo
 
 - Streamlit
-![Recommender System Streamlit UI](docs/streamlit_ui_recommender_system.png)
+![Recommender System Streamlit UI](docs/streamlit-ui-recommender-system.png)
 
 
 ---
