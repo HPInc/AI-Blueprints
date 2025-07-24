@@ -33,16 +33,22 @@ This project contains a single integrated pipeline—**Agentic RAG for AI Studio
 ## Project Structure
 ```
 agentic_rag_with_trt-llm_and_langgraph/
-├── data/                                                                  # Data assets used in the project
+├── data/                                             # Data assets used in the project
 │   └── context/
 │       └── aistudio
+├── docs/
+|   ├── architecture-for-agentic-rag.png              # Architecture screenshot of the agentic RAG system
+|   └── Build Custom Agentic RAG Systems.pptx         # Powerpoint walkthrough slides for building general agentic RAG systems
+|   
 ├── notebooks/
-│   └── Agentic RAG for AI Studio with TRT-LLM and LangGraph.ipynb         # Main notebook for the project
-├── src/                                                                   # Core Python modules
+|   ├── register-model.ipynb                          # Notebook for registering trained models to MLflow
+│   └── run-workflow.ipynb                            # Notebook for executing the pipeline using custom inputs and configurations
+├── src/                                              # Core Python modules
 │   ├── __init__.py
-│   └── trt_llm_langchain.py
-├── README.md                                                              # Project documentation
-└── requirements.txt                                                       # Python dependencies
+│   ├── trt_llm_langchain.py
+|   └── workspace.sh
+├── README.md                                         # Project documentation
+└── requirements.txt                                  # Python dependencies
 ```  
 
 ---
@@ -71,7 +77,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    ngcconfig:
 	   nemoversionpin: "25.04"
    ```
-3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `docs/` folder.
+3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `src/` folder.
 
 - On **Windows**, the file is located at:  
   `C:\Program Files\HP\AIStudio\util\container-setup\workspace.sh`
@@ -85,7 +91,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```  
-3. Navigate to `generative-ai/agentic_rag_with_trt-llm_and_langgraph` to ensure all files are cloned correctly after workspace creation.  
+3. Navigate to `ngc-integration/agentic-rag-with-tensorrtllm` to ensure all files are cloned correctly after workspace creation.  
 
 ---
 
