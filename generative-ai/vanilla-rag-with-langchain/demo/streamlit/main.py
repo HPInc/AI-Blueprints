@@ -22,12 +22,8 @@ st.markdown(
 with st.sidebar:
     st.header("📝 Instructions")
     st.markdown("""
-    1. Ensure your MLflow model serving is running under HTTPS.
-    2. Enter the full URL of the `/invocations` endpoint.
-    3. (Optional) Upload a PDF to enrich the knowledge base.
-    4. Type your query and an optional prompt, then Submit.
-    
-    **Note:** In **Z by HP AI Studio**, the **port number** for your MLflow API **changes with each deployment**, so always verify the correct URL and port before starting a session.
+    1. (Optional) Upload a PDF to enrich the knowledge base.
+    2. Type your query and an optional prompt, then Submit.
     """)
 
 # ─── Session State ────────────────────────────────────────────────────────────
@@ -36,12 +32,11 @@ if "history" not in st.session_state:
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
 
+# ─── MLflow API Configuration ──────────────────────────────────────────────────
+api_url = "http://localhost:5002/invocations"
+
 # ─── Main Form ────────────────────────────────────────────────────────────────
 with st.form("chat_form"):
-    api_url = st.text_input(
-        "🔗 MLflow API URL",
-        value="https://localhost:5000/invocations"
-    )
     query = st.text_area(
         "💬 Your Query",
         height=150,
@@ -85,9 +80,7 @@ if reset:
 # ─── Submission & Inference ───────────────────────────────────────────────────
 if submit:
     # Basic validation
-    if not api_url.lower().startswith(("http://", "https://")):
-        st.error("Please enter a valid URL starting with http:// or https://")
-    elif not query.strip() and not uploaded_file:
+    if not query.strip() and not uploaded_file:
         st.warning("Enter a query or upload a PDF.")
     else:
         # Prepare document payload

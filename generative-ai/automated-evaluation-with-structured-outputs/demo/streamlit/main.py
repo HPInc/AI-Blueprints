@@ -13,21 +13,15 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────
-# 1 ▸ Sidebar – server settings & runtime params
+# 1 ▸ Sidebar – runtime params
 # ─────────────────────────────────────────────────────────────
-st.sidebar.header("⚙️  Model API Settings")
+# MLflow API endpoint
+api_url = "http://localhost:5002/invocations"
 
-api_url = st.sidebar.text_input(
-    "MLflow /invocations URL",
-    value="https://localhost:5000/invocations",
-    help="Endpoint where the MLflow model is served."
-)
+st.sidebar.header("📄 Runtime parameters")
 
-st.sidebar.markdown("---")
-st.sidebar.header("📄 Runtime parameters")
-
-key_column   = st.sidebar.text_input("Key column", value="title")
-eval_column  = st.sidebar.text_input("Text column", value="abstract")
+key_column   = st.sidebar.text_input("Key column", value="title")
+eval_column  = st.sidebar.text_input("Text column", value="abstract")
 
 criteria_default = {"Originality": 3, "ScientificRigor": 4, "Clarity": 2, "Relevance": 1, "Feasibility": 3, "Brevity": 2}
 
@@ -47,7 +41,7 @@ except Exception as e:
     st.sidebar.error(f"Invalid criteria JSON → {e}")
 
 # ─────────────────────────────────────────────────────────────
-# 2 ▸ Main – data input
+# 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
 st.title("⚙️📊🦙 Automated Evaluation with Structured Outputs")
 
@@ -79,7 +73,7 @@ if df is not None:
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
-if st.button("🚀 Evaluate", disabled=df is None or not crit_valid):
+if st.button("🚀 Evaluate", disabled=df is None or not crit_valid):
     if df is None:
         st.error("Please upload or paste a dataset.")
     elif key_column not in df.columns or eval_column not in df.columns:
@@ -126,13 +120,13 @@ if "last_results_df" in st.session_state:
     st.subheader("Results")
     st.dataframe(st.session_state["last_results_df"], use_container_width=True)
 
-    with st.expander("🔍 Raw JSON response"):
+    with st.expander("🔍 Raw JSON response"):
         st.json(st.session_state["raw"], expanded=False)
 
     csv_bytes = st.session_state["last_results_df"].to_csv(index=False).encode()
 
     st.download_button(
-        label="📥 Download CSV",
+        label="📥 Download CSV",
         data=csv_bytes,
         file_name="llamascore_results.csv",
         mime="text/csv",
@@ -146,10 +140,10 @@ if "last_results_df" in st.session_state:
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*⚙️📊🦙 Automated Evaluation with Structured Outputs © 2025* – local, private, reproducible text evaluation with LLaMA + MLflow.
+*⚙️📊🦙 Automated Evaluation with Structured Outputs © 2025* – local, private, reproducible text evaluation with LLaMA + MLflow.
 
 ---
-> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
 """,
 unsafe_allow_html=True,
 )
