@@ -81,13 +81,10 @@ st.markdown(f"""
 # --- Header ---
 st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Super Resolution</h1>", unsafe_allow_html=True)
 
-# --- API Settings ---
-st.sidebar.header("⚙️ Model API Settings")
-api_url = st.sidebar.text_input(
-    "MLflow /invocations URL",
-    value="https://localhost:5000/invocations",
-    help="Endpoint where the MLflow model is served."
-)
+# --- MLflow API Configuration ---
+# Standardized MLflow endpoint for containerized deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+api_url = MLFLOW_ENDPOINT
 
 # --- Image Upload ---
 digit_image = st.file_uploader("Choose an image:", type=["jpg", "jpeg", "png"])
