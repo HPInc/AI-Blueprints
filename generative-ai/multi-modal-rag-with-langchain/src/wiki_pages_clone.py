@@ -63,8 +63,6 @@ def _copy_all_images(pages: dict, repo_dir: Path, output_images_dir: Path):
                 # logger.info(f"  • Copied {img_name}")
                 seen.add(img_name)
                 total_copied += 1
-            else:
-                 logger.warning(f"  • Image reference not found in repo: {img_name}")
 
     logger.info(f"→ {total_copied} unique images copied.")
 
