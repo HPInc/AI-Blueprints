@@ -23,3 +23,4 @@ timm==1.0.17
 accelerate==1.9.0
 bitsandbytes==0.46.1
 GitPython==3.1.44
+flash-attn==2.8.1
