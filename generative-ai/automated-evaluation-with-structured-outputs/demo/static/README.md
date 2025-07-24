@@ -1,4 +1,4 @@
-# How to Deploy and Use the Streamlit Web App
+# How to Deploy and Use the Static Web App
 
 ## 1. Configure for UI Mode
 
@@ -6,7 +6,7 @@ Before deployment, ensure the configuration is set for UI mode in the `configs/c
 
 ```yaml
 ui:
-  mode: "streamlit" # Set to "streamlit" for Streamlit deployment
+  mode: "static" # Set to "static" for static deployment
 ```
 
 ## 2. Register the Model
@@ -33,7 +33,7 @@ Run the model registration notebook to register your trained model with MLflow:
 
 Once deployed:
 
-- **Access the Streamlit interface** through the deployment URL provided by AI Studio
+- **Access the static web interface** through the deployment URL provided by AI Studio
 - **The MLflow endpoint** is automatically configured within the containerized environment
 - **All model interactions** happen through the container-to-container communication
 - **No manual setup** of Python environments or dependencies is required
