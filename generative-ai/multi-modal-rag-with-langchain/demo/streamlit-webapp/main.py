@@ -28,7 +28,7 @@ def load_css():
     <style>
         /* Main app styling */
         .stApp {
-            background-color: #000000;
+            background-color: #FFFFFF;
         }
 
         /* Custom Header */
