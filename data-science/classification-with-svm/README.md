@@ -1,4 +1,4 @@
-# 🌷 Classification with SVM
+# 🌷 Classification with SVM and LDA
 
 <div align="center">
 
@@ -30,11 +30,18 @@ It runs on the **Data Science Workspace**, demonstrating basic supervised learni
 
 ```
 ├── docs/
-│   └── swagger_UI_classification_with_svm.pdf                 # Swagger screenshot
-│   └── swagger_UI_classification_with_svm.png                 # Swagger screenshot
-├── notebooks
-│   └── iris_flowers_classification_with_svm.ipynb             # Main notebook for the project              
-├── README.md                                                  # Project documentation
+│   └── swagger-UI-classification-with-svm-and-lda.pdf                      # Swagger screenshot(PDF)
+│   └── swagger-UI-classification-with-svm-and-lda.png                      # Swagger screenshot(PNG)
+│   └── successful-streamlit-ui_for-classification-with-svm-and-lda.pdf     # Streamlit screenshot(PDF)
+│   └── successful-streamlit-ui-for-classification-with-svm-and-lda.png     # Streamlit screenshot(PNG)
+├── demo/
+│   └── streamlit-webapp/                                                   # Streamlit UI
+│   └── assets/                                                             # Assets for the streamlit UI
+├── notebooks/
+│   └── run-workflow.ipynb                                                  # One‑click notebook for executing the pipeline using custom inputs
+│   └── register-model.ipynb                                                # One‑click notebook for registering trained models to MLflow, generating API
+├── README.md                                                               # Project documentation
+                                                                    
 ```
 
 ---
@@ -70,31 +77,32 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 1 ▪ Run the Notebook
 
-Execute the run-workflow notebook first inside the `notebooks` folder first.
+Execute the run-workflow notebook first inside the `notebooks` folder.
 
 ```bash
-notebooks/eun-workllow.ipynb
+notebooks/run-workflow.ipynb
 ```
+This will:
+
+- Load and prepare the data
+- Summarize the Dataset, providing an overview.
+- Visualize the data
+- Build the Model and Measure its performance.
 
 Execute the register-model notebook second inside the `notebooks` folder:
 
 ```bash
 notebooks/register-model.ipynb
 ```
-
 This will:
-
-- Load and prepare the data
-- Summarize the Dataset, doing a overview.
-- Visualize the data
-- Build the Model and Measure Model.
-- Integrate MLflow
+- Log the model to MLflow
+- Run a trial inference with logged model
 
 ### 2 ▪ Deploy the Iris flowers classification with SVM and LDA Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
-- Choose a model version and **GPU** it's **not necessary**.
+- Choose a model version. A **GPU** is **not necessary**.
 - Choose the workspace.
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
@@ -125,7 +133,7 @@ Paste a payload like:
   "params": {}
 }
 ```
-And as response:
+Expected response:
 
 ```
 {
