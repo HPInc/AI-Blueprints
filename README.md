@@ -70,7 +70,7 @@ This project is a simple **classification** experiment focused on predicting spe
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
-### 🏙️ Data Analysis with VAR
+### 😷 Data Analysis with VAR
 
 This project explores a **regression** experiment using **mobility data** collected during the COVID-19 pandemic.
 
