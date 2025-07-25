@@ -49,9 +49,7 @@ class TestPreprocessor:
         full_name = self.fnu.fix_filename(os.path.join(self.target_folder, file_name))
         os.makedirs(os.path.dirname(full_name), exist_ok=True)
         with open(full_name + "t", "w") as outfile:
-            self.logger.info(full_name)
             outfile.write("".join(lines))
-        self.logger.info(f"Processed file: {file_name} with metadata: {file_metadata}")
         self.metadata["code"][file_name] = file_metadata
 
     def copy_requirements(self):
@@ -62,7 +60,6 @@ class TestPreprocessor:
                 requirements_file = os.path.join(self.base_folder, os.path.dirname(file_name), requirements_file)
                 #requirements_file = self.fnu.fix_filename(requirements_file, extension=".txt")
                 target_requirements_file = os.path.join(self.target_folder, f"{file_name}t_requirements.txt")
-                self.logger.info(f"Copying requirements file from {requirements_file} to {target_requirements_file}")
                 shutil.copyfile(requirements_file, self.fnu.fix_filename(target_requirements_file, extension=".txt"))
         
     def run(self):

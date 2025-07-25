@@ -35,7 +35,7 @@ ENVOY_HOST="${AISTUDIO_FOLDER}/certs"
 ENVOY_CONTAINER="/etc/envoy/certs"
 ENVOY_PARAM="-v ${ENVOY_HOST}:${ENVOY_CONTAINER}"
 
-### Defines parameter to mount Github folder and and relative endpoints
+### Defines parameter to mount Github repo folder and and relative endpoints
 SCRIPT_FOLDER=$(dirname ${SCRIPT})
 GITHUB_HOST=$(readlink -f ${SCRIPT_FOLDER}/..)
 GITHUB_REPO=$(basename $GITHUB_HOST)
@@ -51,14 +51,13 @@ else
 fi
 
 ### If "venv" is passed, this will allow using virtual environment
-if [[ -n "$2" ]] && [[ "$2" == "venv" ]]; then
+if [[ -n "$3" ]] && [[ "$3" == "venv" ]]; then
   VENV_ARG="venv"
 else
   VENV_ARG="novenv"
 fi
 
-echo $HOST_TESTSCRIPT
-echo $GITHUB_HOST
+### This tests whether the test script is in a subfolder of the Github repo folder
 if [[ "${HOST_TESTSCRIPT}" == ${GITHUB_HOST}* ]]; then
   RELATIVE_TESTSCRIPT=${HOST_TESTSCRIPT#"${GITHUB_HOST}/"}
   CONTAINER_TESTSCRIPT="${HOME_CONTAINER}/${GITHUB_REPO}/${RELATIVE_TESTSCRIPT}"
@@ -116,7 +115,6 @@ else
 	    FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
 	    FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
 	    FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE $MOUNT_ARG $VENV_ARG"
-	    echo $FULL_COMMAND
 	    $FULL_COMMAND
     fi
   done

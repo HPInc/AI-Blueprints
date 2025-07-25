@@ -31,6 +31,8 @@ python ${SCRIPT_FOLDER}/py_utils/main.py -s $1 -o $TMP_FOLDER -w $2
 for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
     echo "******************************"	
     echo "Running tests on ${TEST_FILE}"	
+    echo "     ****************"	
+
     ## Create a virtual environment for each test file with a random name
 
     ###If the fourth argument is provided and equals to "venv", create a virtual environment
@@ -39,7 +41,9 @@ for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
         ENV_FOLDER=$(mktemp -d ${TMP_FOLDER}/env_XXXXXX)
         python -m venv ${ENV_FOLDER}/venv --system-site-packages
         source ${ENV_FOLDER}/venv/bin/activate
-        pip install -r ${TEST_FILE}_requirements.txt
+        if [[ -f "${TEST_FILE}_requirements.txt" ]]; then
+            pip install -r ${TEST_FILE}_requirements.txt --quiet 
+        fi
         # Run the test file using IPython
         ipython $TEST_FILE
         ${ENV_FOLDER}/venv/bin/deactivate
@@ -47,6 +51,8 @@ for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
         pip install -r ${TEST_FILE}_requirements.txt
         ipython $TEST_FILE
     fi
+    echo "******************************"	
+
 done
 
 echo ""

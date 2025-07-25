@@ -1,6 +1,5 @@
 # *** AI Studio experiment test ***
 #workspaces:
-#  - deeplearning
 #  - deeplearninggpu
 # ******
 
