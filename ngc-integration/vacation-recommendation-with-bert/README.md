@@ -1,4 +1,4 @@
-# 🌍 Vacation Recommendation Agent  
+# 🌍 Vacation Recommendation Service  
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 * [📞 Contact and Support](#contact-and-support)
 
 ## Overview  
-The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+The **Vacation Recommendation Service** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
 ## Project Structure  
 ```
