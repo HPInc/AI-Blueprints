@@ -1,2 +1,8 @@
 # Create the workspace using the NeMo Framework image within Z by HP AI Studio and select the aistudio kernel for Jupyter notebooks.
 # This image includes all the required libraries to run the sample project.
+
+numpy>=1.24,<2
+pandas==1.5.3
+setuptools>=65.6
+protobuf>=4.25.8,<5
+mlflow==2.21.2
