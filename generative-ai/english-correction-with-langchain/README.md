@@ -22,7 +22,7 @@
 
 # Overview
 
-This project demonstrates how to perform English grammar correction in GitHub Markdown fules using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniqus to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories. 
+This project demonstrates how to perform English grammar correction in GitHub Markdown fules using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniques to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories. 
 
 ---
 
@@ -31,11 +31,15 @@ This project demonstrates how to perform English grammar correction in GitHub Ma
 ```
 ├── configs
 │   └── configs.yaml                                                  # General settings
+├── demo
+│   └── streamlit-webapp
+│      └── README.md                                                  # Streamlit Documentation
+│      └── main.py                                                    # Streamlit UI
 ├── docs
 │   └── eval_metrics.pdf                                              # Evaluation metrics explanations
 ├── notebooks
-│   └── handwritten_digit_classification_with_keras.ipynb             # Main notebook for the project
-│   └── register-and-eval-model.ipynb                                 # MLflow registration and evaluation notebook 
+│   └── run-workflow.ipynb                                            # Main notebook for the project
+│   └── register-model.ipynb                                          # MLflow registration and evaluation notebook 
 ├── src
 │   └── __init__.py                                                   # Marks directory as a package
 │   └── chunker.py                                                    # Markdown chunker 
@@ -90,7 +94,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/english-correction-with-langchain.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:
@@ -104,11 +108,12 @@ This will:
 ### Step 2 ▪ Run the Registration and Evaluation Notebook
 
 ```bash
-notebooks/register-and-eval-model.ipynb
+notebooks/register-model.ipynb
 ```
 
 This will:
 
+- Emulate processing workflow from run-workflow.ipynb
 - Register the model with MLflow.
 - Run custom evaluation metrics on the model. 
 
@@ -120,6 +125,12 @@ This will:
 4. Choose the workspace.
 5. Start the deployment.
 6. Once deployed, open the Service URL to access the Swagger API page.
+
+
+### Step 4 ▪ Launch the Streamlit UI
+
+1. Follow the instructions in the README file located in the `demo\streamlit-webapp` folder.
+2. Navigate to the shown URL, upload markdown files or enter a GitHub repo URL, preview the corrected files, and download the corrected markdown files. 
 
 ---
 
