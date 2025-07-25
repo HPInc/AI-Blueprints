@@ -1,8 +1,9 @@
 import re
 from typing import List
 
+
 def estimate_token_count(text: str) -> int:
-    '''
+    """
     Estimate the number of tokens in a given string.
 
     Args:
@@ -10,8 +11,9 @@ def estimate_token_count(text: str) -> int:
 
     Returns:
         int: Approximate number of tokens, assuming 4 characters per token
-    '''
-    return len(text) // 4 
+    """
+    return len(text) // 4
+
 
 def split_by_top_level_headers(markdown: str) -> List[str]:
     """
@@ -24,7 +26,7 @@ def split_by_top_level_headers(markdown: str) -> List[str]:
         List[str]: A list of sections split by top-level headers.
     """
     # Find all headers from # to ###### at the beginning of a line
-    matches = list(re.finditer(r'^\s*#{1,6}\s.*', markdown, flags=re.MULTILINE))
+    matches = list(re.finditer(r"^\s*#{1,6}\s.*", markdown, flags=re.MULTILINE))
     if not matches:
         # No headers found, return whole content
         return [markdown]
@@ -37,34 +39,38 @@ def split_by_top_level_headers(markdown: str) -> List[str]:
 
     return sections
 
+
 def smart_sentence_split(text: str) -> List[str]:
     """
     Split text at sentence boundaries or placeholder boundaries.
 
-    Args: 
+    Args:
         text (str): The input text.
 
     Returns:
         List[str]: A list of sentence-level parts, preserving placeholder boundaries.
     """
     # Pattern to capture sentence boundaries and placeholder boundaries
-    pattern = r'([.!?]\s+(?=[A-Z]))|(__PLACEHOLDER\d+__)'
+    pattern = r"([.!?]\s+(?=[A-Z]))|(__PLACEHOLDER\d+__)"
     matches = re.split(pattern, text)
 
     # Reconstruct complete sentence or placeholder segments
     parts = []
-    buffer = ''
+    buffer = ""
     for chunk in matches:
         if chunk is None:
             continue
         buffer += chunk
-        if re.match(r'[.!?]\s+$', chunk) or re.match(r'__PLACEHOLDER\d+__', chunk.strip()):
+        if re.match(r"[.!?]\s+$", chunk) or re.match(
+            r"__PLACEHOLDER\d+__", chunk.strip()
+        ):
             parts.append(buffer.strip())
-            buffer = ''
+            buffer = ""
     if buffer.strip():
         parts.append(buffer.strip())
 
     return parts
+
 
 def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
     """
@@ -94,7 +100,7 @@ def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
         # Finalize current chunk if adding this part would exceed max tokens
         if current_token_count + part_token_count > max_tokens:
             if current_chunk:
-                chunks.append(' '.join(current_chunk).strip())
+                chunks.append(" ".join(current_chunk).strip())
                 current_chunk = []
                 current_token_count = 0
 
@@ -102,12 +108,13 @@ def chunk_large_section(section: str, max_tokens: int = 1000) -> List[str]:
         current_token_count += part_token_count
 
     if current_chunk:
-        chunks.append(' '.join(current_chunk).strip())
+        chunks.append(" ".join(current_chunk).strip())
 
     return chunks
 
+
 def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
-    '''
+    """
     Chunk a full markdown document into smaller parts based on headers and token limits.
 
     Args:
@@ -116,7 +123,7 @@ def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
 
     Returns:
         List[str]: A list of markdown chunks that are token-limited and structured.
-    '''
+    """
     # Split by top level headers
     sections = split_by_top_level_headers(markdown)
     final_chunks = []
@@ -144,7 +151,7 @@ def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
             return [chunk]
 
         # Try splitting on newlines first
-        parts = re.split(r'(?<=\n)', chunk)
+        parts = re.split(r"(?<=\n)", chunk)
         subchunks = []
         buffer = ""
 
@@ -165,7 +172,7 @@ def chunk_markdown(markdown: str, max_tokens: int = 100) -> List[str]:
             if len(sub) <= max_chars:
                 final_subchunks.append(sub)
             else:
-                sentences = re.split(r'(?<=[.!?])\s+', sub)
+                sentences = re.split(r"(?<=[.!?])\s+", sub)
                 sentence_buffer = ""
                 for s in sentences:
                     if len(sentence_buffer) + len(s) > max_chars:

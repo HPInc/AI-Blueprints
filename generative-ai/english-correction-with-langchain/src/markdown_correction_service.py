@@ -1,21 +1,25 @@
 # src/markdown_correction_service.py
 
-import mlflow
-import pandas as pd
 import logging
 from typing import Any, List
+
+import mlflow
+import pandas as pd
 from mlflow.models import ModelSignature
-from mlflow.types import Schema, ColSpec
-from utils import load_config_and_secrets, initialize_llm
+from mlflow.types import ColSpec, Schema
+
 from prompt_templates import get_markdown_correction_prompt
+from utils import initialize_llm, load_config_and_secrets
 
 # Configure a logger for this module
 logger = logging.getLogger(__name__)
+
 
 class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
     """
     MLflow PythonModel for correcting grammar and structure in Markdown content.
     """
+
     def load_context(self, context: mlflow.pyfunc.PythonModelContext) -> None:
         """
         Loads configuration, secrets, and the LLM chain from provided artifacts.
@@ -37,7 +41,7 @@ class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
         # Ensure the input DataFrame has the 'markdown' column
         if "markdown" not in model_input.columns:
             raise KeyError("Input DataFrame is missing the required 'markdown' column.")
-            
+
         corrected = []
         for _, row in model_input.iterrows():
             output = self.llm_chain.invoke({"markdown": row["markdown"]})
@@ -52,7 +56,7 @@ class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
         config_path: str,
         secrets_path: str,
         requirements_path: str,
-        code_paths: List[str]
+        code_paths: List[str],
     ) -> None:
         """
         Logs and registers the MarkdownCorrectionService model in MLflow.
@@ -70,7 +74,7 @@ class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
             "secrets": secrets_path,
             "llm": llm_artifact_path,
         }
-        
+
         signature = ModelSignature(
             inputs=Schema([ColSpec("string", "markdown")]),
             outputs=Schema([ColSpec("string", "corrected")]),
@@ -81,7 +85,7 @@ class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):
             python_model=cls(),
             artifacts=artifacts,
             signature=signature,
-            registered_model_name=model_name, # Log and register in one step
+            registered_model_name=model_name,  # Log and register in one step
             pip_requirements=requirements_path,
             code_paths=code_paths,
         )

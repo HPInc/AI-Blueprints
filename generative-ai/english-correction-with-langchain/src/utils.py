@@ -192,7 +192,7 @@ def initialize_llm(
 
         model = LlamaCpp(
             model_path=local_model_path,
-            n_gpu_layers=-1,                             
+            n_gpu_layers=-1, # Number of GPU-loaded layers can be reduced if there is insufficient memory (-1 assigns all layers to GPU)                            
             n_batch=512,                                 
             n_ctx=32000,
             max_tokens=1024,
