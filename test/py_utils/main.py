@@ -23,6 +23,7 @@ if __name__ == "__main__":
     logger.info("Preprocessed the tests")
     code_preprocessor = CodePreprocessor(test_preprocessor.metadata, args.output, logger=logger)
     logger.info("Preprocessed the code")
+    test_preprocessor.copy_requirements()
     
     
         

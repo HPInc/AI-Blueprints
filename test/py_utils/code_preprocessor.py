@@ -155,7 +155,9 @@ class CodePreprocessor():
         """
         for _, test_metadata in self.code_info.items():
             if ("notebook" in test_metadata) and ("path" in test_metadata["notebook"]):
-                if test_metadata["notebook"]["path"] == full_name:
+                fixed_notebook_path = self.fnu.fix_filename(test_metadata["notebook"]["path"])
+                fixed_full_name = self.fnu.fix_filename(full_name)
+                if fixed_notebook_path == fixed_full_name:
                     return test_metadata["notebook"]
         return None
     
@@ -188,8 +190,10 @@ class CodePreprocessor():
                 return("Not a folder")
         else:
             os.mkdir(dst_path)
+        with open(os.path.join(dst_path, "__init__"), "w") as init_file:
+            init_file.write("")
         for file in files:
-            src_full = os.path.relpath(os.path.join(src_path, file))
+            src_full = os.path.realpath(os.path.join(src_path, file))
             if os.path.isdir(src_full):             
                 self.process_all_files(src_full, os.path.join(dst_path, file), internal = True)
             else:

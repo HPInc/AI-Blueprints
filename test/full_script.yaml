@@ -1,0 +1,12 @@
+code_folder: "."
+test_folder: "."
+files: 
+- data-science/classification-with-svm/notebooks/run-workflow_test.py
+- deep-learning/classification-with-keras/notebooks/run-workflow_test.py
+- deep-learning/question-answering-with-bert/notebooks/run-workflow_test.py
+- data-science/data-analysis-with-var/notebooks/run-workflow_test.py
+assets:
+  tutorial: "C:\\Users\\borges\\AppData\\Local\\HP\\AIStudio\\tutorial"
+baseimages:
+  registry: public.ecr.aws/hpphoenixdsp/itg/base-images
+  deeplearninggpu: "0.11.6"

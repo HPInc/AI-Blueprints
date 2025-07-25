@@ -1,10 +1,9 @@
-
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "AI-Blueprints"/data-science/classification-with-svm/notebooks/run-workflow.ipynb"
+#  path: "run-workflow.ipynb"
 #  class_name: IrisNotebook
 #workspaces:
-#  - data science
+#  - datascience
 # ******
 
 import unittest

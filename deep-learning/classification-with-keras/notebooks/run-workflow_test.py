@@ -1,6 +1,6 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "deep-learning/classification-with-keras/notebooks/handwritten_digit_classification_with_keras.ipynb"
+#  path: "run-workflow.ipynb"
 #  class_name: MnistNotebook
 #  variables:
 #  - x_train

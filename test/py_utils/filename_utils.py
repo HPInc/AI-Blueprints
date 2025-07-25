@@ -33,7 +33,7 @@ class FilenameUtils():
         folder_list = os.path.dirname(filename).split(os.sep)
         folder_list.append(os.path.splitext(os.path.basename(filename))[0])
         fixed_folders = [self.fix_filename(folder, extension = "") for folder in folder_list]
-        
+        fixed_folders = [folder for folder in fixed_folders if folder != ""]
         return ".".join(fixed_folders)
 
     def create_empty_folder(self, dirname):

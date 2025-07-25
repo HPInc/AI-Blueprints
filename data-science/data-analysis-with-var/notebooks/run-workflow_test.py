@@ -1,6 +1,6 @@
 # *** AI Studio experiment test ***
 #notebook:
-#  path: "data-science/data-analysis-with-var/notebooks/run-workflow.ipynb"
+#  path: "run-workflow.ipynb"
 #  class_name: CovidNotebook
 #workspaces:
 #  - datascience

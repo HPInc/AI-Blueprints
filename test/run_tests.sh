@@ -43,6 +43,20 @@ GITHUB_PARAM="-v ${GITHUB_HOST}:${HOME_CONTAINER}/${GITHUB_REPO}"
 CONTAINER_ENTRYPOINT="${HOME_CONTAINER}/${GITHUB_REPO}/${ENTRYPOINT}"
 HOST_TESTSCRIPT=$(readlink -f $TESTSCRIPT)
 
+### If "mount" is passed, this will allow persisting the tmp_folder used to save temporary results
+if [[ -n "$2" ]] && [[ "$2" == "mount" ]]; then
+  MOUNT_ARG="mount"
+else
+  MOUNT_ARG="nomount"
+fi
+
+### If "venv" is passed, this will allow using virtual environment
+if [[ -n "$2" ]] && [[ "$2" == "venv" ]]; then
+  VENV_ARG="venv"
+else
+  VENV_ARG="novenv"
+fi
+
 echo $HOST_TESTSCRIPT
 echo $GITHUB_HOST
 if [[ "${HOST_TESTSCRIPT}" == ${GITHUB_HOST}* ]]; then
@@ -65,6 +79,7 @@ for ASSET in $(yq ".assets|keys" $TESTSCRIPT); do
   fi
  done
 
+### Run tests on each base image
 for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do  
   if [[ -n "$IMAGE" ]] && [[ $IMAGE != "-" ]] && [[ $IMAGE != "registry" ]]; then
     echo ""
@@ -77,30 +92,32 @@ for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do
 	  IMAGE_VERSION=$(yq ".baseimages.${IMAGE}" $TESTSCRIPT)
 	  FULL_IMAGE="$IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION"
 	  FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
-	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
+	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE $MOUNT_ARG"
   	$FULL_COMMAND
   fi
 done
 
+### If there is no NGC images, exit
 if [[ -z $(yq 'has("ngcconfig")' $TESTSCRIPT) ]]; then
   echo "No NGC images to run"
   exit 0
+else
+  ### If there is NGC images, run tests on each of them
+  for IMAGE_ENTRY in $(yq ".ngcconfig|keys" $TESTSCRIPT); do  
+    if [[ $IMAGE_ENTRY != "-" ]]; then
+      echo ""
+      echo ""
+      echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE_ENTRY} *-*-*-*-*-*-*-*-*-*-*-*"
+      echo ""
+      echo ""
+      IMAGE=${IMAGE_ENTRY%version*}
+      IMAGE_URL=$(yq .$IMAGE test/strings.yaml)
+      IMAGE_VERSION=$(yq ".ngcconfig.${IMAGE_ENTRY}" $TESTSCRIPT)
+	    FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
+	    FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
+	    FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE $MOUNT_ARG $VENV_ARG"
+	    echo $FULL_COMMAND
+	    $FULL_COMMAND
+    fi
+  done
 fi
-
-for IMAGE_ENTRY in $(yq ".ngcconfig|keys" $TESTSCRIPT); do  
-  if [[ $IMAGE_ENTRY != "-" ]]; then
-    echo ""
-    echo ""
-    echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE_ENTRY} *-*-*-*-*-*-*-*-*-*-*-*"
-    echo ""
-    echo ""
-    IMAGE=${IMAGE_ENTRY%version*}
-    IMAGE_URL=$(yq .$IMAGE test/strings.yaml)
-    IMAGE_VERSION=$(yq ".ngcconfig.${IMAGE_ENTRY}" $TESTSCRIPT)
-	  FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
-	  FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
-	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE"
-	  echo $FULL_COMMAND
-	  $FULL_COMMAND
-  fi
-done
