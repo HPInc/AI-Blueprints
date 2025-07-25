@@ -110,7 +110,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 ## Usage
 
-### Step 1: Run the Notebook
+### Step 1: Run the Workflow Notebook
 
 Execute the notebook inside the `notebooks` folder:
 
@@ -121,9 +121,20 @@ notebooks/run-workflow.ipynb
 This will:
 
 - Run the full RAG pipeline
+
+### Step 2: Run the Register Notebook
+
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This will:
+
 - Register the model in MLflow
 
-### Step 2: Deploy the Chatbot Service
+### Step 3: Deploy the Chatbot Service
 
 - Go to **Deployments > New Service** in AI Studio.
 - Name the service and select the registered model.
@@ -132,7 +143,7 @@ This will:
 - Once deployed, access the **Swagger UI** via the Service URL.
 - The service will automatically use the configuration logged as an artifact during model registration.
 
-### Step 3: Access the User Interface
+### Step 4: Access the User Interface
 
 Choose from multiple UI options:
 
