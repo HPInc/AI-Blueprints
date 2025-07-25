@@ -105,7 +105,7 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ### Successful Demonstration of the User Interface  
 
-![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
+![Vacation Recommendation Demo UI](docs/html-ui-vacation-recommendation.png)  
 
 ---
 
