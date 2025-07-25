@@ -1,16 +1,21 @@
-[tool.poetry]
+[project]
 name = "recommender-system-streamlit-webapp"
 version = "0.1.0"
 description = ""
-authors = ["gabisponciano gabriela.ponciano2016@gmail.com"]
-package-mode = false
+authors = [
+    {name = "gabisponciano", email = "gabriela.ponciano2016@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit>=1.28.0",
+    "requests>=2.25.0",
+    "pillow>=9.0.0",
+    "urllib3>=2.0.0"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11"
-streamlit = "1.45.0"
-requests = "2.32.4"
-pillow = "11.3.0"
-urllib3 = "2.5.0"
+[tool.poetry]
+package-mode = false
 
 
 [build-system]
