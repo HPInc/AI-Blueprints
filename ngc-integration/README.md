@@ -2,7 +2,7 @@
 
 The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
-We provide **4 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **5 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ## Repository Structure
 
@@ -86,6 +86,15 @@ The repository is organized into the following structure:
 
 
 ```
+
+# 🤖 Agentic RAG for AI Studio with TRT-LLM and LangGraph
+
+This project contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
+
+- **TensorRT-backed Llama-3.1-Nano (TRT-LLM)**: for fast, GPU-accelerated inference.
+- **LangGraph**: to orchestrate an agentic, multi-step decision flow (relevance check, memory lookup, query rewriting, retrieval, answer generation, and memory update).
+- **ChromaDB**: as a local vector store over Markdown context files (about AI Studio).
+- **SimpleKVMemory**: a lightweight on-disk key-value store to cache query-answer pairs.
 
 # 🎙️ Audio Translation with NeMo Models
 
