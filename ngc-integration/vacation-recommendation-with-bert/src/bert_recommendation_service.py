@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from tabulate import tabulate
+from typing import Any, Dict, List, Tuple
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Deep learning framework
@@ -18,16 +19,33 @@ import torch
 
 # NLP libraries
 import nltk  # Natural Language Toolkit
-from nemo.collections.nlp.models import BERTLMModel  # BERT Language Model from NVIDIA NeMo
 from transformers import AutoTokenizer  # Tokenizer for transformer-based models
 from transformers import logging as hf_logging
 import mlflow
+from mlflow.models import ModelSignature
+from mlflow.types import ColSpec, Schema, TensorSpec, ParamSchema, ParamSpec
+
+project_root = Path(__file__).resolve().parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 class BERTTourismModel(mlflow.pyfunc.PythonModel):
+    # ── make the *empty* instance pickle-safe ──────────────────────────────
+    def __getstate__(self):
+        # nothing needs to be persisted; return an empty dict
+        return {}
+
+    def __setstate__(self, state):
+        # rebuilt later in load_context()
+        pass
+        
     def load_context(self, context):
         """
         Load precomputed embeddings, corpus, and the pre-trained BERT model.
         """
+         # local import: keeps the module-level namespace pickle-safe
+        from nemo.collections.nlp.models import BERTLMModel
+        
         # Load precomputed embeddings and corpus data
         self.embeddings_df = pd.read_csv(context.artifacts['embeddings_path'])
         self.corpus_df = pd.read_csv(context.artifacts['corpus_path'])
@@ -83,7 +101,16 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         return results.to_dict(orient="records")
     
     @classmethod
-    def log_model(cls, model_name):
+    def log_model(
+        cls,
+        model_name,
+        corpus_path,
+        embeddings_path,
+        tokenizer_dir,
+        bert_model_online_path,
+        bert_model_datafabric_path,
+        demo_path
+    ):
         """
         Logs the model to MLflow with appropriate artifacts and schema.
         """
@@ -96,21 +123,28 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         
         # Define model signature
         signature = ModelSignature(inputs=input_schema, outputs=output_schema, params=params_schema)
+
+        # Define the artifacts
+        artifacts={
+            "corpus_path": corpus_path,
+            "embeddings_path": embeddings_path, 
+            "tokenizer_dir": tokenizer_dir, 
+            # If you are using the downloaded bert model then uncomment the line below and comment the other bert model line that uses nemo model from datafabric
+            #"bert_model_path": bert_model_online_path,            
+            "bert_model_path": bert_model_datafabric_path,
+            "demo": demo_path,
+        }
+
+        src_dir = str(Path(__file__).parent.resolve())
         
         # Log the model in MLflow
         mlflow.pyfunc.log_model(
-            model_name,
+            artifact_path=model_name,
             python_model=cls(),
-            artifacts={
-                "corpus_path": CORPUS_PATH,
-                "embeddings_path": EMBEDDINGS_PATH, 
-                "tokenizer_dir": TOKENIZER_DIR, 
-                # If you are using the downloaded bert model then uncomment the line below and comment the other bert model line that uses nemo model from datafabric
-                #"bert_model_path": BERT_MODEL_ONLINE_PATH,            
-                "bert_model_path": BERT_MODEL_DATAFABRIC_PATH,
-                "demo": DEMO_PATH,
-            },
-            signature=signature
+            artifacts=artifacts,
+            signature=signature,
+            pip_requirements="../requirements.txt",
+            code_paths=[src_dir],
         )
 
 # ── MLflow code-based entry-point ─────────────────────────────────────────────
