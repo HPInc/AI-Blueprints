@@ -32,11 +32,9 @@ if str(project_root) not in sys.path:
 class BERTTourismModel(mlflow.pyfunc.PythonModel):
     # ── make the *empty* instance pickle-safe ──────────────────────────────
     def __getstate__(self):
-        # nothing needs to be persisted; return an empty dict
         return {}
 
     def __setstate__(self, state):
-        # rebuilt later in load_context()
         pass
         
     def load_context(self, context):
