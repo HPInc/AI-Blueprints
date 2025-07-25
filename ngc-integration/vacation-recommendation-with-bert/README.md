@@ -1,4 +1,4 @@
-# 🌍 Vacation Recommendation Agent  
+# 🌍 Vacation Recommendation Service  
 
 <div align="center">
 
@@ -18,23 +18,34 @@
 * [📞 Contact and Support](#contact-and-support)
 
 ## Overview  
-The **Vacation Recommendation Agent** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+The **Vacation Recommendation Service** is an AI-powered system designed to provide personalized travel recommendations based on user queries. It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
 
 ## Project Structure  
 ```
-├── README.md                                            # Project documentation
-├── data                                                 # Data assets used in the project
+├── README.md                                                               # Project documentation
+├── artifacts                                                               # Artifacts used in the project
+|   └── tokenizer                                                           # Directory containing tokens used for NLP
+|       ├── special_tokens_map.json
+|       ├── tokenizer_config.json
+|       ├── tokenizer.json
+|       └── vocab.txt
+├── data                                                                    # Data assets used in the project
 │   └── raw
 │       └── corpus.csv
-├── demo                                                 # UI-related files
+├── demo                                                                    # UI-related files
 │   └── index.html
 ├── docs
-│   ├── architecture.md                                  # Model Details and API Endpoints
-│   └── ui_vacation.png                                  # UI screenshot
-├── notebooks                                            # Main notebook for the project
-│   ├── 00_Word_Embeddings_Generation.ipynb
-│   
-└── requirements.txt                                     # Python dependencies (used with pip install)
+│   ├── architecture.md                                                     # Model Details and API Endpoints
+|   ├── successful-streamlit-ui-bert-vacation-recommendation-result.pdf     # UI screenshot for streamlit UI results
+|   ├── successful-swagger-ui-bert-vacation-recommendation-result.pdf       # UI screenshot for swagger UI results
+│   └── ui_vacation.png                                                     # UI screenshot
+├── notebooks                                                               # Main notebook for the project
+│   ├── register-model.ipynb                                                # Notebook for registering trained models to MLflow
+|   └── run-workflow.ipynb                                                  # Notebook for generating embeddings and saving the tokenizer
+├── src
+|   ├──__init__.py
+|   └── bert_recommendation_service.py                                       # Recommendation BERT service implementation
+└── requirements.txt                                                        # Python dependencies (used with pip install)
 ```  
 
 ## Setup 
@@ -72,11 +83,11 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ### Step 1: Generate Embeddings  
 Run the following notebook to generate word embeddings and save the tokenizer:  
-- `00_Word_Embeddings_Generation.ipynb`.  
+- `run-workflow.ipynb`.  
 
 
 ### Step 2: Deploy the Service  
-1. Execute `00_Word_Embeddings_Generation.ipynb` to register the BERT model in MLflow and create the API logic.  
+1. Execute the `register-model.ipynb` to register the BERT model in MLflow and create the API logic.  
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
 4. Choose an available model version and configure it with **GPU acceleration**.  
@@ -87,14 +98,14 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 9. Click **Get Recommendations** to view the results.  
 
 
-### Step 3: Launh the Streamlit UI
+### Step 3: Launch the Streamlit UI
 1. To launch the Streamlit UI, follow the instructions in the README file located in the demo/streamlit-webapp folder.
-2. Navigate to the shown URL and view the vacation recommendation
+2. Navigate to the shown URL and view the vacation recommendation.
 
 
 ### Successful Demonstration of the User Interface  
 
-![Vacation Recommendation Demo UI](docs/ui_vacation.png)  
+![Vacation Recommendation Demo UI](docs/html-ui-vacation-recommendation.png)  
 
 ---
 
