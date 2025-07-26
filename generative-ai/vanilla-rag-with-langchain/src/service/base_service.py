@@ -41,7 +41,8 @@ class BaseGenerativeService(PythonModel):
             Dictionary containing the loaded configuration
         """
         config_path = context.artifacts["config"]
-        secrets_path = context.artifacts["secrets"]
+         # Secrets are loaded from the environment and stored in this dictionary
+        secrets = context.artifacts["secrets"]
         
         # Load configuration
         if os.path.exists(config_path):
@@ -53,17 +54,15 @@ class BaseGenerativeService(PythonModel):
             logger.warning(f"Configuration file not found at {config_path}")
             
         # Load secrets
-        if os.path.exists(secrets_path):
-            with open(secrets_path) as file:
-                secrets = yaml.safe_load(file)
-                logger.info(f"Secrets loaded from {secrets_path}")
+        if secrets:
+            logger.info("Secrets loaded from MLflow artifacts")
         else:
             secrets = {}
-            logger.warning(f"Secrets file not found at {secrets_path}")
+            logger.warning("No secrets found in MLflow artifacts")
             
         # Merge configurations
         self.model_config = {
-            "hf_key": secrets.get("HUGGINGFACE_API_KEY", ""),
+            "hf_key": secrets.get("AIS_HUGGINGFACE_API_KEY", ""),
             "proxy": config.get("proxy", None),
             "model_source": config.get("model_source", "local"),
         }
