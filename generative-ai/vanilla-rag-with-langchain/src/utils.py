@@ -1,8 +1,8 @@
 """
-Utility functions for AI Studio Galileo Templates.
+Utility functions for AI Studio Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and Galileo integration.
+including configuration loading, and model initialization.
 """
 
 import os
@@ -286,59 +286,6 @@ def initialize_llm(
         model.__dict__['_context_window'] = context_window
 
     return model
-
-
-def setup_galileo_environment(secrets: Dict[str, Any], console_url: str = "https://console.hp.galileocloud.io/") -> None:
-    """
-    Configure environment variables for Galileo services (DEPRECATED - This function is no longer used).
-
-    Args:
-        secrets: Dictionary containing the Galileo API key.
-        console_url: URL for the Galileo console.
-
-    Raises:
-        DeprecationWarning: This function has been deprecated.
-    """
-    import warnings
-    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
-
-
-def initialize_galileo_protect(project_name: str, stage_name: Optional[str] = None) -> Tuple[Any, str, str]:
-    """
-    Initialize Galileo Protect project and stage (DEPRECATED - This function is no longer used).
-
-    Args:
-        project_name: Name for the Galileo Protect project.
-        stage_name: Optional name for the stage. If None, uses "{project_name}_stage".
-
-    Returns:
-        Tuple containing (None, "", "") as placeholder.
-
-    Raises:
-        DeprecationWarning: This function has been deprecated.
-    """
-    import warnings
-    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
-    return None, "", ""
-
-
-def initialize_galileo_evaluator(project_name: str, scorers: Optional[List] = None):
-    """
-    Initialize a Galileo Prompt Callback for evaluation (DEPRECATED - This function is no longer used).
-
-    Args:
-        project_name: Name for the evaluation project.
-        scorers: List of scorers to use. If None, uses default scorers.
-
-    Returns:
-        None as placeholder.
-
-    Raises:
-        DeprecationWarning: This function has been deprecated.
-    """
-    import warnings
-    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
-    return None
     
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
@@ -776,21 +723,3 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     formatted_text = "\n\n".join(formatted_docs)
 
     return formatted_text
-
-
-def initialize_galileo_observer(project_name: str):
-    """
-    Initialize a Galileo Observer for monitoring (DEPRECATED - This function is no longer used).
-
-    Args:
-        project_name: Name for the observation project.
-
-    Returns:
-        None as placeholder.
-
-    Raises:
-        DeprecationWarning: This function has been deprecated.
-    """
-    import warnings
-    warnings.warn("Galileo integration has been removed from this blueprint.", DeprecationWarning, stacklevel=2)
-    return None
