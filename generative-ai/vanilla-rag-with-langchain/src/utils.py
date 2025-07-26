@@ -67,30 +67,57 @@ def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> No
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
-
-def load_config_and_secrets(
-    config_path: str = "../../configs/config.yaml",
-    secrets_path: str = "../../configs/secrets.yaml"
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def load_secrets(secret_keys: Optional[List[str]] = None,) -> Dict[str, Any]:
     """
-    Load configuration and secrets from YAML files.
+    Load secrets from secrets manager
+
+    Args:
+        secret_keys: List of expected secret names.  
+        If None, every project environment variable with 'AIS' prefix is returned.
+        
+    Returns:
+        Dictionary containing all secrets for the project.
+        
+    ValueError:       
+        Requested secret(s) are missing or none found with AIS- prefix.
+    """
+    # Build secrets from environment
+    if secret_keys is None:
+        secrets = {
+            k: v for k, v in os.environ.items()
+            if k.isupper() and k.startswith("AIS_")
+        }
+        if not secrets:
+            raise ValueError(
+                "No environment variables found with prefix 'AIS_'. "
+                "Please set your required project secrets in AIS Secrets Manager."
+            )
+    else:
+        secrets = {k: os.environ.get(k) for k in secret_keys}
+        missing = [k for k, v in secrets.items() if v is None]
+        if missing:
+            raise ValueError(
+                f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
+            )
+    return secrets
+
+def load_config(
+    config_path: str = "../../configs/config.yaml"
+) -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
 
     Args:
         config_path: Path to the configuration YAML file.
-        secrets_path: Path to the secrets YAML file.
 
     Returns:
-        Tuple containing (config, secrets) as dictionaries.
+        Dictionary containing the project configurations.
 
     Raises:
-        FileNotFoundError: If either the config or secrets file is not found.
+        FileNotFoundError: If the config file is not found.
     """
     # Convert to absolute paths if needed
     config_path = os.path.abspath(config_path)
-    secrets_path = os.path.abspath(secrets_path)
-
-    if not os.path.exists(secrets_path):
-        raise FileNotFoundError(f"secrets.yaml file not found in path: {secrets_path}")
 
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
@@ -98,10 +125,42 @@ def load_config_and_secrets(
     with open(config_path) as file:
         config = yaml.safe_load(file)
 
-    with open(secrets_path) as file:
-        secrets = yaml.safe_load(file)
+    return config
+    
+# def load_config_and_secrets(
+#     config_path: str = "../../configs/config.yaml",
+#     secrets_path: str = "../../configs/secrets.yaml"
+# ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+#     """
+#     Load configuration and secrets from YAML files.
 
-    return config, secrets
+#     Args:
+#         config_path: Path to the configuration YAML file.
+#         secrets_path: Path to the secrets YAML file.
+
+#     Returns:
+#         Tuple containing (config, secrets) as dictionaries.
+
+#     Raises:
+#         FileNotFoundError: If either the config or secrets file is not found.
+#     """
+#     # Convert to absolute paths if needed
+#     config_path = os.path.abspath(config_path)
+#     secrets_path = os.path.abspath(secrets_path)
+
+#     if not os.path.exists(secrets_path):
+#         raise FileNotFoundError(f"secrets.yaml file not found in path: {secrets_path}")
+
+#     if not os.path.exists(config_path):
+#         raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+
+#     with open(config_path) as file:
+#         config = yaml.safe_load(file)
+
+#     with open(secrets_path) as file:
+#         secrets = yaml.safe_load(file)
+
+#     return config, secrets
 
 
 def configure_proxy(config: Dict[str, Any]) -> None:
@@ -163,10 +222,10 @@ def initialize_llm(
             repo_id = DEFAULT_MODELS["hugging-face-cloud"]
         else:
             repo_id = hf_repo_id  
-        if not secrets or "HUGGINGFACE_API_KEY" not in secrets:
+        if not secrets or "AIS_HUGGINGFACE_API_KEY" not in secrets:
             raise ValueError("HuggingFace API key is required for cloud model access")
             
-        huggingfacehub_api_token = secrets["HUGGINGFACE_API_KEY"]
+        huggingfacehub_api_token = secrets["AIS_HUGGINGFACE_API_KEY"]
         # Get context window from our lookup table
         if repo_id in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[repo_id]
@@ -329,7 +388,7 @@ def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     from huggingface_hub import login
 
-    token = secrets.get("HUGGINGFACE_API_KEY")
+    token = secrets.get("AIS_HUGGINGFACE_API_KEY")
     if not token:
         raise ValueError("❌ Hugging Face token not found in secrets.yaml.")
     
