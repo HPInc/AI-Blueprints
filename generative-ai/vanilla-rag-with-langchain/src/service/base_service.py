@@ -14,6 +14,7 @@ import mlflow
 from mlflow.pyfunc import PythonModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
+from src.utils import load_secrets
 
 # Add basic logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,8 +42,17 @@ class BaseGenerativeService(PythonModel):
             Dictionary containing the loaded configuration
         """
         config_path = context.artifacts["config"]
+
          # Secrets are loaded from the environment and stored in this dictionary
-        secrets = context.artifacts["secrets"]
+        secrets = load_secrets()
+        token = secrets.get("AIS_HUGGINGFACE_API_KEY", "")
+
+        if token is None:
+            logger.warning("Key AIS_HUGGINGFACE_API_KEY not found")
+        elif token.strip() == "":
+            logger.warning("AIS_HUGGINGFACE_API_KEY is empty")
+        else:
+            logger.info("Secrets loaded from environment")
         
         # Load configuration
         if os.path.exists(config_path):
@@ -53,16 +63,9 @@ class BaseGenerativeService(PythonModel):
             config = {}
             logger.warning(f"Configuration file not found at {config_path}")
             
-        # Load secrets
-        if secrets:
-            logger.info("Secrets loaded from MLflow artifacts")
-        else:
-            secrets = {}
-            logger.warning("No secrets found in MLflow artifacts")
-            
         # Merge configurations
         self.model_config = {
-            "hf_key": secrets.get("AIS_HUGGINGFACE_API_KEY", ""),
+            "hf_key": token,
             "proxy": config.get("proxy", None),
             "model_source": config.get("model_source", "local"),
         }
