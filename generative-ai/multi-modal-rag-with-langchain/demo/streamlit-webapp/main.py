@@ -10,92 +10,126 @@ from pathlib import Path
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 # --- Define project paths ---
+# IMPORTANT: Make sure this path is correct for your project structure.
 IMAGE_DIR = Path("../../data/context/images")
-
-
 
 # --- Page Configuration & Custom CSS ---
 
 st.set_page_config(
-    page_title="🤖 Multimodal RAG Chatbot",
-    layout="wide",
-    initial_sidebar_state="collapsed",
+    page_title="ADO Wiki AI Assistant",
+    page_icon="🤖",
+    layout="centered",
+    initial_sidebar_state="expanded",
 )
 
 def load_css():
-    """Applies custom CSS for a branded, modern look."""
+    """Applies custom CSS for HP branding and a rounded, modern chat interface."""
     css = """
     <style>
-        /* Main app styling */
+        /* Import a clean, modern font */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        html, body, [class*="st-"] {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* Main app background */
         .stApp {
-            background-color: #FFFFFF;
+            background-color: #F0F2F5;
         }
 
-        /* Custom Header */
-        .header {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: black;
-            padding: 2rem;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin: 0;
+        /* --- CHAT STYLES (UPDATED FOR ROUNDED LOOK) --- */
+        
+        /* Main container for chat messages */
+        .st-emotion-cache-1f1G2gn {
+            width: 100%;
         }
 
-        /* Styled containers for results */
-        .result-container {
-            background-color: #000000;
-            border-left: 6px solid #007bff;
-            padding: 1.5rem;
-            border-radius: 8px;
+        /* Chat message bubbles */
+        [data-testid="stChatMessage"] {
+            padding: 1rem 1.25rem;
+            border-radius: 22px; /* Increased rounding */
             margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+            border: none;
+            max-width: 85%; /* Bubbles don't span full width */
         }
-        .result-container h2 {
-            margin-top: 0;
-            color: #0056b3;
-            font-size: 1.5rem;
+
+        /* Assistant (AI) message styling - aligned left */
+        div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"]) {
+            background-color: #FFFFFF; /* White background for assistant */
+            color: #262626;
+            margin-right: auto;
         }
         
-        /* Custom Button */
-        div[data-testid="stButton"] > button {
-            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
-            color: black;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.2s ease-in-out;
+        /* User message styling - aligned right */
+        div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"] p) {
+            background-color: #0082C9; /* A slightly softer HP Blue for user messages */
+            color: #FFFFFF;
+            margin-left: auto;
         }
-        div[data-testid="stButton"] > button:hover {
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-            transform: translateY(-2px);
+        
+        /* Ensure the avatar and message content are properly aligned */
+        [data-testid="stChatMessage"] > div {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
         }
+
+        /* Style for retrieved images container */
+        .image-gallery-header {
+            color: #333;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #E0E0E0;
+        }
+        
+        /* --- SIDEBAR STYLES --- */
+        [data-testid="stSidebar"] {
+            background-color: #FFFFFF;
+            padding: 1rem;
+        }
+
+        [data-testid="stSidebar"] .stMarkdown h2 {
+            color: #0096D6; /* HP Blue for sidebar title */
+            font-weight: 700;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #0096D6;
+        }
+        
+        /* --- CHAT INPUT STYLES (UPDATED FOR ROUNDED LOOK) --- */
+        [data-testid="stChatInput"] {
+            background-color: #F0F2F5;
+            border-top: 1px solid #D1D5DB;
+        }
+        
+        [data-testid="stChatInput"] textarea {
+            border-radius: 25px !important; /* Pill shape */
+            border: 1px solid #D1D5DB !important;
+            background-color: #FFFFFF !important;
+        }
+
+        /* Style send button */
+        [data-testid="stChatInput"] button {
+            background-color: #0096D6 !important;
+            border-radius: 50% !important; /* Make it a circle */
+            color: white !important;
+        }
+        
+        [data-testid="stChatInput"] button:hover {
+            background-color: #0076a8 !important;
+        }
+
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
 
-# --- API Interaction Logic ---
+# --- API Interaction Logic (Unchanged) ---
 
 def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
-    """
-    Calls the MLflow model serving endpoint.
-
-    Args:
-        api_url: The full URL to the /invocations endpoint.
-        query: The user's question for the model.
-        force_regenerate: Flag to control caching.
-
-    Returns:
-        A dictionary containing the prediction result or an error.
-    """
-    # MLflow expects a JSON object with a 'dataframe_records' key
+    """Calls the MLflow model serving endpoint."""
     payload = {
         "dataframe_records": [
             {
@@ -104,15 +138,12 @@ def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
             }
         ]
     }
-    
     headers = {"Content-Type": "application/json"}
     
     try:
-        # Use verify=False for local deployments with self-signed certs
         response = requests.post(api_url, json=payload, headers=headers, verify=False, timeout=120)
         
         if response.status_code == 200:
-            # The actual prediction is nested
             predictions = response.json().get("predictions", [])
             if predictions:
                 return {"success": True, "data": predictions[0]}
@@ -126,132 +157,102 @@ def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
         error_message = f"Network or connection error: {e}"
         return {"success": False, "error": error_message}
 
-# --- Main Application UI ---
+# --- Main Application UI (Unchanged) ---
 
 def main():
-    """Renders the main Streamlit application page."""
+    """Renders the main HP-branded Chatbot application page."""
     load_css()
     
-    # Render custom header
-    st.markdown('<div class="header"><h1>🤖 AI Studio Multimodal Chatbot</h1></div>', unsafe_allow_html=True)
-
-    # Initialize session state for persistence
-    if "api_url" not in st.session_state:
-        st.session_state.api_url = "http://127.0.0.1:5001/invocations" # Default local URL
-    if "last_result" not in st.session_state:
-        st.session_state.last_result = None
-
-    # --- 1. Endpoint Configuration ---
-    st.subheader("1. API Configuration")
-    api_url = st.text_input(
-        "MLflow Endpoint URL",
-        value=st.session_state.api_url,
-        help="The full URL to the MLflow model's `/invocations` endpoint.",
-    )
-    st.session_state.api_url = api_url # Persist changes
-
-    st.markdown("---")
-
-    # --- 2. Model Inputs ---
-    st.subheader("2. Ask a Question")
-    col1, col2 = st.columns([3, 1])
-
-    with col1:
-        query = st.text_area(
-            "Your Question:",
-            height=150,
-            placeholder="e.g., How do I manually clean my environment without hooh?",
-            help="Enter the question you want to ask the RAG model."
+    # --- Sidebar for Configuration ---
+    with st.sidebar:
+        st.markdown("## ⚙️ Configuration")
+        
+        api_url = st.text_input(
+            "MLflow Endpoint URL",
+            value="https://localhost:57259/invocations",
+            help="The full URL to the MLflow model's `/invocations` endpoint.",
         )
-
-    with col2:
+        
         force_regenerate = st.checkbox(
             "Force Regeneration",
             value=False,
-            help="Check this box to bypass the semantic cache and force a new answer."
+            help="Bypass cache and force a new answer from the model."
         )
 
-    # --- 3. Submit Action ---
-    if st.button("Get Answer"):
-        # Validate inputs
-        if not api_url.startswith(("http://", "https://")):
-            st.error("Invalid Endpoint URL. Please enter a valid URL starting with `http://` or `https://`.")
-        elif not query.strip():
-            st.error("The question field cannot be empty. Please enter a question.")
-        else:
-            with st.spinner("🧠 Thinking... Contacting the model API, please wait."):
-                result = call_mlflow_api(api_url, query, force_regenerate)
-                st.session_state.last_result = result # Store result in session state
+        st.markdown("---")
+        st.info("This interface allows you to interact with the Multimodal RAG model.")
 
-    st.markdown("---")
+    # --- Main Chat Interface ---
+    st.title("🤖 ADO Wiki AI Assistant")
+    
+    # Initialize session state for chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    # --- 4. Display Results ---
-    st.subheader("3. Results")
-
-    # Only try to display results if the 'last_result' object exists in the session
-    if st.session_state.last_result:
-        result = st.session_state.last_result
-
-        # First, check if the API call was successful
-        if result.get("success"):
-            # If successful, we can safely access the 'data' key
-            data = result.get("data", {})
-
-            # --- Display Reply ---
-            # --- Display Reply ---
-            st.markdown(
-                f"""
-                <div class="result-container">
-                    <h2>🤖 Model's Reply</h2>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            # Get the reply and render it using st.markdown to process the ## and ** tags
-            reply_text = data.get('reply', 'No reply text found in the response.')
-            st.markdown(reply_text, unsafe_allow_html=True)
-
-            # --- Display Used Images ---
-            # The API returns a direct list, so we don't need json.loads()
-            used_images = data.get("used_images", [])
-
-            if used_images and isinstance(used_images, list):
-                st.markdown(
-                    """
-                    <div class="result-container">
-                        <h2>🖼️ Retrieved Images</h2>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                # Display images in columns for a cleaner layout
+    # Display prior chat messages
+    for message in st.session_state.messages:
+        # Use a different avatar for user vs assistant
+        avatar = "🧑‍💻" if message["role"] == "user" else "🤖"
+        with st.chat_message(message["role"], avatar=avatar):
+            # Display text content
+            st.markdown(message["content"])
+            
+            # Display images if they exist for an assistant message
+            if "images" in message and message["images"]:
+                st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
                 cols = st.columns(4)
-                col_index = 0
+                for idx, img_path in enumerate(message["images"]):
+                    with cols[idx % 4]:
+                        st.image(str(img_path), use_column_width=True)
 
-                for relative_path_str in used_images:
-                    # The model returns a relative path; we need the filename.
-                    image_filename = Path(relative_path_str).name
+    # Handle new user input
+    if prompt := st.chat_input("Ask a question about your documents..."):
+        # Add user message to session state and display it
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user", avatar="🧑‍💻"):
+            st.markdown(prompt)
+
+        # Process and display the assistant's response
+        with st.chat_message("assistant", avatar="🤖"):
+            with st.spinner("🧠 Thinking... Contacting the model..."):
+                response = call_mlflow_api(api_url, prompt, force_regenerate)
+                
+                response_placeholder = st.empty()
+                full_response_content = ""
+                retrieved_images = []
+
+                if response.get("success"):
+                    data = response.get("data", {})
+                    reply_text = data.get('reply', 'Sorry, I could not generate a reply.')
                     
-                    # Construct the full, absolute path to the image
-                    full_image_path = IMAGE_DIR / image_filename
-                    # Check if the image file actually exists before trying to display it
-                    if full_image_path.is_file():
-                        with cols[col_index % 4]:
-                            st.image(
-                                str(full_image_path),
-                                caption=image_filename,
-                                use_column_width=True
-                            )
-                            col_index += 1
-                    else:
-                        # If the file is not found, print a warning
-                        st.warning(f"Image not found: {image_filename}")
-            else:
-                st.info("No images were retrieved for this query.")
-        else:
-            # If the API call failed, display the error message
-            error_message = result.get("error", "An unknown error occurred.")
-            st.error(f"**Failed to get a response:**\n\n{error_message}")
+                    full_response_content = reply_text
+                    response_placeholder.markdown(full_response_content)
+                    
+                    used_images_paths = data.get("used_images", [])
+                    if used_images_paths:
+                        st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
+                        cols = st.columns(4)
+                        for idx, rel_path_str in enumerate(used_images_paths):
+                            img_filename = Path(rel_path_str).name
+                            full_img_path = IMAGE_DIR / img_filename
+                            if full_img_path.is_file():
+                                retrieved_images.append(full_img_path)
+                                with cols[idx % 4]:
+                                    st.image(str(full_img_path), caption=img_filename, use_column_width=True)
+                            else:
+                                st.warning(f"Image not found: {img_filename}")
+
+                else:
+                    error_message = response.get("error", "An unknown error occurred.")
+                    full_response_content = f"**Error:**\n\n{error_message}"
+                    response_placeholder.error(full_response_content)
+
+                # Add the complete assistant message to session state
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": full_response_content,
+                    "images": retrieved_images
+                })
+
 if __name__ == "__main__":
     main()
