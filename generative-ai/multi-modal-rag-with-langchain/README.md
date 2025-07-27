@@ -101,7 +101,7 @@ For optimal performance, especially when working with larger models or datasets,
 - Download the **InternVL3-8B-Instruct** model from AWS S3 using the Models tab in your AI Studio project:
   - **Model Name**: `InternVL3-8B-Instruct`
   - **Model Source**: `AWS S3`
-  - **S3 URI**: `TBD`
+  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/InternVL3-8B-Instruct/`
   - **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
