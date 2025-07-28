@@ -69,7 +69,7 @@ def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> No
 
 def load_secrets(secret_keys: Optional[List[str]] = None,) -> Dict[str, Any]:
     """
-    Load secrets from secrets manager
+    Load secrets from secrets environment variables.
 
     Args:
         secret_keys: List of expected secret names.  
@@ -100,6 +100,35 @@ def load_secrets(secret_keys: Optional[List[str]] = None,) -> Dict[str, Any]:
                 f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
             )
     return secrets
+
+def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
+    """
+    Loads secrets from a YAML file and sets them as environment variables.
+
+    Parameters:
+    - secrets_path (str): Path to the secrets YAML file.
+    """
+    secrets_file = Path(secrets_path).resolve()
+
+    if not secrets_file.exists():
+        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
+
+    with secrets_file.open("r", encoding="utf-8") as file:
+        try:
+            secrets = yaml.safe_load(file)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Failed to parse YAML: {e}")
+
+    if not isinstance(secrets, dict):
+        raise ValueError("Secrets file must contain a top-level dictionary.")
+
+    for key, value in secrets.items():
+        if not isinstance(key, str):
+            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
+        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
+        os.environ["AIS_" + key] = str(value)
+
+    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
 
 def load_config(
     config_path: str = "../../configs/config.yaml"
@@ -136,7 +165,6 @@ def configure_proxy(config: Dict[str, Any]) -> None:
     """
     if "proxy" in config and config["proxy"]:
         os.environ["HTTPS_PROXY"] = config["proxy"]
-
 
 def initialize_llm(
     model_source: str = "local",
@@ -202,8 +230,8 @@ def initialize_llm(
 
     elif model_source == "hugging-face-local":
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-        if "HUGGINGFACE_API_KEY" in secrets:
-            os.environ["HF_TOKEN"] = secrets["HUGGINGFACE_API_KEY"]
+        if "AIS_HUGGINGFACE_API_KEY" in secrets:
+            os.environ["HF_TOKEN"] = secrets["AIS_HUGGINGFACE_API_KEY"]
         if hf_repo_id == "":
             model_id = DEFAULT_MODELS["hugging-face-local"]
         else:

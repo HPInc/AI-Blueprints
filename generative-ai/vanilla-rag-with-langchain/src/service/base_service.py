@@ -14,7 +14,7 @@ import mlflow
 from mlflow.pyfunc import PythonModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
-from src.utils import load_secrets
+from src.utils import load_secrets_to_env
 
 # Add basic logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,16 +43,21 @@ class BaseGenerativeService(PythonModel):
         """
         config_path = context.artifacts["config"]
 
-         # Secrets are loaded from the environment and stored in this dictionary
-        secrets = load_secrets()
-        token = secrets.get("AIS_HUGGINGFACE_API_KEY", "")
+        # Load secrets into environment
+        secrets_path = context.artifacts.get("secrets")
+        if secrets_path and os.path.exists(secrets_path):
+            try:
+                load_secrets_to_env(secrets_path)
+                logger.info(f"Secrets loaded from {secrets_path} into environment")
+            except Exception as e:
+                logger.warning(f"Failed to load secrets artifact from {secrets_path} into environment: {e}")
 
-        if token is None:
-            logger.warning("Key AIS_HUGGINGFACE_API_KEY not found")
-        elif token.strip() == "":
-            logger.warning("AIS_HUGGINGFACE_API_KEY is empty")
+        # Retrieve the token from the current environment
+        token = os.getenv("AIS_HUGGINGFACE_API_KEY", "")
+        if not token.strip():
+             logger.warning("Key AIS_HUGGINGFACE_API_KEY not found or empty")
         else:
-            logger.info("Secrets loaded from environment")
+            logger.info("Hugging Face token is available and loaded from environment")
         
         # Load configuration
         if os.path.exists(config_path):
