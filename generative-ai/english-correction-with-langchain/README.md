@@ -82,7 +82,16 @@ Ensure your environment meets the minimum compute requirements for smooth image 
    ```  
 2. Make sure the folder `generative-ai/english-correction-with-langchain` is present inside your workspace.
 
-#### Step 4: Use a Custom Kernel for Notebooks
+### Step 4: Configure Configs and Secrets Manager
+
+- Edit `config.yaml` with relevant configuration details.
+
+- Secrets Configuration:
+  - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
+  - Add the following secrets:
+     - GITHUB_ACCESS_TOKEN: Your GitHub Personal Access Token (PAT)
+
+#### Step 5: Use a Custom Kernel for Notebooks
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 ---
