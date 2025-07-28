@@ -126,7 +126,8 @@ def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
         if not isinstance(key, str):
             raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
         # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
-        os.environ["AIS_" + key] = str(value)
+        env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
+        os.environ[env_key] = str(value)
 
     print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
 
