@@ -1,7 +1,0 @@
-# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
-model_source: "local"
-
-# proxy is used to set the HTTPS_PROXY environment variable when necessary.
-# For example, if you need to access Galileo from a restricted network,
-# you should specify the proxy in this config.yaml file.
-# proxy: "http://web-proxy.austin.hp.com:8080"
