@@ -1,0 +1,2 @@
+# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
+model_source: "local"
