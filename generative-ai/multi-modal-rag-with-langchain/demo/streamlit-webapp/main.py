@@ -23,108 +23,88 @@ st.set_page_config(
 )
 
 def load_css():
-    """Applies custom CSS for HP branding and a rounded, modern chat interface."""
     css = """
     <style>
-        /* Import a clean, modern font */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
         html, body, [class*="st-"] {
             font-family: 'Roboto', sans-serif;
         }
 
-        /* Main app background */
-        .stApp {
-            background-color: #F0F2F5;
-        }
-        
-        /* Main container for chat messages */
-        .st-emotion-cache-1f1G2gn {
-            width: 100%;
-        }
-
-        /* Chat message bubbles */
-        [data-testid="stChatMessage"] {
-            padding: 1rem 1.25rem;
-            border-radius: 22px; /* Increased rounding */
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
-            border: none;
-            max-width: 85%; /* Bubbles don't span full width */
-        }
-
-        /* Assistant (AI) message styling - aligned left */
-        div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"]) {
-            background-color: #FFFFFF; /* White background for assistant */
-            color: #262626;
-            margin-right: auto;
-        }
-        
-        /* User message styling - aligned right */
-        div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"] p) {
-            background-color: #0082C9; /* A slightly softer HP Blue for user messages */
-            color: #FFFFFF;
-            margin-left: auto;
-        }
-        
-        /* Ensure the avatar and message content are properly aligned */
-        [data-testid="stChatMessage"] > div {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        /* Style for retrieved images container */
-        .image-gallery-header {
-            color: #333;
-            font-weight: 500;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #E0E0E0;
-        }
-        
-        /* --- SIDEBAR STYLES --- */
-        [data-testid="stSidebar"] {
+        /* Light mode styles */
+        body {
             background-color: #FFFFFF;
-            padding: 1rem;
+            color: #262626;
         }
 
-        [data-testid="stSidebar"] .stMarkdown h2 {
-            color: #0096D6; /* HP Blue for sidebar title */
-            font-weight: 700;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #0096D6;
-        }
-        
-        /* --- CHAT INPUT STYLES --- */
-        [data-testid="stChatInput"] {
-            background-color: #F0F2F5;
-            border-top: 1px solid #D1D5DB;
-        }
-        
-        [data-testid="stChatInput"] textarea {
-            border-radius: 25px !important; /* Pill shape */
-            border: 1px solid #D1D5DB !important;
-            background-color: #FFFFFF !important;
+        .stApp {
+            background-color: #FFFFFF;
         }
 
-        /* Style send button */
-        [data-testid="stChatInput"] button {
-            background-color: #0096D6 !important;
-            border-radius: 50% !important; /* Make it a circle */
-            color: white !important;
-        }
-        
-        [data-testid="stChatInput"] button:hover {
-            background-color: #0076a8 !important;
+        /* Dark mode overrides */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0e1117;
+                color: #FFFFFF;
+            }
+
+            .stApp {
+                background-color: #0e1117;
+            }
+
+            div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"]) {
+                background-color: #1e1e1e !important;
+                color: #f0f0f0 !important;
+            }
+
+            div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"] p) {
+                background-color: #005c94 !important;
+                color: #FFFFFF !important;
+            }
+
+            [data-testid="stSidebar"] {
+                background-color: #1e1e1e !important;
+            }
+
+            [data-testid="stChatInput"] {
+                background-color: #0e1117;
+                border-top: 1px solid #333;
+            }
+
+            [data-testid="stChatInput"] textarea {
+                background-color: #1e1e1e !important;
+                color: #FFFFFF !important;
+                border: 1px solid #444 !important;
+            }
+
+            [data-testid="stChatInput"] button {
+                background-color: #0076a8 !important;
+            }
+
+            [data-testid="stChatInput"] button:hover {
+                background-color: #005c94 !important;
+            }
+            
+            .image-gallery-header {
+                color: #cccccc;
+                border-top: 1px solid #444;
+            }
+
+            /* Style for metric labels in dark mode */
+            [data-testid="stMetricLabel"] {
+                color: #a0a0a0 !important;
+            }
         }
 
+        /* Style for metric labels in light mode */
+        [data-testid="stMetricLabel"] {
+            color: #555555 !important;
+        }
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
 
-# --- API Interaction Logic (Unchanged) ---
+
+# --- API Interaction Logic ---
 
 def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
     """Calls the MLflow model serving endpoint."""
@@ -155,7 +135,7 @@ def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
         error_message = f"Network or connection error: {e}"
         return {"success": False, "error": error_message}
 
-# --- Main Application UI (Unchanged) ---
+# --- Main Application UI ---
 
 def main():
     """Renders the main HP-branded Chatbot application page."""
@@ -163,6 +143,16 @@ def main():
     
     # --- Sidebar for Configuration ---
     with st.sidebar:
+        st.markdown("""
+        ## **Instructions:**
+        #### 1. Enter your model's `/invocations` endpoint URL.
+        #### 2. Ask a question in the text box.
+        #### 3. Click **Send** button to receive an AI-generated answer.
+
+        ## **Example URL:** 
+        #### `https://localhost:5000/invocations`
+        """)
+        
         st.markdown("## ⚙️ Configuration")
         
         api_url = st.text_input(
@@ -181,7 +171,15 @@ def main():
         st.info("This interface allows you to interact with the Multimodal RAG model.")
 
     # --- Main Chat Interface ---
-    st.title("🤖 ADO Wiki AI Assistant")
+
+    # Create a row for the logos in the top-left corner
+    logo_col1, logo_col2, _ = st.columns([2, 2, 10]) 
+    with logo_col1:
+        st.image("assets/hp_logo.png", width=60)
+    with logo_col2:
+        st.image("assets/ai_studio_helix.png", width=60)
+
+    st.markdown("<h1 style='text-align: center;'>🤖 ADO Wiki AI Assistant</h1>", unsafe_allow_html=True)
     
     # Initialize session state for chat history
     if "messages" not in st.session_state:
@@ -189,11 +187,23 @@ def main():
 
     # Display prior chat messages
     for message in st.session_state.messages:
-        # Use a different avatar for user vs assistant
         avatar = "🧑‍💻" if message["role"] == "user" else "🤖"
         with st.chat_message(message["role"], avatar=avatar):
             # Display text content
             st.markdown(message["content"])
+            
+            if "metrics" in message and message["metrics"]:
+                metrics = message["metrics"]
+                gen_time = metrics.get("gen_time")
+                faithfulness = metrics.get("faithfulness")
+                relevance = metrics.get("relevance")
+
+                if gen_time is not None and faithfulness is not None and relevance is not None:
+                    st.markdown("---")
+                    metric_col1, metric_col2, metric_col3 = st.columns(3)
+                    metric_col1.metric(label="Generation Time", value=f"{gen_time:.2f} s")
+                    metric_col2.metric(label="Faithfulness", value=f"{faithfulness:.2f}")
+                    metric_col3.metric(label="Relevance", value=f"{relevance:.2f}")
             
             # Display images if they exist for an assistant message
             if "images" in message and message["images"]:
@@ -204,7 +214,7 @@ def main():
                         st.image(str(img_path), use_column_width=True)
 
     # Handle new user input
-    if prompt := st.chat_input("Ask a question about your documents..."):
+    if prompt := st.chat_input("Ask a question..."):
         # Add user message to session state and display it
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user", avatar="🧑‍💻"):
@@ -218,6 +228,8 @@ def main():
                 response_placeholder = st.empty()
                 full_response_content = ""
                 retrieved_images = []
+                
+                assistant_metrics = {}
 
                 if response.get("success"):
                     data = response.get("data", {})
@@ -226,6 +238,16 @@ def main():
                     full_response_content = reply_text
                     response_placeholder.markdown(full_response_content)
                     
+                    gen_time = data.get("generation_time_seconds")
+                    faithfulness = data.get("faithfulness")
+                    relevance = data.get("relevance")
+
+                    assistant_metrics = {
+                        "gen_time": gen_time,
+                        "faithfulness": faithfulness,
+                        "relevance": relevance,
+                    }
+
                     used_images_paths = data.get("used_images", [])
                     if used_images_paths:
                         st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
@@ -239,17 +261,26 @@ def main():
                                     st.image(str(full_img_path), caption=img_filename, use_column_width=True)
                             else:
                                 st.warning(f"Image not found: {img_filename}")
+                                
+                    st.markdown("<h4 class='image-gallery-header'>Performance & Evaluation Metrics</h4>", unsafe_allow_html=True)
+                    if gen_time is not None and faithfulness is not None and relevance is not None:
+                        st.markdown("---")
+                        metric_col1, metric_col2, metric_col3 = st.columns(3)
+                        metric_col1.metric(label="Generation Time", value=f"{gen_time:.2f} s")
+                        metric_col2.metric(label="Faithfulness", value=f"{faithfulness:.2f}")
+                        metric_col3.metric(label="Relevance", value=f"{relevance:.2f}")
+                    
 
                 else:
                     error_message = response.get("error", "An unknown error occurred.")
                     full_response_content = f"**Error:**\n\n{error_message}"
                     response_placeholder.error(full_response_content)
 
-                # Add the complete assistant message to session state
                 st.session_state.messages.append({
                     "role": "assistant", 
                     "content": full_response_content,
-                    "images": retrieved_images
+                    "images": retrieved_images,
+                    "metrics": assistant_metrics, # Store metrics
                 })
 
 if __name__ == "__main__":
