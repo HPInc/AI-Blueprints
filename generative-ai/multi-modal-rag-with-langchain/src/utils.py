@@ -69,13 +69,13 @@ def multimodal_rag_asset_status(
         asset_path=config_path,
         asset_name="Config",
         success_message="",
-        failure_message="Please check if the configs.yaml was properly connfigured in your project on AI Studio."
+        failure_message="Please check if the configs.yaml was properly configured in your project on AI Studio."
     )
     log_asset_status(
         asset_path=secrets_path,
         asset_name="Secrets",
         success_message="",
-        failure_message="Please check if the secrets.yaml was properly connfigured in your project on AI Studio. If you are using secrets manager you can ignore this message."
+        failure_message="Please check if the secrets.yaml was properly configured in your project on AI Studio. If you are using secrets manager you can ignore this message."
     )
     log_asset_status(
         asset_path=wiki_metadata_dir,
@@ -99,13 +99,13 @@ def multimodal_rag_asset_status(
         asset_path=cache_dir,
         asset_name="CACHE",
         success_message="",
-        failure_message="Please check if the CHROMA/CACHE path was properly connfigured in your project on AI Studio."
+        failure_message="Please check if the CHROMA/CACHE path was properly configured in your project on AI Studio."
     )
     log_asset_status(
         asset_path=manifest_path,
         asset_name="MANIFEST",
         success_message="",
-        failure_message="Please check if the MANIFEST path was properly connfigured in your project on AI Studio."
+        failure_message="Please check if the MANIFEST path was properly configured in your project on AI Studio."
     )
     
 def _load_yaml_file(path: str, name: str) -> Dict[str, Any]:
