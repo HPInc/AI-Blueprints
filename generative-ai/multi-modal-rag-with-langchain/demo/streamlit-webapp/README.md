@@ -16,7 +16,7 @@ pip install streamlit
 
 ## 3. Run the Streamlit App
 
-To start the Streamlit app, execute the following command in your terminal:
+To start the Streamlit app, cd to the directory containing `main.py` and execute the following command in your terminal:
 
 ```bash
 streamlit run main.py
