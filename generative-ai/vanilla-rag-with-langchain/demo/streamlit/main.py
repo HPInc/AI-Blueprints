@@ -23,9 +23,7 @@ with st.sidebar:
     st.header("📝 Instructions")
     st.markdown("""
     1. (Optional) Upload a PDF to enrich the knowledge base.
-    2. Make sure your local deployment is up and running         
-    3. Enter the full `/invocations` URL.
-    4. Type your query and an optional prompt, then Submit.
+    2. Type your query and an optional prompt, then Submit.
     """)
 
 # ─── Session State ────────────────────────────────────────────────────────────
@@ -35,10 +33,7 @@ if "chunks" not in st.session_state:
     st.session_state.chunks = []
 
 # ─── MLflow API Configuration ──────────────────────────────────────────────────
-api_url = st.text_input(
-    "🔗 MLflow `/invocations` URL",
-    value="https://localhost:5000/invocations"
-)
+api_url = "http://localhost:5002/invocations"
 
 # ─── Main Form ────────────────────────────────────────────────────────────────
 with st.form("chat_form"):
