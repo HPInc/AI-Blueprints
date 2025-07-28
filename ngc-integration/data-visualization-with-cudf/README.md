@@ -35,7 +35,7 @@ You can explore cell tower distributions by radio type, operator, country, and t
 |   ├── ui-opencellid-EU.png                                   # opencellid UI screenshot (European Union map)
 │   └── ui-opencellid-US.png                                   # opencellid UI screenshot (United States map)
 ├── notebooks
-│   └── opencellid_eda_with_panel_and_cuDF.ipynb               # Main notebook for the project
+│   └── run-workflow.ipynb                                     # Main notebook for the project
 ├── src                                                        # Core Python modules
 │   └── opencellid_downloader.py               
 ├── README.md                                                  # Project documentation
@@ -79,7 +79,7 @@ https://github.com/HPInc/AI-Blueprints.git
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
-notebooks/opencellid_eda_with_panel_and_cuDF.ipynb
+notebooks/run-workflow.ipynb
 ```
 
 This will:

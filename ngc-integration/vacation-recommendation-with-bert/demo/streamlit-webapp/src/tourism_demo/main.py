@@ -46,11 +46,32 @@ st.markdown("""
 st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🏖️ Vacation Recommendation Agent 🌍</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #555;'>Find the perfect vacation based on your preferences.</h3>", unsafe_allow_html=True)
 
+
+# ─── Sidebar Instructions ────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("How to Use")
+    st.markdown("""
+    1. Make sure your local deployment is up and running.
+                
+    2. Enter the full `/invocations` URL.
+                
+    3. Type or paste the type of vacation you would like to be recommended.
+                
+    4. Click **Get Recommendations** to see the result.
+    """)
+
+# ─── Endpoint URL ─────────────────────────────────────────────────────────────
+api_url_input = st.text_input(
+    "🔗 MLflow `/invocations` URL",
+    value="https://localhost:5000/invocations"
+)
+
 # --- User Input ---
 query = st.text_input(
     "Enter your vacation preferences:",
     placeholder="e.g., Beach resort, adventure trip, budget vacation 🌴"
 )
+
 
 # --- Submit Button ---
 if st.button("🔍 Get Recommendations"):
@@ -58,7 +79,7 @@ if st.button("🔍 Get Recommendations"):
         st.warning("⚠️ Please enter a vacation preference!")
     else:
         # API Configuration
-        api_url = os.getenv("API_URL", "https://localhost:52259/invocations")  # Update this URL accordingly
+        api_url = os.getenv("API_URL", api_url_input)  # Update this URL accordingly
         payload = {
             "inputs": {"query": [query]},
             "params": {"show_score": True}
