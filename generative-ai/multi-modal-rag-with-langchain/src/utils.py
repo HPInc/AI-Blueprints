@@ -9,61 +9,18 @@ import os
 import yaml
 import importlib.util
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Tuple
+import json
+import logging
+from typing import Dict, Any, Optional, List
 from .trt_llm_langchain import TensorRTLangchain
+from langchain.schema.document import Document
 from langchain.chat_models import ChatOpenAI
 import mlflow
 import math
 import matplotlib.pyplot as plt
 from PIL import Image as PILImage
 
-#Default models to be loaded in our examples:
-DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
-    "tensorrt": "",
-    "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
-    "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
-}
-
-# Context window sizes for various models
-MODEL_CONTEXT_WINDOWS = {
-    # LlamaCpp models
-    'ggml-model-f16-Q5_K_M.gguf': 4096,
-    'ggml-model-7b-q4_0.bin': 4096,
-    'gguf-model-7b-4bit.bin': 4096,
-
-    # HuggingFace models
-    'mistralai/Mistral-7B-Instruct-v0.3': 8192,
-    'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B': 4096,
-    'meta-llama/Llama-2-7b-chat-hf': 4096,
-    'meta-llama/Llama-3-8b-chat-hf': 8192,
-    'google/flan-t5-base': 512,
-    'google/flan-t5-large': 512,
-    'TheBloke/WizardCoder-Python-7B-V1.0-GGUF': 4096,
-
-    # OpenAI models
-    'gpt-3.5-turbo': 16385,
-    'gpt-4': 8192,
-    'gpt-4-32k': 32768,
-    'gpt-4-turbo': 128000,
-    'gpt-4o': 128000,
-
-    # Anthropic models
-    'claude-3-opus-20240229': 200000,
-    'claude-3-sonnet-20240229': 180000,
-    'claude-3-haiku-20240307': 48000,
-
-    # Other models
-    'qwen/Qwen-7B': 8192,
-    'microsoft/phi-2': 2048,
-    'tiiuae/falcon-7b': 4096,
-    "meta-llama/Llama-3.2-3B-Instruct": 128000,
-}
-
-META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
-{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-"""
+logger = logging.getLogger("multimodal_rag_logger")
 
 def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
     """
@@ -75,30 +32,166 @@ def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> No
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
-
-def load_config(
-    config_path: str = "../../configs/config.yaml",
-) -> Dict[str, Any]:
+def log_asset_status(asset_path: str, asset_name: str, success_message: str, failure_message: str) -> None:
     """
-    Load configuration from YAML file.
+    Logs the status of a given asset based on its existence.
 
+    Parameters:
+        asset_path (str): File or directory path to check.
+        asset_name (str): Name of the asset for logging context.
+        success_message (str): Message to log if asset exists.
+        failure_message (str): Message to log if asset does not exist.
+    """
+    if Path(asset_path).exists():
+        logger.info(f"{asset_name} is properly configured. {success_message}")
+    else:
+        logger.info(f"{asset_name} is not properly configured. {failure_message}")
+
+def multimodal_rag_asset_status(
+    local_model_path: str,
+    config_path: str,
+    secrets_path: str,
+    wiki_metadata_dir: str,
+    context_dir: str,
+    chroma_dir: str,
+    cache_dir: str,
+    manifest_path: str
+) -> None:
+    """Logs the configuration status of all assets required for the multimodal RAG notebook."""
+
+    log_asset_status(
+        asset_path=local_model_path,
+        asset_name="Local Model",
+        success_message="",
+        failure_message="Please check if the local model was properly configured in your project in your datafabrics folder."
+    )
+    log_asset_status(
+        asset_path=config_path,
+        asset_name="Config",
+        success_message="",
+        failure_message="Please check if the configs.yaml was properly connfigured in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=secrets_path,
+        asset_name="Secrets",
+        success_message="",
+        failure_message="Please check if the secrets.yaml was properly connfigured in your project on AI Studio. If you are using secrets manager you can ignore this message."
+    )
+    log_asset_status(
+        asset_path=wiki_metadata_dir,
+        asset_name="wiki_flat_structure.json",
+        success_message="",
+        failure_message="Place JSON Wiki Pages in data/"
+    )
+    log_asset_status(
+        asset_path=context_dir,
+        asset_name="CONTEXT",
+        success_message="",
+        failure_message="Please check if CONTEXT path was downloaded correctly in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=chroma_dir,
+        asset_name="CHROMA",
+        success_message="",
+        failure_message="Please check if CHROMA path was downloaded correctly in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=cache_dir,
+        asset_name="CACHE",
+        success_message="",
+        failure_message="Please check if the CHROMA/CACHE path was properly connfigured in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=manifest_path,
+        asset_name="MANIFEST",
+        success_message="",
+        failure_message="Please check if the MANIFEST path was properly connfigured in your project on AI Studio."
+    )
+    
+def _load_yaml_file(path: str, name: str) -> Dict[str, Any]:
+    """
+    Helper to load any YAML file with a consistent error message.
+    """
+    abs_path = os.path.abspath(path)
+    if not os.path.exists(abs_path):
+        raise FileNotFoundError(f"{name} file not found at: {abs_path}")
+    with open(abs_path, 'r') as f:
+        return yaml.safe_load(f) or {}
+
+def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any]:
+    """
+    Load application configuration from a YAML file.
     Args:
         config_path: Path to the configuration YAML file.
+
     Returns:
-        Config as dictionary.
+        Configuration dict.
+
     Raises:
         FileNotFoundError: If the config file is not found.
     """
-    # Convert to absolute paths if needed
-    config_path = os.path.abspath(config_path)
+    return _load_yaml_file(config_path, "config.yaml")
 
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+def load_secrets(secrets_path: str = "../../configs/secrets.yaml") -> Dict[str, Any]:
+    """
+    Load application secrets from a YAML file.
+    Args:
+        secrets_path: Path to the secrets YAML file.
 
-    with open(config_path) as file:
-        config = yaml.safe_load(file)
-        
-    return config
+    Returns:
+        Secrets dict (may be empty if you’re using a secrets manager setup).
+
+    Raises:
+        FileNotFoundError: If the secrets file is not found.
+    """
+    # If using an external secrets manager, you can create
+    # an (empty) secrets.yaml stub in this path to satisfy the loader.
+    return _load_yaml_file(secrets_path, "secrets.yaml")
+
+def load_mm_docs_clean(json_path: Path, img_dir: Path) -> List[Document]:
+    """
+    Load wiki Markdown + image references from *json_path*.
+    • Filters out images with bad extensions or missing files.
+    • Logs the first 20 broken refs.
+    • Returns a list[Document] where metadata = {source, images}
+    """
+    VALID_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+    bad_imgs, docs = [], []
+
+    rows = json.loads(json_path.read_text("utf-8"))
+    for row in rows:
+        images_ok = []
+        for name in row.get("images", []):
+            if not name: # empty
+                bad_imgs.append((row["path"], name, "empty"))
+                continue
+            ext = Path(name).suffix.lower()
+            if ext not in VALID_EXTS: # unsupported ext
+                bad_imgs.append((row["path"], name, f"ext {ext}"))
+                continue
+            img_path = img_dir / name
+            if not img_path.is_file(): # missing on disk
+                bad_imgs.append((row["path"], name, "missing file"))
+                continue
+            images_ok.append(name)
+
+        docs.append(
+            Document(
+                page_content=row["content"],
+                metadata={"source": row["path"], "images": images_ok},
+            )
+        )
+
+    # ---- summary logging ----------------------------------------------------
+    if bad_imgs:
+        logger.warning("⚠️ %d broken image refs filtered out", len(bad_imgs))
+        for src, name, reason in bad_imgs[:20]:
+            logger.debug("  » %s → %s (%s)", src, name or "<EMPTY>", reason)
+    else:
+        logger.info("✅ no invalid image refs found")
+
+    return docs
 
 def display_images(image_paths: List[str], max_cols: int = 4):
     """
@@ -177,6 +270,56 @@ def mlflow_evaluate_setup(
 # =========================================UNUSED FUNCTIONS=========================================
 # These functions are not currently used in the main codebase but are kept for potential future use.
 # ==================================================================================================
+
+#Default models to be loaded in our examples:
+DEFAULT_MODELS = {
+    "local": "/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+    "tensorrt": "",
+    "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
+    "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
+}
+
+# Context window sizes for various models
+MODEL_CONTEXT_WINDOWS = {
+    # LlamaCpp models
+    'ggml-model-f16-Q5_K_M.gguf': 4096,
+    'ggml-model-7b-q4_0.bin': 4096,
+    'gguf-model-7b-4bit.bin': 4096,
+
+    # HuggingFace models
+    'mistralai/Mistral-7B-Instruct-v0.3': 8192,
+    'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B': 4096,
+    'meta-llama/Llama-2-7b-chat-hf': 4096,
+    'meta-llama/Llama-3-8b-chat-hf': 8192,
+    'google/flan-t5-base': 512,
+    'google/flan-t5-large': 512,
+    'TheBloke/WizardCoder-Python-7B-V1.0-GGUF': 4096,
+
+    # OpenAI models
+    'gpt-3.5-turbo': 16385,
+    'gpt-4': 8192,
+    'gpt-4-32k': 32768,
+    'gpt-4-turbo': 128000,
+    'gpt-4o': 128000,
+
+    # Anthropic models
+    'claude-3-opus-20240229': 200000,
+    'claude-3-sonnet-20240229': 180000,
+    'claude-3-haiku-20240307': 48000,
+
+    # Other models
+    'qwen/Qwen-7B': 8192,
+    'microsoft/phi-2': 2048,
+    'tiiuae/falcon-7b': 4096,
+    "meta-llama/Llama-3.2-3B-Instruct": 128000,
+}
+
+META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
+{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+"""
+
+
 def configure_proxy(config: Dict[str, Any]) -> None:
     """
     Configure proxy settings based on provided configuration.

@@ -37,8 +37,6 @@ def load_css():
         .stApp {
             background-color: #F0F2F5;
         }
-
-        /* --- CHAT STYLES (UPDATED FOR ROUNDED LOOK) --- */
         
         /* Main container for chat messages */
         .st-emotion-cache-1f1G2gn {
@@ -99,7 +97,7 @@ def load_css():
             border-bottom: 2px solid #0096D6;
         }
         
-        /* --- CHAT INPUT STYLES (UPDATED FOR ROUNDED LOOK) --- */
+        /* --- CHAT INPUT STYLES --- */
         [data-testid="stChatInput"] {
             background-color: #F0F2F5;
             border-top: 1px solid #D1D5DB;

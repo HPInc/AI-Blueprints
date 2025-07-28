@@ -6,6 +6,7 @@ import json
 import logging
 from pathlib import Path
 from git import Repo
+from typing import Dict, List, Optional
 
 # Use the same logger as the notebook for consistent output
 logger = logging.getLogger("multimodal_rag_logger")
@@ -114,3 +115,43 @@ def run_wiki_clone(pat: str, org: str, project: str, wiki_id: str, output_dir: P
         if repo_dir and repo_dir.exists():
             shutil.rmtree(repo_dir)
             logger.info(f"Cleaned up temporary directory: {repo_dir}")
+
+def orchestrate_wiki_clone(pat: Optional[str], config: dict, output_dir: Path):
+    """
+    Orchestrates the wiki cloning process by checking configuration
+    and handling fallbacks to existing data. The PAT must be passed in.
+    """
+    # 1. Get configuration values
+    org = config.get('AZURE_DEVOPS_ORG')
+    project = config.get('AZURE_DEVOPS_PROJECT')
+    wiki_id = config.get('AZURE_DEVOPS_WIKI_IDENTIFIER')
+
+    # 2. Check if all required configurations are present (including the passed-in PAT)
+    if not all([pat, org, project, wiki_id]):
+        logger.warning("SKIPPING ADO WIKI CLONE: Not all required credentials or configurations were found.")
+        
+        # Check for existing local data as a fallback
+        wiki_metadata_file = output_dir / "wiki_flat_structure.json"
+        image_dir = output_dir / "images"
+        
+        if not wiki_metadata_file.is_file() or not image_dir.is_dir():
+            error_message = f"CRITICAL: Required ADO credentials are not set, and no existing data found in {output_dir}."
+            logger.error(error_message)
+            raise FileNotFoundError(error_message)
+        else:
+            logger.warning(f"Found existing data in '{output_dir}'. The notebook will proceed using this data.")
+    else:
+        # 3. If all configs are present, run the clone process
+        logger.info("Starting ADO Wiki clone process...")
+        try:
+            run_wiki_clone(
+                pat=pat,
+                org=org,
+                project=project,
+                wiki_id=wiki_id,
+                output_dir=output_dir,
+            )
+        except Exception as e:
+            logger.error(f"The wiki clone process failed: {e}", exc_info=False)
+            logger.error("Please check your ADO PAT, organization, project, and wiki ID details.")
+            raise

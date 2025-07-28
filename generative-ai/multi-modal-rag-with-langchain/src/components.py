@@ -14,8 +14,6 @@ from langchain_community.vectorstores import Chroma
 
 # Transformer imports for SigLIP
 from transformers import SiglipModel, SiglipProcessor
-
-# Assume you have a logger configured
 import logging
 logger = logging.getLogger("multimodal_rag_register_notebook")
 
