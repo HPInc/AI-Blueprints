@@ -3,8 +3,6 @@
 
 # ── brings CUDA 12.8 runtimes into the Conda/venv MLflow creates ──
 torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
-torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
-torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu128
 
 chromadb==0.6.3
 langchain==0.3.26
@@ -23,4 +21,4 @@ timm==1.0.17
 accelerate==1.9.0
 bitsandbytes==0.46.1
 GitPython==3.1.44
-flash-attn==2.8.1
+rank-bm25==0.2.2
