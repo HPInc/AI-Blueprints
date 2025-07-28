@@ -118,7 +118,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
-  - Add your API keys to the `secrets.yaml` file located in the `configs` folder:
+  - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 
 - **Configure Secrets in Secrets Manager (Premium users):**
