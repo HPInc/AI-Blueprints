@@ -76,6 +76,29 @@ ui:
     max_retries: 3 # Maximum retry attempts
 ```
 
+### 🔐 Secrets Configuration (Optional)
+
+This blueprint supports secure secrets management for sensitive configuration values:
+
+1. **Create secrets file**: Copy `configs/secrets.yaml.example` to `configs/secrets.yaml`
+2. **Add your secrets**: Edit `configs/secrets.yaml` with your sensitive values
+3. **Secure the file**: Ensure `configs/secrets.yaml` is in your `.gitignore`
+
+**Example secrets.yaml**:
+```yaml
+# API Keys
+HUGGINGFACE_API_KEY: "your_token_here"
+OPENAI_API_KEY: "your_api_key_here"
+
+# Custom paths
+CUSTOM_MODEL_PATH: "/your/custom/model/path"
+
+# Runtime overrides
+GPU_LAYERS: 20
+BATCH_SIZE: 64
+DEBUG_MODE: true
+
+
 ### 0 ▪ Minimum hardware
 
 - RAM: 64 GB

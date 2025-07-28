@@ -8,6 +8,36 @@ including configuration loading and model initialization.
 import os
 import yaml
 from typing import Dict, Any, Tuple
+from pathlib import Path
+
+def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
+    """
+    Loads secrets from a YAML file and sets them as environment variables.
+
+    Parameters:
+    - secrets_path (str): Path to the secrets YAML file.
+    """
+    secrets_file = Path(secrets_path).resolve()
+
+    if not secrets_file.exists():
+        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
+
+    with secrets_file.open("r", encoding="utf-8") as file:
+        try:
+            secrets = yaml.safe_load(file)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Failed to parse YAML: {e}")
+
+    if not isinstance(secrets, dict):
+        raise ValueError("Secrets file must contain a top-level dictionary.")
+
+    for key, value in secrets.items():
+        if not isinstance(key, str):
+            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
+        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
+        os.environ["AIS_" + key] = str(value)
+
+    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
 
 
 def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
