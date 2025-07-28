@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import warnings
 from pathlib import Path
+import ast
 
 # Ignore SSL warnings for local development
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
@@ -247,20 +248,28 @@ def main():
                         "faithfulness": faithfulness,
                         "relevance": relevance,
                     }
+                    
+                    used_images_str = data.get("used_images")
+                    if used_images_str and isinstance(used_images_str, str):
+                        try:
+                            # Safely parse the string into a list of paths
+                            image_path_list = ast.literal_eval(used_images_str)
 
-                    used_images_paths = data.get("used_images", [])
-                    if used_images_paths:
-                        st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
-                        cols = st.columns(4)
-                        for idx, rel_path_str in enumerate(used_images_paths):
-                            img_filename = Path(rel_path_str).name
-                            full_img_path = IMAGE_DIR / img_filename
-                            if full_img_path.is_file():
-                                retrieved_images.append(full_img_path)
-                                with cols[idx % 4]:
-                                    st.image(str(full_img_path), caption=img_filename, use_column_width=True)
-                            else:
-                                st.warning(f"Image not found: {img_filename}")
+                            if image_path_list and isinstance(image_path_list, list):
+                                st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
+                                cols = st.columns(4)
+                                for idx, rel_path_str in enumerate(image_path_list):
+                                    img_filename = Path(rel_path_str).name
+                                    full_img_path = IMAGE_DIR / img_filename
+                                    if full_img_path.is_file():
+                                        retrieved_images.append(full_img_path)
+                                        with cols[idx % 4]:
+                                            st.image(str(full_img_path), caption=img_filename, use_column_width=True)
+                                    else:
+                                        st.warning(f"Image not found: {img_filename}")
+
+                        except (ValueError, SyntaxError):
+                            st.warning("Could not parse image list from API response.")
                                 
                     st.markdown("<h4 class='image-gallery-header'>Performance & Evaluation Metrics</h4>", unsafe_allow_html=True)
                     if gen_time is not None and faithfulness is not None and relevance is not None:
