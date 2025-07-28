@@ -32,7 +32,7 @@ This project contains a single integrated pipeline—**Agentic RAG for AI Studio
 
 ## Project Structure
 ```
-agentic_rag_with_trt-llm_and_langgraph/
+agentic-rag-with-tensorrtllm/
 ├── data/                                             # Data assets used in the project
 │   └── context/
 │       └── aistudio

@@ -8,7 +8,9 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "streamlit (>=1.43.1,<2.0.0)"
+    "streamlit (>=1.43.1,<2.0.0)",
+    "urllib3 (==2.5.0)",
+    "protobuf (==5.29.5)"
 ]
 
 [tool.poetry]
