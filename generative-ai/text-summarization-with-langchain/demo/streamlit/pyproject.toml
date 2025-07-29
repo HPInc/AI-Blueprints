@@ -11,6 +11,8 @@ streamlit = "1.45.0"
 requests = "^2.31.0"
 pypdf2 = "^3.0.1"
 python-docx = "^0.8.11"
+pillow = "11.3.0"
+urllib3 = "2.5.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
