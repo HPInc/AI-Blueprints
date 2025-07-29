@@ -14,6 +14,7 @@ import mlflow
 from mlflow.pyfunc import PythonModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
+from src.utils import load_secrets_to_env
 
 # Add basic logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,7 +42,22 @@ class BaseGenerativeService(PythonModel):
             Dictionary containing the loaded configuration
         """
         config_path = context.artifacts["config"]
-        secrets_path = context.artifacts["secrets"]
+
+        # Load secrets into environment
+        secrets_path = context.artifacts.get("secrets")
+        if secrets_path and os.path.exists(secrets_path):
+            try:
+                load_secrets_to_env(secrets_path)
+                logger.info(f"Secrets loaded from {secrets_path} into environment")
+            except Exception as e:
+                logger.warning(f"Failed to load secrets artifact from {secrets_path} into environment: {e}")
+
+        # Retrieve the token from the current environment
+        token = os.getenv("AIS_HUGGINGFACE_API_KEY", "")
+        if not token.strip():
+             logger.warning("Key AIS_HUGGINGFACE_API_KEY not found or empty")
+        else:
+            logger.info("Hugging Face token is available and loaded from environment")
         
         # Load configuration
         if os.path.exists(config_path):
@@ -52,18 +68,9 @@ class BaseGenerativeService(PythonModel):
             config = {}
             logger.warning(f"Configuration file not found at {config_path}")
             
-        # Load secrets
-        if os.path.exists(secrets_path):
-            with open(secrets_path) as file:
-                secrets = yaml.safe_load(file)
-                logger.info(f"Secrets loaded from {secrets_path}")
-        else:
-            secrets = {}
-            logger.warning(f"Secrets file not found at {secrets_path}")
-            
         # Merge configurations
         self.model_config = {
-            "hf_key": secrets.get("HUGGINGFACE_API_KEY", ""),
+            "hf_key": token,
             "proxy": config.get("proxy", None),
             "model_source": config.get("model_source", "local"),
         }

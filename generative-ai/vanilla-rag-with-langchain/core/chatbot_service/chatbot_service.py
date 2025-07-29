@@ -8,6 +8,8 @@ import uuid
 import base64
 import logging
 from typing import Dict, Any, List
+import yaml
+import tempfile
 import pandas as pd
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.llms import LlamaCpp
@@ -566,15 +568,23 @@ class ChatbotService(BaseGenerativeService):
         return pd.DataFrame([result])
 
     @classmethod
-    def log_model(cls, artifact_path, secrets_path, config_path, docs_path, model_path=None, demo_folder=None):
+    def log_model(
+        cls, 
+        artifact_path, 
+        config_path, 
+        docs_path, 
+        secrets_dict=None,
+        model_path=None, 
+        demo_folder=None
+    ):
         """
         Log the model to MLflow.
         
         Args:
             artifact_path: Path to store the model artifacts
-            secrets_path: Path to the secrets file
             config_path: Path to the configuration file
             docs_path: Path to the documents directory
+            secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
             
@@ -613,10 +623,16 @@ class ChatbotService(BaseGenerativeService):
         
         # Prepare artifacts
         artifacts = {
-            "secrets": secrets_path, 
             "config": config_path, 
             "docs": docs_path
         }
+
+        if secrets_dict:
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+            yaml.safe_dump(secrets_dict, tmp)
+            tmp.close()
+            artifacts["secrets"] = tmp.name
+            logger.info(f"Secrets artifact written to temporary file {tmp.name}")
         
         if demo_folder:
             artifacts["demo"] = demo_folder
