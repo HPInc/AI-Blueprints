@@ -1,21 +1,279 @@
 """
-Utility functions for AI Studio Templates.
+Utility functions for AI Studio GenAI Templates.
 
 This module contains common functions used across notebooks in the project,
-including configuration loading, and model initialization.
+including configuration loading, model initialization, and Galileo integration.
 """
 
 import os
 import yaml
 import importlib.util
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Tuple
+import json
+import logging
+from typing import Dict, Any, Optional, List
 from .trt_llm_langchain import TensorRTLangchain
+from langchain.schema.document import Document
+from langchain.chat_models import ChatOpenAI
+import mlflow
+import math
+import matplotlib.pyplot as plt
+from PIL import Image as PILImage
 
+logger = logging.getLogger("multimodal_rag_logger")
+
+def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
+    """
+    Configure HuggingFace cache directories to persist models locally.
+
+    Args:
+        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
+    """
+    os.environ["HF_HOME"] = cache_dir
+    os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
+
+def log_asset_status(asset_path: str, asset_name: str, success_message: str, failure_message: str) -> None:
+    """
+    Logs the status of a given asset based on its existence.
+
+    Parameters:
+        asset_path (str): File or directory path to check.
+        asset_name (str): Name of the asset for logging context.
+        success_message (str): Message to log if asset exists.
+        failure_message (str): Message to log if asset does not exist.
+    """
+    if Path(asset_path).exists():
+        logger.info(f"{asset_name} is properly configured. {success_message}")
+    else:
+        logger.info(f"{asset_name} is not properly configured. {failure_message}")
+
+def multimodal_rag_asset_status(
+    local_model_path: str,
+    config_path: str,
+    secrets_path: str,
+    wiki_metadata_dir: str,
+    context_dir: str,
+    chroma_dir: str,
+    cache_dir: str,
+    manifest_path: str
+) -> None:
+    """Logs the configuration status of all assets required for the multimodal RAG notebook."""
+
+    log_asset_status(
+        asset_path=local_model_path,
+        asset_name="Local Model",
+        success_message="",
+        failure_message="Please check if the local model was properly configured in your project in your datafabrics folder."
+    )
+    log_asset_status(
+        asset_path=config_path,
+        asset_name="Config",
+        success_message="",
+        failure_message="Please check if the configs.yaml was properly configured in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=secrets_path,
+        asset_name="Secrets",
+        success_message="",
+        failure_message="Please check if the secrets.yaml was properly configured in your project on AI Studio. If you are using secrets manager you can ignore this message."
+    )
+    log_asset_status(
+        asset_path=wiki_metadata_dir,
+        asset_name="wiki_flat_structure.json",
+        success_message="",
+        failure_message="Place JSON Wiki Pages in data/"
+    )
+    log_asset_status(
+        asset_path=context_dir,
+        asset_name="CONTEXT",
+        success_message="",
+        failure_message="Please check if CONTEXT path was downloaded correctly in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=chroma_dir,
+        asset_name="CHROMA",
+        success_message="",
+        failure_message="Please check if CHROMA path was downloaded correctly in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=cache_dir,
+        asset_name="CACHE",
+        success_message="",
+        failure_message="Please check if the CHROMA/CACHE path was properly configured in your project on AI Studio."
+    )
+    log_asset_status(
+        asset_path=manifest_path,
+        asset_name="MANIFEST",
+        success_message="",
+        failure_message="Please check if the MANIFEST path was properly configured in your project on AI Studio."
+    )
+    
+def _load_yaml_file(path: str, name: str) -> Dict[str, Any]:
+    """
+    Helper to load any YAML file with a consistent error message.
+    """
+    abs_path = os.path.abspath(path)
+    if not os.path.exists(abs_path):
+        raise FileNotFoundError(f"{name} file not found at: {abs_path}")
+    with open(abs_path, 'r') as f:
+        return yaml.safe_load(f) or {}
+
+def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any]:
+    """
+    Load application configuration from a YAML file.
+    Args:
+        config_path: Path to the configuration YAML file.
+
+    Returns:
+        Configuration dict.
+
+    Raises:
+        FileNotFoundError: If the config file is not found.
+    """
+    return _load_yaml_file(config_path, "config.yaml")
+
+def load_secrets(secrets_path: str = "../../configs/secrets.yaml") -> Dict[str, Any]:
+    """
+    Load application secrets from a YAML file.
+    Args:
+        secrets_path: Path to the secrets YAML file.
+
+    Returns:
+        Secrets dict (may be empty if you’re using a secrets manager setup).
+
+    Raises:
+        FileNotFoundError: If the secrets file is not found.
+    """
+    # If using an external secrets manager, you can create
+    # an (empty) secrets.yaml stub in this path to satisfy the loader.
+    return _load_yaml_file(secrets_path, "secrets.yaml")
+
+def load_mm_docs_clean(json_path: Path, img_dir: Path) -> List[Document]:
+    """
+    Load wiki Markdown + image references from *json_path*.
+    • Filters out images with bad extensions or missing files.
+    • Logs the first 20 broken refs.
+    • Returns a list[Document] where metadata = {source, images}
+    """
+    VALID_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+    bad_imgs, docs = [], []
+
+    rows = json.loads(json_path.read_text("utf-8"))
+    for row in rows:
+        images_ok = []
+        for name in row.get("images", []):
+            if not name: # empty
+                bad_imgs.append((row["path"], name, "empty"))
+                continue
+            ext = Path(name).suffix.lower()
+            if ext not in VALID_EXTS: # unsupported ext
+                bad_imgs.append((row["path"], name, f"ext {ext}"))
+                continue
+            img_path = img_dir / name
+            if not img_path.is_file(): # missing on disk
+                bad_imgs.append((row["path"], name, "missing file"))
+                continue
+            images_ok.append(name)
+
+        docs.append(
+            Document(
+                page_content=row["content"],
+                metadata={"source": row["path"], "images": images_ok},
+            )
+        )
+
+    # ---- summary logging ----------------------------------------------------
+    if bad_imgs:
+        logger.warning("⚠️ %d broken image refs filtered out", len(bad_imgs))
+        for src, name, reason in bad_imgs[:20]:
+            logger.debug("  » %s → %s (%s)", src, name or "<EMPTY>", reason)
+    else:
+        logger.info("✅ no invalid image refs found")
+
+    return docs
+
+def display_images(image_paths: List[str], max_cols: int = 4):
+    """
+    Opens and displays a list of images from their file paths in a grid.
+
+    Args:
+        image_paths: A list of file paths to the images.
+        max_cols: The maximum number of columns in the display grid.
+    """
+    if not image_paths:
+        print("▶ No images to display.")
+        return
+
+    print(f"🖼️ Displaying {len(image_paths)} image(s):")
+    
+    # --- Calculate grid size ---
+    num_images = len(image_paths)
+    cols = min(num_images, max_cols)
+    rows = math.ceil(num_images / cols)
+
+    # --- Create figure and axes ---
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+    
+    # Flatten the axes array for easy iteration, and handle the case of a single image
+    if num_images == 1:
+        axes = [axes]
+    else:
+        axes = axes.flatten()
+
+    # --- Loop through images and display them ---
+    for i, path in enumerate(image_paths):
+        ax = axes[i]
+        try:
+            # Open the image file
+            img = PILImage.open(path)
+            
+            # Display the image on the appropriate subplot
+            ax.imshow(img)
+            ax.set_title(path.split('/')[-1], fontsize=8) # Use filename as title
+            
+        except FileNotFoundError:
+            ax.text(0.5, 0.5, 'Image not found', ha='center', va='center', fontsize=9)
+        except Exception as e:
+            ax.text(0.5, 0.5, 'Error loading image', ha='center', va='center', fontsize=9)
+            print(f"  - Error loading image '{path}': {e}")
+        
+        ax.axis('off') # Hide the x/y axis for a cleaner look
+
+    # --- Hide any unused subplots ---
+    for j in range(num_images, len(axes)):
+        axes[j].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+def mlflow_evaluate_setup(
+    secrets: dict,
+    mlflow_tracking_uri: str = "/phoenix/mlflow"
+) -> None:
+    """
+    Prepare the environment for MLflow LLM-judge evaluation in MLflow 2.21.2.
+    Args:
+        secrets (dict): Dictionary loaded from your secrets.yaml.
+        mlflow_tracking_uri (str, optional): If provided, sets MLflow's tracking URI.
+    """
+    # Set MLflow tracking URI
+    if mlflow_tracking_uri:
+        mlflow.set_tracking_uri(mlflow_tracking_uri)
+    else:
+        raise ValueError("❌ Tracking URI is missing")
+
+    # Informational log
+    print(f"✅ Environment ready for MLflow evaluation.")
+
+
+# =========================================UNUSED FUNCTIONS=========================================
+# These functions are not currently used in the main codebase but are kept for potential future use.
+# ==================================================================================================
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+    "local": "/home/jovyan/datafabric/llama3.1-8b-instruct/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -54,108 +312,13 @@ MODEL_CONTEXT_WINDOWS = {
     'microsoft/phi-2': 2048,
     'tiiuae/falcon-7b': 4096,
     "meta-llama/Llama-3.2-3B-Instruct": 128000,
-    "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
 }
 
-def configure_hf_cache(cache_dir: str = "/home/jovyan/local/hugging_face") -> None:
-    """
-    Configure HuggingFace cache directories to persist models locally.
+META_LLAMA_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
+{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+"""
 
-    Args:
-        cache_dir: Base directory for HuggingFace cache. Defaults to "/home/jovyan/local/hugging_face".
-    """
-    os.environ["HF_HOME"] = cache_dir
-    os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
-
-def load_secrets(secret_keys: Optional[List[str]] = None,) -> Dict[str, Any]:
-    """
-    Load secrets from secrets environment variables.
-
-    Args:
-        secret_keys: List of expected secret names.  
-        If None, every project environment variable with 'AIS' prefix is returned.
-        
-    Returns:
-        Dictionary containing all secrets for the project.
-        
-    ValueError:       
-        Requested secret(s) are missing or none found with AIS- prefix.
-    """
-    # Build secrets from environment
-    if secret_keys is None:
-        secrets = {
-            k: v for k, v in os.environ.items()
-            if k.isupper() and k.startswith("AIS_")
-        }
-        if not secrets:
-            raise ValueError(
-                "No environment variables found with prefix 'AIS_'. "
-                "Please set your required project secrets in AIS Secrets Manager."
-            )
-    else:
-        secrets = {k: os.environ.get(k) for k in secret_keys}
-        missing = [k for k, v in secrets.items() if v is None]
-        if missing:
-            raise ValueError(
-                f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
-            )
-    return secrets
-
-def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
-    """
-    Loads secrets from a YAML file and sets them as environment variables.
-
-    Parameters:
-    - secrets_path (str): Path to the secrets YAML file.
-    """
-    secrets_file = Path(secrets_path).resolve()
-
-    if not secrets_file.exists():
-        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
-
-    with secrets_file.open("r", encoding="utf-8") as file:
-        try:
-            secrets = yaml.safe_load(file)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Failed to parse YAML: {e}")
-
-    if not isinstance(secrets, dict):
-        raise ValueError("Secrets file must contain a top-level dictionary.")
-
-    for key, value in secrets.items():
-        if not isinstance(key, str):
-            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
-        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
-        env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
-        os.environ[env_key] = str(value)
-
-    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
-
-def load_config(
-    config_path: str = "../../configs/config.yaml"
-) -> Dict[str, Any]:
-    """
-    Load configuration from YAML file.
-
-    Args:
-        config_path: Path to the configuration YAML file.
-
-    Returns:
-        Dictionary containing the project configurations.
-
-    Raises:
-        FileNotFoundError: If the config file is not found.
-    """
-    # Convert to absolute paths if needed
-    config_path = os.path.abspath(config_path)
-
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
-
-    with open(config_path) as file:
-        config = yaml.safe_load(file)
-
-    return config
 
 def configure_proxy(config: Dict[str, Any]) -> None:
     """
@@ -166,6 +329,7 @@ def configure_proxy(config: Dict[str, Any]) -> None:
     """
     if "proxy" in config and config["proxy"]:
         os.environ["HTTPS_PROXY"] = config["proxy"]
+
 
 def initialize_llm(
     model_source: str = "local",
@@ -202,10 +366,6 @@ def initialize_llm(
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
 
-    # Fix for Pydantic model rebuild issue
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
-
     model = None
     context_window = None
     
@@ -215,10 +375,10 @@ def initialize_llm(
             repo_id = DEFAULT_MODELS["hugging-face-cloud"]
         else:
             repo_id = hf_repo_id  
-        if not secrets or "AIS_HUGGINGFACE_API_KEY" not in secrets:
+        if not secrets or "HUGGINGFACE_API_KEY" not in secrets:
             raise ValueError("HuggingFace API key is required for cloud model access")
             
-        huggingfacehub_api_token = secrets["AIS_HUGGINGFACE_API_KEY"]
+        huggingfacehub_api_token = secrets["HUGGINGFACE_API_KEY"]
         # Get context window from our lookup table
         if repo_id in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[repo_id]
@@ -226,13 +386,12 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
-            task="text-generation",
         )
 
     elif model_source == "hugging-face-local":
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-        if "AIS_HUGGINGFACE_API_KEY" in secrets:
-            os.environ["HF_TOKEN"] = secrets["AIS_HUGGINGFACE_API_KEY"]
+        if "HUGGINGFACE_API_KEY" in secrets:
+            os.environ["HF_TOKEN"] = secrets["HUGGINGFACE_API_KEY"]
         if hf_repo_id == "":
             model_id = DEFAULT_MODELS["hugging-face-local"]
         else:
@@ -248,21 +407,7 @@ def initialize_llm(
         if hasattr(tokenizer, 'model_max_length') and tokenizer.model_max_length not in (None, -1):
             context_window = tokenizer.model_max_length
 
-        # Disable automatic chat template application by removing it from tokenizer
-        if hasattr(tokenizer, 'chat_template'):
-            tokenizer.chat_template = None
-
-        pipe = pipeline(
-            "text-generation", 
-            model=hf_model, 
-            tokenizer=tokenizer, 
-            max_new_tokens=100, 
-            device=0,
-            return_full_text=False,
-            do_sample=True,
-            temperature=0.1
-        )
-        # Create HuggingFacePipeline without automatic chat template application
+        pipe = pipeline("text-generation", model=hf_model, tokenizer=tokenizer, max_new_tokens=100, device=0)
         model = HuggingFacePipeline(pipeline=pipe)
         
     elif model_source == "tensorrt":
@@ -273,7 +418,7 @@ def initialize_llm(
             if hf_repo_id != "":
                 return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
             else:
-                model_config = os.path.join(local_model_path, "config.json")
+                model_config = os.path.join(local_model_path, config.json)
                 if os.path.isdir(local_model_path) and os.path.isfile(model_config):
                     return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
                 else:
@@ -284,20 +429,32 @@ def initialize_llm(
                 "Please make sure tensorrt-llm is installed properly, or "
                 "consider using workspaces based on the NeMo Framework"
             )
+            
+    elif model_source == "openai":
+        model = ChatOpenAI(
+            model_name="gpt-4o-mini",
+            temperature=0.0,
+            streaming=False,
+            openai_api_key=secrets["OPENAI_API_KEY"]
+        )
+
+        model._context_window = 131072  # gpt-4o-mini’s window
+
+    
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         # For LlamaCpp, get the context window from the filename
         model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[model_filename]
+            context_window = MODEL_CONTEXT_WINDOWS[model_filename, 8192]
         else:  
             # Default context window for LlamaCpp models (explicitly set)
-            context_window = 4096
+            context_window = 8192
 
         model = LlamaCpp(
             model_path=local_model_path,
             n_gpu_layers=-1,
-            n_batch=512,
+            n_batch=256,
             n_ctx=context_window,
             max_tokens=1024,
             f16_kv=True,
@@ -306,6 +463,9 @@ def initialize_llm(
             stop=[],
             streaming=False,
             temperature=0.2,
+            repetition_penalty=2,
+            no_repeat_ngram_size = 3,
+            model_kwargs={"chat_format": "llama-3"},
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
@@ -315,7 +475,7 @@ def initialize_llm(
         model.__dict__['_context_window'] = context_window
 
     return model
-    
+
 def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     Login to Hugging Face using token from secrets.
@@ -328,7 +488,7 @@ def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     from huggingface_hub import login
 
-    token = secrets.get("AIS_HUGGINGFACE_API_KEY")
+    token = secrets.get("HUGGINGFACE_API_KEY")
     if not token:
         raise ValueError("❌ Hugging Face token not found in secrets.yaml.")
     
