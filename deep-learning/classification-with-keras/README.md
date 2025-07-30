@@ -22,24 +22,30 @@
 
 # Overview
 
-This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9. 
+This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9.
 
 ---
 
 # Project Structure
 
 ```
-├── demo
-│   └── streamlit-webapp/                                             # Streamlit UI
-│   │  └── assets/                                                    # Logo assets
+├── configs/
+│   └── config.yaml                                                   # Configuration management
+├── demo/
+│   ├── streamlit/                                                    # Streamlit UI for deployment
+│   │   ├── assets/                                                   # Logo assets
+│   │   ├── main.py                                                   # Streamlit application
+│   │   └── ...                                                       # Additional Streamlit files
 ├── docs/
 │   └── streamlit-ui-handwritten-digit-classification.pdf             # UI screenshot
 │   └── streamlit-ui-handwritten-digit-classification.png             # UI screenshot
 │   └── swagger-ui-handwritten-digit-classification.pdf               # Swagger screenshot
 │   └── swagger-ui-handwritten-digit-classification.png               # Swagger screenshot
-├── notebooks
+├── notebooks/
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations  
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations
+├── src/
+│   └── utils.py                                                      # Utility functions for configuration and helpers
 ├── README.md                                                         # Project documentation
 ```
 
@@ -51,8 +57,8 @@ This project shows how to do a image classification, specifically digits of hand
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
@@ -65,7 +71,8 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 3 ▪ Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
@@ -86,11 +93,12 @@ run-workflow.ipynb
 
 This will:
 
-- Load and preprocess the MNIST data 
-- Create the model architecture  
+- Load and preprocess the MNIST data
+- Create the model architecture
 - Train the model
 
 ### 2 ▪ Run the Notebook
+
 Execute the notebook inside the `notebooks` folder:
 
 ```bash
@@ -115,7 +123,6 @@ This will:
 ### 3 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
-
 
 Paste a payload like:
 
@@ -143,22 +150,22 @@ And as response:
 
 ### 4 ▪ Launch the Streamlit UI
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
 2. Navigate to the shown URL and view the handwritten classification.
 
 ### Successful UI demo
 
 - Streamlit
-![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-handwritten-digit-classification.png)
+  ![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-handwritten-digit-classification.png)
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
