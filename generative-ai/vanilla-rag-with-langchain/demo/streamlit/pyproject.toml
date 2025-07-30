@@ -14,6 +14,13 @@ dependencies = [
 [tool.poetry]
 package-mode = false
 
+[tool.poetry.dependencies]
+python = ">=3.11"
+streamlit = "1.45.0"
+urllib3 = "2.5.0"
+protobuf = "6.31.1"
+pillow = "11.3.0"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
