@@ -6,14 +6,10 @@ import pandas as pd
 import warnings
 from pathlib import Path
 import ast
-
+import base64
 # Ignore SSL warnings for local development
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
-# --- Define project paths ---
-# This path should point to the location where your app can find the wiki images.
-# In a local setup, this would be the same directory your notebook saves images to.
-IMAGE_DIR = Path("../../data/context/images")
 
 # --- Page Configuration & Custom CSS ---
 
@@ -258,27 +254,21 @@ def main():
                         data = response.get("data", {})
                         full_response_content = data.get('reply', 'Sorry, I could not generate a reply.')
                         assistant_metrics = {"gen_time": data.get("generation_time_seconds"), "faithfulness": data.get("faithfulness"), "relevance": data.get("relevance")}
-                        print(assistant_metrics)
                         st.markdown(full_response_content)
                         
                         # Process and display images for the current response
-                        used_images_str = data.get("used_images", "[]")
-                        if used_images_str and isinstance(used_images_str, str):
-                            try:
-                                image_path_list = ast.literal_eval(used_images_str)
-                                if image_path_list and isinstance(image_path_list, list):
-                                    st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
-                                    cols = st.columns(min(len(image_path_list), 4))
-                                    for idx, path_str in enumerate(image_path_list):
-                                        # Assuming the model returns a path the UI can access.
-                                        # For a real deployment, this might need to be a public URL or Base64 data.
-                                        img_path = Path(path_str)
-                                        if img_path.is_file():
-                                            retrieved_images.append(str(img_path))
-                                            with cols[idx % 4]:
-                                                st.image(str(img_path), caption=img_path.name, use_column_width=True)
-                            except (ValueError, SyntaxError):
-                                st.warning("Could not parse image list from API.")
+                        used_images_json = data.get("used_images", "[]")
+                        try:
+                            retrieved_images_b64 = json.loads(used_images_json)
+                            if retrieved_images_b64:
+                                st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
+                                cols = st.columns(min(len(retrieved_images_b64), 4))
+                                for idx, b64_string in enumerate(retrieved_images_b64):
+                                    with cols[idx % 4]:
+                                        image_bytes = base64.b64decode(b64_string)
+                                        st.image(image_bytes, use_column_width=True)
+                        except (json.JSONDecodeError, TypeError):
+                            st.warning("Could not parse image data from API.")
                         
                         st.markdown("---")
                         c1, c2, c3 = st.columns(3)
