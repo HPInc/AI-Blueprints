@@ -92,13 +92,13 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### Step 1: Create an AIstudio Project
 
 1. Create a **New Project** in AI Studio
-2. Select the template Text Generation with Langchain
+2. Select the template **Text Generation with Langchain**
 3. Add a title description and relevant tags.
 
 ### Step 2: Verify Project Files
 
 1. Launch a workspace.
-2. Navigate to `text-generation-with-langchain/notebooks/run-workflow.ipynb` to ensure all files were cloned correctly.
+2. Navigate to `text-generation-with-langchain/` to ensure all files were cloned correctly.
 
 ## Alternative Manual Setup
 
@@ -120,8 +120,8 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 ### Step 4: Download the Model
 
-1. In the Datasets tab, click Add Dataset.
-2. Download the model file: `ggml-model-f16-Q5_K_M.gguf.`
+1. In the Models tab, click Add Model.
+2. Download the model file: `Meta-Llama-3.1-8B-Instruct-Q8_0.gguf`
 3. The model will be available under the /datafabric directory in your workspace.
 
 ### Step 5: Verify Project Files
@@ -228,7 +228,7 @@ Paste that into the Swagger “/invocations” endpoint and click **Try it out**
 ### Step 5: Lauch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/` folder.
-2. Enter the **fields** and have fun
+2. Enter the **fields** and have fun!
 
 ### Successful UI demo
 
