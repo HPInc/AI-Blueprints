@@ -51,8 +51,6 @@ This notebook performs image generation inference using the Stable Diffusion arc
 └── requirements.txt
 ```
 
-## Setup
-
 ---
 
 ## Configuration
@@ -149,10 +147,20 @@ Execute the notebook inside the `notebooks` folder:
 notebooks/run-workflow.ipynb
 ```
 
-1. Download the stabilityai/stable-diffusion-2-1 model from Hugging Face.
+1. The `stable-diffusion-2-1` model is downloaded automatically from Hugging Face.
 2. In the Training DreamBooth section of the notebook:
+  - Train your DreamBooth model.
 
-- Train your DreamBooth model.
+### Step 2: Run the Register Notebook
+
+Execute the notebook inside the `notebooks` folder:
+
+```bash
+notebooks/register-model.ipynb
+```
+
+This will:
+
 - Monitor metrics using the **Monitor tab**, MLflow, and TensorBoard.
 - Register the model in MLflow
 
