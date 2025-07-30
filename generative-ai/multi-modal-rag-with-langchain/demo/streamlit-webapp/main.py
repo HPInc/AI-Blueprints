@@ -11,7 +11,8 @@ import ast
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 # --- Define project paths ---
-# IMPORTANT: Make sure this path is correct for your project structure.
+# This path should point to the location where your app can find the wiki images.
+# In a local setup, this would be the same directory your notebook saves images to.
 IMAGE_DIR = Path("../../data/context/images")
 
 # --- Page Configuration & Custom CSS ---
@@ -24,6 +25,7 @@ st.set_page_config(
 )
 
 def load_css():
+    """Loads the complete custom CSS for the application."""
     css = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
@@ -56,10 +58,15 @@ def load_css():
                 background-color: #1e1e1e !important;
                 color: #f0f0f0 !important;
             }
-
-            div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"] p) {
-                background-color: #005c94 !important;
+            
+            /* User message bubble */
+            div[data-testid="stChatMessage"] div[data-testid="stMarkdownContainer"] p {
+                background-color: #005c94 !important; /* A distinct color for user messages */
                 color: #FFFFFF !important;
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+                display: inline-block;
+                max-width: 100%;
             }
 
             [data-testid="stSidebar"] {
@@ -88,6 +95,8 @@ def load_css():
             .image-gallery-header {
                 color: #cccccc;
                 border-top: 1px solid #444;
+                padding-top: 1rem;
+                margin-top: 1rem;
             }
 
             /* Style for metric labels in dark mode */
@@ -107,20 +116,15 @@ def load_css():
 
 # --- API Interaction Logic ---
 
-def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
-    """Calls the MLflow model serving endpoint."""
-    payload = {
-        "dataframe_records": [
-            {
-                "query": query,
-                "force_regenerate": force_regenerate,
-            }
-        ]
-    }
+def call_model_api(api_url: str, command: str, data_payload: dict) -> dict:
+    """Calls the MLflow model serving endpoint with a specific command."""
+    record = {"command": command, **data_payload}
+    payload = {"dataframe_records": [record]}
     headers = {"Content-Type": "application/json"}
     
     try:
-        response = requests.post(api_url, json=payload, headers=headers, verify=False, timeout=120)
+        timeout = 300 if command == "update_kb" else 120
+        response = requests.post(api_url, json=payload, headers=headers, verify=False, timeout=timeout)
         
         if response.status_code == 200:
             predictions = response.json().get("predictions", [])
@@ -129,12 +133,10 @@ def call_mlflow_api(api_url: str, query: str, force_regenerate: bool) -> dict:
             else:
                 return {"success": False, "error": "API returned an empty prediction."}
         else:
-            error_message = f"API Error (Status {response.status_code}): {response.text}"
-            return {"success": False, "error": error_message}
+            return {"success": False, "error": f"API Error (Status {response.status_code}): {response.text}"}
             
     except requests.exceptions.RequestException as e:
-        error_message = f"Network or connection error: {e}"
-        return {"success": False, "error": error_message}
+        return {"success": False, "error": f"Network or connection error: {e}"}
 
 # --- Main Application UI ---
 
@@ -142,39 +144,67 @@ def main():
     """Renders the main HP-branded Chatbot application page."""
     load_css()
     
+    # Initialize session state
+    if "kb_ready" not in st.session_state:
+        st.session_state.kb_ready = False
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
     # --- Sidebar for Configuration ---
     with st.sidebar:
-        st.markdown("""
-        ## **Instructions:**
-        #### 1. Enter your model's `/invocations` endpoint URL.
-        #### 2. Ask a question in the text box.
-        #### 3. Click **Send** button to receive an AI-generated answer.
-
-        ## **Example URL:** 
-        #### `https://localhost:5000/invocations`
-        """)
-        
-        st.markdown("## ⚙️ Configuration")
-        
+        st.markdown("## ⚙️ Endpoint Configuration")
         api_url = st.text_input(
             "MLflow Endpoint URL",
-            value="https://localhost:57259/invocations",
+            value="https://localhost:5000/invocations",
             help="The full URL to the MLflow model's `/invocations` endpoint.",
         )
-        
-        force_regenerate = st.checkbox(
-            "Force Regeneration",
-            value=False,
-            help="Bypass cache and force a new answer from the model."
-        )
-
         st.markdown("---")
-        st.info("This interface allows you to interact with the Multimodal RAG model.")
+        
+        with st.form("kb_form"):
+            st.markdown("## 📚 Knowledge Base Source")
+            st.info("Enter your Azure DevOps details to sync the wiki.")
+            
+            ado_org = st.text_input("ADO Organization", placeholder="e.g., MyCompany")
+            ado_project = st.text_input("ADO Project", placeholder="e.g., MyProject")
+            ado_wiki = st.text_input("ADO Wiki Name", placeholder="e.g., MyProject.wiki")
+            ado_pat = st.text_input("ADO PAT", type="password")
+            
+            submitted = st.form_submit_button("Sync & Load Knowledge Base")
 
-    # --- Main Chat Interface ---
+            if submitted:
+                if not all([ado_org, ado_project, ado_wiki, ado_pat]):
+                    st.warning("Please fill in all ADO fields.")
+                else:
+                    with st.spinner("Connecting to ADO and building knowledge base... This may take several minutes."):
+                        # Construct the payload for the 'update_kb' command
+                        config_payload = {
+                            "config": {"AZURE_DEVOPS_ORG": ado_org, "AZURE_DEVOPS_PROJECT": ado_project, "AZURE_DEVOPS_WIKI_IDENTIFIER": ado_wiki},
+                            "secrets": {"AIS_ADO_TOKEN": ado_pat}
+                        }
+                        update_payload = {"payload": json.dumps(config_payload)}
+                        response = call_model_api(api_url, "update_kb", update_payload)
 
-    # Create a row for the logos in the top-left corner
-    logo_col1, logo_col2, _ = st.columns([2, 2, 10]) 
+                        # --- FIX: Check both the outer 'success' and the inner 'status' key ---
+                        if response.get("success") and response.get("data", {}).get("status") == "success":
+                            st.session_state.kb_ready = True
+                            st.success(response["data"].get("message", "Knowledge base loaded successfully!"))
+                        else:
+                            st.session_state.kb_ready = False
+                            # Extract the specific error message from the model's response
+                            if response.get("success"): # The API call worked, but the command failed
+                                error_msg = response.get("data", {}).get("message", "An unknown error occurred inside the model.")
+                            else: # The API call itself failed
+                                error_msg = response.get("error", "A network or unknown error occurred.")
+                            
+                            st.error(f"Failed to load knowledge base: {error_msg}")
+        st.markdown("---")
+        
+        if st.session_state.kb_ready:
+            st.markdown("## 💬 Chat Options")
+            force_regenerate = st.checkbox("Force Regeneration", value=False, help="Bypass cache for a new answer.")
+
+    # --- Main Page Branding ---
+    logo_col1, logo_col2, _ = st.columns([1, 1, 10]) 
     with logo_col1:
         st.image("assets/hp_logo.png", width=60)
     with logo_col2:
@@ -182,115 +212,88 @@ def main():
 
     st.markdown("<h1 style='text-align: center;'>🤖 ADO Wiki AI Assistant</h1>", unsafe_allow_html=True)
     
-    # Initialize session state for chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # Display prior chat messages
-    for message in st.session_state.messages:
-        avatar = "🧑‍💻" if message["role"] == "user" else "🤖"
-        with st.chat_message(message["role"], avatar=avatar):
-            # Display text content
-            st.markdown(message["content"])
-            
-            if "metrics" in message and message["metrics"]:
-                metrics = message["metrics"]
-                gen_time = metrics.get("gen_time")
-                faithfulness = metrics.get("faithfulness")
-                relevance = metrics.get("relevance")
-
-                if gen_time is not None and faithfulness is not None and relevance is not None:
-                    st.markdown("---")
-                    metric_col1, metric_col2, metric_col3 = st.columns(3)
-                    metric_col1.metric(label="Generation Time", value=f"{gen_time:.2f} s")
-                    metric_col2.metric(label="Faithfulness", value=f"{faithfulness:.2f}")
-                    metric_col3.metric(label="Relevance", value=f"{relevance:.2f}")
-            
-            # Display images if they exist for an assistant message
-            if "images" in message and message["images"]:
-                st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
-                cols = st.columns(4)
-                for idx, img_path in enumerate(message["images"]):
-                    with cols[idx % 4]:
-                        st.image(str(img_path), use_column_width=True)
-
-    # Handle new user input
-    if prompt := st.chat_input("Ask a question..."):
-        # Add user message to session state and display it
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="🧑‍💻"):
-            st.markdown(prompt)
-
-        # Process and display the assistant's response
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("🧠 Thinking... Contacting the model..."):
-                response = call_mlflow_api(api_url, prompt, force_regenerate)
+    # --- Main Chat Interface ---
+    if st.session_state.kb_ready:
+        # Display prior chat messages from history
+        for message in st.session_state.messages:
+            avatar = "🧑‍💻" if message["role"] == "user" else "🤖"
+            with st.chat_message(message["role"], avatar=avatar):
+                st.markdown(message["content"])
                 
-                response_placeholder = st.empty()
-                full_response_content = ""
-                retrieved_images = []
-                
-                assistant_metrics = {}
-
-                if response.get("success"):
-                    data = response.get("data", {})
-                    reply_text = data.get('reply', 'Sorry, I could not generate a reply.')
-                    
-                    full_response_content = reply_text
-                    response_placeholder.markdown(full_response_content)
-                    
-                    gen_time = data.get("generation_time_seconds")
-                    faithfulness = data.get("faithfulness")
-                    relevance = data.get("relevance")
-
-                    assistant_metrics = {
-                        "gen_time": gen_time,
-                        "faithfulness": faithfulness,
-                        "relevance": relevance,
-                    }
-                    
-                    used_images_str = data.get("used_images")
-                    if used_images_str and isinstance(used_images_str, str):
-                        try:
-                            # Safely parse the string into a list of paths
-                            image_path_list = ast.literal_eval(used_images_str)
-
-                            if image_path_list and isinstance(image_path_list, list):
-                                st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
-                                cols = st.columns(4)
-                                for idx, rel_path_str in enumerate(image_path_list):
-                                    img_filename = Path(rel_path_str).name
-                                    full_img_path = IMAGE_DIR / img_filename
-                                    if full_img_path.is_file():
-                                        retrieved_images.append(full_img_path)
-                                        with cols[idx % 4]:
-                                            st.image(str(full_img_path), caption=img_filename, use_column_width=True)
-                                    else:
-                                        st.warning(f"Image not found: {img_filename}")
-
-                        except (ValueError, SyntaxError):
-                            st.warning("Could not parse image list from API response.")
-                                
-                    st.markdown("<h4 class='image-gallery-header'>Performance & Evaluation Metrics</h4>", unsafe_allow_html=True)
-                    if gen_time is not None and faithfulness is not None and relevance is not None:
+                # Display metrics stored in history
+                if "metrics" in message and message["metrics"]:
+                    metrics = message["metrics"]
+                    gen_time, faithfulness, relevance = metrics.get("gen_time"), metrics.get("faithfulness"), metrics.get("relevance")
+                    if all(v is not None for v in [gen_time, faithfulness, relevance]):
                         st.markdown("---")
-                        metric_col1, metric_col2, metric_col3 = st.columns(3)
-                        metric_col1.metric(label="Generation Time", value=f"{gen_time:.2f} s")
-                        metric_col2.metric(label="Faithfulness", value=f"{faithfulness:.2f}")
-                        metric_col3.metric(label="Relevance", value=f"{relevance:.2f}")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Generation Time", f"{gen_time:.2f} s")
+                        c2.metric("Faithfulness", f"{faithfulness:.2f}")
+                        c3.metric("Relevance", f"{relevance:.2f}")
+                
+                # Display images stored in history
+                if "images" in message and message["images"]:
+                    st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
+                    cols = st.columns(min(len(message["images"]), 4))
+                    for idx, img_path in enumerate(message["images"]):
+                        with cols[idx % 4]:
+                            if Path(img_path).is_file():
+                                st.image(str(img_path), use_column_width=True)
+                            else:
+                                st.warning(f"Image not found at {Path(img_path).name}")
+
+        # Handle new user input
+        if prompt := st.chat_input("Ask a question about the wiki..."):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user", avatar="🧑‍💻"):
+                st.markdown(prompt)
+
+            with st.chat_message("assistant", avatar="🤖"):
+                with st.spinner("🧠 Thinking..."):
+                    query_payload = {"query": prompt, "force_regenerate": force_regenerate}
+                    response = call_model_api(api_url, "query", query_payload)
                     
+                    full_response_content, retrieved_images, assistant_metrics = "", [], {}
+                    if response.get("success"):
+                        data = response.get("data", {})
+                        full_response_content = data.get('reply', 'Sorry, I could not generate a reply.')
+                        assistant_metrics = {"gen_time": data.get("generation_time_seconds"), "faithfulness": data.get("faithfulness"), "relevance": data.get("relevance")}
+                        print(assistant_metrics)
+                        st.markdown(full_response_content)
+                        
+                        # Process and display images for the current response
+                        used_images_str = data.get("used_images", "[]")
+                        if used_images_str and isinstance(used_images_str, str):
+                            try:
+                                image_path_list = ast.literal_eval(used_images_str)
+                                if image_path_list and isinstance(image_path_list, list):
+                                    st.markdown("<h4 class='image-gallery-header'>Retrieved Images</h4>", unsafe_allow_html=True)
+                                    cols = st.columns(min(len(image_path_list), 4))
+                                    for idx, path_str in enumerate(image_path_list):
+                                        # Assuming the model returns a path the UI can access.
+                                        # For a real deployment, this might need to be a public URL or Base64 data.
+                                        img_path = Path(path_str)
+                                        if img_path.is_file():
+                                            retrieved_images.append(str(img_path))
+                                            with cols[idx % 4]:
+                                                st.image(str(img_path), caption=img_path.name, use_column_width=True)
+                            except (ValueError, SyntaxError):
+                                st.warning("Could not parse image list from API.")
+                        
+                        st.markdown("---")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Generation Time", f"{assistant_metrics['gen_time']:.2f} s")
+                        c2.metric("Faithfulness", f"{assistant_metrics['faithfulness']:.2f}")
+                        c3.metric("Relevance", f"{assistant_metrics['relevance']:.2f}")
 
-                else:
-                    error_message = response.get("error", "An unknown error occurred.")
-                    full_response_content = f"**Error:**\n\n{error_message}"
-                    response_placeholder.error(full_response_content)
+                    else:
+                        full_response_content = f"**Error:** {response.get('error')}"
+                        st.error(full_response_content)
 
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": full_response_content,
-                    "images": retrieved_images,
-                    "metrics": assistant_metrics, # Store metrics
-                })
+                    # Append the complete message to history
+                    st.session_state.messages.append({"role": "assistant", "content": full_response_content, "images": retrieved_images, "metrics": assistant_metrics})
+    else:
+        st.info("👋 Welcome! Please sync a knowledge base using the sidebar to begin the chat.")
 
 if __name__ == "__main__":
     main()
