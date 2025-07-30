@@ -107,7 +107,8 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         tokenizer_dir,
         bert_model_online_path,
         bert_model_datafabric_path,
-        demo_path
+        demo_path,
+        config_path="../configs/config.yaml"
     ):
         """
         Logs the model to MLflow with appropriate artifacts and schema.
@@ -131,6 +132,7 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
             #"bert_model_path": bert_model_online_path,            
             "bert_model_path": bert_model_datafabric_path,
             "demo": demo_path,
+            "config": config_path
         }
 
         src_dir = str(Path(__file__).parent.resolve())
