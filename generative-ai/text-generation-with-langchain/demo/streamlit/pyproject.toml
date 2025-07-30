@@ -11,6 +11,13 @@ dependencies = [
     "streamlit>=1.28.0"
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.11"
+streamlit = "1.45.0"
+urllib3 = "2.5.0"
+pillow = "11.3.0"
+protobuf = "6.31.1"
+
 [tool.poetry]
 package-mode = false
 

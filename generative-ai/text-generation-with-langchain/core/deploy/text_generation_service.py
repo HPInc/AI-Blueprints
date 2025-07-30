@@ -21,6 +21,8 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
+import yaml
+import tempfile
 
 import mlflow
 import pandas as pd
@@ -78,7 +80,7 @@ def _load_llm(artifacts: Dict[str, str]):
     from src.utils import (
         configure_hf_cache,
         configure_proxy,
-        load_config_and_secrets,
+        load_config
     )
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -88,8 +90,8 @@ def _load_llm(artifacts: Dict[str, str]):
         LlamaCpp.model_rebuild()
 
     cfg_dir = Path(artifacts["config"]).parent
-    cfg, secrets = load_config_and_secrets(
-        cfg_dir / "config.yaml", cfg_dir / "secrets.yaml"
+    cfg = load_config(
+        cfg_dir / "config.yaml"
     )
 
     # External logging integration disabled
@@ -273,17 +275,37 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         artifact_path: str = "script_generation_model",
         llm_artifact: str = "models/",
         config_path: str = "configs/config.yaml",
-        secrets_path: str = "configs/secrets.yaml",
+        secrets_dict: Dict = None,
         demo_folder: str = None,
 
     ):
+        """
+        Log the model to MLflow.
+        
+        Args:
+            artifact_path: Path to store the model artifacts
+            llm_artifact: Path to the llm model
+            config_path: Path to the configuration file
+            secrets_dict: Dict with secrets to persist as YAML (optional)
+            demo_folder: Path to the demo folder (optional)
+            
+        Returns:
+            None
+        """
+             
         core, src = _add_project_to_syspath()
         
         artifacts = {
             "config": str(Path(config_path).resolve()),
-            "secrets": str(Path(secrets_path).resolve()),
             "llm": llm_artifact,
         }
+
+        if secrets_dict:
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+            yaml.safe_dump(secrets_dict, tmp)
+            tmp.close()
+            artifacts["secrets"] = tmp.name
+            logging.info(f"Secrets artifact written to temporary file {tmp.name}")
         
         # Add demo folder to artifacts if provided
         if demo_folder:
