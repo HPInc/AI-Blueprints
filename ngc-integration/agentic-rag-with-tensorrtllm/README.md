@@ -50,7 +50,6 @@ agentic-rag-with-tensorrtllm/
 ├── src/                                              # Core Python modules
 │   ├── __init__.py
 │   ├── trt_llm_langchain.py
-│   ├── utils.py                                      # Utility functions (configuration loading)
 |   └── workspace.sh
 ├── README.md                                         # Project documentation
 └── requirements.txt                                  # Python dependencies

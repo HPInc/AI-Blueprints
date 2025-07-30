@@ -72,20 +72,15 @@ st.markdown(
 with st.sidebar:
     st.header("How to Use")
     st.markdown("""
-    1. Make sure your local deployment is up and running.
+    1. The model endpoint is automatically configured for deployment.
                 
-    2. Enter the full `/invocations` URL.
+    2. Type or paste the text to translate.
                 
-    3. Type or paste the text to translate.
-                
-    4. Click **Translate** to see the result.
+    3. Click **Translate** to see the result.
     """)
 
-# ─── Endpoint URL ─────────────────────────────────────────────────────────────
-api_url = st.text_input(
-    "🔗 MLflow `/invocations` URL",
-    value="https://localhost:5000/invocations"
-)
+# ─── MLflow Endpoint Configuration ───────────────────────────────────────────
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
 # ─── Text Input ───────────────────────────────────────────────────────────────
 text_to_translate = st.text_area(
@@ -99,9 +94,7 @@ translate = st.button("🚀 Translate")
 
 if translate:
     # — Validate inputs —
-    if not api_url.lower().startswith(("http://", "https://")):
-        st.error("Please enter a valid URL starting with http:// or https://")
-    elif not text_to_translate.strip():
+    if not text_to_translate.strip():
         st.warning("Please enter some text to translate.")
     else:
         # — Build MLflow payload —
@@ -118,7 +111,7 @@ if translate:
         try:
             # — Send request —
             with st.spinner("Translating…"):
-                resp = requests.post(api_url, json=payload, verify=False, timeout=30)
+                resp = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False, timeout=30)
                 resp.raise_for_status()
                 result = resp.json()
 
