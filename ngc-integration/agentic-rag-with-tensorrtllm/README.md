@@ -20,7 +20,8 @@
 
 ---
 
-## Overview  
+## Overview
+
 This project contains a single integrated pipeline—**Agentic RAG for AI Studio with TRT-LLM and LangGraph**—that implements a Retrieval-Augmented Generation (RAG) workflow using:
 
 - **TensorRT-backed Llama-3.1-Nano (TRT-LLM)**: for fast, GPU-accelerated inference.
@@ -31,31 +32,36 @@ This project contains a single integrated pipeline—**Agentic RAG for AI Studio
 ---
 
 ## Project Structure
+
 ```
 agentic-rag-with-tensorrtllm/
+├── configs/                                          # Configuration files
+│   └── config.yaml                                   # Blueprint configuration (UI mode, ports, service settings)
 ├── data/                                             # Data assets used in the project
 │   └── context/
 │       └── aistudio
 ├── docs/
 |   ├── architecture-for-agentic-rag.png              # Architecture screenshot of the agentic RAG system
 |   └── Build Custom Agentic RAG Systems.pptx         # Powerpoint walkthrough slides for building general agentic RAG systems
-|   
+|
 ├── notebooks/
 |   ├── register-model.ipynb                          # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                            # Notebook for executing the pipeline using custom inputs and configurations
 ├── src/                                              # Core Python modules
 │   ├── __init__.py
 │   ├── trt_llm_langchain.py
+│   ├── utils.py                                      # Utility functions (configuration loading)
 |   └── workspace.sh
 ├── README.md                                         # Project documentation
 └── requirements.txt                                  # Python dependencies
-```  
+```
 
 ---
 
-## Setup  
+## Setup
 
 ### Step 0: Minimum Hardware Requirements
+
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
 - GPU: NVIDIA GPU with at least 32 GB VRAM (for TensorRT-LLM engine)
@@ -66,17 +72,20 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - CUDA: Compatible CUDA toolkit (11.8 or 12.x) installed on your system
 
-### Step 1: Create an AI Studio Project  
-1. Create a **New Project** in AI Studio.   
+### Step 1: Create an AI Studio Project
 
-### Step 2: Create a Workspace  
-1. Select **NeMo Framework (version 25.04)** as the base image.    
+1. Create a **New Project** in AI Studio.
+
+### Step 2: Create a Workspace
+
+1. Select **NeMo Framework (version 25.04)** as the base image.
 2. To use this specific image version in AI Studio, add the following two lines to your `config.yaml` file located in `C:\Users\<user-name>\AppData\Local\HP\AIStudio` on Windows (or the corresponding directory on Ubuntu):
-   
+
    ```
    ngcconfig:
-	   nemoversionpin: "25.04"
+      nemoversionpin: "25.04"
    ```
+
 3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `src/` folder.
 
 - On **Windows**, the file is located at:  
@@ -84,46 +93,43 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - On **Ubuntu**, replace the corresponding `workspace.sh` file in the equivalent directory.
 
-   
-### Step 3: Verify Project Files  
+### Step 3: Verify Project Files
+
 1. Clone the GitHub repository:
-   
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
-   ```  
-3. Navigate to `ngc-integration/agentic-rag-with-tensorrtllm` to ensure all files are cloned correctly after workspace creation.  
+   ```
+
+2. Navigate to `ngc-integration/agentic-rag-with-tensorrtllm` to ensure all files are cloned correctly after workspace creation.
 
 ---
 
-
-
-## Usage 
+## Usage
 
 ### Step 1: Run the Agentic RAG Workflow
 
-Execute the following notebook located in the `notebooks/` folder to see the Agentic RAG workflow in action:  
+Execute the following notebook located in the `notebooks/` folder to see the Agentic RAG workflow in action:
+
 - **`run-workflow.ipynb`**
 
 ### Step 2: Register the Agentic RAG Model in MLflow
 
-Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:  
+Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
+
 - **`register-model.ipynb`**
 
 ### Step 3: Deploy the Agentic RAG Service Locally
 
 Currently, deploying this service locally in AI Studio is not possible due to limitations in the version of the NeMo framework image used in this blueprint. We are actively working on resolving this issue.
 
-
-
 ---
-
-
 
 ## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
