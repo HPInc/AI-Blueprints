@@ -1,24 +1,65 @@
-# How to Successfully Use the Streamlit Web App
+# Streamlit UI Deployment Guide
 
-## 1. Install Required Versions
-Ensure that the following are installed on your machine:
-- **Python** version **≥ 3.11** (https://www.python.org/downloads/)
-- **Poetry** version **≥ 2.0.0 and < 3.0.0** (https://python-poetry.org/docs/)
+## Overview
 
-## 2. Set Up the Virtual Environment and Install Dependencies
-Navigate to the project's root directory and run the following command to set up a virtual environment using Poetry and install all required packages:
-```bash
-python -m poetry install
+This Streamlit web application is designed for seamless deployment through Z by HP AI Studio's containerized deployment system. The application automatically integrates with your deployed MLflow model service without requiring manual setup or configuration.
+
+## Deployment Instructions
+
+### 1. Configure UI Mode
+
+Set the UI mode in your project's configuration file:
+
+**File:** `configs/config.yaml`
+
+```yaml
+ui:
+  mode: "streamlit"
 ```
 
-## 3. Launch the Streamlit Web App
-Still in the project's root directory, start the Streamlit app by running:
-```bash
-python -m poetry run streamlit run "main.py"
-```
+### 2. Register Your Model
 
-## 4. Select the Correct API Endpoint When Using the App
-When interacting with the app:
-- **Choose the exact and correct API URL** to connect to your deployed model.
-- **Important:** The MLflow endpoint **must** use **HTTPS** (not HTTP).
-- **Note:** In **Z by HP AI Studio**, the **port number** for your MLflow API **changes with each deployment**, so always verify the correct URL and port before starting a session.
+Execute the model registration notebook:
+
+- Open `notebooks/register-model.ipynb`
+- Run all cells to log and register your model to MLflow
+- This will automatically include the Streamlit UI as part of the deployment artifacts
+
+### 3. Deploy via AI Studio
+
+1. **Navigate to Deployments**: Go to **Deployments > New Service** in AI Studio
+2. **Configure Service**:
+   - Name your service
+   - Select the registered model
+   - Choose the model version
+   - Configure GPU settings as needed
+   - Select your workspace
+3. **Deploy**: Click **Deploy** to start the service
+4. **Launch**: Once deployed, click the play button to launch your service
+5. **Access UI**: The Streamlit interface will be automatically available through the deployment URL
+
+## Features
+
+- **Automatic Integration**: No manual endpoint configuration required
+- **Containerized Deployment**: Runs in an isolated, secure container environment
+- **Seamless MLflow Connection**: Automatically connects to your deployed model service
+- **Enterprise-Ready**: Built for Z by HP AI Studio's enterprise-grade platform
+
+## Important Notes
+
+- This is a **local deployment** running on your machine
+- The Streamlit UI is automatically served as part of the containerized service
+- No manual Python, Poetry, or dependency installation required
+- The MLflow endpoint is automatically configured for container-to-container communication
+
+## Troubleshooting
+
+- **Service not starting**: Verify your model is properly registered in MLflow
+- **UI not loading**: Check that the UI mode is set to "streamlit" in `configs/config.yaml`
+- **Connection issues**: Ensure your workspace has sufficient resources allocated
+
+For additional support, refer to the [AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview) or visit the [HP AI Creator Community](https://community.datascience.hp.com/).
+
+---
+
+Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
