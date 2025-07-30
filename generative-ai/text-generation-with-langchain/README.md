@@ -44,10 +44,8 @@ This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline fo
 │   ├── pyproject.toml
 │   └── README.md
 ├── docs
-│   ├── sample-html-ss.png                                             # HTML UI screenshot
-│   ├── sample-html-ui.pdf                                             # HTML UI page
-│   ├── sample-streamlit-ss.png                                        # Streamlit UI screenshot
-│   ├── sample-streamlit-ui.pdf                                        # Streamlit UI page
+│   ├── successful_streamlit_ui_text_generation_result.pdf             # Streamlit UI result pdf
+│   ├── successful_swagger_ui_text_generation_result.pdf               # Swagger UI result pdf
 │   └── streamlit_sucess.png                                           # Streamlit Success UI Screenshot
 ├── notebooks
 │   ├── register-model.ipynb                                           # Model registration notebook
