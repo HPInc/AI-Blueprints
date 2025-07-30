@@ -51,20 +51,15 @@ st.markdown("<h3 style='text-align: center; color: #555;'>Find the perfect vacat
 with st.sidebar:
     st.header("How to Use")
     st.markdown("""
-    1. Make sure your local deployment is up and running.
+    1. The model endpoint is automatically configured for deployment.
                 
-    2. Enter the full `/invocations` URL.
+    2. Type or paste the type of vacation you would like to be recommended.
                 
-    3. Type or paste the type of vacation you would like to be recommended.
-                
-    4. Click **Get Recommendations** to see the result.
+    3. Click **Get Recommendations** to see the result.
     """)
 
-# ─── Endpoint URL ─────────────────────────────────────────────────────────────
-api_url_input = st.text_input(
-    "🔗 MLflow `/invocations` URL",
-    value="https://localhost:5000/invocations"
-)
+# ─── MLflow Endpoint Configuration ───────────────────────────────────────────
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
 # --- User Input ---
 query = st.text_input(
@@ -79,7 +74,7 @@ if st.button("🔍 Get Recommendations"):
         st.warning("⚠️ Please enter a vacation preference!")
     else:
         # API Configuration
-        api_url = os.getenv("API_URL", api_url_input)  # Update this URL accordingly
+        api_url = MLFLOW_ENDPOINT
         payload = {
             "inputs": {"query": [query]},
             "params": {"show_score": True}
