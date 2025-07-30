@@ -30,7 +30,7 @@ def get_project_root():
 
 def get_config_dir():
     """Get the config directory"""
-    return get_project_root() / "config"
+    return get_project_root() / "configs"
 
 def get_output_dir():
     """Get or create the output directory for generated images"""
@@ -356,6 +356,7 @@ def initialize_llm(
             stop=[],
             streaming=False,
             temperature=0.2,
+            use_mmap=False,
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
