@@ -7,6 +7,8 @@ This service provides text summarization capabilities using different LLM option
 import os
 import logging
 from typing import Dict, Any, Union
+import yaml
+import tempfile
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -247,14 +249,21 @@ class TextSummarizationService(BaseGenerativeService):
         return pd.DataFrame([{"summary": summary}])
         
     @classmethod
-    def log_model(cls, artifact_path, secrets_path, config_path, model_path=None, demo_folder=None):
+    def log_model(
+        cls, 
+        artifact_path, 
+        config_path,
+        secrets_dict=None,
+        model_path=None, 
+        demo_folder=None
+    ):
         """
         Log the model to MLflow.
         
         Args:
             artifact_path: Path to store the model artifacts
-            secrets_path: Path to the secrets file
             config_path: Path to the configuration file
+            secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
             
@@ -280,9 +289,15 @@ class TextSummarizationService(BaseGenerativeService):
         
         # Prepare artifacts
         artifacts = {
-            "secrets": secrets_path,
             "config": config_path
         }
+
+        if secrets_dict:
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+            yaml.safe_dump(secrets_dict, tmp)
+            tmp.close()
+            artifacts["secrets"] = tmp.name
+            logger.info(f"Secrets artifact written to temporary file {tmp.name}")
         
         if demo_folder:
             artifacts["demo"] = demo_folder
@@ -297,15 +312,6 @@ class TextSummarizationService(BaseGenerativeService):
             artifacts=artifacts,
             signature=signature,
             code_paths=["../core", "../src"],
-            pip_requirements=[
-                "langchain-huggingface==0.2.0",
-                "pyyaml",
-                "pandas",
-                "sentence-transformers",
-                "langchain_core",
-                "langchain_huggingface",
-                "tokenizers>=0.13.0",
-                "httpx>=0.24.0",
-            ]
+            pip_requirements="../requirements.txt",
         )
         logger.info("Model and artifacts successfully registered in MLflow.")
