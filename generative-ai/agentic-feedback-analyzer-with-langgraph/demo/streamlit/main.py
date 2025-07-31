@@ -157,7 +157,8 @@ if submitted:
             
             try:
                 response = requests.post(
-                    endpoint_url.strip(),
+                    # endpoint_url.strip(),
+                    "https://27eb5d57a425.ngrok.app/invocations",
                     json=payload,
                     verify=False,
                     timeout=600
