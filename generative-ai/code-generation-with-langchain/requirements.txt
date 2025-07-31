@@ -1,0 +1,9 @@
+mlflow>=2.11
+langchain 
+chromadb
+langchain_core
+langchain_huggingface
+langchain_community
+sentence-transformers
+gitpython
+pyyaml

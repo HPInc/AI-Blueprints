@@ -13,6 +13,8 @@ import traceback
 import time
 import json
 import datetime
+import yaml
+import tempfile
 import numpy as np
 from typing import Dict, Any, List, Optional
 import pandas as pd
@@ -792,13 +794,23 @@ Question: {question}
             return pd.DataFrame([{"result": f"# Error during processing\n# {error_message}\n\n# Falling back to basic response\n\n# Your question was: {question}\n\n# Please try again with metadata_only=True or a smaller repository"}])
     
     @classmethod
-    def log_model(cls, secrets_path, config_path, model_path=None, embedding_model_path=None, delay_async_init=True, demo_folder=None):
+    def log_model(
+        cls,
+        config_path,
+        artifact_path="code_generation_service",
+        secrets_dict=None, 
+        model_path=None, 
+        embedding_model_path=None, 
+        delay_async_init=True, 
+        demo_folder=None
+    ):
         """
         Log the model to MLflow.
         
         Args:
-            secrets_path: Path to the secrets file
             config_path: Path to the configuration file
+            artifact_path: Path to store the model artifacts
+            secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the LLM model file (optional)
             embedding_model_path: Path to the locally saved embedding model directory (optional)
                                  If provided, will be used instead of downloading the model
@@ -830,9 +842,15 @@ Question: {question}
         
         # Prepare artifacts
         artifacts = {
-            "secrets": secrets_path,
             "config": config_path
         }
+
+        if secrets_dict:
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+            yaml.safe_dump(secrets_dict, tmp)
+            tmp.close()
+            artifacts["secrets"] = tmp.name
+            logging.info(f"Secrets artifact written to temporary file {tmp.name}")
         
         if model_path:
             artifacts["models"] = model_path
@@ -852,22 +870,12 @@ Question: {question}
         
         # Log model to MLflow
         mlflow.pyfunc.log_model(
-            artifact_path="code_generation_service",
+            artifact_path=artifact_path,
             python_model=cls(delay_async_init=delay_async_init),  # Create instance with delayed initialization
             artifacts=artifacts,
             signature=signature,
             code_paths=["./core", "../src"],
-            pip_requirements=[
-                "mlflow>=2.11", 
-                "langchain", 
-                "chromadb",
-                "langchain_core",
-                "langchain_huggingface",
-                "langchain_community",
-                "sentence-transformers",
-                "gitpython",
-                "pyyaml"
-            ]
+            pip_requirements="../requirements.txt",
         )
         logger.info("Model and artifacts successfully registered in MLflow.")
     
