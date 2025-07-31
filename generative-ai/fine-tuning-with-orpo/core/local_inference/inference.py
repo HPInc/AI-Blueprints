@@ -9,7 +9,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # Add project root to path for imports
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root / "src"))
-from utils import get_config_dir
+from src.utils import get_configs_dir
 
 class InferenceRunner:
   
@@ -21,7 +21,7 @@ class InferenceRunner:
 
         if config_dir is None:
             # Use centralized path utility
-            self.config_dir = get_config_dir()
+            self.config_dir = get_configs_dir()
         else:
             self.config_dir = Path(config_dir).expanduser().resolve()
 
@@ -84,5 +84,5 @@ class InferenceRunner:
             )
 
         decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        self.log("Inferência finalizada.")
+        self.log("✅ Inference complete.")
         return decoded
