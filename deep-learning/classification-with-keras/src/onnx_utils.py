@@ -235,9 +235,6 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
         export_sklearn_to_onnx
     )
     
-    # Validar configuração
-    config.validate()
-    
     onnx_filename = config.get_onnx_filename()
     logger.info(f"🔄 Converting {config.model_type} model: {config.model_path} -> {onnx_filename}")
     

@@ -253,7 +253,7 @@ def _export_single_nemo_model(model_path: str,
         try:
             # Use NeMo's built-in export method with official API
             print(f"🔄 Using NVIDIA's official export() method for {os.path.basename(model_path)}")
-            model.export(temp_path, input_example=input_sample, verbose=True)
+            model.export(temp_path, input_example=input_sample, verbose=False)
             
             # Load and re-save with external data support
             onnx_model = onnx.load(temp_path)
