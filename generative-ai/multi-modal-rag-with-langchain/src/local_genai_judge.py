@@ -12,9 +12,10 @@ class LocalGenAIJudge:
     2. Can be integrated into a model's `predict` method for real-time scoring.
     """
     SYSTEM_PROMPT = (
-        "You are a meticulous and impartial AI judge. Your role is to evaluate an AI-generated answer based on a specific criterion "
-        "and the provided context. You must return a single floating-point number between 0.0 and 1.0 and nothing else. "
-        "Do not provide any explanation, preamble, or additional text. Your entire response must be only the numeric score."
+        "You are a meticulous and impartial expert AI judge. Your role is to evaluate an AI-generated answer based on a specific criterion and the provided context."
+        "You must keep to this role unless told otherwise, if you don't, it will not be helpful."
+        "Only output a single floating-point number between 0.0 and 1.0 and nothing else."
+        "Do not provide any explanation, preamble, or additional text. Your entire response must be only the numeric score. Do not hallucinate."
     )
 
     def __init__(self, model: any, tokenizer: any):
