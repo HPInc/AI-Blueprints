@@ -1,13 +1,25 @@
-[tool.poetry]
-name = "vanilla-rag-streamlit-webapp"
+[project]
+name = "text-generation-streamlit-webapp"
 version = "0.1.0"
 description = ""
-authors = ["Diogo Vieira <diogo.vieira@hp.com>"]
-package-mode = false
+authors = [
+    {name = "Diogo Vieira", email = "diogo.vieira@hp.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit>=1.28.0"
+]
 
 [tool.poetry.dependencies]
 python = ">=3.11"
 streamlit = "1.45.0"
+urllib3 = "2.5.0"
+pillow = "11.3.0"
+protobuf = "6.31.1"
+
+[tool.poetry]
+package-mode = false
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,16 +1,22 @@
-[tool.poetry]
+[project]
 name = "two-cities-streamlit-webapp"
 version = "0.1.0"
 description = "A Streamlit front-end for Forecasting COVID Cases for Two Cities"
-authors = ["alvin kabwama <alvin.kabwama@hp.com>"]
+authors = [
+    {name = "alvin kabwama", email = "alvin.kabwama@hp.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit>=1.28.0",
+    "requests>=2.25.0",
+    "pandas>=1.5.0",
+    "altair>=5.0.0",
+    "urllib3>=2.0.0"
+]
 
-[tool.poetry.dependencies]
-python    = ">=3.8,<3.9.7 || >3.9.7"
-streamlit = "^1.20"
-requests  = "^2.31"
-pandas    = "^1.5"
-altair    = "^5.0"
-urllib3   = "^1.26"
+[tool.poetry]
+package-mode = false
 
 [build-system]
 requires    = ["poetry-core"]
