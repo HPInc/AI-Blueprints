@@ -25,8 +25,6 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ## Project Structure
 
 ```text
-├── config
-│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── configs
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core
@@ -41,9 +39,10 @@ This notebook performs image generation inference using the Stable Diffusion arc
 │   └── outputs/                                                        # Generated images directory
 ├── docs
 │   ├── Diagram dreambooth.png                                          # DreamBooth architecture diagram
-│   └── swagger_UI_image_generation_with_stablediffusion.pdf            # Swagger UI documentation
+│   └── successful-swagger-ui-image-generation-result.pdf               # Swagger UI documentation
 ├── notebooks
-│   └── register-model.ipynb                                            # Main image generation notebook
+│   ├── register-model.ipynb                                            # Model registration notebook
+│   └── run-workflow.ipynb                                              # Main image generation notebook
 ├── src
 │   ├── __init__.py
 │   └── utils.py                                                        # Utility functions for config loading
