@@ -18,7 +18,7 @@ from PIL import Image
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_project_root, get_config_dir, get_output_dir, get_default_model_path, get_model_cache_dir
+from src.utils import get_project_root, get_config_dir, get_output_dir, get_default_model_path, get_model_cache_dir
 
 
 
