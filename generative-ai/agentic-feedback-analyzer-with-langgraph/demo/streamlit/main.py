@@ -56,6 +56,7 @@ st.sidebar.markdown("""
 """)
 
 endpoint_url = st.sidebar.text_input("MLflow Model Endpoint URL", key="endpoint")
+endpoint_url = 'no need'
 
 if endpoint_url and not endpoint_url.strip().lower().startswith("https://"):
     st.sidebar.error("Endpoint must start with https://")
