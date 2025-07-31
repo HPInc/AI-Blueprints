@@ -26,8 +26,7 @@ st.set_page_config(
 # ------------------------- CSS STYLING -------------------------
 
 st.markdown(
-    "<style>" + open("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit
-/assets/styles.css").read() + "</style>", 
+    "<style>" + open("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/assets/styles.css").read() + "</style>", 
     unsafe_allow_html=True
 )
 
