@@ -56,7 +56,6 @@ st.sidebar.markdown("""
 """)
 
 endpoint_url = st.sidebar.text_input("MLflow Model Endpoint URL", key="endpoint")
-endpoint_url = 'https://localhost:5000/invocations'
 
 if endpoint_url and not endpoint_url.strip().lower().startswith("https://"):
     st.sidebar.error("Endpoint must start with https://")
@@ -158,8 +157,7 @@ if submitted:
             
             try:
                 response = requests.post(
-                    # endpoint_url.strip(),
-                    "https://27eb5d57a425.ngrok.app/invocations",
+                    endpoint_url.strip(),
                     json=payload,
                     verify=False,
                     timeout=600
