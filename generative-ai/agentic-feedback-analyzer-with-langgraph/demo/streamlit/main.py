@@ -31,13 +31,13 @@ st.markdown(
 )
 
 # ------------------------- LOGOS -------------------------
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/HP-logo.png", width=100)
-with col2:
-    st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/Z-logo.png", width=100)
-with col3:
-    st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/AIS-logo.png", width=100)
+# col1, col2, col3 = st.columns(3)
+# with col1:
+#     st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/HP-logo.png", width=100)
+# with col2:
+#     st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/Z-logo.png", width=100)
+# with col3:
+#     st.image("generative-ai/agentic-feedback-analyzer-with-langgraph/demo/streamlit/static/AIS-logo.png", width=100)
 
 
 # ------------------------- HEADER -------------------------
