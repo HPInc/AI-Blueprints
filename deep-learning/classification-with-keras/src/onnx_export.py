@@ -347,53 +347,81 @@ def _export_nemo_via_pytorch_fallback(model, input_sample, output_path: str, mod
 
 
 def export_transformers_to_onnx(model_name_or_path: str, 
-                               task: str = "text-classification",
-                               output_path: str = "transformers_model.onnx",
-                               model_name: str = "transformers_model") -> str:
+                                task: str = "text-classification",
+                                output_path: str = "transformers_model.onnx",
+                                model_name: str = "transformers_model") -> str:
     """
     Convert a Hugging Face Transformers model to ONNX format.
     
     Args:
         model_name_or_path: Model name from Hugging Face Hub or local path
-        task: Task type (text-classification, token-classification, etc.)
+        task: Task type (text-classification, token-classification, translation)
         output_path: Path to save the ONNX model
         model_name: Name for the ONNX model
         
     Returns:
         Path to the exported ONNX model
-        
-    Example:
-        export_transformers_to_onnx("bert-base-uncased", "text-classification", "bert.onnx")
     """
     try:
-        from optimum.onnxruntime import ORTModelForSequenceClassification, ORTModelForTokenClassification
-        from transformers import AutoTokenizer
+        import os
+        from pathlib import Path
+        from transformers import (
+            AutoTokenizer,
+            AutoModelForSequenceClassification,
+            AutoModelForTokenClassification,
+            AutoModelForSeq2SeqLM,
+        )
+        from transformers.onnx import export,FeaturesManager
+        from transformers.onnx.config import OnnxConfig
+        from optimum.onnxruntime import (
+            ORTModelForSequenceClassification,
+            ORTModelForTokenClassification,
+        )
+        import torch
         import onnx
-        
+
         print(f"🤗 Converting Transformers model: {model_name_or_path}")
-        
-        # Load tokenizer
+
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        
-        # Select appropriate model class based on task
+        output_dir = Path(output_path).with_suffix('')  # remove ".onnx"
+
         if task == "text-classification":
             model = ORTModelForSequenceClassification.from_pretrained(model_name_or_path, export=True)
+            model.save_pretrained(output_dir)
+            tokenizer.save_pretrained(output_dir)
+
+            onnx_file = output_dir / "model.onnx"
+            if onnx_file.exists():
+                os.rename(onnx_file, output_path)
+
         elif task == "token-classification":
             model = ORTModelForTokenClassification.from_pretrained(model_name_or_path, export=True)
+            model.save_pretrained(output_dir)
+            tokenizer.save_pretrained(output_dir)
+
+            onnx_file = output_dir / "model.onnx"
+            if onnx_file.exists():
+                os.rename(onnx_file, output_path)
+
+        elif task == "translation":
+            model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
+            model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(model, feature="seq2seq-lm")
+            onnx_config = model_onnx_config(model.config)
+          
+            export(
+                preprocessor=tokenizer,
+                model=model,
+                config=onnx_config,
+                opset=13,
+                output=Path(output_path)
+            )
+
         else:
             raise ValueError(f"Unsupported task: {task}")
-        
-        # Save the ONNX model
-        model.save_pretrained(output_path.replace('.onnx', ''))
-        
-        # Move the actual ONNX file to the desired location
-        onnx_file = os.path.join(output_path.replace('.onnx', ''), "model.onnx")
-        if os.path.exists(onnx_file):
-            os.rename(onnx_file, output_path)
-        
+
         print(f"✅ Transformers model exported to: {output_path}")
-        return output_path
-        
+        return str(output_path)
+
     except Exception as e:
         print(f"❌ Failed to export Transformers model: {e}")
         raise
