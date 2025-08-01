@@ -1,8 +1,8 @@
 import streamlit as st
 import os
-import base64
 import requests
 from io import BytesIO
+import base64
 import numpy as np
 from pathlib import Path
 
@@ -10,7 +10,7 @@ from pathlib import Path
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="pam Detection with NLP",
+    page_title="spam Detection with NLP",
     page_icon = "📧🐷",
     layout="centered"
 )
@@ -97,9 +97,6 @@ api_url = MLFLOW_ENDPOINT
 
 user_text = st.text_input("Enter your message")
 
-if user_text:
-    st.write("Text:", user_text)
-
     
 
 # ─────────────────────────────────────────────────────────────
@@ -147,7 +144,7 @@ if st.button("📧 Get Classification"):
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*🚫 Spam Detection with NLP © 2025* local, private, handwritten classification + MLflow.
+*🚫 Spam Detection with NLP © 2025* local, private, spam classification + MLflow.
 
 ---
 > Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
