@@ -137,6 +137,6 @@ def main():
             
         # Add assistant message to state
         st.session_state.messages.append(assistant_message)
-
+        st.rerun()
 if __name__ == "__main__":
     main()

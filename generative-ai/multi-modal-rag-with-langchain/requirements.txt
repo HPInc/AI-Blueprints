@@ -2,7 +2,7 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 # ── brings CUDA 12.8 runtimes into the Conda/venv MLflow creates ──
-torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 
