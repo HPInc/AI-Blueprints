@@ -173,7 +173,8 @@ And as response:
 ### Successful UI demo
 
 - Streamlit
-  ![Spam Classification Streamlit UI](docs/streamlit-ui-spam-detection-with-nlp.png)
+
+  ![Spam Classification Streamlit UI](docs/streamlit-ui-spam-detection-with-npl.png)
 
 ---
 
