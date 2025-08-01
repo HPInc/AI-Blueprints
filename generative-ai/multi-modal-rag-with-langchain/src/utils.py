@@ -12,7 +12,6 @@ from pathlib import Path
 import json
 import logging
 from typing import Dict, Any, Optional, List
-from .trt_llm_langchain import TensorRTLangchain
 from langchain.schema.document import Document
 from langchain.chat_models import ChatOpenAI
 import mlflow
