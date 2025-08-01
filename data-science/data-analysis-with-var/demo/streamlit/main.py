@@ -183,11 +183,9 @@ st.markdown(f"""
 st.title("⏳ Two Cities Time Series Forecast")
 st.write("Select a city and forecast horizon to see mobility + case forecasts.")
 
-endpoint = st.text_input(
-    "🔗 Model endpoint URL",
-    value="https://localhost:52673/invocations",
-    help="e.g. https://localhost:52673/invocations"
-)
+# MLflow endpoint configured for deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+
 city  = st.selectbox("Select City", ["New York", "London"])
 steps = st.number_input("Forecast horizon (days)", 1, 90, 14, step=1)
 
@@ -197,7 +195,7 @@ if st.button("Run Forecast"):
 
     try:
         with st.spinner("🔄 Calling inference endpoint…"):
-            r = requests.post(endpoint, json=payload, headers=hdrs, timeout=15, verify=False)
+            r = requests.post(MLFLOW_ENDPOINT, json=payload, headers=hdrs, timeout=15, verify=False)
             r.raise_for_status()
             data = r.json()
 

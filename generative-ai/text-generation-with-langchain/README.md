@@ -111,12 +111,12 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 1. Choose **Local GenAI** as the base image when creating the workspace.
 
-### Step 3: Clone the Repository
-1. Clone the GitHub repository:
+### Step 3: Clone the Repository and Verify Project Files
+1. In the Project Setup tab, under Setup, clone the project repository:
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
-2. Ensure all files are available after workspace creation..
+2. Navigate to `text-generation-with-langchain/` to ensure all files are cloned correctly after workspace creation.
 
 ### Step 4: Download the Model
 
@@ -124,15 +124,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 2. Download the model file: `Meta-Llama-3.1-8B-Instruct-Q8_0.gguf`
 3. The model will be available under the /datafabric directory in your workspace.
 
-### Step 5: Verify Project Files
-
-1. In the Project Setup tab, under Setup, clone the project repository:
-   ```
-   git clone git clone https://github.com/HPInc/AI-Blueprints.git
-   ```
-2. Navigate to `text-generation-with-langchain/notebooks/run-workflow.ipynb` to ensure all files are cloned correctly after workspace creation.
-
-### Step 6: Configure Secrets
+### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
@@ -148,7 +140,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
   **Note: If both options (YAML option and Secrets Manager) are used, the Secrets Manager option will override the YAML option.**
 
-### Step 7: Setup Configuration
+### Step 6: Setup Configuration
 
 1. Edit `config.yaml` with relevant configuration details:
   - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
@@ -159,7 +151,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 ---
 
-### Step 8: Use a Custom Kernel for Notebooks
+### Step 7: Use a Custom Kernel for Notebooks
 
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 

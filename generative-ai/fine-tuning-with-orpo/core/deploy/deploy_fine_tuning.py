@@ -444,14 +444,7 @@ def register_llm_comparison_model(
             },
             signature=signature,
             code_paths=[str(core), str(src)],
-            pip_requirements=[
-                "torch",
-                "transformers==4.51.3",
-                "peft==0.15.2",
-                "accelerate==1.6.0",
-                "mlflow",
-                "pandas",
-            ],
+            pip_requirements="../requirements.txt",
         )
 
         mlflow.register_model(
