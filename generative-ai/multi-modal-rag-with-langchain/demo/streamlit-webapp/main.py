@@ -16,99 +16,9 @@ warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 st.set_page_config(
     page_title="ADO Wiki AI Assistant",
     page_icon="🤖",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="expanded",
 )
-
-def load_css():
-    """Loads the complete custom CSS for the application."""
-    css = """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        html, body, [class*="st-"] {
-            font-family: 'Roboto', sans-serif;
-        }
-
-        /* Light mode styles */
-        body {
-            background-color: #FFFFFF;
-            color: #262626;
-        }
-
-        .stApp {
-            background-color: #FFFFFF;
-        }
-
-        /* Dark mode overrides */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #0e1117;
-                color: #FFFFFF;
-            }
-
-            .stApp {
-                background-color: #0e1117;
-            }
-
-            div[data-testid="stChatMessage"]:has(div[data-testid="stMarkdownContainer"]) {
-                background-color: #1e1e1e !important;
-                color: #f0f0f0 !important;
-            }
-            
-            /* User message bubble */
-            div[data-testid="stChatMessage"] div[data-testid="stMarkdownContainer"] p {
-                background-color: #005c94 !important; /* A distinct color for user messages */
-                color: #FFFFFF !important;
-                padding: 0.75rem;
-                border-radius: 0.5rem;
-                display: inline-block;
-                max-width: 100%;
-            }
-
-            [data-testid="stSidebar"] {
-                background-color: #1e1e1e !important;
-            }
-
-            [data-testid="stChatInput"] {
-                background-color: #0e1117;
-                border-top: 1px solid #333;
-            }
-
-            [data-testid="stChatInput"] textarea {
-                background-color: #1e1e1e !important;
-                color: #FFFFFF !important;
-                border: 1px solid #444 !important;
-            }
-
-            [data-testid="stChatInput"] button {
-                background-color: #0076a8 !important;
-            }
-
-            [data-testid="stChatInput"] button:hover {
-                background-color: #005c94 !important;
-            }
-            
-            .image-gallery-header {
-                color: #cccccc;
-                border-top: 1px solid #444;
-                padding-top: 1rem;
-                margin-top: 1rem;
-            }
-
-            /* Style for metric labels in dark mode */
-            [data-testid="stMetricLabel"] {
-                color: #a0a0a0 !important;
-            }
-        }
-
-        /* Style for metric labels in light mode */
-        [data-testid="stMetricLabel"] {
-            color: #555555 !important;
-        }
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
 
 # --- API Interaction Logic ---
 
@@ -138,7 +48,6 @@ def call_model_api(api_url: str, command: str, data_payload: dict) -> dict:
 
 def main():
     """Renders the main HP-branded Chatbot application page."""
-    load_css()
     
     # Initialize session state
     if "kb_ready" not in st.session_state:

@@ -39,13 +39,20 @@ multi-modal-rag-with-langchain/
 │   ├── wiki_flat_structure_mini.json
 │   └── wiki_flat_structure.json
 ├── demo/
+│   ├── streamlit-web-app/
+│   └── assets/
+│       ├── main.py
+│       ├── main_no_dbcache.py
+│       └── README.md
 ├── notebooks/
 │   ├── register-model.ipynb
+│   ├── register-mode-no-dbstore.ipynb
 │   └── run-workflow.ipynb
 ├── src/
-│   └── service/
-│       ├── local_genai_judge.py
-│       └── utils.py
+│   ├── local_genai_judge.py
+│   ├── utils.py
+│   ├── local_genai_judge.py
+│   └── wiki_pages_clone.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -138,11 +145,15 @@ Execute the following notebook inside the `notebooks/` folder to see the Multimo
 
 - **`run-workflow.ipynb`**
 
+
 ### Step 2: Second Register the Multimodal RAG Model in MLflow
 
 Run the following notebook in the `notebooks/` folder to register the Multimodal RAG model in MLflow:
 
 - **`register-model.ipynb`**
+
+  or 
+- **`register-model-no-dbstore.ipynb`** (If you don't want to store the databases in your container)
 
 _Note: This step requires the `run-workflow.ipynb` file to be ran first at least once._
 
@@ -155,12 +166,15 @@ _Note: This step requires the `run-workflow.ipynb` file to be ran first at least
 - Once deployed, access the **Swagger UI** via the Service URL.
 - From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via the Streamlit UI.
 
-### Swagger API Request Body Schema
+### Swagger API Request Input Body Schema
 
 ```
 {
   "inputs": {
     "query": [
+      "string"
+    ],
+    "payload": [
       "string"
     ],
     "force_regenerate": [

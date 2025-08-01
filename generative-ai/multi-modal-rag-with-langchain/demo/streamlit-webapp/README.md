@@ -16,10 +16,16 @@ pip install streamlit
 
 ## 3. Run the Streamlit App
 
-To start the Streamlit app, cd to the directory containing `main.py` and execute the following command in your terminal:
+To start the Streamlit app, cd to the directory containing `main.py` or `main_no_dbcache.py` and execute the following command in your terminal:
+
+`main.py` is the recommended version as it uses the database cache for faster performance. If you want to run the app without database caching, use `main_no_dbcache.py`. The `main_no_dbcache.py` does not use the database cache, which may result in slower performance since the data is not saved to be queried.
 
 ```bash
 streamlit run main.py
+```
+
+```bash
+streamlit run main_no_dbcache.py
 ```
 
 ## 4. Select the Correct API Endpoint When Using the App
