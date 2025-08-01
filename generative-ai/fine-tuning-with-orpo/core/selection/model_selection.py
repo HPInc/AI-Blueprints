@@ -8,7 +8,7 @@ from huggingface_hub import snapshot_download
 from huggingface_hub.utils import HfHubHTTPError
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_models_dir, format_model_path, setup_model_environment
+from src.utils import get_models_dir, format_model_path, setup_model_environment
 
 
 class ModelAccessException(Exception):
