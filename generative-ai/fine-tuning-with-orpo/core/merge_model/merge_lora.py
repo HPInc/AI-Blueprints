@@ -8,7 +8,7 @@ from peft import PeftModel
 from trl import setup_chat_format
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from utils import get_fine_tuned_models_dir
+from src.utils import get_fine_tuned_models_dir
 
 def merge_lora_and_save(
     base_model_id: str,
