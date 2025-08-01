@@ -82,14 +82,25 @@ Ensure your environment meets the minimum compute requirements for smooth image 
    ```  
 2. Make sure the folder `generative-ai/english-correction-with-langchain` is present inside your workspace.
 
-### Step 4: Configure Configs and Secrets Manager
+### Step 4: Add the Model to the Workspace
+
+1. Download the Meta Llama-3.1-8b-instruct
+- Model Name: `llama3.1-8b-instruct`
+- Model Source: `AWS S3`
+- S3 URI: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+- Bucket Region: `us-west-2`
+- Make sure the model is in the `datafabric` folder inside your workspace
+
+### Step 5: Configure Configs and Secrets Manager
 
 - Edit `config.yaml` with relevant configuration details.
 
 - Secrets Configuration:
-  - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
+  - (Option 1) Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
+  - (Option 2) Create `secrets.yaml` file in the `configs` folder and add keys.
   - Add the following secrets:
      - GITHUB_ACCESS_TOKEN: Your GitHub Personal Access Token (PAT)
+     - Settings > Developer settings > Personal access tokens > Tokens (classic) > Generate new token (classic) > Check the `repo` checkbox > Generate token
 
 #### Step 5: Use a Custom Kernel for Notebooks
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
