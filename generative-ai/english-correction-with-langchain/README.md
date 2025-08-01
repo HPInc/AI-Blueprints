@@ -32,6 +32,8 @@ This project demonstrates how to perform English grammar correction in GitHub Ma
 ├── configs
 │   └── configs.yaml                                                  # General settings
 ├── demo
+│   └── assets
+│      └── background.png                                             # Background image for UI
 │   └── streamlit-webapp
 │      └── README.md                                                  # Streamlit Documentation
 │      └── main.py                                                    # Streamlit UI
