@@ -121,12 +121,8 @@ st.markdown(f"""
 st.title("🌸 Iris Flower Classifier")
 st.write("Provide flower measurements and get the predicted Iris species.")
 
-# Endpoint URL input
-endpoint = st.text_input(
-    "🔗 Enter your model endpoint URL",
-    value="https://localhost:52656/invocations",
-    placeholder="e.g. https://localhost:52656/invocations"
-)
+# MLflow endpoint configured for deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
 # Feature sliders
 st.header("Input Features (cm)")
@@ -137,43 +133,40 @@ petal_width  = st.slider("Petal width",  0.1, 10.0, 0.2, 0.1)
 
 # ────────────  PREDICTION LOGIC  ─────────────  
 if st.button("Predict Species"):
-    if not endpoint.lower().startswith(("http://","https://")):
-        st.error("🚫 Please enter a valid URL starting with `http://` or `https://`.")
-    else:
-        payload = {
-            "inputs": {
-                "sepal-length": [sepal_length],
-                "sepal-width":  [sepal_width],
-                "petal-length": [petal_length],
-                "petal-width":  [petal_width],
-            },
-            "params": {}
-        }
-        headers = {"Accept":"application/json","Content-Type":"application/json"}
+    payload = {
+        "inputs": {
+            "sepal-length": [sepal_length],
+            "sepal-width":  [sepal_width],
+            "petal-length": [petal_length],
+            "petal-width":  [petal_width],
+        },
+        "params": {}
+    }
+    headers = {"Accept":"application/json","Content-Type":"application/json"}
 
-        try:
-            with st.spinner("🔄 Calling inference endpoint…"):
-                resp = requests.post(endpoint, json=payload, headers=headers,
-                                      timeout=10, verify=False)
-                resp.raise_for_status()
-                data = resp.json()
+    try:
+        with st.spinner("🔄 Calling inference endpoint…"):
+            resp = requests.post(MLFLOW_ENDPOINT, json=payload, headers=headers,
+                                  timeout=10, verify=False)
+            resp.raise_for_status()
+            data = resp.json()
 
-            preds = data.get("predictions")
-            if not isinstance(preds, list) or not preds:
-                st.error("⚠️ Endpoint returned no predictions.")
-            else:
-                st.success(f"✅ Predicted Iris Species: **{preds[0]}**")
+        preds = data.get("predictions")
+        if not isinstance(preds, list) or not preds:
+            st.error("⚠️ Endpoint returned no predictions.")
+        else:
+            st.success(f"✅ Predicted Iris Species: **{preds[0]}**")
 
-        except ConnectionError:
-            st.error(f"🚫 Could not connect to `{endpoint}`. Is the server running?")
-        except Timeout:
-            st.error("⏰ The request timed out. Try again or increase timeout.")
-        except HTTPError as he:
-            st.error(f"🚨 HTTP {he.response.status_code}: {he.response.text}")
-        except ValueError:
-            st.error("❓ Received invalid JSON from the endpoint.")
-        except Exception as e:
-            st.error(f"❗ An unexpected error occurred: {e}")
+    except ConnectionError:
+        st.error(f"🚫 Could not connect to `{MLFLOW_ENDPOINT}`. Is the server running?")
+    except Timeout:
+        st.error("⏰ The request timed out. Try again or increase timeout.")
+    except HTTPError as he:
+        st.error(f"🚨 HTTP {he.response.status_code}: {he.response.text}")
+    except ValueError:
+        st.error("❓ Received invalid JSON from the endpoint.")
+    except Exception as e:
+        st.error(f"❗ An unexpected error occurred: {e}")
 
 # ────────────────  FOOTER  ─────────────────  
 st.write("---")
