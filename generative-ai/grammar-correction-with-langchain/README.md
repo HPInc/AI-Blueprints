@@ -104,7 +104,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
      - GITHUB_ACCESS_TOKEN: Your GitHub Personal Access Token (PAT)
      - Settings > Developer settings > Personal access tokens > Tokens (classic) > Generate new token (classic) > Check the `repo` checkbox > Generate token
 
-#### Step 5: Use a Custom Kernel for Notebooks
+### Step 6: Use a Custom Kernel for Notebooks
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 ---
