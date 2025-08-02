@@ -1,14 +1,12 @@
 import pandas as pd
 import re
-import torch
-from transformers import pipeline, AutoTokenizer
-from mlflow.metrics import make_metric, MetricValue
+from vllm import SamplingParams
 
 class LocalGenAIJudge:
     """
-    A dual-purpose evaluation judge using a local generative AI model.
+    A dual-purpose evaluation judge using a local generative AI model served by vLLM.
     
-    1. Can be used standalone with `mlflow.evaluate` via the `to_mlflow_metric` method.
+    1. Can be used standalone with `mlflow.evaluate`.
     2. Can be integrated into a model's `predict` method for real-time scoring.
     """
     SYSTEM_PROMPT = (
@@ -18,12 +16,17 @@ class LocalGenAIJudge:
         "Do not provide any explanation, preamble, or additional text. Your entire response must be only the numeric score. Do not hallucinate."
     )
 
-    def __init__(self, model: any, tokenizer: any):
+    def __init__(self, llm: any, tokenizer: any):
         """
-        Initializes the judge directly with a model and tokenizer.
+        Initializes the judge directly with a vLLM engine and a tokenizer.
+        
+        Args:
+            llm: The initialized vLLM engine instance.
+            tokenizer: The corresponding tokenizer.
         """
-        self.model = model
+        self.llm = llm
         self.tokenizer = tokenizer
+        self.judge_sampling_params = SamplingParams(temperature=0.0, max_tokens=16)
 
     def _build_prompt(self, user_prompt: str) -> str:
         """Applies the chat template to the system and user prompts."""
@@ -39,15 +42,10 @@ class LocalGenAIJudge:
     def _extract_score(response: str) -> float:
         """Extracts the first valid score (0.0-1.0) from the model's output."""
         match = re.search(r"\b(0(\.\d+)?|1(\.0+)?)\b", response)
-        if match:
-            try:
-                return float(match.group(0))
-            except (ValueError, IndexError):
-                return 0.0
-        return 0.0
+        return float(match.group(0)) if match else 0.0
 
     def _evaluate(self, batch_df: pd.DataFrame, prompt_builder) -> pd.Series:
-        """Internal method to run batch evaluation for a given metric."""
+        """Internal method to run batch evaluation using the vLLM engine."""
         user_prompts = [
             prompt_builder(
                 question=row.questions,
@@ -59,23 +57,13 @@ class LocalGenAIJudge:
         
         full_prompts = [self._build_prompt(p) for p in user_prompts]
         
-        responses_text = []
-        for prompt in full_prompts:
-            res = self.model.chat(
-                self.tokenizer,
-                None,
-                prompt,
-                generation_config=dict(
-                    max_new_tokens=16,
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    eos_token_id=self.tokenizer.eos_token_id
-                )
-            )
-            # -----------------------------------
-            responses_text.append(res)
-
-        # Adjust score extraction to work with a simple list of strings
+        # vLLM `generate` is optimized for batching prompts
+        outputs = self.llm.generate(full_prompts, self.judge_sampling_params)
+        
+        # Extract text and then the score from each output
+        responses_text = [output.outputs[0].text.strip() for output in outputs]
         scores = [self._extract_score(res) for res in responses_text]
+        
         return pd.Series(scores, index=batch_df.index, dtype=float)
 
     def evaluate_faithfulness(self, batch_df: pd.DataFrame) -> pd.Series:
@@ -87,10 +75,11 @@ class LocalGenAIJudge:
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
                 "**Scoring Guidelines:**\n"
-                "- A score of **1.0** represents **Perfect Alignment**, where every claim in the Answer is directly and explicitly supported by the Context.\n"
-                "- A score of **0.0** represents **No Alignment**, where the Answer significantly contradicts the Context or is a complete hallucination.\n"
-                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of factual support. A higher score indicates fewer and less severe unsupported claims.\n"
-                "For example, an answer that is mostly correct but contains one minor unsupported detail might score a **0.85**.\n\n"
+                "- A score of **1.0** represents **Perfect Relevance**, where the Answer directly, completely, and concisely "
+                "addresses all parts of the user's question and intent.\n"
+                "- A score of **0.0** represents **Complete Irrelevance**, where the Answer is off-topic or fails to address the question in any meaningful way.\n"
+                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of relevancy. A higher score indicates more relevant, complete responses.\n"
+                "For example, an answer that correctly addresses the main topic but misses a secondary part of the question might score a **0.6**.\n\n"
                 "Output only the numeric score."
             )
         return self._evaluate(batch_df, prompt_builder)
@@ -103,44 +92,11 @@ class LocalGenAIJudge:
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
                 "**Scoring Guidelines:**\n"
-                "- A score of **1.0** represents **Perfect Relevance**, where the Answer directly, completely, and concisely "
-                "addresses all parts of the user's question and intent.\n"
-                "- A score of **0.0** represents **Complete Irrelevance**, where the Answer is off-topic or fails to address the question in any meaningful way.\n"
-                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of relevancy. A higher score indicates more relevant, complete responses.\n"
-                "For example, an answer that correctly addresses the main topic but misses a secondary part of the question might score a **0.6**.\n\n"
+                "- A score of **1.0** represents **Perfect Alignment**, where every claim in the Answer is directly and explicitly supported by the Context.\n"
+                "- A score of **0.0** represents **No Alignment**, where the Answer significantly contradicts the Context or is a complete hallucination.\n"
+                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of factual support. A higher score indicates fewer and less severe unsupported claims.\n"
+                "For example, an answer that is mostly correct but contains one minor unsupported detail might score a **0.85**.\n\n"
                 "Output only the numeric score."
             )
         return self._evaluate(batch_df, prompt_builder)
-        
-    def to_mlflow_metric(self, metric_name: str):
-        """
-        Factory method to create an MLflow Metric object for use with mlflow.evaluate().
-        """
-        scorers = {
-            "faithfulness": self.evaluate_faithfulness,
-            "relevance": self.evaluate_relevance,
-        }
-        if metric_name not in scorers:
-            raise ValueError(f"Unsupported metric: {metric_name}")
 
-        scorer_fn = scorers[metric_name]
-
-        def _eval_fn(
-            predictions: pd.Series,
-            inputs: pd.Series,
-            context: pd.Series
-        ):
-            df = pd.DataFrame({
-                "questions": inputs,
-                "result": predictions,
-                "source_documents": context,
-            })
-            scores = scorer_fn(df)
-            return MetricValue(scores=scores.tolist())
-
-        return make_metric(
-            eval_fn=_eval_fn,
-            name=f"local_judge_{metric_name}",
-            greater_is_better=True,
-            long_name=f"Local Judge - {metric_name.capitalize()}",
-        )
