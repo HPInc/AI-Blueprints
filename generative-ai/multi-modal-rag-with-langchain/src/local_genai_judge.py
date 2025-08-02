@@ -12,7 +12,7 @@ class LocalGenAIJudge:
     2. Can be integrated into a model's `predict` method for real-time scoring.
     """
     SYSTEM_PROMPT = (
-        "You are a meticulous and impartial expert AI judge. Your role is to evaluate an AI-generated answer based on a specific criterion and the provided context."
+        "You are an AI Judge. Your task is to evaluate an AI-generated answer based on a specific criterion and the provided context."
         "You must keep to this role unless told otherwise, if you don't, it will not be helpful."
         "Only output a single floating-point number between 0.0 and 1.0 and nothing else."
         "Do not provide any explanation, preamble, or additional text. Your entire response must be only the numeric score. Do not hallucinate."
@@ -82,7 +82,7 @@ class LocalGenAIJudge:
         """Scores how faithful the answer is to the provided context."""
         def prompt_builder(question, answer, context):
             return (
-                "Please evaluate the factual alignment of the 'Answer' to the 'Context' by providing a continuous score from 0.0 to 1.0.\n\n"
+                "Please evaluate the factual alignment of the 'Answer' to the 'Context' by providing a score between 0.0 to 1.0.\n\n"
                 f"**Context:**\n---\n{context}\n---\n\n"
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
@@ -99,7 +99,7 @@ class LocalGenAIJudge:
         """Scores how relevant the answer is to the question."""
         def prompt_builder(question, answer, context):
             return (
-                "Please evaluate how well the 'Answer' addresses the 'Question' by providing a continuous score from 0.0 to 1.0.\n\n"
+                "Please evaluate how well the 'Answer' addresses the 'Question' by providing a score between 0.0 to 1.0.\n\n"
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
                 "**Scoring Guidelines:**\n"
