@@ -29,19 +29,25 @@ It runs on the **Data Science Workspace**, demonstrating basic supervised learni
 # Project Structure
 
 ```
+├── configs/
+│   └── config.yaml                                                         # Configuration settings for deployment
 ├── docs/
 │   └── swagger-UI-classification-with-svm-and-lda.pdf                      # Swagger screenshot(PDF)
 │   └── swagger-UI-classification-with-svm-and-lda.png                      # Swagger screenshot(PNG)
 │   └── successful-streamlit-ui_for-classification-with-svm-and-lda.pdf     # Streamlit screenshot(PDF)
 │   └── successful-streamlit-ui-for-classification-with-svm-and-lda.png     # Streamlit screenshot(PNG)
 ├── demo/
-│   └── streamlit-webapp/                                                   # Streamlit UI
-│   └── assets/                                                             # Assets for the streamlit UI
+│   └── streamlit/                                                          # Streamlit web application
+│       ├── main.py                                                         # Main Streamlit application
+│       ├── assets/                                                         # UI assets and images
+│       └── README.md                                                       # Deployment instructions
 ├── notebooks/
 │   └── run-workflow.ipynb                                                  # One‑click notebook for executing the pipeline using custom inputs
 │   └── register-model.ipynb                                                # One‑click notebook for registering trained models to MLflow, generating API
+├── src/
+│   └── utils.py                                                            # Utility functions for configuration loading
 ├── README.md                                                               # Project documentation
-                                                                    
+
 ```
 
 ---
@@ -52,7 +58,7 @@ It runs on the **Data Science Workspace**, demonstrating basic supervised learni
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 4 GB  
+- **RAM**: 4 GB
 
 ### 1 ▪ Create an AI Studio Project
 
@@ -64,7 +70,8 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 3 ▪ Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
@@ -82,6 +89,7 @@ Execute the run-workflow notebook first inside the `notebooks` folder.
 ```bash
 notebooks/run-workflow.ipynb
 ```
+
 This will:
 
 - Load and prepare the data
@@ -94,7 +102,9 @@ Execute the register-model notebook second inside the `notebooks` folder:
 ```bash
 notebooks/register-model.ipynb
 ```
+
 This will:
+
 - Log the model to MLflow
 - Run a trial inference with logged model
 
@@ -110,7 +120,6 @@ This will:
 ### 3 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
-
 
 Paste a payload like:
 
@@ -133,6 +142,7 @@ Paste a payload like:
   "params": {}
 }
 ```
+
 Expected response:
 
 ```
@@ -143,6 +153,7 @@ Expected response:
 }
 
 ```
+
 ---
 
 # Contact and Support

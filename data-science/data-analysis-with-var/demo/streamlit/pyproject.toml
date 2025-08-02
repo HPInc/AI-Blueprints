@@ -1,0 +1,23 @@
+[project]
+name = "two-cities-streamlit-webapp"
+version = "0.1.0"
+description = "A Streamlit front-end for Forecasting COVID Cases for Two Cities"
+authors = [
+    {name = "alvin kabwama", email = "alvin.kabwama@hp.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit>=1.28.0",
+    "requests>=2.25.0",
+    "pandas>=1.5.0",
+    "altair>=5.0.0",
+    "urllib3>=2.0.0"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires    = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

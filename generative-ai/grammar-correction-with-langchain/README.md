@@ -105,6 +105,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
      - Settings > Developer settings > Personal access tokens > Tokens (classic) > Generate new token (classic) > Check the `repo` checkbox > Generate token
 
 ### Step 6: Use a Custom Kernel for Notebooks
+
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 ---
