@@ -1,9 +1,12 @@
-import base64
-import logging
-import time
-from functools import wraps
-from IPython.display import HTML, display
-import sys
+# ─────── Standard Library Imports ───────
+import base64  # Encoding and decoding binary data
+import logging  # Logging utilities
+import sys  # System-specific parameters and functions
+import time  # Time-related utilities
+from functools import wraps  # Function decorators support
+
+# ─────── Third-Party Package Imports ───────
+from IPython.display import HTML, display  # Rich HTML display utilities for Jupyter environments
 
 
 # Color and emoji mapping per level
