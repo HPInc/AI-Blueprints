@@ -9,6 +9,14 @@ SCRIPT=$(readlink -f $0)
 HOME_CONTAINER="/home/jovyan"
 DATAFABRIC_FOLDER="${HOME_CONTAINER}/datafabric/"
 AISTUDIO_FOLDER="${LOCALAPPDATA}/HP/AIStudio"
+export NERDCTL_LOG_LEVEL=error
+export NERDCTL_PROGRESS=quiet
+if test -t 1; then
+  RED=$(tput setaf 1); GREEN=$(tput setaf 2); YELLOW=$(tput setaf 3)
+  BLUE=$(tput setaf 4); BOLD=$(tput bold); RESET=$(tput sgr0)
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; BOLD=""; RESET=""
+fi
 COMMAND_PREFIX="sudo nerdctl -n phoenix run --gpus all"
 ENTRYPOINT="test/test.sh"
 
@@ -20,13 +28,30 @@ if ! command -v yq; then
   sudo snap install yq  
 fi
 
+# Count statistics and helper function
+TOTAL=0; PASSED=0; FAILED=0
+run_container () {
+  local _image="$1"
+  local _cmd="$2"
+  local _ts="$3"
+  TOTAL=$((TOTAL+1))
+  if eval "${_cmd}" ; then
+    PASSED=$((PASSED+1))
+    printf "Test using image ${_image} - ${GREEN}${BOLD}✅  PASS${RESET}\n"
+  else
+    FAILED=$((FAILED+1))
+    printf "${RED}${BOLD}❌  FAIL${RESET}\n"
+  fi
+  printf "\n"
+}
+
 ### Ensures nerdctl is installed
 NERDCTL_VERSION="2.0.5"
 NERDCTL_FILE="nerdctl-full-${NERDCTL_VERSION}-linux-amd64.tar.gz"
 NERDCTL_URL="https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/${NERDCTL_FILE}"
 if ! command -v nerdctl; then
-  wget ${NERDCTL_URL}
-  sudo tar Cxzvvf /usr/local ${NERDCTL_FILE}
+  wget -q ${NERDCTL_URL}
+  sudo tar Cxzf /usr/local ${NERDCTL_FILE}
   rm ${NERDCTL_FILE}
 fi
 
@@ -83,7 +108,7 @@ for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do
   if [[ -n "$IMAGE" ]] && [[ $IMAGE != "-" ]] && [[ $IMAGE != "registry" ]]; then
     echo ""
     echo ""
-    echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE} *-*-*-*-*-*-*-*-*-*-*-*"
+    printf "*-*-*-*-*-*-*-*-*-*-*-* ${BLUE}Starting container:${RESET} ${YELLOW}${IMAGE}${RESET} *-*-*-*-*-*-*-*-*-*-*-*"
     echo ""
     echo ""
 	  IMAGE_REGISTRY=$(yq ".baseimages.registry" $TESTSCRIPT)
@@ -92,7 +117,7 @@ for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do
 	  FULL_IMAGE="$IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION"
 	  FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
 	  FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE $MOUNT_ARG"
-  	$FULL_COMMAND
+    run_container "$IMAGE" "$FULL_COMMAND" "$TESTSCRIPT"
   fi
 done
 
@@ -106,7 +131,7 @@ else
     if [[ $IMAGE_ENTRY != "-" ]]; then
       echo ""
       echo ""
-      echo "*-*-*-*-*-*-*-*-*-*-*-* Starting container ${IMAGE_ENTRY} *-*-*-*-*-*-*-*-*-*-*-*"
+      printf "*-*-*-*-*-*-*-*-*-*-*-* ${BLUE}Starting container:${RESET} ${YELLOW}${IMAGE_ENTRY}${RESET} *-*-*-*-*-*-*-*-*-*-*-*"
       echo ""
       echo ""
       IMAGE=${IMAGE_ENTRY%version*}
@@ -115,7 +140,13 @@ else
 	    FULL_IMAGE="$IMAGE_URL:$IMAGE_VERSION"
 	    FULL_COMMAND="$COMMAND_PREFIX $ENVOY_PARAM $GITHUB_PARAM $ASSETS_PARAM"
 	    FULL_COMMAND="$FULL_COMMAND $FULL_IMAGE $CONTAINER_ENTRYPOINT $CONTAINER_TESTSCRIPT $IMAGE $MOUNT_ARG $VENV_ARG"
-	    $FULL_COMMAND
+      run_container "$IMAGE_ENTRY" "$FULL_COMMAND"
     fi
   done
 fi
+
+# Final summary at end of file (just before the last fi closes script)
+printf "${BOLD}Test summary:${RESET}  total=%d  ${GREEN}passed=%d${RESET}  ${RED}failed=%d${RESET}\n" \
+       "$TOTAL" "$PASSED" "$FAILED"
+printf "\n"
+exit $FAILED
