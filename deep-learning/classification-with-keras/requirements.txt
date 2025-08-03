@@ -1,0 +1,4 @@
+onnx>=1.14.0
+onnxruntime>=1.15.0
+numpy>=1.21.0
+tf2onnx>=1.15.0
