@@ -4,9 +4,17 @@
 # 2. The workspace to run the tests in
 # 3. An argument to specify if temp folder should be mounted from the host (mount / nomount)
 # 4. An optional argument to specify if the tests should be run in a virtual environment (venv / novenv)
+
+if test -t 1; then
+  RED=$(tput setaf 1); GREEN=$(tput setaf 2); YELLOW=$(tput setaf 3)
+  BLUE=$(tput setaf 4); BOLD=$(tput bold); RESET=$(tput sgr0)
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; BOLD=""; RESET=""
+fi
+
 echo ""
 echo ""
-echo "*-*-*-*-*-*-*-*-*-*-*-* Started test using the workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+printf "*-*-*-*-*-*-*-*-*-*-*-* ${BLUE}Started test using the workspace:${RESET} ${YELLOW}$2${RESET} *-*-*-*-*-*-*-*-*-*-*-* "
 echo ""
 echo ""
 SCRIPT=$(readlink -f $0)
@@ -30,8 +38,8 @@ python ${SCRIPT_FOLDER}/py_utils/main.py -s $1 -o $TMP_FOLDER -w $2
 
 for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
     echo "******************************"	
-    echo "Running tests on ${TEST_FILE}"	
-    echo "     ****************"	
+    printf "${BLUE}Running tests on${RESET} ${YELLOW}${TEST_FILE}${RESET}"	
+    echo "******************************"	
 
     ## Create a virtual environment for each test file with a random name
 
@@ -57,6 +65,6 @@ done
 
 echo ""
 echo ""
-echo "*-*-*-*-*-*-*-*-*-*-*-* Finished test on workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+printf "*-*-*-*-*-*-*-*-*-*-*-* ${BLUE}Finished test on workspace:${RESET} ${YELLOW}$2${RESET} *-*-*-*-*-*-*-*-*-*-*-* "	
 echo ""
 echo ""
