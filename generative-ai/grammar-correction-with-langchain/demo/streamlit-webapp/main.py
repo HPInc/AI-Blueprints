@@ -1,4 +1,5 @@
 import base64
+import difflib
 import json
 import zipfile
 import os
@@ -6,21 +7,21 @@ import time
 from io import BytesIO
 from urllib.parse import urlparse
 from typing import Dict, Optional, Tuple, Union
+from pathlib import Path
+import re 
 
 import pandas as pd
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
-# ======================================================================
-# IMPORTANT: PASTE YOUR GitHubMarkdownProcessor CLASS HERE
-# The class that starts with "class GitHubMarkdownProcessor:" from your
-# other notebook cell needs to be included here for the GitHub URL logic to work.
-# ======================================================================
+# ==============================================================================
+# GITHUB EXTRACTOR CLASS
+# ==============================================================================
 class GitHubMarkdownProcessor:
     """
     Processor for extracting and parsing Markdown files from GitHub repositories.
     """
-
     def __init__(
         self,
         repo_url: str,
@@ -30,11 +31,9 @@ class GitHubMarkdownProcessor:
         self.repo_url = repo_url
         self.access_token = access_token
         self.save_dir = save_dir
-
         owner, repo, error = self.parse_url()
         if error:
             raise ValueError(error)
-
         self.repo_owner = owner
         self.repo_name = repo
         self.api_base_url = (
@@ -126,79 +125,110 @@ class GitHubMarkdownProcessor:
         process_structure(structure)
         return raw_data
 
-# --- Helper Function to Set Background & Minimal Styling ---
-def set_styles():
-    st.markdown(
-        """
-    <style>
-        [data-testid=\"stHeader\"] {
+# ==============================================================================
+# STYLING AND UI
+# ==============================================================================
+
+# Using your requested function
+def set_bg_hack(file_path: str):
+    """
+    A function to set a background image from a local file.
+    Takes a string path as input.
+    """
+    try:
+        with open(file_path, "rb") as f:
+            data = f.read()
+        bin_str = base64.b64encode(data).decode()
+        page_bg_img = f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{bin_str}");
+            background-size: cover;
+            background-position: top center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+
+        [data-testid="stHeader"] {{
             background-color: rgba(0, 0, 0, 0);
+        }}
+        </style>
+        """
+        st.markdown(page_bg_img, unsafe_allow_html=True)
+
+        # Adding other necessary styles here
+        other_styles = """
+        <style>
+        /* --- CSS for Modern HTML Diff --- */
+        table.diff {
+            font-family: Menlo, Monaco, 'Courier New', monospace;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9em;
+            width: 100%;
         }
-    </style>
-    """,
-        unsafe_allow_html=True,
-    )
+        .diff_header { background-color: #262730; color: #FAFAFA; font-weight: 600; padding: 8px 12px; }
+        .diff_add { background-color: #204020; }
+        .diff_chg { background-color: #4d4d20; }
+        .diff_sub { background-color: #4d2020; }
+        td { padding: 5px 8px; vertical-align: top; white-space: pre-wrap; word-wrap: break-word; }
+        td[id^="from"], td[id^="to"] { color: #888 !important; font-weight: 500; }
+        
+        /* --- CSS for Wide, Centered Diff Component --- */
+        div[data-testid="stHtml"] iframe {
+            width: 90vw;
+            max-width: 1400px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        </style>
+        """
+        st.markdown(other_styles, unsafe_allow_html=True)
 
-# --- Page Configuration & UI ---
-st.set_page_config(
-    page_title="Markdown Corrector AI",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
-set_styles()
+    except FileNotFoundError:
+        st.error(f"Asset not found. Please check the path: {file_path}")
 
-left_col, mid_col, right_col = st.columns([1, 4, 1])
+# --- PAGE CONFIGURATION & MAIN APP LAYOUT ---
+st.set_page_config(page_title="Markdown Corrector AI", page_icon="🤖", layout="wide", initial_sidebar_state="collapsed")
+
+# Reverting to the previously working path logic
+image_path = Path(__file__).resolve().parent.parent / "assets" / "background.png"
+set_bg_hack(image_path)
+
+_, mid_col, _ = st.columns([1, 4, 1])
 
 with mid_col:
     st.title("📚 Markdown Grammar Corrector")
-    st.markdown(
-        "Enter a public GitHub repository URL or upload files to correct grammar."
-    )
-
+    st.markdown("Enter a public GitHub repository URL or upload files to correct grammar.")
+    
     with st.expander("⚙️ API Configuration"):
-        api_url = st.text_input(
-            "MLflow Model /invocations URL",
-            value="https://localhost:55919/invocations",
-        )
+        api_url = st.text_input("MLflow Model /invocations URL", value="https://localhost:55919/invocations")
 
     st.subheader("Choose Input Method")
     tab1, tab2 = st.tabs(["🔗 GitHub URL", "📁 Upload Files"])
-
+    
     files_to_process = {}
     input_description = ""
 
     with tab1:
         repo_url = st.text_input("Public GitHub Repository URL")
-        if st.button(
-            "🚀 Correct from URL", key="url_button", use_container_width=True, disabled=not repo_url
-        ):
-            with st.spinner(
-                "Fetching repository files... This may take a moment."
-            ):
+        if st.button("🚀 Correct from URL", key="url_button", use_container_width=True, disabled=not repo_url):
+            with st.spinner("Fetching repository files..."):
                 try:
                     github_token = os.getenv("GITHUB_ACCESS_TOKEN")
-                    processor = GitHubMarkdownProcessor(
-                        repo_url=repo_url, access_token=github_token
-                    )
+                    processor = GitHubMarkdownProcessor(repo_url=repo_url, access_token=github_token)
                     files_to_process = processor.run()
                     input_description = repo_url
                 except Exception as e:
                     st.error(f"Failed to fetch repository: {e}")
                     st.stop()
-
     with tab2:
-        uploaded_files = st.file_uploader(
-            "Upload .md or .zip files.",
-            type=["md", "zip"],
-            accept_multiple_files=True,
-        )
-        if st.button(
-            "🚀 Correct Uploaded Files",
-            key="file_button",
-            use_container_width=True,
-            disabled=not uploaded_files,
-        ):
+        uploaded_files = st.file_uploader("Upload .md or .zip files", type=["md", "zip"], accept_multiple_files=True)
+        if st.button("🚀 Correct Uploaded Files", key="file_button", use_container_width=True, disabled=not uploaded_files):
             for uploaded_file in uploaded_files:
                 if uploaded_file.name.endswith('.zip'):
                     with zipfile.ZipFile(uploaded_file, 'r') as z:
@@ -210,101 +240,147 @@ with mid_col:
                     files_to_process[uploaded_file.name] = uploaded_file.getvalue().decode("utf-8")
             input_description = f"{len(uploaded_files)} uploaded file(s)"
 
+# ==============================================================================
+# PROCESSING LOGIC
+# ==============================================================================
 if files_to_process:
-    if not api_url:
-        st.error("Please provide the MLflow API URL.")
-        st.stop()
+    with mid_col: 
+        if not api_url:
+            st.error("Please provide the MLflow API URL.")
+            st.stop()
+        
+        with st.spinner("Initializing the model... This can take a few minutes on the first run."):
+            try:
+                warmup_df = pd.DataFrame([{"repo_url": None, "files": {"warmup.md": "hello"}}])
+                warmup_payload = {"dataframe_split": warmup_df.to_dict("split")}
+                requests.post(api_url, json=warmup_payload, timeout=300, verify=False)
+            except requests.exceptions.ReadTimeout:
+                st.info("Model finished warming up. Starting corrections...")
+                pass 
+            except Exception as e:
+                st.warning(f"Warm-up call failed, proceeding anyway: {e}")
 
-    with st.spinner(
-        "Warming up the AI model... This can take a few minutes on the first run."
-    ):
-        try:
-            warmup_df = pd.DataFrame([
-                {"repo_url": None, "files": {"warmup.md": "hello"}}
-            ])
-            warmup_payload = {"dataframe_split": warmup_df.to_dict("split")}
-            requests.post(
-                api_url, json=warmup_payload, timeout=300, verify=False
-            )
-        except requests.exceptions.ReadTimeout:
-            st.info("Model finished warming up. Starting corrections...")
-        except Exception as e:
-            st.warning(f"Warm-up call failed, proceeding anyway: {e}")
+        st.session_state["corrected_files"] = {}
+        st.session_state["original_files"] = files_to_process
+        st.session_state["metric_list"] = []
+        
+        total_files = len(files_to_process)
+        progress_bar = st.progress(0, text="Starting correction process...")
+        start_time = time.time()
 
-    st.session_state["corrected_files"] = {}
-    st.session_state["original_files"] = files_to_process
-    st.session_state["metric_list"] = []
+        for i, (filename, content) in enumerate(files_to_process.items()):
+            progress_text = f"Processing file {i+1} of {total_files}: {filename}"
+            progress_bar.progress((i + 1) / total_files, text=progress_text)
+            
+            try:
+                input_df = pd.DataFrame([{"repo_url": None, "files": {filename: content}}])
+                payload = {"dataframe_split": input_df.to_dict("split")}
+                res = requests.post(api_url, json=payload, timeout=300, verify=False)
+                res.raise_for_status()
+                response_data = res.json()["predictions"][0]
+                if isinstance(response_data, str):
+                    response_data = json.loads(response_data)
+                
+                st.session_state["corrected_files"].update(response_data.get("corrected", {}))
+                st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
+            except Exception as e:
+                st.warning(f"Skipped {filename} due to an error: {e}")
+                st.session_state["corrected_files"][filename] = content
+                continue
 
-    total_files = len(files_to_process)
-    progress_bar = st.progress(0, text="Starting correction process...")
-    start_time = time.time()
+        final_metrics = {}
+        if st.session_state["metric_list"]:
+            valid_metrics = [m for m in st.session_state["metric_list"] if m]
+            if valid_metrics:
+                df_metrics = pd.DataFrame(valid_metrics)
+                final_metrics = df_metrics.mean().to_dict()
 
-    for i, (filename, content) in enumerate(files_to_process.items()):
-        progress_text = f"Processing file {i+1} of {total_files}: {filename}"
-        progress_bar.progress((i + 1) / total_files, text=progress_text)
-        try:
-            single_file_dict = {filename: content}
-            input_df = pd.DataFrame([
-                {"repo_url": None, "files": single_file_dict}
-            ])
-            payload = {"dataframe_split": input_df.to_dict("split")}
+        st.session_state["evaluation_metrics"] = final_metrics
+        st.session_state["response_time"] = time.time() - start_time
+        st.session_state["last_input_description"] = input_description
+        progress_bar.empty()
+        st.rerun()
 
-            res = requests.post(
-                api_url, json=payload, timeout=300, verify=False
-            )
-            res.raise_for_status()
-
-            response_data = res.json()["predictions"][0]
-            if isinstance(response_data, str):
-                response_data = json.loads(response_data)
-
-            st.session_state["corrected_files"].update(
-                response_data.get("corrected", {})
-            )
-            st.session_state["metric_list"].append(
-                response_data.get("evaluation_metrics", {})
-            )
-
-        except requests.exceptions.RequestException as e:
-            st.warning(f"Skipped {filename} due to an API error: {e}")
-            st.session_state["corrected_files"][filename] = content
-            continue
-
-    final_metrics = {}
-    if st.session_state["metric_list"]:
-        valid_metrics = [m for m in st.session_state["metric_list"] if m]
-        if valid_metrics:
-            df_metrics = pd.DataFrame(valid_metrics)
-            final_metrics = df_metrics.mean().to_dict()
-
-    st.session_state["evaluation_metrics"] = final_metrics
-    st.session_state["response_time"] = time.time() - start_time
-    st.session_state["last_input_description"] = input_description
-    progress_bar.empty()
-    st.rerun()
-
+# ==============================================================================
+# DISPLAY RESULTS
+# ==============================================================================
 if "corrected_files" in st.session_state:
     with mid_col:
-        st.success(
-            f"Successfully processed: {st.session_state['last_input_description']}"
-        )
-
+        st.success(f"Successfully processed: {st.session_state['last_input_description']}")
         st.subheader("📊 Performance & Evaluation")
-        st.metric(
-            label="Total Processing Time",
-            value=f"{st.session_state['response_time']:.2f} s",
-        )
-
-        eval_metrics = st.session_state.get("evaluation_metrics", {})
-        if eval_metrics:
-            metric_cols = st.columns(len(eval_metrics))
-            for i, (name, value) in enumerate(eval_metrics.items()):
-                formatted_value = (
-                    f"{value:.4f}" if isinstance(value, float) else str(value)
-                )
-                metric_cols[i].metric(
-                    label=name.replace('_', ' ').title(), value=formatted_value
-                )
+        
+        all_metrics = {
+            "total_processing_time": st.session_state['response_time']
+        }
+        other_metrics = st.session_state.get("evaluation_metrics", {})
+        all_metrics.update(other_metrics)
+        
+        if all_metrics:
+            metric_cols = st.columns(len(all_metrics))
+            for i, (name, value) in enumerate(all_metrics.items()):
+                if "time" in name.lower():
+                    formatted_value = f"{value:.2f} s"
+                else:
+                    formatted_value = f"{value:.4f}"
+                
+                formatted_label = name.replace('_', ' ').title()
+                
+                metric_cols[i].metric(label=formatted_label, value=formatted_value)
+                
         st.divider()
 
         st.subheader("📁 Corrected Markdown Files")
+        corrected_files = st.session_state.get("corrected_files", {})
+        original_files = st.session_state.get("original_files", {})
+        
+        if corrected_files:
+            file_names = sorted(corrected_files.keys())
+            selected_file = st.selectbox("📄 Choose a file to compare", file_names)
+
+            if selected_file:
+                st.subheader("✨ Side-by-Side Comparison")
+                original_text = original_files.get(selected_file, "").splitlines()
+                corrected_text = corrected_files.get(selected_file, "").splitlines()
+                
+                s = difflib.SequenceMatcher(None, original_text, corrected_text)
+                grouped_opcodes = s.get_grouped_opcodes(n=3)
+                
+                display_original = []
+                display_corrected = []
+                
+                has_changes = False
+                for i, group in enumerate(grouped_opcodes):
+                    if i > 0:
+                        display_original.append("...")
+                        display_corrected.append("...")
+                    
+                    for tag, i1, i2, j1, j2 in group:
+                        if tag != 'equal':
+                            has_changes = True
+                        display_original.extend(original_text[i1:i2])
+                        display_corrected.extend(corrected_text[j1:j2])
+
+                if has_changes:
+                    differ = difflib.HtmlDiff(wrapcolumn=70)
+                    diff_html = differ.make_file(display_original, display_corrected, fromdesc="Original", todesc="Corrected")
+                    
+                    font_fix_css = "<style> table.diff td { font-family: system-ui, sans-serif !important; font-size: 1.05em !important; } </style>"
+                    diff_html = diff_html.replace('</head>', f'{font_fix_css}</head>')
+                    
+                    diff_html = re.sub(r'<a[^>]*>|</a>', '', diff_html)
+                    components.html(diff_html, height=600, scrolling=True)
+                else:
+                    st.info("✅ No differences found in this file.")
+
+            zip_buf = BytesIO()
+            with zipfile.ZipFile(zip_buf, "w") as z:
+                for path, txt in corrected_files.items():
+                    z.writestr(path, txt)
+            zip_buf.seek(0)
+            st.download_button(
+                label="📦 Download All Corrected Files",
+                data=zip_buf,
+                file_name="corrected_markdown.zip",
+                mime="application/zip",
+                use_container_width=True,
+            )
