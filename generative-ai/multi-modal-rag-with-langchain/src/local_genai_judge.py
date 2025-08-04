@@ -10,10 +10,11 @@ class LocalGenAIJudge:
     2. Can be integrated into a model's `predict` method for real-time scoring.
     """
     SYSTEM_PROMPT = (
-        "You are an AI Judge. Your task is to evaluate an AI-generated answer based on a specific criterion and the provided context."
-        "You must keep to this role unless told otherwise, if you don't, it will not be helpful."
-        "Only output a single floating-point number between 0.0 and 1.0 and nothing else."
-        "Do not provide any explanation, preamble, or additional text. Your entire response must be only the numeric score. Do not hallucinate."
+        "You are a meticulous AI Judge. Your role is to assess an AI's response against "
+        "specific criteria based on provided materials. "
+        "Internally, reason step-by-step to determine your score. "
+        "Your final output, however, MUST be a single floating-point number between 0.0 and 1.0 "
+        "and absolutely nothing else. Adhere strictly to this format."
     )
 
     def __init__(self, llm: any, tokenizer: any):
@@ -67,36 +68,39 @@ class LocalGenAIJudge:
         return pd.Series(scores, index=batch_df.index, dtype=float)
 
     def evaluate_faithfulness(self, batch_df: pd.DataFrame) -> pd.Series:
-        """Scores how faithful the answer is to the provided context."""
+        """
+        Scores how faithful the answer is to the provided context (i.e., groundedness).
+        A high score means the answer contains no hallucinations or information unsupported by the context.
+        """
         def prompt_builder(question, answer, context):
             return (
-                "Please evaluate the factual alignment of the 'Answer' to the 'Context' by providing a score between 0.0 to 1.0.\n\n"
+                "Evaluate the factual alignment of the 'Answer' strictly based on the provided 'Context'.\n\n"
                 f"**Context:**\n---\n{context}\n---\n\n"
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
-                "**Scoring Guidelines:**\n"
-                "- A score of **1.0** represents **Perfect Relevance**, where the Answer directly, completely, and concisely "
-                "addresses all parts of the user's question and intent.\n"
-                "- A score of **0.0** represents **Complete Irrelevance**, where the Answer is off-topic or fails to address the question in any meaningful way.\n"
-                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of relevancy. A higher score indicates more relevant, complete responses.\n"
-                "For example, an answer that correctly addresses the main topic but misses a secondary part of the question might score a **0.6**.\n\n"
-                "Output only the numeric score."
+                "**Scoring Guidelines (Faithfulness):**\n"
+                "- **1.0 (Perfectly Faithful):** Every single claim made in the 'Answer' is explicitly supported and verifiable by the 'Context'.\n"
+                "- **0.0 (Not Faithful):** The 'Answer' contradicts the 'Context' or is a complete hallucination with no basis in the 'Context'.\n"
+                "- **Intermediate Score:** The 'Answer' is mostly faithful but contains minor claims not found in the 'Context'. The score should decrease as the number and severity of unsupported claims increase. For example, an answer that is 90% supported by the context but includes one minor unsubstantiated detail might score **0.85**.\n\n"
             )
         return self._evaluate(batch_df, prompt_builder)
 
     def evaluate_relevance(self, batch_df: pd.DataFrame) -> pd.Series:
-        """Scores how relevant the answer is to the question."""
+        """
+        Scores how relevant the answer is to the user's question.
+        A high score means the answer directly and completely addresses the user's intent.
+        """
         def prompt_builder(question, answer, context):
+            # Context is ignored for relevance but included for function signature consistency
             return (
-                "Please evaluate how well the 'Answer' addresses the 'Question' by providing a score between 0.0 to 1.0.\n\n"
+                "Evaluate how well the 'Answer' directly addresses the user's 'Question'.\n\n"
                 f"**Question:** {question}\n\n"
                 f"**Answer:** {answer}\n\n"
-                "**Scoring Guidelines:**\n"
-                "- A score of **1.0** represents **Perfect Alignment**, where every claim in the Answer is directly and explicitly supported by the Context.\n"
-                "- A score of **0.0** represents **No Alignment**, where the Answer significantly contradicts the Context or is a complete hallucination.\n"
-                "- Use **intermediate scores** (e.g., 0.25, 0.7, 0.9) to reflect the degree of factual support. A higher score indicates fewer and less severe unsupported claims.\n"
-                "For example, an answer that is mostly correct but contains one minor unsupported detail might score a **0.85**.\n\n"
-                "Output only the numeric score."
+                "**Scoring Guidelines (Relevance):**\n"
+                "- **1.0 (Perfectly Relevant):** The 'Answer' directly, completely, and concisely addresses all parts of the 'Question'. It fully satisfies the user's intent.\n"
+                "- **0.0 (Not Relevant):** The 'Answer' is completely off-topic or fails to address the 'Question' in any meaningful way.\n"
+                "- **Intermediate Score:** The 'Answer' is on-topic but only partially addresses the 'Question', misses a key aspect, or includes redundant information. For example, an answer that addresses the main part of a two-part question but ignores the second part might score **0.6**.\n\n"
             )
         return self._evaluate(batch_df, prompt_builder)
+
 
