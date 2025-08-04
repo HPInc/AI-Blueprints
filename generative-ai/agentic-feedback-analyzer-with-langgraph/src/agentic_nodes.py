@@ -1,18 +1,18 @@
-import logging
-from typing import Dict, Any, Literal
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document
-from typing import Any, Dict, List, Literal, Optional, TypedDict
+# ─────── Standard Library Imports ───────
+import logging  # Logging system for status and debugging output
+import time  # Time tracking and delays
+from datetime import datetime  # Handling date and time objects
+from pathlib import Path  # Filesystem path abstraction
+from typing import Any, Dict, List, Literal, Optional, TypedDict  # Type annotations for clarity and safety
 
-from tqdm import tqdm
-import logging
-from pathlib import Path
-from datetime import datetime
-import time
+# ─────── Third-Party Package Imports ───────
+from tqdm import tqdm  # Visual progress bar for iterables
+from langchain.docstore.document import Document  # Standardized document format
+from langchain.text_splitter import RecursiveCharacterTextSplitter  # Text chunking utility
 
-from src.utils import get_response_from_llm, log_timing
-from src.agentic_state import AgenticState
-from src.utils import logger
+# ─────── Local Application-Specific Imports ───────
+from src.agentic_state import AgenticState  # Manages shared state across agent workflow
+from src.utils import get_response_from_llm, log_timing, logger  # Core utilities: LLM calls, logging, and timers
 
 @log_timing
 def ingest_question(state: AgenticState) -> Dict[str, Any]:
