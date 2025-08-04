@@ -107,35 +107,31 @@ text_size= st.number_input(
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
 if st.button("Get generated text"):
-    if not initial_word or text_size:
+    if not initial_word or not text_size:
         st.warning("⚠️ Please fill all the fields")
     else:
-        file = {"files":initial_word}
-        file = {"files":text_size}
-        # --- Loading Spinner ---
-        with st.spinner("Classifying..."):
+        with st.spinner("Generating text..."):
             payload = {
                 "inputs": {
                     "initial_word": [initial_word],
-                    "size":[text_size]
-                        }
+                    "size": [text_size]
+                }
             }
             try:
-                response = requests.post(api_url, json = payload, verify=False)
+                response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
                 gen_text = data.get("predictions")
 
-                # --- Display Results ---
-                if "predictions" in data:
-                        st.success("✅ Here are your classified digit!")
-                        st.text_area(gen_text)
+                if gen_text:
+                    st.success("✅ Here is your generated text!")
+                    st.text_area("Generated Text", value=gen_text[0])
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
-
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching classification.")
+                st.error("❌ Error fetching generated text.")
                 st.error(str(e))
+
 # ─────────────────────────────────────────────────────────────
 # 4 ▸ Footer
 # ─────────────────────────────────────────────────────────────
