@@ -196,24 +196,7 @@ This will:
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 
-### 4 ▪ Swagger / raw API
-
-Once deployed, access the **Swagger UI** via the Service URL.
-
-Paste a payload like:
-
-```
-
-```
-
-And as response:
-
-```
-
-
-```
-
-### 5 ▪ Launch the Streamlit UI
+### Step 4: Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
