@@ -2,7 +2,7 @@
 name = "agentic-feedback-analyzer-streamlit-webapp"
 version = "0.1.0"
 description = "A Streamlit front-end for AIS Agentic Feedback Analyzer with LangGraph Blueprint Project"
-authors = ["alvin kabwama <ata.turhan@hp.com>"]
+authors = ["Ata Turhan <ata.turhan@hp.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
