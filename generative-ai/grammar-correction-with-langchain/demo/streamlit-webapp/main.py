@@ -8,7 +8,7 @@ from io import BytesIO
 from urllib.parse import urlparse
 from typing import Dict, Optional, Tuple, Union
 from pathlib import Path
-import re 
+import re
 
 import pandas as pd
 import requests
@@ -27,10 +27,12 @@ class GitHubMarkdownProcessor:
         repo_url: str,
         access_token: Optional[str] = None,
         save_dir: str = "./parsed_repo",
+        timeout: int = 20,
     ):
         self.repo_url = repo_url
         self.access_token = access_token
         self.save_dir = save_dir
+        self.timeout = timeout
         owner, repo, error = self.parse_url()
         if error:
             raise ValueError(error)
@@ -55,7 +57,7 @@ class GitHubMarkdownProcessor:
         headers = {}
         if self.access_token:
             headers["Authorization"] = f"Bearer {self.access_token}"
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=self.timeout)
         if response.status_code == 200:
             repo_data = response.json()
             return "private" if repo_data.get("private") else "public"
@@ -72,37 +74,49 @@ class GitHubMarkdownProcessor:
         headers = {}
         if self.access_token:
             headers["Authorization"] = f"Bearer {self.access_token}"
-        response = requests.get(url, headers=headers)
+        
+        response = requests.get(url, headers=headers, timeout=self.timeout)
         if not response.ok:
             return None, f"Error: {response.status_code}, {response.text}"
+        
         default_branch = response.json().get("default_branch", "main")
         tree_url = (
             f"https://api.github.com/repos/{owner}/{name}/git/trees/{default_branch}?recursive=1"
         )
-        tree_response = requests.get(tree_url, headers=headers)
+        
+        tree_response = requests.get(tree_url, headers=headers, timeout=self.timeout)
         if not tree_response.ok:
             return None, f"Error: {tree_response.status_code}, {tree_response.text}"
+        
         dir_structure = {}
         for item in tree_response.json().get("tree", []):
             path = item["path"]
             if item["type"] != "blob" or not path.endswith(".md"):
                 continue
+            
             content_url = (
                 f"https://api.github.com/repos/{owner}/{name}/contents/{path}"
             )
-            content_response = requests.get(content_url, headers=headers)
-            if not content_response.ok:
-                continue
-            file_data = content_response.json()
+            
             try:
+                content_response = requests.get(content_url, headers=headers, timeout=self.timeout)
+                content_response.raise_for_status()
+                
+                file_data = content_response.json()
                 content = base64.b64decode(file_data["content"]).decode("utf-8")
+            except requests.exceptions.Timeout:
+                print(f"Warning: Timed out while fetching '{path}'. Skipping this file.")
+                continue
             except Exception as e:
-                content = f"Error decoding content: {e}"
+                print(f"Warning: Could not process '{path}' due to an error: {e}. Skipping file.")
+                continue
+            
             parts = path.split("/")
             current = dir_structure
             for part in parts[:-1]:
                 current = current.setdefault(part, {})
             current[parts[-1]] = content
+            
         return dir_structure, None
 
     def run(self) -> Dict[str, str]:
@@ -128,8 +142,6 @@ class GitHubMarkdownProcessor:
 # ==============================================================================
 # STYLING AND UI
 # ==============================================================================
-
-# Using your requested function
 def set_bg_hack(file_path: str):
     """
     A function to set a background image from a local file.
@@ -156,7 +168,6 @@ def set_bg_hack(file_path: str):
         """
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-        # Adding other necessary styles here
         other_styles = """
         <style>
         /* --- CSS for Modern HTML Diff --- */
@@ -195,9 +206,12 @@ def set_bg_hack(file_path: str):
 # --- PAGE CONFIGURATION & MAIN APP LAYOUT ---
 st.set_page_config(page_title="Markdown Corrector AI", page_icon="🤖", layout="wide", initial_sidebar_state="collapsed")
 
-# Reverting to the previously working path logic
-image_path = Path(__file__).resolve().parent.parent / "assets" / "background.png"
-set_bg_hack(image_path)
+try:
+    image_path = Path(__file__).resolve().parent.parent / "assets" / "background.png"
+    set_bg_hack(str(image_path))
+except Exception:
+    # Fallback for environments where path logic might differ
+    pass
 
 _, mid_col, _ = st.columns([1, 4, 1])
 
@@ -215,17 +229,24 @@ with mid_col:
     input_description = ""
 
     with tab1:
-        repo_url = st.text_input("Public GitHub Repository URL")
+        repo_url = st.text_input("GitHub Repository URL")
+        # --- MODIFIED: Added input field for the token ---
+        github_token = st.text_input(
+            "GitHub Access Token",
+            type="password",
+            help="Enter your Personal Access Token (PAT) for private repos or to avoid rate limits."
+        )
         if st.button("🚀 Correct from URL", key="url_button", use_container_width=True, disabled=not repo_url):
             with st.spinner("Fetching repository files..."):
                 try:
-                    github_token = os.getenv("GITHUB_ACCESS_TOKEN")
+                    # --- MODIFIED: Use the token from the input field ---
                     processor = GitHubMarkdownProcessor(repo_url=repo_url, access_token=github_token)
                     files_to_process = processor.run()
                     input_description = repo_url
                 except Exception as e:
                     st.error(f"Failed to fetch repository: {e}")
                     st.stop()
+                    
     with tab2:
         uploaded_files = st.file_uploader("Upload .md or .zip files", type=["md", "zip"], accept_multiple_files=True)
         if st.button("🚀 Correct Uploaded Files", key="file_button", use_container_width=True, disabled=not uploaded_files):
@@ -249,16 +270,18 @@ if files_to_process:
             st.error("Please provide the MLflow API URL.")
             st.stop()
         
+        # --- MODIFIED: Improved warmup with clear error handling ---
         with st.spinner("Initializing the model... This can take a few minutes on the first run."):
             try:
-                warmup_df = pd.DataFrame([{"repo_url": None, "files": {"warmup.md": "hello"}}])
+                # Use a string for the warmup payload to match the real calls
+                warmup_df = pd.DataFrame([{"repo_url": None, "files": "This is a warmup."}])
                 warmup_payload = {"dataframe_split": warmup_df.to_dict("split")}
-                requests.post(api_url, json=warmup_payload, timeout=300, verify=False)
-            except requests.exceptions.ReadTimeout:
-                st.info("Model finished warming up. Starting corrections...")
-                pass 
+                # Check the response and raise an error if it fails
+                requests.post(api_url, json=warmup_payload, timeout=60, verify=False).raise_for_status()
+                st.info("Model is initialized and ready.")
             except Exception as e:
-                st.warning(f"Warm-up call failed, proceeding anyway: {e}")
+                st.error(f"Failed to initialize the model. Please check the API URL and ensure the backend is running correctly. Error: {e}")
+                st.stop() # Stop the app if the model can't be reached
 
         st.session_state["corrected_files"] = {}
         st.session_state["original_files"] = files_to_process
@@ -273,18 +296,32 @@ if files_to_process:
             progress_bar.progress((i + 1) / total_files, text=progress_text)
             
             try:
-                input_df = pd.DataFrame([{"repo_url": None, "files": {filename: content}}])
+                input_df = pd.DataFrame([{"repo_url": None, "files": content}])
                 payload = {"dataframe_split": input_df.to_dict("split")}
                 res = requests.post(api_url, json=payload, timeout=300, verify=False)
                 res.raise_for_status()
+                
                 response_data = res.json()["predictions"][0]
                 if isinstance(response_data, str):
                     response_data = json.loads(response_data)
                 
-                st.session_state["corrected_files"].update(response_data.get("corrected", {}))
+                # 1. Get the corrected content dictionary, which uses a placeholder key
+                corrected_content_dict = response_data.get("corrected", {})
+                
+                # 2. Extract the content using the known placeholder key
+                if "corrected_file.md" in corrected_content_dict:
+                    corrected_text = corrected_content_dict["corrected_file.md"]
+                    # 3. Save the corrected text using the ORIGINAL filename
+                    st.session_state["corrected_files"][filename] = corrected_text
+                else:
+                    # If correction fails for a file, keep the original
+                    st.session_state["corrected_files"][filename] = content
+
                 st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
+
             except Exception as e:
-                st.warning(f"Skipped {filename} due to an error: {e}")
+                # Use st.error for real errors and keep original content
+                st.error(f"Skipped {filename} due to a processing error: {e}")
                 st.session_state["corrected_files"][filename] = content
                 continue
 
