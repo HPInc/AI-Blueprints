@@ -1,0 +1,150 @@
+import streamlit as st
+import os
+import base64
+import requests
+from io import BytesIO
+import numpy as np
+from pathlib import Path
+
+
+os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
+# --- Streamlit Page Configuration ---
+st.set_page_config(
+    page_title="Text Generation",
+    page_icon = "📝",
+    layout="centered"
+)
+
+# --- Custom Styling ---
+
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 0 !important;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .stButton>button {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            font-size: 18px !important;
+            border-radius: 8px !important;
+            padding: 10px 24px !important;
+            border: none !important;
+        }
+        .stTextInput>div>div>input {
+            font-size: 16px !important;
+            padding: 10px !important;
+        }
+        .stMarkdown {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px 0px;
+        }
+        hr, .stHorizontalRule {
+            border-color: rgba(0,77,204,0.20);
+        }
+        img[alt="HP Logo"],
+        img[alt="AI Studio Logo"],
+        img[alt="Z by HP Logo"] {
+    width: 50px !important;
+    height: auto !important;
+}
+
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Logo ---
+
+def uri_from(path: Path) -> str:
+    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+
+assets = Path("assets")
+hp_uri = uri_from(assets / "HP-Logo.png")
+ais_uri = uri_from(assets / "AI-Studio.png")
+zhp_uri = uri_from(assets / "Z-HP-logo.png")
+
+st.markdown(f"""
+    <div style="display:flex;justify-content:space-between;
+                align-items:center;margin-bottom:1.5rem">
+        <img src="{hp_uri}"  alt="HP Logo" style="width:90px;height:auto;">
+        <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
+        <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
+    </div>
+""", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────
+# Header 
+# ─────────────────────────────────────────────────────────────
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>Text Generation</h1>", unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────
+# 1 ▸ MLflow API Configuration
+# ─────────────────────────────────────────────────────────────
+# Standardized MLflow endpoint for containerized deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+api_url = MLFLOW_ENDPOINT
+
+    
+# ─────────────────────────────────────────────────────────────
+# 2 ▸ Main – data input
+# ─────────────────────────────────────────────────────────────
+initial_word = st.text_input(
+    "Choose a initial word:"
+)
+
+text_size= st.number_input(
+    "Choose a size:"
+)
+
+
+# ─────────────────────────────────────────────────────────────
+# 3 ▸ Call the model
+# ─────────────────────────────────────────────────────────────
+if st.button("Get generated text"):
+    if not initial_word or text_size:
+        st.warning("⚠️ Please fill all the fields")
+    else:
+        file = {"files":initial_word}
+        file = {"files":text_size}
+        # --- Loading Spinner ---
+        with st.spinner("Classifying..."):
+            payload = {
+                "inputs": {
+                    "initial_word": [initial_word],
+                    "size":[text_size]
+                        }
+            }
+            try:
+                response = requests.post(api_url, json = payload, verify=False)
+                response.raise_for_status()
+                data = response.json()
+                gen_text = data.get("predictions")
+
+                # --- Display Results ---
+                if "predictions" in data:
+                        st.success("✅ Here are your classified digit!")
+                        st.text_area(gen_text)
+                else:
+                    st.error("❌ Unexpected response format. Please try again.")
+
+            except requests.exceptions.RequestException as e:
+                st.error("❌ Error fetching classification.")
+                st.error(str(e))
+# ─────────────────────────────────────────────────────────────
+# 4 ▸ Footer
+# ─────────────────────────────────────────────────────────────
+st.markdown(
+"""
+*📝 Text Generation © 2025* local, private, text generation + MLflow.
+
+---
+> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+""",
+unsafe_allow_html=True,
+)
