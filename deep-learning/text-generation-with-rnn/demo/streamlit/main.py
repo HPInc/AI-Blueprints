@@ -98,9 +98,14 @@ initial_word = st.text_input(
     "Choose a initial word:"
 )
 
-text_size= st.number_input(
-    "Choose a size:"
+
+text_size = st.number_input(
+    "Choose a size:",
+    min_value=1,  # Optional: set a minimum value
+    step=1,  # Ensures only integers can be selected
+    format="%d"  # Displays the number as an integer
 )
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -125,7 +130,7 @@ if st.button("Get generated text"):
 
                 if gen_text:
                     st.success("✅ Here is your generated text!")
-                    st.text_area("Generated Text", value=gen_text[0])
+                    st.text_area("Generated Text", value=gen_text, disabled=True)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
             except requests.exceptions.RequestException as e:
