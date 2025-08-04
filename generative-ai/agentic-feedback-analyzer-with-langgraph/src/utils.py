@@ -1,24 +1,49 @@
-import base64
-import logging
-import time
-from functools import wraps
-from IPython.display import HTML, display
+# ─────── Standard Library Imports ───────
+import base64  # Encoding and decoding binary data
+import logging  # Logging utilities
+import sys  # System-specific parameters and functions
+import time  # Time-related utilities
+from functools import wraps  # Function decorators support
 
-# Configure logger
-logger: logging.Logger = logging.getLogger("AIS_logger")
-logger.setLevel(logging.INFO)
-logger.propagate = False  # Prevent duplicate logs from parent loggers
+# ─────── Third-Party Package Imports ───────
+from IPython.display import HTML, display  # Rich HTML display utilities for Jupyter environments
 
-# Set formatter
-formatter: logging.Formatter = logging.Formatter(
+
+# Color and emoji mapping per level
+STYLE_MAP = {
+    logging.DEBUG:    {"bg": "#1e90ff", "fg": "white", "icon": "🔍"},
+    logging.INFO:     {"bg": "#228B22", "fg": "white", "icon": "✅"},
+    logging.WARNING:  {"bg": "#ffcc00", "fg": "black", "icon": "⚠️"},
+    logging.ERROR:    {"bg": "#cc0000", "fg": "white", "icon": "❌"},
+    logging.CRITICAL: {"bg": "#8B0000", "fg": "white", "icon": "🔥"},
+}
+
+class EmojiStyledJupyterHandler(logging.Handler):
+    def emit(self, record):
+        style = STYLE_MAP.get(record.levelno, {"bg": "white", "fg": "black", "icon": "💬"})
+        formatted = self.format(record)
+        html = f'''
+        <div style="background-color: {style['bg']}; color: {style['fg']};
+                    padding: 4px 8px; font-family: monospace; border-radius: 4px;">
+            {style["icon"]} {formatted}
+        </div>
+        '''
+        display(HTML(html))
+
+# Logger setup
+logger = logging.getLogger("AIS_logger")
+logger.setLevel(logging.DEBUG)
+logger.handlers.clear()
+
+formatter = logging.Formatter(
     fmt="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-# Configure and attach stream handler
-stream_handler: logging.StreamHandler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
+handler = EmojiStyledJupyterHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 def log_timing(func):
     """
@@ -29,8 +54,7 @@ def log_timing(func):
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
-        logger.info(f"Function '{func.__name__}' took {end_time - start_time:.4f} seconds."  +
-                   "\n--------------------------------------------------------------\n")
+        logger.info(f"Function '{func.__name__}' took {end_time - start_time:.4f} seconds.")
         return result
     return wrapper
 

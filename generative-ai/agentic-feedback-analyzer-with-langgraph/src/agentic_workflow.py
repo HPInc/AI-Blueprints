@@ -1,17 +1,22 @@
-from typing import Dict, Literal
-from langgraph.graph import StateGraph, END, START
-from src.agentic_nodes import (
-    ingest_question,
-    check_relevance,
+# ─────── Standard Library Imports ───────
+from typing import Dict, Literal  # Type annotations for mappings and fixed string values
+
+# ─────── Third-Party Package Imports ───────
+from langgraph.graph import END, START, StateGraph  # LangGraph primitives for defining and controlling agent workflows
+
+# ─────── Local Application-Specific Imports ───────
+from src.agentic_nodes import (  # Agent node functions for each step in the processing pipeline
     check_memory,
-    rewrite_question,
+    check_relevance,
     create_chunks,
     generate_answer_per_chunks,
     generate_synthetized_answer,
-    update_memory,
+    ingest_question,
     output_answer,
+    rewrite_question,
+    update_memory,
 )
-from src.agentic_state import AgenticState
+from src.agentic_state import AgenticState  # Shared state class passed through the LangGraph
 
 
 def build_agentic_graph() -> StateGraph:
