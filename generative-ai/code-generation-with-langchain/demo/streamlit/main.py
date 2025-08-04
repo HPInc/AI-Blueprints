@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 import numpy as np
 from pathlib import Path
+import json 
 
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
@@ -102,7 +103,7 @@ user_question = st.text_input("Enter your command:")
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
-if st.button("🖊️ Get genereted code"):
+if st.button("🖥️ Get genereted code"):
     if not user_question:
         st.warning("⚠️ Please enter a command")
     else:
@@ -113,32 +114,47 @@ if st.button("🖊️ Get genereted code"):
                 "inputs": {"question": [user_question]},
             }
             try:
-                response = requests.post(api_url, json = payload, verify=False)
+                response = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-                gen_cod = data.get("predictions")
-
-                # --- Display Results ---
-                if "predictions" in data:
-                        st.success("✅ Here are your generated code!")
-                        st.markdown(f"""
-                            <div style="
-                                background-color: #ffffff;
-                                padding: 15px;
-                                border-radius: 10px;
-                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                                margin: 10px 0px;
-                                border-left: 8px solid #4CAF50;
-                            ">
-                                <h4 style="color: #2C3E50;">{gen_cod}</h4>
-                            </div>
-                        """, unsafe_allow_html=True)
+                gen_code = data.get("predictions", [""])[0]
+            
+                # Ensure the generated code is a string
+                if isinstance(gen_code, dict):
+                    gen_code_str = json.dumps(gen_code, indent=4)
                 else:
-                    st.error("❌ Unexpected response format. Please try again.")
-
+                    gen_code_str = str(gen_code)
+            
+                if gen_code_str:
+                    st.success("✅ Here is your generated code!")
+            
+                    # Custom CSS for max-width
+                    st.markdown("""
+                        <style>
+                            .custom-code-box {
+                                max-width: 800px;
+                                margin: auto;
+                                overflow-x: auto;
+                            }
+                        </style>
+                    """, unsafe_allow_html=True)
+            
+                    # Display code with max-width styling
+                    st.markdown('<div class="custom-code-box">', unsafe_allow_html=True)
+                    st.code(gen_code_str)
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+                    # Prepare download
+                    code_bytes = gen_code_str.encode("utf-8")
+                    b64 = base64.b64encode(code_bytes).decode()
+                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_code">📥 Download Code</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+                else:
+                    st.error("❌ No code returned. Please try again.")
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching classification.")
+                st.error("❌ Error fetching code.")
                 st.error(str(e))
+
 # ─────────────────────────────────────────────────────────────
 # 4 ▸ Footer
 # ─────────────────────────────────────────────────────────────
