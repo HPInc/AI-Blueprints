@@ -32,10 +32,6 @@ def get_project_root():
     """Get the project root directory (fine-tuning-with-orpo)"""
     return Path(__file__).parent.parent
 
-def get_config_dir():
-    """Get the config directory"""
-    return get_project_root() / "config"
-
 def get_configs_dir():
     """Get the configs directory"""
     return get_project_root() / "configs"
@@ -133,40 +129,94 @@ def configure_hf_cache(cache_dir: str = None) -> None:
     os.environ["HF_HOME"] = cache_dir
     os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
 
-
-def load_config_and_secrets(
-    config_path: str | os.PathLike = _DEFAULT_CONFIG,
-    secrets_path: str | os.PathLike = _DEFAULT_SECRETS,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def load_secrets(secret_keys: Optional[List[str]] = None,) -> Dict[str, Any]:
     """
-    Load configuration and secrets from YAML files.
+    Load secrets from secrets environment variables.
+    Args:
+        secret_keys: List of expected secret names.  
+        If None, every project environment variable with 'AIS' prefix is returned.
+        
+    Returns:
+        Dictionary containing all secrets for the project.
+        
+    ValueError:       
+        Requested secret(s) are missing or none found with AIS- prefix.
+    """
+    # Build secrets from environment
+    if secret_keys is None:
+        secrets = {
+            k: v for k, v in os.environ.items()
+            if k.isupper() and k.startswith("AIS_")
+        }
+        if not secrets:
+            raise ValueError(
+                "No environment variables found with prefix 'AIS_'. "
+                "Please set your required project secrets in AIS Secrets Manager."
+            )
+    else:
+        secrets = {k: os.environ.get(k) for k in secret_keys}
+        missing = [k for k, v in secrets.items() if v is None]
+        if missing:
+            raise ValueError(
+                f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
+            )
+    return secrets
+
+def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
+    """
+    Loads secrets from a YAML file and sets them as environment variables.
+
+    Parameters:
+    - secrets_path (str): Path to the secrets YAML file.
+    """
+
+    secrets_file = Path(secrets_path).resolve()
+
+    if not secrets_file.exists():
+        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
+
+    with secrets_file.open("r", encoding="utf-8") as file:
+        try:
+            secrets = yaml.safe_load(file)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Failed to parse YAML: {e}")
+
+    if not isinstance(secrets, dict):
+        raise ValueError("Secrets file must contain a top-level dictionary.")
+
+    for key, value in secrets.items():
+        if not isinstance(key, str):
+            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
+        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
+        env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
+        os.environ[env_key] = str(value)
+
+    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
+
+def load_configuration(
+    config_path: str = "../../configs/config.yaml"
+) -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
 
     Args:
         config_path: Path to the configuration YAML file.
-        secrets_path: Path to the secrets YAML file.
 
     Returns:
-        Tuple (config, secrets) as dictionaries.
+        Dictionary containing the project configurations.
 
     Raises:
-        FileNotFoundError: If either file is not found.
+        FileNotFoundError: If the config file is not found
     """
     config_path  = Path(config_path).expanduser().resolve()
-    secrets_path = Path(secrets_path).expanduser().resolve()
-
-    if not secrets_path.exists():
-        raise FileNotFoundError(f"`secrets.yaml` not found → {secrets_path}")
 
     if not config_path.exists():
         raise FileNotFoundError(f"`config.yaml` not found  → {config_path}")
 
-    with secrets_path.open() as f:
-        secrets = yaml.safe_load(f) or {}
-
     with config_path.open() as f:
         config = yaml.safe_load(f) or {}
 
-    return config, secrets
+    return config
 
 
 def configure_proxy(config: Dict[str, Any]) -> None:
@@ -228,10 +278,10 @@ def initialize_llm(
             repo_id = DEFAULT_MODELS["hugging-face-cloud"]
         else:
             repo_id = hf_repo_id  
-        if not secrets or "HUGGINGFACE_API_KEY" not in secrets:
+        if not secrets or "AIS_HUGGINGFACE_API_KEY" not in secrets:
             raise ValueError("HuggingFace API key is required for cloud model access")
             
-        huggingfacehub_api_token = secrets["HUGGINGFACE_API_KEY"]
+        huggingfacehub_api_token = secrets["AIS_HUGGINGFACE_API_KEY"]
         # Get context window from our lookup table
         if repo_id in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[repo_id]
@@ -243,8 +293,8 @@ def initialize_llm(
 
     elif model_source == "hugging-face-local":
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-        if "HUGGINGFACE_API_KEY" in secrets:
-            os.environ["HF_TOKEN"] = secrets["HUGGINGFACE_API_KEY"]
+        if "AIS_HUGGINGFACE_API_KEY" in secrets:
+            os.environ["HF_TOKEN"] = secrets["AIS_HUGGINGFACE_API_KEY"]
         if hf_repo_id == "":
             model_id = DEFAULT_MODELS["hugging-face-local"]
         else:
@@ -304,6 +354,7 @@ def initialize_llm(
             stop=[],
             streaming=False,
             temperature=0.2,
+            use_mmap=False,
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
@@ -356,7 +407,7 @@ def login_huggingface(secrets: Dict[str, Any]) -> None:
     """
     from huggingface_hub import login
 
-    token = secrets.get("HUGGINGFACE_API_KEY")
+    token = secrets.get("AIS_HUGGINGFACE_API_KEY")
     if not token:
         raise ValueError("❌ Hugging Face token not found in secrets.yaml.")
     
