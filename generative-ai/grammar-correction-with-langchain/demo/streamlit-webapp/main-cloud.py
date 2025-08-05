@@ -16,6 +16,29 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ==============================================================================
+# INITIALIZE SESSION STATE
+# ==============================================================================
+# This ensures that all keys are always available in the session state, preventing KeyErrors. 
+
+if "corrected_files" not in st.session_state:
+    st.session_state.corrected_files = {}
+
+if "original_files" not in st.session_state:
+    st.session_state.original_files = {}
+
+if "metric_list" not in st.session_state:
+    st.session_state.metric_list = []
+
+if "evaluation_metrics" not in st.session_state:
+    st.session_state.evaluation_metrics = {}
+
+if "response_time" not in st.session_state:
+    st.session_state.response_time = 0
+
+if "last_input_description" not in st.session_state:
+    st.session_state.last_input_description = "" 
+
+# ==============================================================================
 # CONSTANTS
 # ==============================================================================
 
