@@ -39,6 +39,48 @@ if "last_input_description" not in st.session_state:
     st.session_state.last_input_description = "" 
 
 # ==============================================================================
+# LARGE FILE SPLIT HELPER FUNCTION
+# ==============================================================================
+
+LARGE_FILE_CHARACTER_LIMIT = 40000
+
+def split_text_if_too_large(text: str, max_size: int = LARGE_FILE_CHARACTER_LIMIT) -> list[str]:
+    """
+    If text exceeds max_size, recursively splits it in half at the best possible
+    break point (paragraph, sentence, etc.) until all parts are under the limit.
+    """
+    # Base Case: The text is small enough, no need to split.
+    if len(text) <= max_size:
+        return [text]
+
+    # Aim for the middle of the text as the split point.
+    ideal_split_point = len(text) // 2
+    
+    # Define the preferred delimiters in order from best to worst.
+    split_delimiters = ['\n\n', '. ', '? ', '! ', '\n', ' ']
+    
+    split_pos = -1 # This will hold the position where we'll split the text.
+    
+    # Search backwards from the ideal split point to find the best delimiter.
+    for delimiter in split_delimiters:
+        # Look for the last occurrence of the delimiter before the ideal split point.
+        pos = text.rfind(delimiter, 0, ideal_split_point)
+        
+        if pos != -1:
+            # Found a good delimiter
+            split_pos = pos + len(delimiter)
+            break # Stop searching, since we found the best possible option.
+            
+    if split_pos == -1:
+        split_pos = ideal_split_point
+
+    part1 = text[:split_pos].strip()
+    part2 = text[split_pos:].strip()
+    
+    # Recurse on both halves and combine the results.
+    return split_text_if_too_large(part1, max_size) + split_text_if_too_large(part2, max_size)
+
+# ==============================================================================
 # CONSTANTS
 # ==============================================================================
 
@@ -313,38 +355,49 @@ if files_to_process:
         start_time = time.time()
 
         for i, (filename, content) in enumerate(files_to_process.items()):
-            progress_text = f"Processing file {i+1} of {total_files}: {filename}"
-            progress_bar.progress((i + 1) / total_files, text=progress_text)
-            
-            try:
-                input_df = pd.DataFrame([{"repo_url": None, "files": content}])
-                payload = {"dataframe_split": input_df.to_dict("split")}
-                res = requests.post(API_URL, json=payload, timeout=300, verify=False)
-                res.raise_for_status()
-                
-                response_data = res.json()["predictions"][0]
-                if isinstance(response_data, str):
-                    response_data = json.loads(response_data)
-                
-                # 1. Get the corrected content dictionary, which uses a placeholder key
-                corrected_content_dict = response_data.get("corrected", {})
-                
-                # 2. Extract the content using the known placeholder key
-                if "corrected_file.md" in corrected_content_dict:
-                    corrected_text = corrected_content_dict["corrected_file.md"]
-                    # 3. Save the corrected text using the ORIGINAL filename
-                    st.session_state["corrected_files"][filename] = corrected_text
-                else:
-                    # If correction fails for a file, keep the original
-                    st.session_state["corrected_files"][filename] = content
+            progress_bar.progress((i + 1) / total_files, text=f"Processing file {i+1} of {total_files}: {filename}")
+            
+            # 1. Split the file content only if it's an anomaly.
+            # Most files will result in a list with a single item.
+            pieces = split_text_if_too_large(content, max_size=LARGE_FILE_CHARACTER_LIMIT)
+            
+            corrected_pieces = []
+            
+            # Only show the spinner if the file was actually split
+            spinner_text = f"Processing {filename}..."
+            if len(pieces) > 1:
+                spinner_text = f"Processing {filename} in {len(pieces)} parts..."
 
-                st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
+            with st.spinner(spinner_text):
+                for piece in pieces:
+                    try:
+                        # Process each piece (which could be the whole file)
+                        input_df = pd.DataFrame([{"repo_url": None, "files": piece}])
+                        payload = {"dataframe_split": input_df.to_dict("split")}
+                        res = requests.post(API_URL, json=payload, timeout=300, verify=False)
+                        res.raise_for_status()
+                        
+                        response_data = res.json()["predictions"][0]
+                        if isinstance(response_data, str):
+                            response_data = json.loads(response_data)
+                        
+                        corrected_content_dict = response_data.get("corrected", {})
+                        if "corrected_file.md" in corrected_content_dict:
+                            corrected_pieces.append(corrected_content_dict["corrected_file.md"])
+                        else:
+                            corrected_pieces.append(piece)
 
-            except Exception as e:
-                # Use st.error for real errors and keep original content
-                st.error(f"Skipped {filename} due to a processing error: {e}")
-                st.session_state["corrected_files"][filename] = content
-                continue
+                        st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
+
+                    except Exception as e:
+                        st.warning(f"A part of {filename} failed to process: {e}. Keeping original content for this part.")
+                        corrected_pieces.append(piece)
+                        continue
+            
+            # 3. Stitch the corrected pieces back together
+            # If the file wasn't split, this just joins a single-item list.
+            final_corrected_text = "\n\n".join(corrected_pieces)
+            st.session_state["corrected_files"][filename] = final_corrected_text
 
         final_metrics = {}
         if st.session_state["metric_list"]:
