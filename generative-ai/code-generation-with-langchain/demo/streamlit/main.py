@@ -99,14 +99,16 @@ api_url = MLFLOW_ENDPOINT
 user_question = st.text_input("Enter your query:")
 
     
+
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
-
 if st.button("🖥️ Get generated code"):
     if not user_question:
         st.warning("⚠️ Please enter your query")
     else:
+        file = {"files":user_question}
+        # --- Loading Spinner ---
         with st.spinner("Generating..."):
             payload = {
                 "inputs": {"question": [user_question]},
@@ -116,20 +118,19 @@ if st.button("🖥️ Get generated code"):
                 response.raise_for_status()
                 data = response.json()
 
-                # Extract the 'result' key from the response
-                result = data.get("result", "")
-                
-                # Pretty-print the result if it's JSON
-                try:
-                    parsed_result = json.loads(result)
-                    pretty_result = json.dumps(parsed_result, indent=4)
-                except (json.JSONDecodeError, TypeError):
-                    pretty_result = str(result)
+                # Extract the 'result' key from the returned JSON
+                result_value = data.get("result", "")
 
-                if pretty_result:
-                    st.success("✅ Here is your generated code!")
+                # Format the result nicely if it's a dict or list
+                if isinstance(result_value, (dict, list)):
+                    result_str = json.dumps(result_value, indent=4)
+                else:
+                    result_str = str(result_value)
 
-                    # Display the pretty JSON in a code block
+                if result_str:
+                    st.success("✅ Here is your generated result!")
+
+                    # Custom CSS for max-width
                     st.markdown("""
                         <style>
                             .custom-code-box {
@@ -140,19 +141,20 @@ if st.button("🖥️ Get generated code"):
                         </style>
                     """, unsafe_allow_html=True)
 
+                    # Display result with max-width styling
                     st.markdown('<div class="custom-code-box">', unsafe_allow_html=True)
-                    st.code(pretty_result, language='json')
+                    st.code(result_str)
                     st.markdown('</div>', unsafe_allow_html=True)
 
                     # Prepare download
-                    code_bytes = pretty_result.encode("utf-8")
+                    code_bytes = result_str.encode("utf-8")
                     b64 = base64.b64encode(code_bytes).decode()
-                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_code.json">📥 Download Code</a>'
+                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_result.txt">📥 Download Result</a>'
                     st.markdown(href, unsafe_allow_html=True)
                 else:
-                    st.error("❌ No code returned. Please try again.")
+                    st.error("❌ No result returned. Please try again.")
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching code.")
+                st.error("❌ Error fetching result.")
                 st.error(str(e))
 
 
