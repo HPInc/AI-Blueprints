@@ -84,7 +84,7 @@ def split_text_if_too_large(text: str, max_size: int = LARGE_FILE_CHARACTER_LIMI
 # CONSTANTS
 # ==============================================================================
 
-API_URL = "https://491f27161527.ngrok-free.app/invocations"
+API_URL = "https://7c42b47a662a.ngrok-free.app/invocations"
 
 # ==============================================================================
 # GITHUB EXTRACTOR CLASS
