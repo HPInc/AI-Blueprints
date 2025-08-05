@@ -238,18 +238,20 @@ This section provides solutions for common issues users may encounter when worki
    Even if your hardware meets the specs, limited available RAM or VRAM can cause deployment issues. Close other running workspaces or programs to free up memory.
 
 7. **API Timeout Issues**
-   API requests triggered through user interfaces have a response timeout limit (usually 30 seconds). For long-running tasks or large inputs, use the provided notebooks instead of the UI to avoid timeout errors.
+   API requests triggered for the local MLflow deployment in the AI Studio have a response timeout limit (approximately 4 minutes). For long-running tasks or large inputs, use the provided notebooks instead of the API to avoid timeout errors.
 
 ---
 
-# Contact and Support
+## Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
 
-> Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).

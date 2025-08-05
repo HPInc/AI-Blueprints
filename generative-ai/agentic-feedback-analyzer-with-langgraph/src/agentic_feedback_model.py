@@ -1,25 +1,26 @@
-import mlflow
-import mlflow.pyfunc
-from typing import Any, Dict, List
-from pathlib import Path
-import os
-import json
-import multiprocessing
-import logging
-from pathlib import Path
-from datetime import datetime
-import time
-from langchain.docstore.document import Document
+# ─────── Standard Library Imports ───────
+import json  # JSON parsing and serialization
+import logging  # Logging utilities
+import multiprocessing  # Multi-process support for concurrency
+import os  # Operating system interaction
+import time  # Time-related functions
+from datetime import datetime  # Date and time manipulation
+from pathlib import Path  # Object-oriented filesystem paths
+from typing import Any, Dict, List  # Static typing support
 
+# ─────── Third-Party Package Imports ───────
+import mlflow  # ML lifecycle platform
+import mlflow.pyfunc  # MLflow support for custom Python models
+from langchain.docstore.document import Document  # Core document abstraction for LangChain
+from langchain_community.llms import LlamaCpp  # Local LLM interface for Llama.cpp
+from langgraph.graph import StateGraph  # LangGraph for stateful agent workflows
+from pydantic import BaseModel  # Data validation and model parsing
 
-from langchain_community.llms import LlamaCpp
-from langgraph.graph import StateGraph
+# ─────── Local Application-Specific Imports ───────
+from src.agentic_workflow import build_agentic_graph  # Custom LangGraph construction logic
+from src.simple_kv_memory import SimpleKVMemory  # In-memory key-value store for agent state
+from src.utils import logger  # Project-wide configured logger
 
-from src.simple_kv_memory import SimpleKVMemory
-from src.agentic_workflow import build_agentic_graph
-from src.utils import logger
-
-from pydantic import BaseModel
 
 class AgenticModelInput(BaseModel):
     topic: str
@@ -105,7 +106,6 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
     @staticmethod
     def log_model(
         model_name: str,
-        model_path: str,
         model_artifacts: Dict[str, str],
     ) -> None:
         """
@@ -113,7 +113,7 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
         """
 
         mlflow.pyfunc.log_model(
-            artifact_path=model_path,
+            artifact_path=model_name,
             python_model=AgenticFeedbackModel(),
             artifacts=model_artifacts,
             registered_model_name=model_name,
