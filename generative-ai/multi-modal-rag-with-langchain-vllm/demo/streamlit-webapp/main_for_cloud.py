@@ -50,7 +50,7 @@ def call_model_api(api_url: str, query: str, config_payload: dict) -> dict:
 def main():
     """Renders the main Chatbot application page."""
 
-    api_url = "https://localhost:58501/invocations"
+    api_url = "https://7afcf880ce75.ngrok-free.app/invocations"
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -65,11 +65,18 @@ def main():
         ado_pat = st.text_input("ADO PAT", key="ado_pat", type="password", help="Your Personal Access Token for ADO.")
 
     # --- Main Page Branding ---
+    script_dir = Path(__file__).parent 
+
+    # Construct the full, absolute path to the asset files
+    hp_logo_path = script_dir / "assets" / "hp_logo.png"
+    ai_studio_helix_path = script_dir / "assets" / "ai_studio_helix.png"
+
+    
     logo_col1, logo_col2, _ = st.columns([2, 2, 10]) 
     with logo_col1:
-        st.image("assets/hp_logo.png", width=60)
+        st.image(str(hp_logo_path), width=60)
     with logo_col2:
-        st.image("assets/ai_studio_helix.png", width=60)
+        st.image(str(ai_studio_helix_path), width=60)
     st.markdown("<h1 style='text-align: center;'>🤖 ADO Wiki AI Assistant</h1>", unsafe_allow_html=True)
     
     # --- Main Chat Interface (Single source of truth for rendering) ---
@@ -87,9 +94,9 @@ def main():
                 c1, c2, c3, c4 = st.columns(4)
                 c1.metric("Total Pipeline Time", f"{data.get('total_pipeline_time_seconds', 0):.2f} s")
                 c2.metric("Generation Time", f"{data.get('generation_time_seconds', 0):.2f} s")
-                c3.metric("Faithfulness", f"{data.get('faithfulness', 0):.2f}")
-                c4.metric("Relevance", f"{data.get('relevance', 0):.2f}")
-                
+                c3.metric("Faithfulness", f"{data.get('faithfulness', 0) * 100:.0f}%")
+                c4.metric("Relevance", f"{data.get('relevance', 0) * 100:.0f}%")
+                                
                 # Display Images
                 try:
                     images_b64 = json.loads(data.get("used_images", "[]"))
