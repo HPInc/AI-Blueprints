@@ -196,7 +196,38 @@ This will:
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 
-### Step 4: Launch the Streamlit UI
+### Step 4: Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "question": [
+      "Write Python code to scrape a website and extract all links"
+    ]
+  },
+  "params": {}
+}
+
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    {
+      "result": "import requests\nfrom bs4 import BeautifulSoup\n\ndef scrape_website(url):\n    headers = {'User-Agent': 'Mozilla/5.0'}\n    response = requests.get(url, headers=headers)\n    soup = BeautifulSoup(response.text, 'html.parser')\n    links = []\n    for link in soup.find_all('a'):\n        try:\n            href = link.get('href')\n            if href and not href.startswith('#'):\n                links.append(href)\n        except Exception as e:\n            print(f\"An error occurred: {str(e)}\")\n    return links\n\nurl = 'https://www.example.com'\nprint(scrape_website(url))"
+    }
+  ]
+}
+
+```
+
+### Step 5: Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
