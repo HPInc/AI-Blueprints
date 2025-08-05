@@ -16,6 +16,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ==============================================================================
+# CONSTANTS
+# ==============================================================================
+
+API_URL = "https://14a36df107a2.ngrok-free.app/invocations"
+
+# ==============================================================================
 # GITHUB EXTRACTOR CLASS
 # ==============================================================================
 class GitHubMarkdownProcessor:
@@ -218,9 +224,6 @@ _, mid_col, _ = st.columns([1, 4, 1])
 with mid_col:
     st.title("📚 Markdown Grammar Corrector")
     st.markdown("Enter a public GitHub repository URL or upload files to correct grammar.")
-    
-    with st.expander("⚙️ API Configuration"):
-        api_url = st.text_input("MLflow Model /invocations URL", value="https://localhost:55919/invocations")
 
     st.subheader("Choose Input Method")
     tab1, tab2 = st.tabs(["🔗 GitHub URL", "📁 Upload Files"])
@@ -266,18 +269,14 @@ with mid_col:
 # ==============================================================================
 if files_to_process:
     with mid_col: 
-        if not api_url:
-            st.error("Please provide the MLflow API URL.")
-            st.stop()
         
-        # --- MODIFIED: Improved warmup with clear error handling ---
         with st.spinner("Initializing the model... This can take a few minutes on the first run."):
             try:
                 # Use a string for the warmup payload to match the real calls
                 warmup_df = pd.DataFrame([{"repo_url": None, "files": "This is a warmup."}])
                 warmup_payload = {"dataframe_split": warmup_df.to_dict("split")}
                 # Check the response and raise an error if it fails
-                requests.post(api_url, json=warmup_payload, timeout=180, verify=False).raise_for_status()
+                requests.post(API_URL, json=warmup_payload, timeout=180, verify=False).raise_for_status()
             except Exception as e:
                 st.error(f"Failed to initialize the model. Please check the API URL and ensure the backend is running correctly. Error: {e}")
                 st.stop() # Stop the app if the model can't be reached
@@ -297,7 +296,7 @@ if files_to_process:
             try:
                 input_df = pd.DataFrame([{"repo_url": None, "files": content}])
                 payload = {"dataframe_split": input_df.to_dict("split")}
-                res = requests.post(api_url, json=payload, timeout=300, verify=False)
+                res = requests.post(API_URL, json=payload, timeout=300, verify=False)
                 res.raise_for_status()
                 
                 response_data = res.json()["predictions"][0]

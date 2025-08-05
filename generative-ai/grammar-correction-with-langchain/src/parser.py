@@ -1,14 +1,11 @@
 import re
 from typing import Dict, Tuple
-
 from markdown_it import MarkdownIt
 
 
 def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], str]:
     """
     Parses Markdown content by replacing non-prose elements with placeholders.
-    This version uses a simplified, robust method for HTML blocks while keeping
-    all other original logic intact, including newline placeholders.
 
     Args:
         md_content (str): Raw markdown content to process.
@@ -52,6 +49,27 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
             return f"[[{key}]]"
         else:
             return f"<<{key}>>"
+
+    def protect_front_matter(content: str) -> str:
+        """
+        Detects and replaces a YAML front matter block with a single placeholder.
+        The front matter must be at the very beginning of the string.
+
+        Args:
+            content (str): Input markdown content.
+
+        Returns:
+            str: Markdown with front matter replaced by a placeholder.
+        """
+        front_matter_pattern = re.compile(r'\A---\s*\n.*?\n---\s*\n?', re.DOTALL)
+        
+        match = front_matter_pattern.search(content)
+        if match:
+            front_matter_block = match.group(0)
+            placeholder = get_next_placeholder(front_matter_block)
+            return front_matter_pattern.sub(placeholder, content, count=1)
+        
+        return content
 
     def protect_tables(content: str) -> str:
         """
@@ -116,25 +134,16 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         Returns:
             bool: True if it's mostly non-prose.
         """
-        # Treat empty lines as low prose
         if not line.strip():
             return True
-
-        # Create a "clean" version by removing all known non-prose elements
         no_placeholders = re.sub(r"<<(PH|BULLET|SEP)\d*>>|\[\[BULLET\d+\]\]", "", line)
-
-        # Remove common markdown characters
         no_markdown = re.sub(r"[*_`[\]()#|-]", "", no_placeholders)
-
-        # What's left is considered "prose"
         prose_content = no_markdown.strip()
-
-        # If the ratio of prose to the total line length is below the threshold, protect it
         if len(line) > 0 and (len(prose_content) / len(line)) < threshold:
             return True
-
         return False
-
+    
+    md_content = protect_front_matter(md_content)
     md_content = protect_tables(md_content)
 
     tokens = md.parse(md_content)
@@ -145,7 +154,6 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
     while i < len(tokens):
         token = tokens[i]
 
-        # First, check for the special case of an HTML block followed by a heading.
         if (
             token.type == "html_block"
             and i + 3 < len(tokens)
@@ -153,14 +161,11 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         ):
             html_start, _ = token.map
             _, heading_end = tokens[i + 1].map
-
             raw_block = "\n".join(lines[html_start:heading_end])
             placeholder = get_next_placeholder(raw_block)
             block_replacements.append((html_start, heading_end, placeholder))
-
             i += 4
             continue
-
         elif token.type == "fence" or token.type == "html_block":
             start, end = token.map
             raw_block = "\n".join(lines[start:end])
@@ -168,7 +173,6 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
             block_replacements.append((start, end, placeholder))
             i += 1
             continue
-
         elif token.type == "heading_open":
             level = int(token.tag[1])
             inline_token = tokens[i + 1]
@@ -179,7 +183,6 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
             block_replacements.append((start, end, f"{markdown_prefix} {placeholder}"))
             i += 3
             continue
-
         elif token.type == "blockquote_open":
             start = token.map[0] if token.map else i
             j = i + 1
@@ -192,7 +195,6 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
                 ):
                     blockquote_content.append(tokens[j + 1].content)
                 j += 1
-
             if j < len(tokens):
                 end = tokens[j].map[1] if tokens[j].map else start + 1
                 if blockquote_content:
@@ -203,13 +205,11 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
             else:
                 i += 1
             continue
-
         i += 1
 
     for start, end, replacement in sorted(block_replacements, reverse=True):
         lines[start:end] = [replacement]
 
-    # Process inline links, code, and URLs
     def replace_md_links(match):
         """
         Replaces standard Markdown links with placeholders for the URL target.
@@ -230,14 +230,30 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
 
     processed_lines = []
     for line in lines:
+        # --- MODIFICATION AND REORDERING IS IN THIS BLOCK ---
+        
+        # 1. Protect inline code first, as it can contain any character.
         line = re.sub(
             r"`([^`]+)`", lambda m: f"`{get_next_placeholder(m.group(1))}`", line
         )
+        
+        # 2. Protect Markdown images ![](). This is more specific than links.
+        #    We replace the entire image tag with one placeholder.
+        line = re.sub(
+            r'!\[([^\]]*)\]\(([^)]+)\)',
+            lambda m: get_next_placeholder(m.group(0)),
+            line
+        )
+
+        # 3. Protect standard Markdown links []() and internal links [](#).
+        line = re.sub(r"\[([^\]]+)]\(([^)]+)\)", replace_md_links, line)
+        line = re.sub(r"\[([^\]]+)]\(#([^)]+)\)", replace_internal_links, line)
+        
+        # 4. Protect raw URLs last, as they are the most generic.
         line = re.sub(
             r"https?://[^\s)\]}]+", lambda m: get_next_placeholder(m.group(0)), line
         )
-        line = re.sub(r"\[([^\]]+)]\(([^)]+)\)", replace_md_links, line)
-        line = re.sub(r"\[([^\]]+)]\(#([^)]+)\)", replace_internal_links, line)
+        
         processed_lines.append(line)
 
     def is_title_line(content: str) -> bool:
@@ -251,7 +267,7 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         if alpha.isupper():
             return True
         upper_words = [w for w in words if w[0].isupper()]
-        if len(upper_words) / len(words) >= 0.75:
+        if len(words) > 0 and len(upper_words) / len(words) >= 0.75:
             return True
         return False
 
@@ -274,7 +290,6 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         else:
             bullet_placeholder_lines.append(line)
 
-    # Handle newline preservation
     raw_processed = "\n".join(bullet_placeholder_lines)
     raw_processed = re.sub(
         r"^\s*---\s*$",
@@ -291,13 +306,11 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         else:
             content = line
             trailing_newline = False
-
         newline_placeholder = get_next_placeholder("\n", prefix="PH")
         final_lines.append(content + (newline_placeholder if trailing_newline else ""))
 
     processed_content = "".join(final_lines)
 
-    # Merge back-to-back placeholders
     merged_placeholder_map = {}
     pattern = re.compile(r"(?:<<PH\d+>>){2,}")
 
@@ -305,16 +318,13 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         match = pattern.search(processed_content)
         if not match:
             break
-
         ph_sequence = re.findall(r"<<PH\d+>>", match.group(0))
         keys = [ph.strip("<>") for ph in ph_sequence]
         merged_value = "".join(placeholder_map.get(k, "") for k in keys)
-
         counter += 1
         new_key = f"PH{counter}"
         new_ph = f"<<{new_key}>>"
         placeholder_map[new_key] = merged_value
-
         processed_content = (
             processed_content[: match.start()]
             + new_ph
@@ -322,14 +332,12 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         )
         merged_placeholder_map[new_key] = keys
 
-    # Add <<SEP>> marker between prose and placeholders if needed
     processed_content = re.sub(
         r"(<<PH\d+>>)(?!<<)(?=\w)", r"\1<<SEP>>", processed_content
     )
     placeholder_map["SEP"] = ""
 
     return placeholder_map, processed_content
-
 
 def restore_placeholders(corrected_text: str, placeholder_map: Dict[str, str]) -> str:
     """
@@ -345,6 +353,7 @@ def restore_placeholders(corrected_text: str, placeholder_map: Dict[str, str]) -
     restored_text = corrected_text
 
     # Replace placeholder tokens with original values
+    # Sort by length descending to handle nested placeholders correctly
     for placeholder, original in sorted(
         placeholder_map.items(), key=lambda x: -len(x[0])
     ):
