@@ -50,7 +50,7 @@ def call_model_api(api_url: str, query: str, config_payload: dict) -> dict:
 def main():
     """Renders the main Chatbot application page."""
 
-    api_url = "https://7afcf880ce75.ngrok-free.app/invocations"
+    api_url = "https://27405a57a5e4.ngrok-free.app/invocations"
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
