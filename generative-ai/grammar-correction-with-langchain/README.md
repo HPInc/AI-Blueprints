@@ -1,4 +1,4 @@
-# English Correction with LangChain
+# Grammar Correction with LangChain
 
 <div align="center">
 
