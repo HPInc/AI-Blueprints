@@ -414,13 +414,12 @@ if files_to_process:
         st.rerun()
 
 # ==============================================================================
-# DISPLAY RESULTS 
+# DISPLAY RESULTS 
 # ==============================================================================
 
 METRIC_MAX_SCORES = {
     "grammar_quality_score": 10.0,
     "semantic_similarity": 10.0,
-    "readability_improvement": 10
 }
 
 if "corrected_files" in st.session_state:
@@ -435,16 +434,29 @@ if "corrected_files" in st.session_state:
         all_metrics.update(other_metrics)
         
         if all_metrics:
-            metric_cols = st.columns(min(len(all_metrics), 5)) 
+            metric_cols = st.columns(min(len(all_metrics), 5))
             for i, (name, value) in enumerate(all_metrics.items()):
                 if isinstance(value, (int, float)):
                     max_score = METRIC_MAX_SCORES.get(name)
+                    
+                    # --- START OF MODIFICATION ---
                     if max_score:
-                        formatted_value = f"{value:.1f} / {max_score:.1f}"
+                        # Logic for grammar_quality_score and semantic_similarity
+                        if max_score > 0:
+                            percentage = (value / max_score) * 100
+                            formatted_value = f"{percentage:.1f}%"
+                        else:
+                            formatted_value = "N/A"
                     else:
-                        formatted_value = f"{value:.2f}"
-                        if "time" in name.lower():
-                            formatted_value += " s"
+                        # Logic for readability_improvement and time
+                        if name == "readability_improvement":
+                            # Format the delta as a signed percentage, e.g., "+10.5%" or "-5.2%"
+                            formatted_value = f"{value:+.1f}%"
+                        else: # Keep original logic for other metrics like 'time'
+                            formatted_value = f"{value:.2f}"
+                            if "time" in name.lower():
+                                formatted_value += " s"
+                    # --- END OF MODIFICATION ---
                     
                     formatted_label = name.replace('_', ' ').title()
                     metric_cols[i % 5].metric(label=formatted_label, value=formatted_value)
