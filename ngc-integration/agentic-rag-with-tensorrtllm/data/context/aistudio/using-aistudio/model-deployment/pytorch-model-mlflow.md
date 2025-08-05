@@ -6,7 +6,7 @@ sidebar_position: 4
 
 In this guide, we'll walk through the entire process of training a breast cancer classification model using PyTorch and logging the process with MLflow in the AI Studio environment. We will go step-by-step through data exploration, model training, and tracking model performance using MLflow. This tutorial is designed to be beginner-friendly, and we'll cover each step in detail to help you build and deploy your model effectively. 
 
-## Step 1: Install Required Libraries 
+## Step 1: Install Required Libraries
 
 First, ensure you have all the necessary dependencies installed. If you are working in AI Studio, many of these dependencies are already pre-installed, including MLflow. This saves setup time and helps you get started faster. If you are using a custom workspace, you can install the dependencies manually: 
 
@@ -29,7 +29,7 @@ To install any missing dependencies, use:
 pip install mlflow torch pandas seaborn 
 ```
 
-## Step 2: Load and Explore the Data 
+## Step 2: Load and Explore the Data
 
 In this tutorial, we use a breast cancer classification dataset. The dataset contains features about breast tumors that we will use to predict whether a tumor is benign or malignant. 
 
@@ -41,7 +41,7 @@ df.info()
 print(df.describe().transpose())
 ``` 
 
-### Exploratory Data Analysis (EDA) 
+### Exploratory Data Analysis (EDA)
 
 Understanding the data distribution is crucial before building a model. We'll perform a basic EDA to visualize the class distribution and relationships between features. 
 
@@ -70,7 +70,7 @@ This helps identify which features might be more important for predicting the di
 
 ![Correlation Heatmap](/img/correlation_heatmap.png)
 
-## Step 3: Train-Test Split 
+## Step 3: Train-Test Split
 
 Next, we split the dataset into training and testing sets. This will help us evaluate our model's performance on unseen data. 
 
@@ -81,7 +81,7 @@ y = df['diagnosis'].values
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=101) 
 ```
 
-## Step 4: Data Scaling 
+## Step 4: Data Scaling
 
 Neural networks tend to perform better when the input data is scaled. We use the MinMaxScaler to normalize the feature values between 0 and 1: 
 
@@ -91,7 +91,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test) 
 ```
 
-## Step 5: Define the PyTorch Model 
+## Step 5: Define the PyTorch Model
 
 We define a simple neural network using PyTorch's nn.Module. The model contains three fully connected layers with ReLU activations and dropout layers to prevent overfitting. 
 
@@ -116,11 +116,11 @@ class BreastCancerModel(nn.Module):
 model = BreastCancerModel() 
 ```
 
-## Step 6: Train the Model and Track with MLflow 
+## Step 6: Train the Model and Track with MLflow
 
 We use **BCEWithLogitsLoss** as our loss function, which combines a sigmoid layer with binary cross-entropy loss for numerical stability. We also use the Adam optimizer with a learning rate of 0.0001 to train our model. 
 
-MLflow is used to track training metrics like loss, as well as to log the model for future use. This allows you to manage different versions and keep track of model performance. 
+MLflow is used to track training metrics, such as loss, as well as to log the model for future use. This allows you to manage different versions and keep track of model performance. 
 
 ```python
 criterion = nn.BCEWithLogitsLoss() 
@@ -170,9 +170,9 @@ with mlflow.start_run():
 
 ![Training and Validation Loss](/img/training_and_validation_loss.png)
 
-## Step 7: Evaluate the Model 
+## Step 7: Evaluate the Model
 
-After training the model, it's essential to evaluate its performance using metrics such as precision, recall, and F1-score. We generate predictions on the test set and assess the model using **classification_report** and **confusion_matrix** from sklearn. 
+After training the model, it is essential to evaluate its performance using metrics such as precision, recall, and F1-score. We generate predictions on the test set and assess the model using **classification_report** and **confusion_matrix** from sklearn. 
 
 ```python
 model.eval() 
@@ -187,7 +187,7 @@ print(classification_report(y_test, predictions_binary))
 print(confusion_matrix(y_test, predictions_binary))
 ``` 
 
-The classification report provides precision, recall, and F1-score for each class, which helps assess the model's ability to correctly classify benign and malignant cases. The confusion matrix gives a detailed view of true positives, false positives, true negatives, and false negatives. 
+The classification report provides precision, recall, and F1-score for each class, which helps to assess the model's ability to correctly classify benign and malignant cases. The confusion matrix gives a detailed view of true positives, false positives, true negatives, and false negatives. 
 
 ![Model Evaluation](/img/model_evaluation.png)
 
@@ -197,8 +197,8 @@ Once the model is registered in MLflow, you can go to the 'Monitor' tab in AI St
 
 ![Registered Model in MLFlow](/img/registered_model_mlflow.png)
 
-## Summary 
+## Summary
 
-In this guide, we walked through the entire workflow for building a breast cancer classification model using PyTorch, and logging and managing the model lifecycle using MLflow within the AI Studio environment. We covered data exploration, model training, loss tracking, and evaluation. 
+In this guide, we walked through the entire workflow for building a breast cancer classification model using PyTorch, and logging and managing the model's lifecycle using MLflow within the AI Studio environment. We covered data exploration, model training, loss tracking, and evaluation. 
 
-Using AI Studio's pre-configured environment makes it easy to set up MLflow and begin tracking your models, enabling you to focus on developing and improving the model itself rather than dealing with configuration challenges. Feel free to extend this workflow to more complex models or datasets to meet your specific use cases. 
+Using AI Studio's pre-configured environment makes it easy to set up MLflow and begin tracking your models, enabling you to focus on developing and improving the model itself rather than dealing with configuration challenges. Feel free to extend this workflow to more complex models or datasets to meet your specific use cases.

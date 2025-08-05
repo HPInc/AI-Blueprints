@@ -8,8 +8,8 @@ sidebar_position: 2
 When cloning projects, ensure you clone them locally to a repository or folder. For instance, AI Studio projects should be cloned to a designated location. Within these projects, you may find a requirements.txt file.
 
 Creating a New Project in AI Studio
-1.	Navigate to Workspace: Go to your workspace in AI Studio.
-2.	Upload Requirements File: Upload the requirements.txt file associated with your project.
+1. Navigate to Workspace: Go to your workspace in AI Studio.
+2. Upload Requirements File: Upload the requirements.txt file associated with your project.
 
 
 ## Managing Library Dependencies

@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Use AI Studio to share data and collaborate with your teammates without changing the workflows your team is most familiar with. You can connect AI Studio to your GitHub account by cloning a repository into your workspace to collaboratively manage your code. 
 
-### To clone your repository: 
+### To clone your repository:
 
  1. From your Project's Overview page, select the ***Project Setup*** tab, navigate to setup, then click **Clone GitHub Repository**.
  
@@ -29,7 +29,7 @@ Use AI Studio to share data and collaborate with your teammates without changing
     You can access and manipulate data from cloned repositories with the notebook tab that appears when you run your workspace, exactly like you would with a local or remote AWS connection.
     :::
 
- ### To push code changes to the repository:
+### To push code changes to the repository:
 
  1. Run the workspace to open a notebook tab.
  
@@ -37,4 +37,4 @@ Use AI Studio to share data and collaborate with your teammates without changing
 
  3. Select **Initialize a Repository**, then click **Yes** to begin initialization. 
 
-Now you can now use the Jupyter extension to push and pull code updates to the associated repository. 
+Now you can now use the Jupyter extension to push and pull code updates to the associated repository.

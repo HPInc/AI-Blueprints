@@ -78,7 +78,7 @@ https://github.com/HPInc/aistudio-samples.git
 
         - Search for NVIDIA NGC GPU optimized containers and frameworks.
         
-- **Create a Custom Workspace**: Before creating the project, you can add additional pip packages and libraries to the base images. To do this, click **Add Custom Libraries** under the workspace name and either type the package name and version or upload a requirements.txt file.
+- **[Create a Custom Workspace](/docs/aistudio/using-aistudio/workspaces/custom-workspace.md)**: Before creating the project, you can add additional pip packages and libraries to the base images. To do this click **Add Custom Libraries** under the workspace name and either type the package name and version or upload a requirements.txt file.
     
 - **[Configure Notebooks](/docs/aistudio/using-aistudio/workspaces/reusing-workspace.md)**: After you create your project, the workspace will start, pull in your assets, and let you use them directly in the notebook.
     
@@ -131,7 +131,7 @@ You should expect to spend ~ 30 min – 1 hour following this guide to install a
 ### Technical Requirements
 
 #### Hardware:
-- A discrete GPU is not required to use AI Studio, but for this demo we are going to walk through a demo that requires an NVIDIA GPU with at least 8 GB of VRAM. AI Studio currently supports NVIDIA GPUs with 528.89 drivers or newer.
+- A discrete GPU is not required to use AI Studio, but for this demo we are going to walk through a demo that **requires an NVIDIA GPU with at least 8 GB of VRAM**. AI Studio currently supports NVIDIA GPUs with 528.89 drivers or newer.
 
 #### Software:
 - Windows 10 or 11 or Linux Ubuntu 22.04 LTS
@@ -159,7 +159,7 @@ Before proceeding with this tutorial, ensure that you have sufficient disk space
 
     :::tip
 
-    NeMo, which stands for "Neural Modules," by NVIDIA is an end-to-end platform used for developing custom generative AI, including large language models (LLMs), vision language models (VLMs), retrieval models, video models, and speech AI—anywhere. 
+    NeMo™, which stands for "Neural Modules," by NVIDIA is an end-to-end platform used for developing custom generative AI, including large language models (LLMs), vision language models (VLMs), retrieval models, video models, and speech AI—anywhere. 
     This platform helps developers create AI applications more efficiently, leveraging NVIDIA's GPU acceleration to optimize performance and scalability.     
     Learn more about NVIDIA NeMo at [Build Custom Generative AI | NVIDIA NeMo](https://www.nvidia.com/en-us/ai-data-science/products/nemo/) 
 
@@ -171,9 +171,7 @@ account) or Restricted Project (private to you and the account owners). For this
 4. Point to the Github repo for code management. The first time you do this, you will be prompted to authenticate and link AI Studio with your GitHub. Even though this is a public GitHub repo, you will have to have a GitHub account or create one if you don’t have one already. For this demo use:
 https://github.com/HPInc/aistudio-samples.git
 
-You will also need to select a local folder for the Git repo to clone into. This is up to you, but generally making an **assistant** or a **repo** folder inside of your **Documents** folder is a good place to store code repositories. Here is the corrected markdown:
-
-Simply create a new folder and point to it in AI Studio when creating your project.
+You will also need to select a local folder for the Git repo to clone into. This is up to you, but generally making an **assistant** or a **repo** folder inside of your **Documents** folder is a good place to store code repositories. Simply create a new folder and point to it in AI Studio when creating your project.
 
 5. Leave “Configure git for autocrlf” checked if you are on Windows. 
 
@@ -265,20 +263,20 @@ To achieve the ability to run code consistently across different machines and di
         azure blob or other datasets or models in the Assets tab. In this case
         each of the 3 models will have their own folder.
 
-        - **local** is a folder that mounts to your local machine and allows you to
-        store files locally on your computer, but they are not shared with other users in your account. You will see that your GitHub information is stored in a
- configuration folder there.
- :::tip
- The local folder can be a good place to store model files from
- providers AI Studio doesn’t natively support like HuggingFace or Ollama (which will usually require setting an environment variable to control where they download to, i.e., `HF_HOME = /home/jovyan/local` for Hugging Face models).
- :::
+       - **local** is a folder that mounts to your local machine and allows you to
+        store files locally on your computer but are not shared with other users in your account. You will see that your github information is stored in a
+        configuration folder there.
+            :::tip
+            The local folder can be a good place to store model files from
+            providers AI Studio doesn’t natively support like HuggingFace or Ollama (which will usually require setting an environment variable to control where they download to ie: `HF_HOME = /home/jovyan/local` for hugging face models).
+            :::
 
- - **shared** is a folder that allows for peer-to-peer data transfer between
- collaborators. Any files you add will be shared with any other
+        - **shared** is a folder that allows for peer to peer data transfer between
+        collaborators. Any files you add will be shared with any otherf
         collaborators in your account if you are both online at the same time.
 
             :::warning
-            Since AI Studio’s workspaces are based on containers, if you create or save any work outside of the above 4 folders when the container is shut down, your file will be erased. To avoid losing data if you are working on project code, it should be stored in the Git repository folder, local or shared folders, and data should be saved to the DataFabric, local or shared folders.
+            Since AI Studio’s workspaces are based on containers if you create or save any work outside of the above 4 folders when the container is shut down your file will be erased. To avoid losing data if you are working on project code it should be stored in the git repository folder, local or shared folders and data should be saved to the datafabric, local or shared folders.
             :::
 
 4. **Running the Demo**:

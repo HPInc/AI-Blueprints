@@ -4,7 +4,7 @@ sidebar_position: 1
 ---
 # Model Deployment  
 
-Model Services are embedded utilities that let users deploy registered models for local inference. Locally published model services are hosted on localhost as a browser tab. Each tab represents a different notebook and you can simultaneously run as many models as your machine can handle.
+Model services are embedded utilities that let users deploy registered models for local inference. Locally published model services are hosted on localhost as a browser tab. Each tab represents a different notebook, and you can simultaneously run as many models as your machine can handle.
 
 ## To deploy a new model service:
 
@@ -13,7 +13,7 @@ Model Services are embedded utilities that let users deploy registered models fo
 2. Name your new service and select one of the registered models from your connected MLflow account.
    
     :::note
-    Only models saved to ML Flow can be deployed.  See [Registering a New Model - Scikit-learn](/docs/aistudio/using-aistudio/model-deployment/register-model-scikit-learn.md) for more information.
+    Only models saved to ML Flow can be deployed. See [Registering a New Model - Scikit-learn](/docs/aistudio/using-aistudio/model-deployment/register-model-scikit-learn.md) for more information.
     :::
 
 3. Choose your model version and GPU configuration.
@@ -28,6 +28,6 @@ When you create a new service, it automatically becomes viewable from the *Deplo
 
  :::tip
  
- Your project’s GPU, CPU, VRAM, and memory consumption appear in the corner of the screen, so you can visualize the effects of the tests you run in real-time.
+ Your project's GPU, CPU, VRAM, and memory consumption appear in the corner of the screen, so you can visualize the effects of the tests you run in real-time.
  
  :::

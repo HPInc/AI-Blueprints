@@ -20,7 +20,7 @@ The first user to activate their account on a new license is designated as the a
 
     :::note 
 
-    Use the *Admin Emails* field for the account users you wish to assign to the role of team manager. Team Managers can reassign user roles after account configuration from inside AI Studio.  
+    Use the *Admin Emails* field for the account users you wish to assign to the role of Team Manager. Team Managers can reassign user roles after account configuration from inside AI Studio.  
 
     ::: 
 

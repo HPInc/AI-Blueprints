@@ -1,3 +1,8 @@
+---
+title:  'Renaming a WSL Distribution'
+sidebar_position: 4
+---
+
 # Renaming a WSL Distribution
 
 AI Studio requires its own WSL distribution named "*Phoenix*". If our installer has directed you to these instructions, then you probably have a distribution that needs to be renamed before you can finish installing AI Studio.

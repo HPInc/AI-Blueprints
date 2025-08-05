@@ -44,4 +44,4 @@ Connect data to your projects using local storage or your AWS credentials to acc
 
         - **AWS**: Enter the S3 URI associated with your asset, the bucket type, region (optional for private assets), and description. Then, click **Create Asset**. 
 
-        - **Azure Blob Storage**: Enter the Blob URI associated with your asset, the resource type, and an asset description. Then, click **Create Asset**. 
+        - **Azure Blob Storage**: Enter the Blob URI associated with your asset, the resource type, and an asset description. Then, click **Create Asset**.

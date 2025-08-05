@@ -12,7 +12,7 @@ Dive into an existing project directly from the home page by clicking on the pro
 Clicking the icon in the upper-right corner of a project tile triggers the project options dropdown box to appear. 
 :::
 
-### To create a new project: 
+### To create a new project:
 
 1. From the Projects home page, select **New Project**.  
 
@@ -31,7 +31,7 @@ Clicking the icon in the upper-right corner of a project tile triggers the proje
 5. Choose a workspace template, then click **Create Project** to create your new project. 
 
 
-### To use your project: 
+### To use your project:
 
 From the ***Projects*** home page, choose the project you wish to use. 
 

@@ -10,7 +10,7 @@ AI Studio uses peer-to-peer networking to synchronize data in the background in 
 
     :::note
 
-    This data includes model parameters, experiment results and model data.
+    This data includes model parameters, experiment results, and model data.
 
     :::
 
@@ -18,7 +18,7 @@ AI Studio uses peer-to-peer networking to synchronize data in the background in 
 
 3. Assets in the shared directory (see below) 
 
-Synchronization operates asynchronously in the background while AI Studio is running.  All members of an account contribute to a mesh p2p network.  As files are added to paths monitored for synchronization, they are synchronized across all account members. 
+Synchronization operates asynchronously in the background while AI Studio is running. All members of an account contribute to a mesh p2p network. As files are added to paths monitored for synchronization, they are synchronized across all account members. 
 
 :::note
 

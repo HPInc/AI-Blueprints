@@ -29,4 +29,4 @@ echo 3 > /proc/sys/vm/drop_caches
 ```
 This signals the kernel to release non-essential memory allocations, including filesystem caches, allowing the Windows WSL VM to deallocate host memory.
 
-We recommend running this each time after you stop an AIS Workspace if you are concerned about the memory usage. We intend to apply an intelligent, programmatic form of this fix to AIS in a near term app release.
+We recommend running this each time after you stop an AIS Workspace if you are concerned about the memory usage. We intend to apply an intelligent, programmatic form of this fix to AIS in a near-term app release.

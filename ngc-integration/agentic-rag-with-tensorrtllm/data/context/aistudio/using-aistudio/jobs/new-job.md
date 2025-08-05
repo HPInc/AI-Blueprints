@@ -5,12 +5,12 @@ sidebar_position: 1
 
 # Creating a New Job
 
-###  To create a new job: 
+### To create a new job:
 
 1. Click on **Create New Job**. 
 
     :::note
-    You need to clone the git repository you want to run the job on if you haven’t already before you can continue. 
+    You need to clone the Git repository you want to run the job on if you haven’t already before you can continue. 
     :::
 
 2. Name, date, and schedule your job. 
@@ -24,7 +24,7 @@ sidebar_position: 1
 4. Select a Branch / Tag or Commit from the dropdown menu. 
 
     :::note
-    These outputs depend on the git repository associated with the job.
+    These outputs depend on the Git repository associated with the job.
     ::: 
 
 5. Enter the script you want your job to execute in the script path field. 
