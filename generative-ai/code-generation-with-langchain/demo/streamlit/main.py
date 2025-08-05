@@ -11,7 +11,7 @@ import json
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Code Generation",
+    page_title="Code Generation with Langchain",
     page_icon = "🖥️",
     layout="centered"
 )
@@ -82,7 +82,7 @@ st.markdown(f"""
 # ─────────────────────────────────────────────────────────────
 # Header 
 # ─────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🧑‍💻 Code Generation </h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🧑‍💻 Code Generation with Langchain</h1>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
@@ -96,19 +96,17 @@ api_url = MLFLOW_ENDPOINT
 # 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
 
-user_question = st.text_input("Enter your command:")
+user_question = st.text_input("Enter your query:")
 
     
-
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
+
 if st.button("🖥️ Get generated code"):
     if not user_question:
-        st.warning("⚠️ Please enter a command")
+        st.warning("⚠️ Please enter your query")
     else:
-        file = {"files":user_question}
-        # --- Loading Spinner ---
         with st.spinner("Generating..."):
             payload = {
                 "inputs": {"question": [user_question]},
@@ -117,18 +115,21 @@ if st.button("🖥️ Get generated code"):
                 response = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-                gen_code = data.get("predictions", [""])[0]
-            
-                # Ensure the generated code is a string
-                if isinstance(gen_code, dict):
-                    gen_code_str = json.dumps(gen_code, indent=4)
-                else:
-                    gen_code_str = str(gen_code)
-            
-                if gen_code_str:
+
+                # Extract the 'result' key from the response
+                result = data.get("result", "")
+                
+                # Pretty-print the result if it's JSON
+                try:
+                    parsed_result = json.loads(result)
+                    pretty_result = json.dumps(parsed_result, indent=4)
+                except (json.JSONDecodeError, TypeError):
+                    pretty_result = str(result)
+
+                if pretty_result:
                     st.success("✅ Here is your generated code!")
-            
-                    # Custom CSS for max-width
+
+                    # Display the pretty JSON in a code block
                     st.markdown("""
                         <style>
                             .custom-code-box {
@@ -138,16 +139,15 @@ if st.button("🖥️ Get generated code"):
                             }
                         </style>
                     """, unsafe_allow_html=True)
-            
-                    # Display code with max-width styling
+
                     st.markdown('<div class="custom-code-box">', unsafe_allow_html=True)
-                    st.code(gen_code_str)
+                    st.code(pretty_result, language='json')
                     st.markdown('</div>', unsafe_allow_html=True)
-            
+
                     # Prepare download
-                    code_bytes = gen_code_str.encode("utf-8")
+                    code_bytes = pretty_result.encode("utf-8")
                     b64 = base64.b64encode(code_bytes).decode()
-                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_code">📥 Download Code</a>'
+                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_code.json">📥 Download Code</a>'
                     st.markdown(href, unsafe_allow_html=True)
                 else:
                     st.error("❌ No code returned. Please try again.")
@@ -155,15 +155,13 @@ if st.button("🖥️ Get generated code"):
                 st.error("❌ Error fetching code.")
                 st.error(str(e))
 
+
 # ─────────────────────────────────────────────────────────────
 # 4 ▸ Footer
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*🖥️1️⃣Code Generation © 2025* local, private, code generation + MLflow.
-
----
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using HP AI Studio.
 """,
 unsafe_allow_html=True,
 )
