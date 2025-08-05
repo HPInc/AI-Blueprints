@@ -33,8 +33,10 @@ The objective of this template is to show how to create a simple text generation
 │
 ├── demo/                                                     # Compiled Interface Folder
 ├── docs
-│   ├── html-ui-text-generation-with-rnn.png                       # UI screenshot 
-│   ├── html-ui-text-generation-with-rnn.png                       # UI screenshot screenshot    
+│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot 
+│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot screenshot
+│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot 
+│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot     
 │   ├── swagger-ui-text-generation-with-rnn.pdf               # Swagger UI screenshot 
 │   └── swagger-ui-text-generation-with-rnn. pdf              # Swagger UI screenshot
 │
@@ -110,7 +112,7 @@ Run the following notebook `/run-workflow-Torch.ipynb`:
 6. Once deployed, click on the **Service URL** to access the Swagger API page.  
 7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.
 
-### 3 ▪ Swagger / raw API
+### 3: Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
@@ -140,18 +142,18 @@ And as response:
 
 ```
 
-### 4 ▪ Use the HTML Demo
+### Step 4: Launch the Streamlit UI
 
-From the Swagger page, click the **“Demo”** link to interact via a simple web form:
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
-* Enter your source text.
-* Click **Submit**.
-* View the generated text right in the browser.
+2. Navigate to the shown URL and view the code genration.
 
 ### Successful UI demo
 
-- HTML
-![Automated Evaluation React UI](docs/html-ui-text-generation-with-rnn.png)  
+- Streamlit
+
+  ![Code Generation Streamlit UI](docs/streamlit-ui-text-generation-with-rnn.png)
+
 
 ---
 
