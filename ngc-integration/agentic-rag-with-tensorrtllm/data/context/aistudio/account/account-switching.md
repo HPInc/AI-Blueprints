@@ -12,10 +12,10 @@ AI Studio users with multiple accounts can switch between them from any screen w
 
 2. Click on the account you want to switch to from the dropdown menu.
 
-Users must be online to switch between accounts. Account switching requires an internet connection to sync and sync only occurs for a user’s last active account – other accounts do not sync in the background. If the app becomes unresponsive when one or more of the synchronizing users are offline, log out, then log back into AI Studio to restore your session.    
+Users must be online to switch between accounts. Account switching requires an internet connection to sync, and sync occurs only for a user's last active account – other accounts do not sync in the background. If the app becomes unresponsive when one or more of the synchronizing users are offline, log out, then log back into AI Studio to restore your session.    
 
 :::tip
 
-An alert will inform users if AI Studio is unable to switch accounts. To restore account switching, stop all the project’s open workspaces and try again.
+An alert will inform users if AI Studio is unable to switch accounts. To restore account switching, stop all the project's open workspaces and try again.
 
-:::
+::

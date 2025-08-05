@@ -181,7 +181,7 @@ This will:
 
 ![text Summarization Demo UI](docs/ui_summarization.png)
 
-:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of suggested local model (i.e. Llama3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
+:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of the suggested local model (i.e., Llama 3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
 
 ---
 

@@ -115,7 +115,7 @@ For optimal performance, especially when working with larger models or datasets,
   - **Model Name**: `InternVL3-8B-Instruct`
   - **Model Source**: `Local`
   - **Model Path**: `C:\path_to_your_model\InternVL3-8B-Instruct`
-- Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
+- Make sure that the model is in the `datafabric` folder inside your Jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
 ### Step 5: Configure Configs and Secrets Manager
 
@@ -124,7 +124,7 @@ For optimal performance, especially when working with larger models or datasets,
 - Secrets Configuration:
   - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
   - Add the following secrets:
-    - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
+    - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) with the following access rights:
       - **Wiki (Read)**: To read wiki content.
       - **Code (Read)**: To read code content.
       - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
@@ -170,7 +170,7 @@ _Note: This step requires the `run-workflow.ipynb` file to be ran first at least
   "params": {}
 }
 ```
-You can make a inference query in the Swagger UI by altering the string field to your question.
+You can make an inference query in the Swagger UI by altering the string field to your question.
 
 ### Successful Demonstration of the User Interface
 

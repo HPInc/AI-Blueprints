@@ -3,7 +3,7 @@ title:  'Data Management FAQs'
 sidebar_position: 1
 ---
 
-# Z by HP AI Studio Data Management FAQs	 
+# Z by HP AI Studio Data Management FAQs 
 Last Updated: April 2025
 
 This document answers the commonly asked questions related to AI Studio, data collection, transmission, storage, retention, and disposal of data.
@@ -12,34 +12,34 @@ This document answers the commonly asked questions related to AI Studio, data co
 
 > **What is AI Studio?**
 
-Z by HP AI Studio is an enterprise-grade SaaS platform designed for collaboration in local compute environments. With AI Studio users can create an account, download and install the app on Windows or Linux and invite collaborators to start creating AI projects locally and accelerate AI model development. 
+Z by HP AI Studio is an enterprise-grade SaaS platform designed for collaboration in local compute environments. With AI Studio users can create an account, download and install the app on Windows or Linux, and invite collaborators to start creating AI projects locally and accelerating AI model development. 
 
 > **How are updates provided to AI Studio?**
 
-Users are made aware of updates to AI Studio by notice provided through the application. Users can then elect to update/install new versions of the software. New features may require that all collaborators update to the latest version to take advantage of features. To update, users will need to visit ‘Account’ > ‘General’ > ‘App Version’ to review release notes and update the software.  Updates are also posted on ZDocs and on the Z by HP Data Science and AI Community. 
+Users are made aware of updates to AI Studio by notices provided through the application. Users can then elect to update/install new versions of the software. New features may require that all collaborators update to the latest version in order to take advantage of the features. To update, users will need to visit ‘Account’ > ‘General’ > ‘App Version’ to review the release notes and update the software. Updates are also posted on ZDocs and on the Z by HP Data Science and AI Community. 
 
 ## Cloud Technology/Data Centers
 
 > **What cloud technology and data centers are leveraged by AI Studio?**
 
-AI Studio services are hosted on Amazon Web Services (AWS).  All data associated with a given account is hosted in a single data center. 
+AI Studio services are hosted on Amazon Web Services (AWS). All data associated with a given account is hosted in a single data center. 
 
 To learn more, visit [AWS.](https://aws.amazon.com.)
 
 
 AI Studio persists product and usage data in MongoDB.
 
-AI Studio uses HP-ID as an Identity Provider (IdP).  HP-ID performs user authentication and provides the results of authentication to AI Studio in the form of JWTs (JSON Web Tokens).  HP-ID is hosted on AWS.
+AI Studio uses HP-ID as an Identity Provider (IdP). HP-ID performs user authentication and provides the results of authentication to AI Studio in the form of JWTs (JSON Web Tokens). HP-ID is hosted on AWS.
 
 > **How does the data flow throughout the AI Studio activation process?**
 
-Account owners follow a link received at their designated owner email address. The welcome email includes instructions to download and install the AI Studio application. Account owners onboard additional users by inviting them to the account from within the application.  Users onboard in a similar manner.  Account owners and users are prompted to create an HP-ID account associated with their e-mail address if they have not done so previously.  After logging in, account data is synchronized across the devices of all users according to their role defined within the application by the account owner.
+Account owners follow a link received at their designated owner email address. The welcome email includes instructions to download and install the AI Studio application. Account owners onboard additional users by inviting them to the account from within the application. Users onboard in a similar manner. Account owners and users are prompted to create an HP-ID account associated with their e-mail address if they have not done so previously. After logging in, account data is synchronized across the devices of all users according to their role defined within the application by the account owner.
 
 > **How does data flow between devices and various Z by HP AI Studio components and integrated software solutions?**
 
-Data created through the use of Z by HP AI Studio (such as notebooks, ML Flow experiments and tensorboard logs) is first stored locally on the device where it originates. Users can share files with other users of the account by placing them in a project’s “shared” folder. AI Studio establishes an end-to-end encrypted peer-to-peer connection between the account users to sync data. If a peer-to-peer connection is not possible due to network restrictions, Z by HP AI Studio will use a relay hosted in the cloud to facilitate the transfer between peers. Cloud relays (and by association HP itself) cannot decrypt the data as it traverses the relay because the associated keys are generated and stored only within the local filesystem of each peer.
+Data created through the use of Z by HP AI Studio (such as notebooks, ML Flow experiments, and tensorboard logs) is first stored locally on the device where it originates. Users can share files with other users of the account by placing them in a project’s “shared” folder. AI Studio establishes an end-to-end encrypted peer-to-peer connection between the account users to sync data. If a peer-to-peer connection is not possible due to network restrictions, Z by HP AI Studio will use a relay hosted in the cloud to facilitate the transfer between peers. Cloud relays (and by association HP itself) cannot decrypt the data as it traverses the relay because the associated keys are generated and stored only within the local filesystem of each peer.
 
-AI Studio offers functionality that allows users to integrate data stored in various cloud storage solutions.  Access to that data is controlled by existing mechanisms established within the user’s IT organization.  When AI Studio accesses the data, it is sent directly to or from the device and then to or from the cloud provider using the cloud provider's software libraries. 
+AI Studio offers functionality that allows users to integrate data stored in various cloud storage solutions. Access to that data is controlled by existing mechanisms established within the user's IT organization. When AI Studio accesses the data, it is sent directly to or from the device and then to or from the cloud provider using the cloud provider's software libraries. 
 
 > **Can the customer influence in which region/data center their data is processed or sent to?**
 
@@ -73,7 +73,7 @@ AI Studio does not collect the following types of data:
 
 > **Can customers access their telemetry data that AI Studio transfers to the Z BY HP Backend?**
 
-Telemetry data is anonymized and aggregated before storage and thus cannot be traced back to its origin after collection.  However, customers do get visibility in the app for account insights and delivery of analytics and features.
+Telemetry data is anonymized and aggregated before storage and thus cannot be traced back to its origin after collection. However, customers do get visibility in the app for account insights and delivery of analytics and features.
 
 > **How often does AI Studio submit telemetry data to cloud services for storage?**
 
@@ -94,33 +94,33 @@ When capturing, transmitting, and storing data, AI Studio uses a variety of secu
 - only users with a business need are granted access to customer data
 - periodic reviews are performed to ensure RBAC access is up to date
 - AIS uses JWT tokens derived from the authentication process in all requests to backend cloud services.
-- when applicable, data is anonymized by replacing sensitive information with a suitable proxy replacement (e.g. SHA256 or one-way hash) of it before storage.
+- when applicable, data is anonymized by replacing sensitive information with a suitable proxy replacement (e.gSHA256 or one-way hash) of it before storage.
 
 > **What type of security testing is performed on AI Studio?**
 
-AI Studio employs various security tests including but not limited to:
--	Penetration testing of all public facing cloud services
--	Static code analysis of all HP source code
--	Container scanning of all HP built images
+AI Studio employs various security tests, including but not limited to:
+- Penetration testing of all public-facing cloud services
+- Static code analysis of all HP source code
+- Container scanning of all HP built images
 AI Studio undergoes these tests for all new functionalities being released and periodically for all minor enhancements to existing functionality.
 
 > **What are the processes and procedures to ensure physical and environmental security?**
 
-Most AI Studio cloud services run on Amazon Web Services. Amazon Web Services is responsible for physical and environmental security of its data centers.
+Most AI Studio cloud services run on Amazon Web Services. Amazon Web Services is responsible for the physical and environmental security of its data centers.
 The Amazon Web Services data centers are Tier 3+ as per [AWS documentation.](https://aws.amazon.com/compliance/uptimeinstitute/)
 - The Amazon Web Services compliance and certifications can be found at [AWS Compliance.](https://aws.amazon.com/compliance/)
-- Amazon Web Services takes care of protection against external and environmental threats (fire, flood, earthquakes etc.).
+- Amazon Web Services takes care of protection against external and environmental threats (fire, flood, earthquakes, etc.).
 
 AI Studio uses tools from Amazon Web Services (e.g., Cloud Watch) to monitor the performance of Amazon Web Services.
 
->**What authentication and authorization methods does Z by HP AI Studio implement?**
+> **What authentication and authorization methods does Z by HP AI Studio implement?**
 
-AIS implements authentication and authorization of users using HP-ID. Once authenticated, AIS uses a role-based access control (RBAC) system to authorize requests made on behalf of users throughout the platform.  The RBAC system ensures users may only access the data they are authorized to according to their role.  AIS uses TLS 1.2 and 1.3 to protect data in transit and AES 256 encryption to protect data at rest.
+AIS implements authentication and authorization of users using HP-ID. Once authenticated, AIS uses a role-based access control (RBAC) system to authorize requests made on behalf of users throughout the platform. The RBAC system ensures that users may only access the data they are authorized to, according to their role. AIS uses TLS 1.2 and 1.3 to protect data in transit and AES 256 encryption to protect data at rest.
 
 
 ## Data Transmission and Storage
 
->**What data can a customer opt-out from sharing with AI Studio?**
+> **What data can a customer opt-out from sharing with AI Studio?**
 
 The following table provides opt-out information:
 
@@ -134,21 +134,21 @@ The application requires specific data to function and deliver application featu
 |Device Data; Feature usage Data; Location Data; Entitlement Data| No |Device data is required for AI Studio to deliver its functionalities. To deliver functional requirements and support application regional compliance, device, feature, location, and entitlement data are mandatory information for a customer to provide.|
 |Security Credentials| No |AI Studio stores and uses tokens for authorization to cloud services.|
 
->**How is the data transmission to Z BY HP secured?**
+> **How is the data transmission to Z BY HP secured?**
 
 AI Studio leverages TLS 1.2 or better to transmit data between the device and the U.S. data centers, the U.S. Analytics data center, and the U.S. Identity Management data center.
 
 > **What ports need to be considered for customer firewalls?**
 
-No inbound ports are required.  AIS uses port 443 for connections to cloud services.  Locally, AIS uses ephemeral ports (49152-65535) for inter-process communication.
+No inbound ports are required. AIS uses port 443 for connections to cloud services. Locally, AIS uses ephemeral ports (49152-65535) for inter-process communication.
 
->**Is data in databases stored securely?**
+> **Is data in databases stored securely?**
 
-All databases in the cloud are encrypted at rest using AWS KMS with keys created, rotated and managed by HP.  Local databases are encrypted with AES256 using a locally generated key that is stored in the platform credential manager.  Windows credential manager and the gnome key ring for Windows and Linux respectively.
+All databases in the cloud are encrypted at rest using AWS KMS with keys created, rotated, and managed by HP. Local databases are encrypted with AES256 using a locally generated key that is stored in the platform credential manager. Windows credential manager and the GNOME keyring for Windows and Linux, respectively.
 
->**Is data securely disposed of when no longer needed?**
+> **Is data securely disposed of when no longer needed?**
 
-Analytics data is deleted permanently two years after its creation.  Account data is deleted 60 days after the expiration of the account subscription.
+Analytics data is deleted permanently two years after its creation. Account data is deleted 60 days after the expiration of the account subscription.
 
 :::note
 
@@ -156,27 +156,27 @@ For data protection purposes, all personal data is removed prior to transmission
 
 :::
 
->**How is access to data restricted?**
+> **How is access to data restricted?**
 
-HP controls access to analytics data using RBAC policies.  Periodic reviews are performed to ensure that users with access have a business need.  Users that do have access are required to use 2 factor authentication whenever accessing the data.
+HP controls access to analytics data using RBAC policies. Periodic reviews are performed to ensure that users with access have a business need. Users who do have access are required to use 2-factor authentication whenever accessing the data.
 
->**Are the data anonymized?**
+> **Are the data anonymized?**
 
-Analytics data is stripped of personally identifiable information (PII) before transmission to and storage in the analytics datacenter by replacing PII (e.g. e-mail address, first and last names) with proxy information (e.g. one way hash of the input data).
+Analytics data is stripped of personally identifiable information (PII) before transmission to and storage in the analytics datacenter by replacing PII (e.g., e-mail address, first and last names) with proxy information (e.g., one-way hash of the input data).
 
->**Does AI Studio share its data with its Z BY HP suppliers, and if so, does it include personal information?**
+> **Does AI Studio share its data with its Z BY HP suppliers, and if so, does it include personal information?**
 
-Yes, AI Studio shares account, application, contact, and device data with some of Z BY HP's key suppliers to ensure the correct functionality of all AI Studio features. HP Suppliers are contractually bound to by HP guidelines and requirements with regards to collection, use and maintenance of collected data.
+Yes, AI Studio shares account, application, contact, and device data with some of Z by HP's key suppliers to ensure the correct functionality of all AI Studio features. HP Suppliers are contractually bound to by HP guidelines and requirements with regard to collection, use, and maintenance of collected data.
 
->**Does AI Studio provide separate, dedicated database(s) for customers' exclusive use of their data?**
+> **Does AI Studio provide separate, dedicated database(s) for customers' exclusive use of their data?**
 
 No.
 
->**Is customer data and information co-hosted with the data from other organizations or companies on the same physical server(s)?**
+> **Is customer data and information co-hosted with the data from other organizations or companies on the same physical server(s)?**
 
 Yes.
 
->**What are the sources and methodology of data capture and frequency of transmission by Z by HP AI Studio?**
+> **What are the sources and methodology of data capture and frequency of transmission by Z by HP AI Studio?**
 
 The sources and methodology of data capture and frequency of data transmission include:
 
@@ -193,13 +193,13 @@ The sources and methodology of data capture and frequency of data transmission i
 
 ## General Data Protection Regulation (GDPR)
 
->**What is GDPR compliance?**
+> **What is GDPR compliance?**
 
-The General Data Protection Regulation (GDPR) is a European-wide regulation for the protection of European citizens' data that was established in May 2018 and defined rules related to the protection of natural persons regarding the processing of personal data and rules relating to the free movement of personal data (Ref: https://gdpr-info.eu/art-1-gdpr/). Currently there is no ID or license required or available for GDPR.
+The General Data Protection Regulation (GDPR) is a European-wide regulation for the protection of European citizens' data that was established in May 2018 and defines rules related to the protection of natural persons regarding the processing of personal data and rules relating to the free movement of personal data (Ref: https://gdpr-info.eu/art-1-gdpr/). Currently there is no ID or license required or available for GDPR.
 
->**What is the Z BY HP and AI Studio approach to GDPR?**
+> **What is the Z BY HP and AI Studio approach to GDPR?**
 
-Z BY HP has a long-standing history of industry leadership in privacy and data protection. Together with our robust portfolio of products and services, we can support our customers' and partners' efforts in protecting personal data. With respect to AI Studio, Z BY HP acts as a Data Processor. Please refer to Data Processor section on [Z BY HP Privacy Central.](https://www.hp.com/us-en/privacy/privacy-central.html) As a global company, it is possible that any information you provide may be transferred to or accessed by Z BY HP entities worldwide in accordance with the Z BY HP Privacy Statement and based on the International Privacy Programs listed in the International Data Transfers section.
+Z BY HP has a long-standing history of industry leadership in privacy and data protection. Together with our robust portfolio of products and services, we can support our customers' and partners' efforts in protecting personal data. With respect to AI Studio, Z BY HP acts as a data processor. Please refer to the Data Processor section on [Z BY HP Privacy Central.](https://www.hp.com/us-en/privacy/privacy-central.html) As a global company, it is possible that any information you provide may be transferred to or accessed by Z BY HP entities worldwide in accordance with the Z BY HP Privacy Statement and based on the International Privacy Programs listed in the International Data Transfers section.
 
 > **Do you have an assigned Data Protection & Privacy Officer or equivalent?**
 

@@ -15,17 +15,17 @@ sidebar_position: 2
 
     :::note
 
-    The application automatically checks for a compatible existing distro and leverages it to install and configure the necessary images. If none exists, it will add one for you on your first start up.
+    The application automatically checks for a compatible existing distro and leverages it to install and configure the necessary images. If none exists, it will add one for you on your first startup.
 
     :::
 
-4. On your first start up, you’ll have the option to choose where to download the WSL distro. Click **Next** to install the AI Studio WSL distro to the default folder or click the folder icon and use the file browser to select a different folder.
+4. On your first startup, you’ll have the option to choose where to download the WSL distro. Click **Next** to install the AI Studio WSL distro to the default folder or click the folder icon and use the file browser to select a different folder.
 
    ![Distro selection modal](/img/distro-select.png)
 
 :::tip
 
-If git is not already installed on your machine, the app will guide you to do so. Features that depend on git are disabled in the app for users who choose not to install. 
+If Git is not already installed on your machine, the app will guide you to do so. Features that depend on git are disabled in the app for users who choose not to install. 
 
 :::
 
@@ -55,7 +55,7 @@ The first time you start the app on Ubuntu, AI Studio will ask for permission to
 
 ## Uninstallation
 
-### To uninstall AI Studio on Windows: 
+### To uninstall AI Studio on Windows:
 
 Use either of the following methods to uninstall AI Studio on Windows: 
 
@@ -83,4 +83,4 @@ From the terminal, run the command:
 
 This will **not** delete your user files. Uninstalling AI Studio on Ubuntu leaves your user files intact.
 
-:::
+:.

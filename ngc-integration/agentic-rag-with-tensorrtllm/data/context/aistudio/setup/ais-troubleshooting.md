@@ -8,7 +8,7 @@ sidebar_position: 6
 Find quick solutions to common issues with possible solutions.
 
 
-## Getting Started Issues 
+## Getting Started Issues
 
 **Issue:** Unable to create an account. 
 
@@ -40,7 +40,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## Connection Problems 
+## Connection Problems
 
 **Issue:** Frequent disconnections during sessions. 
 
@@ -73,7 +73,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## Performance Issues 
+## Performance Issues
 
 **Issue:** Slow model response times. 
 
@@ -105,11 +105,11 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## API Integration Challenges 
+## API Integration Challenges
 
 **Issue:** Authentication errors with API.
 
-**Possible solutions:** 
+**Possible solutions:**  
 
 - Regenerate API keys and retry. 
 
@@ -123,11 +123,11 @@ Find quick solutions to common issues with possible solutions.
 
 **Issue:** Incorrect response formats. 
 
-**Possible solutions:** 
+**Possible solutions:**  
 
 - Check your request body formatting. 
 
-- Verify that content types are properly specified in headers. 
+- Verify that content types are properly specified in headers.
 
 - Review the API documentation for correct parameter usage. 
 
@@ -137,7 +137,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## Model Output Problems 
+## Model Output Problems
 
 **Issue:** Incomplete or truncated responses. 
 
@@ -170,7 +170,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## Billing and Account Issues 
+## Billing and Account Issues
 
 **Issue:** Unexpected charges. 
 
@@ -203,7 +203,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## User Interface Problems 
+## User Interface Problems
 
 **Issue:** UI elements not displaying correctly.
 
@@ -235,7 +235,7 @@ Find quick solutions to common issues with possible solutions.
 
 ---
 
-## Advanced Troubleshooting 
+## Advanced Troubleshooting
 
 **Issue:** Custom integration failures.
 
@@ -257,9 +257,9 @@ Find quick solutions to common issues with possible solutions.
 
 - Ensure your server is publicly accessible. 
 
-- Check server logs for incoming requests. 
+- Check server logs for incoming requests.
 
-- Verify correct URL format in webhook configuration.
+- Verify the correct URL format in webhook configuration.
 
 - Implement proper response codes (200 OK) to acknowledge receipt.
 
