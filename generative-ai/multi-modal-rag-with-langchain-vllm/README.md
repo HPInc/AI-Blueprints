@@ -101,8 +101,8 @@ For optimal performance, especially when working with larger models or datasets,
 2. Navigate to `generative-ai/multimodal-rag-with-langchain-vllm` to ensure all files are cloned correctly after workspace creation.
 
 3. Configure the `requirements.txt` torch packages to your corresponding cuda version
-  - Verify cuda version by pasting `nvidia-smi` in your terminal
-  - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
+    - Verify cuda version by pasting `nvidia-smi` in your terminal
+    - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
 
 ### Step 4: Add the Model to the Workspace
 
