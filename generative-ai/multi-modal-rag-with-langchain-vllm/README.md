@@ -127,21 +127,31 @@ For optimal performance, especially when working with larger models or datasets,
 
 ### Step 5: Configure Configs and Secrets Manager
 
+#### Config File Configuration
 - Edit `config.yaml` with relevant configurations below:
 ```
-# config.yaml
 AZURE_DEVOPS_ORG: "your-organization-name"
 AZURE_DEVOPS_PROJECT: "your-project-name"
 AZURE_DEVOPS_WIKI_IDENTIFIER: "your-wiki-name.wiki"
 ```
 
-- Secrets Configuration:
+#### Secrets Configuration:
+
+Using Secrets Manager (Premium User)
   - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
   - Add the following secrets:
     - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
       - **Wiki (Read)**: To read wiki content.
       - **Code (Read)**: To read code content.
       - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
+
+Using `secrets.yaml` (Freemium User)
+  - Navigate to `generative-ai/multimodal-rag-with-langchain-vllm\configs`
+  - Create a `secrets.yaml` file with the following credentials below:
+  ```
+  AIS_ADO_TOKEN: "YOUR_PAT_TOKEN"
+  ```
+    
 ---
 
 ## Usage
