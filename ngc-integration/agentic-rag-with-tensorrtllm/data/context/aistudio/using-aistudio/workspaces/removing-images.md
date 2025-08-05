@@ -6,7 +6,7 @@ sidebar_position: 8
 
 AI Studio downloads new workspace images whenever new versions are created and a newer app version is installed, but does not automatically remove the old images. If you wish to free up the disk space occupied by the old images, you can do so manually. 
 
-### To manually remove images (Windows):
+### To manually remove images (Windows): 
 
 **List images**
 
@@ -31,7 +31,7 @@ AI Studio downloads new workspace images whenever new versions are created and a
     
     :::
 
-### To manually remove images (Ubuntu):
+### To manually remove images (Ubuntu): 
 
 **List images**
 

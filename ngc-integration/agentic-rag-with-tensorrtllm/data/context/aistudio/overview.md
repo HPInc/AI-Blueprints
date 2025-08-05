@@ -9,6 +9,6 @@ AI Studio is a centralized desktop application specifically developed for data s
 
 Compute locally without interruption to manage development, data, and model environments. Dive in now to learn more about how you can use the AI Studio platform to harness your data in a more meaningful way! 
 
-## Join Our Community!
+## Join Our Community! 
 
-The AI Studio community site is a dedicated hub for our members to connect, share insights, and collaborate to enhance the AI Studio experience. Visit the [community page](https://community.datascience.hp.com/) to join and fully explore what AI Studio has to offer!
+The AI Studio community site is a dedicated hub for our members to connect, share insights, and collaborate to enhance the AI Studio experience. Visit the [community page](https://community.datascience.hp.com/) to join and fully explore what AI Studio has to offer! 

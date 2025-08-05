@@ -10,7 +10,7 @@ Workspaces are one of the core elements of AI Studio. Each workspace runs in a s
 
 Base Images are predefined environments with a pre-installed Python version and a set of libraries designed to help you dive into AI Studio right away. AI Studio offers two different base images to accommodate the scale of your workspaces: one that's GPU enabled and one that's CPU-only. 
 
-CPU-only images are smaller, faster to load, and are most useful when performing basic computations and traditional data science algorithms. CPU-only images have most of the same libraries as the more robust GPU-enabled options, so users who don't have a GPU that's compatible with AI Studio are still likely to find them helpful. GPU enabled images support CUDA packages and attach notebooks to the device to run on GPUs without additional configuration by the user. 
+CPU-only images are smaller, faster to load, and are most useful when performing basic computations and traditional DS algorithms. CPU-only images have most of the same libraries as the more robust GPU-enabled options, so users that don't have a GPU that's compatible with AI Studio are still likely to find them helpful. GPU enabled images support cuda packages and attach notebooks to the device to run on GPUs without additional configuration by the user. 
 
 
 ### Minimal Image
@@ -18,14 +18,14 @@ CPU-only images are smaller, faster to load, and are most useful when performing
 The CPU-only minimal image comes with the minimal set of libraries necessary to run Data Science experiments in AI Studio. It runs JupyterLab 4.0.1 with Python 3.10.11, based on the [minimal-notebook:python-3.10](https://hub.docker.com/r/jupyter/minimal-notebook/tags) image from Jupyter Docker hub 
 
 
-### Deep Learning Image:
+### Deep Learning Image: 
 
-The Deep Learning image is specifically tailored for deep learning and neural network architectures (NNA). It encompasses an extensive configuration designed to optimally run your most intricate experiments. High computational power is necessary, making the Deep Learning image well-suited for tasks involving image analytics and Large Language Models (LLMs). It includes all the features found in the Data Science image, with upgraded libraries like TensorFlow and PyTorch. The Deep Learning image also comes pre-configured with GPU capabilities for which we recommend reserving at least 4GB of memory. 
+The Deep Learning image is specifically tailored for Deep Learning and Neural Network Architectures (NNA). It encompasses an extensive configuration designed to optimally run your most intricate experiments. High computational power is necessary, making the Deep Learning image well-suited for tasks involving image analytics and Large Language Models (LLMs). It includes all the features found in the Data Science image, with upgraded libraries like TensorFlow and PyTorch. The Deep Learning image also comes pre-configured with GPU capabilities for which we recommend reserving at least 4GB of memory. 
   
 
-### Data Science Image:
+### Data Science Image: 
 
-The Data Science image represents the most standard yet powerful configuration, designed for quick setup and enhanced performance. Inspired by the scipy image on the Jupyter Docker hub, this image encompasses all the features of the minimal configuration and further enhances it with data visualization tools like Seaborn, Altair, and scikit-image. Recommended for usage with a minimum of 4GB of memory. 
+The Data Science image represents the most standard yet powerful configuration, designed for quick setup and enhanced performance. Inspired by scipy image on Jupyter Docker hub, this image encompasses all the features of the minimal configuration and further enhances it with Data Visualization tools like Seaborn, Altair, and scikit-image. Recommended for usage with a minimum of 4GB of memory. 
 
 ## NGC Catalog Containers
 
@@ -35,7 +35,7 @@ NVIDIA's NGC Catalog includes dozens of containers, which you can leverage in AI
 Some of the models and containers listed on [NVIDIA's NGC Catalog](https://www.nvidia.com/en-us/gpu-cloud/) website may not be compatible with your projects in AI Studio.
 ::: 
 
-Three images we have examples for and that run optimally on AI Studio include: 
+Three images we have examples for and that run optimally on AIS include: 
 
 - [NeMo Framework](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nemo): NVIDIA NeMo™ is an end-to-end platform for development of custom generative AI models. 
 
@@ -50,7 +50,7 @@ When you’re creating a workspace or adding an asset in AI Studio, you can doub
 :::  
 
 
-#### The following libraries come pre-installed:
+#### The following libraries come pre-installed: 
 
 :::note
 
@@ -84,4 +84,4 @@ As newer versions of these libraries are released, the ones your workspace lever
 
 You can run ```pip install [package-name] -U``` to update these libraries when necessary.
 
-::
+:::

@@ -33,4 +33,4 @@ You can view and search for active members of your team under the ***My team*** 
 
 AI Studio sends each new member an invitation to join the team via email. Team managers can remove users from their team or edit individual user roles at any time by clicking on the more options icon beside the member you wish to manage. 
 
-Invited user requests created by collaborators require administrative approval to allocate an account seat. Requested invitations will appear under the **Requests** tab.
+Invited user requests created by collaborators require administrative approval to allocate an account seat. Requested invitations will appear under the **Requests** tab. 

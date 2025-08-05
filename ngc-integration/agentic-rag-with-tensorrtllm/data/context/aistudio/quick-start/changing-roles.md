@@ -8,7 +8,7 @@ sidebar_position: 3
 Team Managers have certain permissions in AI Studio that other contributing team members do not. They can add or remove team members, edit a team member’s role, and approve requests to join the team. 
 
 
-### To change a user’s role:
+### To change a user’s role: 
 
 1. From the ***Account*** tile, navigate to Team Settings and find the user you want to edit. 
 
@@ -25,3 +25,4 @@ Team Managers have certain permissions in AI Studio that other contributing team
     :::
 
  
+

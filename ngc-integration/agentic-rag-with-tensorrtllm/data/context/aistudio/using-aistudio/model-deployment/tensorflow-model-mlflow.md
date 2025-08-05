@@ -6,7 +6,7 @@ sidebar_position: 5
 
 In this example, we will demonstrate how to train a model with TensorFlow and register it with MLflow in AI Studio. The goal is to build a breast cancer classification model, track experiments, and publish the results. We will use a public dataset to demonstrate each step of the process, starting with data exploration, then training, and finally using MLflow for registration and publishing. 
 
-## Step 1: Install Required Libraries
+## Step 1: Install Required Libraries 
 
 If you are using a custom workspace, ensure that all necessary requirements are installed by either adding them to a requirements file or manually installing them with these commands: 
 
@@ -16,15 +16,15 @@ import numpy as np
 import mlflow.tensorflow
 ```
 
-You will need MLflow, TensorFlow, pandas, seaborn, and other related libraries. If not already installed, you can use: 
+You will need mlflow, tensorflow, pandas, seaborn, and other related libraries. If not already installed, you can use: 
 
 ```sh
 pip install mlflow tensorflow pandas seaborn
 ``` 
 
-You can also use predefined workspaces that already have many of these dependencies installed, including MLflow, to help you get started more quickly. 
+You can also use predefined workspaces that already have many of these dependencies installed, including MLflow, to help you get started quicker. 
 
-## Step 2: Load and Explore the Data
+## Step 2: Load and Explore the Data 
 
 We will begin by loading the breast cancer dataset: 
 
@@ -83,11 +83,11 @@ df.describe().transpose()
 ```
 ![Descriptive Statistics](/img/descriptive_statistics_each_feature.png)
 
-## Step 3: Exploratory Data Analysis (EDA)
+## Step 3: Exploratory Data Analysis (EDA) 
 
 Understanding the data distribution is an important step. We will use seaborn and matplotlib commands to explore the example dataset. 
 
-### Countplot of Target Variable
+### Countplot of Target Variable 
 
 Plotting the count of benign and malignant cases helps visualize class distribution: 
 
@@ -98,7 +98,7 @@ sns.countplot(x='benign_0__mal_1', data=df)
 plt.show() 
 ```
 
-### Correlation Heatmap
+### Correlation Heatmap 
 
 Understanding feature correlation is key to building an effective model: 
 
@@ -111,7 +111,7 @@ plt.show()
 
 ## Step 4: Train-Test Split
 
-Before we train the model, we will split the dataset into training and testing sets: 
+Before we train the model, split the dataset into training and testing sets: 
 
 ```python
 from sklearn.model_selection import train_test_split 
@@ -134,7 +134,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test) 
 ```
 
-## Step 6: Train a TensorFlow Model
+## Step 6: Train a TensorFlow Model 
 
 To create and train a simple TensorFlow neural network model: 
 
@@ -161,7 +161,7 @@ model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test), callbac
 
 To avoid overfitting, we use techniques like Dropout layers, which randomly deactivate neurons during training to help the model with generalization. Early Stopping is used to stop training when validation loss stops improving, preventing the model from overtraining and saving you time and resources. 
 
-For the purposes of this example, we’ll continue on without using those overfitting reduction techniques and move on to how to log and register the model with MLFlow.
+For the purposes of this example, we’ll continue on without using those overfitting reduction techniques and move on to how to log and register themodel with MLFlow.
 
 ## Step 7: Log the Model with MLflow
 
@@ -180,7 +180,7 @@ Using mlflow.autolog() automatically logs metrics, parameters, and the model its
 
 Once you log the model, you can register it to the MLflow Model Registry. This lets you version the model and track its lifecycle. 
 
-### To register while logging:
+### To register while logging: 
 
 Use the registered_model_name parameter: 
 
@@ -188,7 +188,7 @@ Use the registered_model_name parameter:
 mlflow.tensorflow.log_model(model, "breast_cancer_model", registered_model_name="BreastCancerModel") 
 ```
 
-### To register after logging:
+### To register after logging: 
 
 Use the following parameter: 
 
@@ -197,7 +197,7 @@ model_uri = "runs:/<run-id>/breast_cancer_model"
 mlflow.register_model(model_uri, "BreastCancerModel") 
 ```
 
-You can transition the model between stages, like Staging and Production, for use in deployment. Once registered, you can also publish the model in the Published Services tab for easy access and integration. 
+You can transition the model between stages like Staging and Production for use in deployment. Once registered, you can also publish the model in the Published Services tab for easy access and integration. 
 
 ## Step 9: Publish and Monitor the Model
 
@@ -209,8 +209,8 @@ After registering your model in MLflow, navigate to the Monitor tab in AI Studio
 
 In this example, we covered the entire workflow for training a breast cancer classification model using TensorFlow, logging it with MLflow, and registering it for easy management and deployment. Using MLflow’s capabilities to track and register models ensures efficient model management and deployment across environments. 
 
-AI Studio provides a streamlined environment for working with MLflow, TensorFlow, and many other machine learning tools, making it easy to track experiments, manage models, and publish them for use in production systems. 
+AI Studio provides a streamlined environment for working with MLflow, TensorFlow and many other machine learning tools, making it easy to track experiments, manage models, and publish them for use in production systems. 
 
 For more information on MLflow and its capabilities, you can visit the official [MLflow documentation.](https://mlflow.org/docs/latest/index.html)
 
-Feel free to extend this workflow to more complex models or datasets to meet your specific use cases.
+Feel free to extend this workflow to more complex models or datasets to meet your specific use cases. 

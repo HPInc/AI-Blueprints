@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Use the asset manager to view and manage a project's associated assets directly from the *Assets* tab. You can use the asset manager to connect a completely new asset. Or, you can edit, download, or remove any asset you or your collaborators connect to the project.  
 
-### To connect new data to a project:
+### To connect new data to a project: 
 
 1. From the project’s *Overview* page, navigate to the ***Assets*** tab. 
 

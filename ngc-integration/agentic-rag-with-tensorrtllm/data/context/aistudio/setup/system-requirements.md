@@ -8,10 +8,10 @@ Z by HP AI Studio currently runs on the x64 processor architecture and requires 
 - Ubuntu 22.04 OS
 - AMD Ryzen™ 9 processor, Intel Core™ i5 12th generation processor, or higher
 - Minimum 50 GB of available storage
-- 16 GB of RAM
+- 16GB of RAM
 - Internet access
 
-To enable GPU compute, NVIDIA® GPU compatible with driver version 528.89 or newer, and a minimum of 8 GB of VRAM is recommended.
+To enable GPU compute, NVIDIA® GPU compatible with driver version 528.89 or newer, and a minimum of 8GB of VRAM is recommended.
 
 :::note
 

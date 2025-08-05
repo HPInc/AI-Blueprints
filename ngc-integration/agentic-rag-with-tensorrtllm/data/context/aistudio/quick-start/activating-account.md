@@ -6,17 +6,17 @@ sidebar_position: 2
 # Activating an Account
 
 
-## Team Managers
+## Team Managers 
 
-The first user to activate their account on a new license is designated as the account owner. Account owners have unique responsibilities, like configuring the account and inviting other team managers. 
+The first user to activate their account on a new license is designated as the Account Owner. Account Owners have unique responsibilities, like configuring the account and inviting other Team Managers. 
 
-### To configure an account:
+### To configure an account: 
   
 1. Follow the link in the second email you receive from *aistudio@hp.com*. 
 
 2. From the entitlements portal, click **New Account**. 
 
-3. Enter your team's account, user, and agent information in the provided fields. 
+3. Enter your team's Account, User, and Agent information in the provided fields. 
 
     :::note 
 
@@ -26,7 +26,7 @@ The first user to activate their account on a new license is designated as the a
 
 4. Click **Save** to finish configuring your team. 
 
-Once you sign in to AI Studio, you can finish setting up your team and invite users to collaborate.
+Once you sign in to AI Studio you can finish setting up your team and invite users to collaborate.
 
 :::note
 
@@ -39,7 +39,7 @@ If you're already signed in, sign out of your HP account before activating anoth
 
 When you’re invited to a new team on AI Studio, you’ll receive an email to alert you and help you get started. After a quick setup, you’ll be steps away from harnessing your team’s true computational potential with AI Studio.
 
-### To activate your account:
+### To activate your account: 
 
 1. From your email inbox, open the message from *aistudio@hp.com* and click the link to ***Activate your account***. 
 
@@ -61,4 +61,5 @@ Now you’re ready to get started with AI Studio.
 
 If you're already signed in, sign out your HP account before activating another one.
 
-::
+:::
+

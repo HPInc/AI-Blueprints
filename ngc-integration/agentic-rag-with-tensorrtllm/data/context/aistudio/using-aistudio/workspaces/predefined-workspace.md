@@ -18,7 +18,7 @@ Workspaces created with AI Studio templates sync with collaborators in shared pr
 
     - **[Deep Learning](/docs/aistudio/using-aistudio/workspaces/base-images#deep-learning-image) (GPU Ready)**: For the most complex experiments, this is the most powerful workspace AI Studio can offer.
 
-    - **[NVIDIA's NGC Catalog](/docs/aistudio/using-aistudio/workspaces/base-images#ngc-catalog-containers) (GPU Ready)**: Leverage hundreds of models and containers to transform AI Studio into your hub for optimized GPU software solutions.
+    - **[NVIDIA's NGC Catalog](/docs/aistudio/using-aistudio/workspaces/base-images#ngc-catalog-containers) (GPU Ready)**: Leverage hundreds of models and containers to transform AI Studio into your hub for optimized GPU Software solutions.
 
         :::tip
          If you choose not to download the required workspace images, you’ll need to do so before you can run your workspace for the first time.

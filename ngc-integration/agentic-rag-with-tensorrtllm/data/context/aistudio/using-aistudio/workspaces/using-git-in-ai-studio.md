@@ -17,16 +17,17 @@ When creating a custom workspace, set the kernel to AI Studio. Switch to the AI 
 
 ## Designated Folders
 
-All work should be saved within the designated folders. Take note of the folder structure:
+All work should be saved within the designated folders. Take note of the folder stuctures:
 
 - Save work within the provided folder structure to ensure it persists.
 - Files outside the designated folders are erased upon restarting the workspace.
 - Use local folders for private work and shared folders for collaborative projects.
 
 
-## Jupyter Notebook
+## Jupyter Notebook 
 
 Use Jupyter Notebook to push and pull changes after connecting to Git. The workspace will default to Jupyter Notebook.
 
 ## Kernel Settings
 Set the kernel to AI Studio for custom workspaces.
+

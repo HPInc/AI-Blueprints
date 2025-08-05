@@ -7,7 +7,7 @@ sidebar_position: 3
 
 After you create and share a project, you’re ready to start collaborating. Team Managers can invite, accept, and resend pending invitations to assign team members to available seats. Contributors can invite users, but invitees need Team Manager approval before they’re assigned to an account seat.
 
-### To invite more team members:
+### To invite more team members: 
 
 1. Navigate to the ***Account*** tile. 
 

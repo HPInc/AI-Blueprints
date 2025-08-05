@@ -24,5 +24,5 @@ View the documentation on Networking and Sync Protocols to ensure your team’s 
     
     :::
 
-Files placed in a project’s shared folder leverage Syncthing to synchronize online collaborators’ workspaces and must sync completely before other users can access them. Syncing larger assets can take several minutes to appear for your collaborators. Synchronization only occurs for a user's last active account – other accounts don't sync in the background.
+Files placed in a project’s shared folder leverage Syncthing to synchronize online collaborators’ workspaces and must sync completely before other users can access them. Syncing larger assets can take several minutes to appear for your collaborators. Synchronization only occurs for a user’s last active account – other accounts don't sync in the background.
  

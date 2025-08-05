@@ -6,7 +6,7 @@ sidebar_position: 3
 
 Follow these instructions to configure WSL and prepare your Windows machine for AI Studio.
 
-### To configure Windows for WSL:
+### To configure Windows for WSL:  
 
 1. From the Start menu, search for ***Turn Windows features on or off*** and select it.
 

@@ -10,7 +10,7 @@ For larger projects that need more nuanced customization and powerful compute, y
 Customize base AI Studio templates by uploading a requirements.txt file. 
 :::
 
-### To choose your environment:
+### To choose your environment: 
 
 1. Choose a project and navigate to *My Workspaces* on the project’s home page. 
 

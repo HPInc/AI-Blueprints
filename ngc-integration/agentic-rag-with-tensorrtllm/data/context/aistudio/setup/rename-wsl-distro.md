@@ -2,8 +2,7 @@
 title:  'Renaming a WSL Distribution'
 sidebar_position: 4
 ---
-
-# Renaming a WSL Distribution
+# Renaming a WSL Distibution
 
 AI Studio requires its own WSL distribution named "*Phoenix*". If our installer has directed you to these instructions, then you probably have a distribution that needs to be renamed before you can finish installing AI Studio.
 
@@ -19,7 +18,7 @@ AI Studio requires its own WSL distribution named "*Phoenix*". If our installer 
 
 4. Look at the value under *Distribution Name* to locate the folder you need to rename.
 
-5. Right-click ***Distribution Name*** and select **Modify**. Choose any value except "*Phoenix*", then click **OK** to save your changes.
+5. Right-click ***Distribution Name*** and select **modify**. Choose any value except "*Phoenix*", then click **OK** to save your changes.
 
 6. Open a terminal window and run this command:
     ```powershell
@@ -28,4 +27,4 @@ AI Studio requires its own WSL distribution named "*Phoenix*". If our installer 
 
 7. Review the output to ensure the distro was properly renamed.
 
-After editing the conflicting distro name, rerun *AIStudioSetup.msi* to complete the installation.
+After editing the conflicting distro name, rerun *AIStudioSetup.msi* to complete installation.
