@@ -65,11 +65,16 @@ def main():
         ado_pat = st.text_input("ADO PAT", key="ado_pat", type="password", help="Your Personal Access Token for ADO.")
 
     # --- Main Page Branding ---
+    assets_dir = Path("assets")
+    hp_logo_path = assets_dir / "hp_logo.png"
+    ai_studio_helix_path = assets_dir / "ai_studio_helix.png"
+    
     logo_col1, logo_col2, _ = st.columns([2, 2, 10]) 
     with logo_col1:
-        st.image("assets/hp_logo.png", width=60)
+        st.image(str(hp_logo_path), width=60)
     with logo_col2:
-        st.image("assets/ai_studio_helix.png", width=60)
+        st.image(str(ai_studio_helix_path), width=60)
+        
     st.markdown("<h1 style='text-align: center;'>🤖 ADO Wiki AI Assistant</h1>", unsafe_allow_html=True)
     
     # --- Main Chat Interface (Single source of truth for rendering) ---
