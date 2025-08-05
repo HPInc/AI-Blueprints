@@ -81,7 +81,7 @@ st.markdown(f"""
 # ─────────────────────────────────────────────────────────────
 # Header 
 # ─────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>Text Generation</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generator</h1>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
@@ -130,7 +130,7 @@ if st.button("Get generated text"):
 
                 if gen_text:
                     st.success("✅ Here is your generated text!")
-                    st.text_area("Generated Text", value=gen_text, disabled=True)
+                    st.text_area("Generated Text", value=gen_text, disabled=True, height=300)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
             except requests.exceptions.RequestException as e:
@@ -142,7 +142,7 @@ if st.button("Get generated text"):
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*📝 Text Generation © 2025* local, private, text generation + MLflow.
+*📝 Text Generation © 2025* local, private, text generator + MLflow.
 
 ---
 > Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
