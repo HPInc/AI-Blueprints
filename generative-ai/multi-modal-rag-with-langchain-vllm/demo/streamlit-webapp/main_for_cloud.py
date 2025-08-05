@@ -65,9 +65,12 @@ def main():
         ado_pat = st.text_input("ADO PAT", key="ado_pat", type="password", help="Your Personal Access Token for ADO.")
 
     # --- Main Page Branding ---
-    assets_dir = Path("assets")
-    hp_logo_path = assets_dir / "hp_logo.png"
-    ai_studio_helix_path = assets_dir / "ai_studio_helix.png"
+    script_dir = Path(__file__).parent 
+
+    # Construct the full, absolute path to the asset files
+    hp_logo_path = script_dir / "assets" / "hp_logo.png"
+    ai_studio_helix_path = script_dir / "assets" / "ai_studio_helix.png"
+
     
     logo_col1, logo_col2, _ = st.columns([2, 2, 10]) 
     with logo_col1:
