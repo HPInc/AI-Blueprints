@@ -42,7 +42,7 @@ if "last_input_description" not in st.session_state:
 # CONSTANTS
 # ==============================================================================
 
-API_URL = "https://2d4026fe8854.ngrok-free.app/invocations"
+API_URL = "https://491f27161527.ngrok-free.app/invocations"
 
 # ==============================================================================
 # GITHUB EXTRACTOR CLASS
