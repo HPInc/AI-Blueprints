@@ -355,49 +355,49 @@ if files_to_process:
         start_time = time.time()
 
         for i, (filename, content) in enumerate(files_to_process.items()):
-            progress_bar.progress((i + 1) / total_files, text=f"Processing file {i+1} of {total_files}: {filename}")
-            
-            # 1. Split the file content only if it's an anomaly.
-            # Most files will result in a list with a single item.
-            pieces = split_text_if_too_large(content, max_size=LARGE_FILE_CHARACTER_LIMIT)
-            
-            corrected_pieces = []
-            
-            # Only show the spinner if the file was actually split
-            spinner_text = f"Processing {filename}..."
-            if len(pieces) > 1:
-                spinner_text = f"Processing {filename} in {len(pieces)} parts..."
+            progress_bar.progress((i + 1) / total_files, text=f"Processing file {i+1} of {total_files}: {filename}")
+            
+            # 1. Split the file content only if it's an anomaly.
+            # Most files will result in a list with a single item.
+            pieces = split_text_if_too_large(content, max_size=LARGE_FILE_CHARACTER_LIMIT)
+            
+            corrected_pieces = []
+            
+            # Only show the spinner if the file was actually split
+            spinner_text = f"Processing {filename}..."
+            if len(pieces) > 1:
+                spinner_text = f"Processing {filename} in {len(pieces)} parts..."
 
-            with st.spinner(spinner_text):
-                for piece in pieces:
-                    try:
-                        # Process each piece (which could be the whole file)
-                        input_df = pd.DataFrame([{"repo_url": None, "files": piece}])
-                        payload = {"dataframe_split": input_df.to_dict("split")}
-                        res = requests.post(API_URL, json=payload, timeout=300, verify=False)
-                        res.raise_for_status()
-                        
-                        response_data = res.json()["predictions"][0]
-                        if isinstance(response_data, str):
-                            response_data = json.loads(response_data)
-                        
-                        corrected_content_dict = response_data.get("corrected", {})
-                        if "corrected_file.md" in corrected_content_dict:
-                            corrected_pieces.append(corrected_content_dict["corrected_file.md"])
-                        else:
-                            corrected_pieces.append(piece)
+            with st.spinner(spinner_text):
+                for piece in pieces:
+                    try:
+                        # Process each piece (which could be the whole file)
+                        input_df = pd.DataFrame([{"repo_url": None, "files": piece}])
+                        payload = {"dataframe_split": input_df.to_dict("split")}
+                        res = requests.post(API_URL, json=payload, timeout=300, verify=False)
+                        res.raise_for_status()
+                        
+                        response_data = res.json()["predictions"][0]
+                        if isinstance(response_data, str):
+                            response_data = json.loads(response_data)
+                        
+                        corrected_content_dict = response_data.get("corrected", {})
+                        if "corrected_file.md" in corrected_content_dict:
+                            corrected_pieces.append(corrected_content_dict["corrected_file.md"])
+                        else:
+                            corrected_pieces.append(piece)
 
-                        st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
+                        st.session_state["metric_list"].append(response_data.get("evaluation_metrics", {}))
 
-                    except Exception as e:
-                        st.warning(f"A part of {filename} failed to process: {e}. Keeping original content for this part.")
-                        corrected_pieces.append(piece)
-                        continue
-            
-            # 3. Stitch the corrected pieces back together
-            # If the file wasn't split, this just joins a single-item list.
-            final_corrected_text = "\n\n".join(corrected_pieces)
-            st.session_state["corrected_files"][filename] = final_corrected_text
+                    except Exception as e:
+                        st.warning(f"A part of {filename} failed to process: {e}. Keeping original content for this part.")
+                        corrected_pieces.append(piece)
+                        continue
+            
+            # 3. Stitch the corrected pieces back together
+            # If the file wasn't split, this just joins a single-item list.
+            final_corrected_text = "\n\n".join(corrected_pieces)
+            st.session_state["corrected_files"][filename] = final_corrected_text
 
         final_metrics = {}
         if st.session_state["metric_list"]:
