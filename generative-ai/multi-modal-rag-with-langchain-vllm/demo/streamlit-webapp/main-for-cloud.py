@@ -50,15 +50,12 @@ def call_model_api(api_url: str, query: str, config_payload: dict) -> dict:
 def main():
     """Renders the main Chatbot application page."""
 
+    api_url = "https://localhost:58501/invocations"
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
     # --- Sidebar for Configuration ---
     with st.sidebar:
-        st.markdown("## ⚙️ Endpoint Configuration")
-        api_url = st.text_input("MLflow Endpoint URL", value="https://localhost:5000/invocations", help="The full URL to the MLflow model's `/invocations` endpoint.")
-        st.markdown("---")
-        
         st.markdown("## 📚 Knowledge Base Source")
         st.info("Enter your Azure DevOps details. These are required for each query.")
         
@@ -101,7 +98,7 @@ def main():
                         cols = st.columns(min(len(images_b64), 4))
                         for idx, b64_string in enumerate(images_b64):
                             with cols[idx % 4]:
-                                st.image(base64.b64decode(b64_string), use_column_width=True)
+                                st.image(base64.b64decode(b64_string), use_container_width=True)
                 except (json.JSONDecodeError, TypeError):
                     st.warning("Could not parse image data from API response.")
 
@@ -116,7 +113,7 @@ def main():
         st.session_state.messages.append({"role": "user", "content": prompt, "data": None})
         
         # Construct payload and call API
-        with st.spinner("🧠 Fetching KB, thinking, and cleaning up... This may take a moment."):
+        with st.spinner("🧠 Fetching database, thinking, and cleaning up... This may take a moment."):
             config_payload = {
                 "config": {"AZURE_DEVOPS_ORG": ado_org, "AZURE_DEVOPS_PROJECT": ado_project, "AZURE_DEVOPS_WIKI_IDENTIFIER": ado_wiki},
                 "secrets": {"AIS_ADO_TOKEN": ado_pat}

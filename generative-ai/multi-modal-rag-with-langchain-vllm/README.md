@@ -1,4 +1,4 @@
-# 🤖 MultiModal RAG with LangChain, Transformers, and Torch
+# 🤖 MultiModal RAG with LangChain and vLLM
 
 <div align="center">
 
@@ -21,37 +21,38 @@
 🤖 MultiModal RAG with LangChain, Transformers, and Torch
 
 Overview
-This project implements an AI-powered Multimodal **RAG (Retrieval-Augmented Generation)** chatbot. It's built using **LangChain** for orchestration, **Hugging Face Transformers** and **PyTorch** for the underlying multimodal model, and **MLflow** for model evaluation and observability. The chatbot leverages the **Z by HP AI Studio Local GenAI image** and the **`InternVL3-8B-Instruct`** model to generate contextual answers, grounded in both documents and images, to user queries about internal documentation. In this example, the primary data source is an Azure DevOps Wiki.
+This project implements an AI-powered Multimodal **RAG (Retrieval-Augmented Generation)** chatbot. It is orchestrated using **LangChain**, with **vLLM** serving the underlying `Qwen2.5-VL-7B-Instruct-GPTQ-Int4` model (built on **Hugging Face Transformers** and **PyTorch**) for fast, efficient inference, and **MLflow** for model evaluation and observability. The chatbot leverages the **Z by HP AI Studio Local GenAI image** to quickly get started to generate contextual answers, grounded in both documents and images, to user queries about internal documentation. In this example, the primary data source is an Azure DevOps Wiki.
 
 ---
 
 ## Project Structure
 
 ```
-multi-modal-rag-with-langchain/
+multi-modal-rag-with-langchain-vllm/
+├── .gitignore
+├── README.md
+├── requirements.txt
 ├── configs/
-├── core/
+│   └── ...
 ├── data/
-│   └── chroma_store/
+│   ├── chroma_store/
 ├── context/
 │   ├── images/
 │   ├── AIStudioDoc.pdf
-│   ├── wiki_flat_structure_mini.json
-│   └── wiki_flat_structure.json
+│   ├── wiki_flat_structure.json
 ├── demo/
-│   ├── streamlit-web-app/
-│   └── assets/
+│   └── streamlit-webapp/
+│       ├── assets/
+│       ├── main-for-cloud.py
 │       ├── main.py
-│       ├── main_no_dbcache.py
 │       └── README.md
 ├── notebooks/
 │   ├── register-model.ipynb
-│   ├── register-mode-no-dbstore.ipynb
 │   └── run-workflow.ipynb
 ├── src/
+│   ├── components.py
 │   ├── local_genai_judge.py
 │   ├── utils.py
-│   ├── local_genai_judge.py
 │   └── wiki_pages_clone.py
 ├── .gitignore
 ├── README.md
@@ -97,18 +98,18 @@ For optimal performance, especially when working with larger models or datasets,
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
 
-2. Navigate to `generative-ai/multimodal-rag-with-langchain-mlflow` to ensure all files are cloned correctly after workspace creation.
+2. Navigate to `generative-ai/multimodal-rag-with-langchain-vllm` to ensure all files are cloned correctly after workspace creation.
 
 3. Configure the `requirements.txt` torch packages to your corresponding cuda version
-  - Verify cuda version by pasting `nvidia-smi` in your terminal
-  - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
+    - Verify cuda version by pasting `nvidia-smi` in your terminal
+    - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
 
 ### Step 4: Add the Model to the Workspace
 
-- Download the **InternVL3-8B-Instruct** model from AWS S3 using the Models tab in your AI Studio project:
-  - **Model Name**: `InternVL3-8B-Instruct`
+- Download the **Qwen2.5-VL-7B-Instruct-GPTQ-Int4** model from AWS S3 using the Models tab in your AI Studio project:
+  - **Model Name**: `Qwen2.5-VL-7B-Instruct-GPTQ-Int4`
   - **Model Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/InternVL3-8B-Instruct/`
+  - **S3 URI**: `tbd`
   - **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
@@ -116,25 +117,41 @@ For optimal performance, especially when working with larger models or datasets,
 
 - If you prefer to download the model manually, you can do so from the Hugging Face Model Hub:
 
-- Go to the [OpenGVLab/InternVL3-8B-Instruct](https://huggingface.co/OpenGVLab/InternVL3-8B-Instruct/tree/main).
-- Download the model files manually and place them in a folder named `InternVL3-8B-Instruct`.
-- Upload the `InternVL3-8B-Instruct` folder with the model using the Models tab in your AI Studio project:
-  - **Model Name**: `InternVL3-8B-Instruct`
+- Go to the [hfl/Qwen2.5-VL-7B-Instruct-GPTQ-Int4](https://huggingface.co/hfl/Qwen2.5-VL-7B-Instruct-GPTQ-Int4/tree/main).
+- Download the model files manually and place them in a folder named `Qwen2.5-VL-7B-Instruct-GPTQ-Int4`.
+- Upload the `Qwen2.5-VL-7B-Instruct-GPTQ-Int4` folder with the model using the Models tab in your AI Studio project:
+  - **Model Name**: `Qwen2.5-VL-7B-Instruct-GPTQ-Int4`
   - **Model Source**: `Local`
-  - **Model Path**: `C:\path_to_your_model\InternVL3-8B-Instruct`
+  - **Model Path**: `C:\path_to_your_model\Qwen2.5-VL-7B-Instruct-GPTQ-Int4`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
 ### Step 5: Configure Configs and Secrets Manager
 
-- Edit `config.yaml` with relevant configuration details.
+#### Config File Configuration
+- Edit `config.yaml` with relevant configurations below:
+```
+AZURE_DEVOPS_ORG: "your-organization-name"
+AZURE_DEVOPS_PROJECT: "your-project-name"
+AZURE_DEVOPS_WIKI_IDENTIFIER: "your-wiki-name.wiki"
+```
 
-- Secrets Configuration:
+#### Secrets Configuration:
+
+Using Secrets Manager (Premium User)
   - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
   - Add the following secrets:
     - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
       - **Wiki (Read)**: To read wiki content.
       - **Code (Read)**: To read code content.
       - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
+
+Using `secrets.yaml` (Freemium User)
+  - Navigate to `generative-ai/multimodal-rag-with-langchain-vllm\configs`
+  - Create a `secrets.yaml` file with the following credentials below:
+  ```
+  AIS_ADO_TOKEN: "YOUR_PAT_TOKEN"
+  ```
+    
 ---
 
 ## Usage
@@ -152,10 +169,12 @@ Run the following notebook in the `notebooks/` folder to register the Multimodal
 
 - **`register-model.ipynb`**
 
-  or 
-- **`register-model-no-dbstore.ipynb`** (If you don't want to store the databases in your container)
+Note: For this notebook, we recreate the database every query to ensure that the model is always up-to-date with the latest data. This is particularly useful for scenarios where the underlying data changes frequently, such as in a dynamic wiki environment. Note that this approach may not be suitable for all use cases, especially if the database is large or if performance is a concern.
 
-_Note: This step requires the `run-workflow.ipynb` file to be ran first at least once._
+In such cases, you may want to explore:
+- **`other-notebooks/register-model.ipynb`**
+
+This notebook demonstrates how to register the model without recreating the database every time by caching the Chroma databases and query results. This approach is more efficient for larger datasets or when the data does not change frequently.
 
 ### Step 3: Third Deploy the Multimodal RAG Service Locally
 
@@ -164,9 +183,8 @@ _Note: This step requires the `run-workflow.ipynb` file to be ran first at least
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
 - Once deployed, access the **Swagger UI** via the Service URL.
-- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via the Streamlit UI.
 
-### Swagger API Request Input Body Schema
+#### Swagger API Request Input Body Schema
 
 ```
 {
@@ -186,9 +204,18 @@ _Note: This step requires the `run-workflow.ipynb` file to be ran first at least
 ```
 You can make a inference query in the Swagger UI by altering the string field to your question.
 
-### Successful Demonstration of the User Interface
 
-![Multimodal RAG HTML UI](TBD)
+### Step 4: Visualize the Multimodal RAG Service with Streamlit
+- Navigate to the `demo/streamlit-webapp/` folder.
+
+We have provided two options for visualizing the Multimodal RAG service:
+- **`main-for-cloud.py`**: This file is designed to run in the cloud and connects to the deployed service using ngrok. We recommend using this file for public cloud deployments as it does not require you to store any local private data.
+
+- **`main.py`**: This file is designed to run locally and connects to the deployed service using the local service URL. We store the private data within the deployed service, which speeds up the inference process.
+
+More information on how to run these files can be found in the `demo/streamlit-webapp/README.md` file.
+
+### Successful Demonstration of the User Interface
 
 ![Multimodal RAG Streamlit UI](TBD)
 
