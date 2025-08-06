@@ -103,4 +103,22 @@ class LocalGenAIJudge:
             )
         return self._evaluate(batch_df, prompt_builder)
 
+    def evaluate_conciseness(self, batch_df: pd.DataFrame) -> pd.Series:
+        """
+        Scores how concise the answer is.
+        A high score means the answer addresses the question without unnecessary verbosity or repetition.
+        """
+        def prompt_builder(question, answer, context):
+            # Context is ignored for conciseness
+            return (
+                "Evaluate the conciseness of the 'Answer' in relation to the 'Question'.\n\n"
+                f"**Question:** {question}\n\n"
+                f"**Answer:** {answer}\n\n"
+                "**Scoring Guidelines (Conciseness):**\n"
+                "- **1.0 (Perfectly Concise):** The 'Answer' is direct, to the point, and contains no filler or redundant information.\n"
+                "- **0.0 (Not Concise):** The 'Answer' is extremely verbose, repetitive, and contains significant information not relevant to the user's 'Question'.\n"
+                "- **Intermediate Score:** The 'Answer' is mostly direct but contains some minor verbosity or slightly off-topic details. For example, an answer that fully addresses the question but includes a few unnecessary sentences might score **0.7**.\n\n"
+            )
+        return self._evaluate(batch_df, prompt_builder)
+
 
