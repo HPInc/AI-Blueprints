@@ -22,7 +22,7 @@
 
 # Overview
 
-This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9.
+This project demonstrates how to perform image classification, specifically for handwritten digits, using TensorFlow and the MNIST (Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9.
 
 ---
 

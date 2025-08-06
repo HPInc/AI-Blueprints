@@ -2,7 +2,7 @@
 name = "agentic-feedback-analyzer-streamlit-webapp"
 version = "0.1.0"
 description = "A Streamlit front-end for AIS Agentic Feedback Analyzer with LangGraph Blueprint Project"
-authors = ["alvin kabwama <ata.turhan@hp.com>"]
+authors = ["Ata Turhan <ata.turhan@hp.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -10,7 +10,8 @@ python = ">=3.11,<4.0"
 streamlit = ">=1.43.1,<2.0.0"
 pillow = ">=11.3.0"
 urllib3 = ">=2.5.0"
-langchain = ">=0.1.16,<0.2.0"
+langchain = ">=0.2.9,<0.3.0"
+langchain-community = "0.2.9"
 unstructured = "0.18.9"
 pypdf = "5.8.0"
 python-docx = "1.2.0"
