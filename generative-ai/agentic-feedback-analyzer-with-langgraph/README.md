@@ -82,7 +82,7 @@ agentic-feedback-analyzer-with-langgraph/
 
 ### Step 2: Add Required Assets
 
-- Download the Meta Llama 3.1 model with 8B parameters via Models tab:
+- Download the Meta Llama 3.1 model with 8B parameters via Models tab:
 
   - **Model Name**: `meta-llama3.1-8b-Q8`
   - **Model Source**: `AWS S3`
