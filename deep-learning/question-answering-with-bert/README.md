@@ -90,6 +90,8 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### 2 ▪ Run the Notebook
 Run the following notebook `/register-model.ipynb`:
 1. Log Model to MLflow
