@@ -19,9 +19,9 @@
 * [🚀 Usage](#usage)
 * [📞 Contact and Support](#contact-and-support)
 
- ## Overview
+## Overview
 
- The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be finetuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial taskspecific architecture modifications.
+ The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications.
   
  ---
 
@@ -81,7 +81,7 @@ https://github.com/HPInc/AI-Blueprints.git
 Run the following notebook `/run-workflow.ipynb`:
 1. Download the dataset from the HuggingFace datasets repository.
 2. Tokenize, preparing the inputs for the model.
-3. Load metrics and transforms the output model(Logits) to numbers.
+3. Load metrics and transform the output model (Logits) to numbers.
 4. Train, using the model:
 ```
 model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
@@ -143,7 +143,7 @@ And as response:
 ```
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

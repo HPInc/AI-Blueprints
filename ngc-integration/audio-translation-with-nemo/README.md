@@ -16,7 +16,8 @@
 - [🗂 Project Structure](#project-structure)
 - [⚙️ Setup](#setup)
 - [🚀 Usage](#usage)
-- [📞 Contact and Support](#contact-and-support)
+- [� Model Export Configuration](#model-export-configuration)
+- [�📞 Contact and Support](#contact-and-support)
 
 ---
 
@@ -183,7 +184,44 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 
 ---
 
-## Contact and Support
+# Model Export Configuration
+
+The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
+
+## Supported Model Types
+
+- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
+- **Keras Models**: TensorFlow/Keras models for neural network-based processing
+- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
+
+## Adding Custom Models
+
+To add support for additional models in the audio translation pipeline, extend the `ModelExportConfig` class:
+
+```python
+from core.model_export import ModelExportConfig
+
+# Example configuration for a custom NeMo STT model
+stt_export_config = ModelExportConfig(
+    model_name="custom_citrinet_model",
+    model_type="nemo",
+)
+
+# Example configuration for translation model
+translation_export_config = ModelExportConfig(
+    model_name="custom_translation_model", 
+    model_type="transformers",
+    task="translation"
+)
+```
+
+## ONNX Export Control
+
+You can control ONNX generation not sending ModelExportConfig list to the log_model method.
+
+---
+
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
