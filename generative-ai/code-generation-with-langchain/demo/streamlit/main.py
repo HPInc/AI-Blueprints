@@ -99,12 +99,13 @@ api_url = MLFLOW_ENDPOINT
 user_question = st.text_input("Enter your query:")
 
     
+
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
 if st.button("🖥️ Get generated code"):
     if not user_question:
-        st.warning("⚠️ Please enter your query")
+        st.warning("⚠️ Please enter a command")
     else:
         file = {"files":user_question}
         # --- Loading Spinner ---
@@ -113,45 +114,46 @@ if st.button("🖥️ Get generated code"):
                 "inputs": {"question": [user_question]},
             }
             try:
-                with st.spinner("Generating code..."):
-                    response = requests.post(api_url, json=payload, verify=False)
+                response = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False)
                 response.raise_for_status()
-                result = response.json()
-                st.session_state.api_response = result
-                st.session_state.result_ready = True
-            except requests.exceptions.HTTPError as e:
-                if response.status_code == 500:
-                    st.markdown('<div class="error-box">⏱️ The request timed out. Please try again with a smaller input or use the Jupyter notebook.</div>', unsafe_allow_html=True)
+                data = response.json()
+                gen_code = data.get("predictions")
+            
+                # Ensure the generated code is a string
+                if isinstance(gen_code, dict):
+                    gen_code_str = json.dumps(gen_code, indent=4)
                 else:
-                    st.markdown(f'<div class="error-box">❌ API call failed: {e}</div>', unsafe_allow_html=True)
-                st.session_state.result_ready = False
+                    gen_code_str = str(gen_code)
+                
+                formatted_cod = gen_code_str.replace("\n", "<br>")
+
+                if gen_code_str:
+                    st.success("✅ Here is your generated code!")
+            
+                    # Custom CSS for max-width
+                    st.markdown("""
+                        <style>
+                            .custom-code-box {
+                                max-height: 400px;
+                                margin: auto;
+                                overflow-x: auto;
+                            }
+                        </style>
+                    """, unsafe_allow_html=True)
+            
+                    # Display code with max-width styling
+                    st.markdown(f'<div class="custom-code-box">{formatted_cod}</div>', unsafe_allow_html=True)
+            
+                    # Prepare download
+                    code_bytes = gen_code_str.encode("utf-8")
+                    b64 = base64.b64encode(code_bytes).decode()
+                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_code">📥 Download Code</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+                else:
+                    st.error("❌ No code returned. Please try again.")
             except requests.exceptions.RequestException as e:
-                st.markdown(f'<div class="error-box">❌ API call failed: {e}</div>', unsafe_allow_html=True)
-                st.session_state.result_ready = False
-
-# -------------------------------
-# ✅ Display Results & Download
-# -------------------------------
-if st.session_state.result_ready and st.session_state.api_response:
-    result = st.session_state.api_response
-    preds =  result.get("predictions", result)
-    st.session_state.generated = True
-    st.session_state.preds = preds
-    st.markdown("### ✅ Generated Code")
-    formatted = preds.get("file_string", "").replace("\n", "<br>")
-    st.markdown(f'<div class="result-box">{formatted}</div>', unsafe_allow_html=True)
-    
-    file_name = preds.get("file_name", "generated_code")
-    file_b64 = preds.get("file_content", "")
-    file_bytes = base64.b64decode(file_b64) if file_b64 else b""
-
-    if file_bytes:
-        st.download_button(
-            label="📥 Download File",
-            data=file_bytes,
-            file_name=file_name,
-            mime="application/octet-stream"
-        )
+                st.error("❌ Error fetching code.")
+                st.error(str(e))
 
 
 # ─────────────────────────────────────────────────────────────
