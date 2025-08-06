@@ -1,27 +1,32 @@
-from typing import Dict, Literal
-from langgraph.graph import StateGraph, END, START
-from src.agentic_nodes import (
-    ingest_question,
-    check_relevance,
+# ─────── Standard Library Imports ───────
+from typing import Dict, Literal  # Type annotations for mappings and fixed string values
+
+# ─────── Third-Party Package Imports ───────
+from langgraph.graph import END, START, StateGraph  # LangGraph primitives for defining and controlling agent workflows
+
+# ─────── Local Application-Specific Imports ───────
+from src.agentic_nodes import (  # Agent node functions for each step in the processing pipeline
     check_memory,
-    rewrite_question,
+    check_relevance,
     create_chunks,
     generate_answer_per_chunks,
     generate_synthetized_answer,
-    update_memory,
+    ingest_audio_question,
     output_answer,
+    rewrite_question,
+    update_memory,
 )
-from src.agentic_state import AgenticState
+from src.agentic_state import AgenticState  # Shared state class passed through the LangGraph
 
 
 def build_agentic_graph() -> StateGraph:
     """
-    Construct and return the compiled agentic LangGraph for feedback analysis.
+    Construct and return the compiled agentic LangGraph..
     """
     agentic_graph = StateGraph(AgenticState)
     
     # Nodes
-    agentic_graph.add_node("ingest_question", ingest_question)
+    agentic_graph.add_node("ingest_audio_question", ingest_audio_question)
     agentic_graph.add_node("check_relevance", check_relevance)
     agentic_graph.add_node("check_memory", check_memory)
     agentic_graph.add_node("rewrite_question", rewrite_question)
@@ -32,8 +37,8 @@ def build_agentic_graph() -> StateGraph:
     agentic_graph.add_node("output_answer", output_answer)
     
     # Edges
-    agentic_graph.add_edge(START, "ingest_question") 
-    agentic_graph.add_edge("ingest_question", "check_relevance")
+    agentic_graph.add_edge(START, "ingest_audio_question") 
+    agentic_graph.add_edge("ingest_audio_question", "check_relevance")
     
     def route_relevance(state: AgenticState) -> Literal["irrelevant", "relevant"]:
         return "relevant" if state["is_relevant"] else "irrelevant"
