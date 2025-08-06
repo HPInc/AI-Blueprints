@@ -50,7 +50,7 @@ def call_model_api(api_url: str, query: str, config_payload: dict) -> dict:
 def main():
     """Renders the main Chatbot application page."""
 
-    api_url = "https://7afcf880ce75.ngrok-free.app/invocations"
+    api_url = "https://27405a57a5e4.ngrok-free.app/invocations"
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -91,11 +91,10 @@ def main():
                 
                 # Display Metrics
                 st.markdown("---")
-                c1, c2, c3, c4 = st.columns(4)
+                c1, c2, c3 = st.columns(3)
                 c1.metric("Total Pipeline Time", f"{data.get('total_pipeline_time_seconds', 0):.2f} s")
-                c2.metric("Generation Time", f"{data.get('generation_time_seconds', 0):.2f} s")
-                c3.metric("Faithfulness", f"{data.get('faithfulness', 0) * 100:.0f}%")
-                c4.metric("Relevance", f"{data.get('relevance', 0) * 100:.0f}%")
+                c2.metric("Faithfulness", f"{data.get('faithfulness', 0) * 100:.0f}%")
+                c3.metric("Relevance", f"{data.get('relevance', 0) * 100:.0f}%")
                                 
                 # Display Images
                 try:
