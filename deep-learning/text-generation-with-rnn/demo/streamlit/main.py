@@ -10,7 +10,7 @@ from pathlib import Path
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Text Generation",
+    page_title="Text Generation with RNN",
     page_icon = "📝",
     layout="centered"
 )
@@ -81,7 +81,7 @@ st.markdown(f"""
 # ─────────────────────────────────────────────────────────────
 # Header 
 # ─────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generator</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generation with RNN</h1>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
@@ -142,10 +142,7 @@ if st.button("Get generated text"):
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*📝 Text Generation © 2025* local, private, text generator + MLflow.
-
----
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using HP AI Studio
 """,
 unsafe_allow_html=True,
 )
