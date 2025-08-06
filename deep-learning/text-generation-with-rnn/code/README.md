@@ -1,7 +1,7 @@
 # Nemo Demo
 
 ## local development
-- To run the app in development run: `npm run dev`
+- To run the app in development, run: `npm run dev`
 
 ## build for production
 - build the app first by running `npm run build`

@@ -96,7 +96,7 @@ Run the following notebook `run-workflow.ipynb`:
 
 1. Model:
 
-- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding and deconvolution.
+- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding, and deconvolution.
 
 2. Dataloader / preprocessing:
 

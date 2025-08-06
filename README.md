@@ -66,7 +66,7 @@ We provide **2 blueprint projects**, each designed for quick and easy use to hel
 
 ### 🌸 Classification with SVM
 
-This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+This project is a simple **classification** experiment focused on predicting species of **iris flowers**.
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
@@ -128,12 +128,12 @@ We provide **7 blueprint projects**, each designed for quick and easy use to hel
 
 ### 📊 Automated Evaluation with Structured Outputs
 
-**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑3** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
+**Automated Evaluation with Structured Outputs** turns a local **Meta-Llama-3** model into an MLflow-served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 
-- Generates scores locally via `llama.cpp` (no data leaves your machine)
+- Generates scores locally via `llama.cpp` (no data leaves your machine)
 - Registers the evaluator as a **pyfunc** model in MLflow
 - Exposes a REST `/invocations` endpoint
-- Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
+- Ships two front-ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human-friendly interaction and CSV download.
 
 ### Code Generation with Langchain
 
@@ -152,11 +152,11 @@ A comparative setup to benchmark base vs fine-tuned models on the same prompts
 
 ### Image Generation with Stable Diffusion
 
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
+This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics, such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
 
 ### Text Generation with LangChain
 
-This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It also integrates Galileo Prompt Quality for evaluation and logging, and supports multi-source model loading including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
+This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It also integrates Galileo Prompt Quality for evaluation and logging, and supports multi-source model loading, including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
 
 ### Text Summarization with LangChain
 
@@ -199,7 +199,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 - **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from the **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ### 📡 Data Visualization with cuDF
 

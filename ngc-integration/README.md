@@ -112,13 +112,13 @@ This project is a GPU-accelerated, interactive **exploratory data analysis (EDA)
 
 You can explore cell tower distributions by radio type, operator, country, and time window — rendered live on an interactive map with full GPU acceleration.
 
-# 📈 Stock Analysis with Pandas and cuDF  
+# 📈 Stock Analysis with Pandas and cuDF
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
 - **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from the **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 # 🌍 Vacation Recommendation Service
 
