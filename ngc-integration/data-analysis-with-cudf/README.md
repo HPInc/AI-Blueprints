@@ -21,7 +21,7 @@
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two sets of notebooks: one set using Pandas (CPU) and the other set using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from the **datafabric** folder in AI Studio. The evaluation is split across two sets of notebooks: one set using Pandas (CPU) and the other set using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ## Project Structure
 
@@ -70,7 +70,7 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ### Step 4: Add the Dataset to Workspace
 
-1.  Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
+1. Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
 
 - **Dataset Name**: `USA_Stocks`
 - **Dataset Source**: `AWS S3`

@@ -6,7 +6,7 @@ We provide **two blueprint projects**, each designed for quick and easy use to h
 
 # 🌷 Classification with Support Vector Machine (SVM) and Linear Discriminant Analysis (LDA)
 
-This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+This project is a simple **classification** experiment focused on predicting the species of **Iris flowers**.
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
