@@ -99,7 +99,6 @@ api_url = MLFLOW_ENDPOINT
 user_question = st.text_input("Enter your query:")
 
     
-
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
@@ -114,48 +113,45 @@ if st.button("🖥️ Get generated code"):
                 "inputs": {"question": [user_question]},
             }
             try:
-                response = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False)
+                with st.spinner("Generating code..."):
+                    response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
-                data = response.json()
-
-                # Extract the 'result' key from the returned JSON
-                result_value = data.get("result", "")
-
-                # Format the result nicely if it's a dict or list
-                if isinstance(result_value, (dict, list)):
-                    result_str = json.dumps(result_value, indent=4)
+                result = response.json()
+                st.session_state.api_response = result
+                st.session_state.result_ready = True
+            except requests.exceptions.HTTPError as e:
+                if response.status_code == 500:
+                    st.markdown('<div class="error-box">⏱️ The request timed out. Please try again with a smaller input or use the Jupyter notebook.</div>', unsafe_allow_html=True)
                 else:
-                    result_str = str(result_value)
-
-                if result_str:
-                    st.success("✅ Here is your generated result!")
-
-                    # Custom CSS for max-width
-                    st.markdown("""
-                        <style>
-                            .custom-code-box {
-                                max-width: 800px;
-                                margin: auto;
-                                overflow-x: auto;
-                            }
-                        </style>
-                    """, unsafe_allow_html=True)
-
-                    # Display result with max-width styling
-                    st.markdown('<div class="custom-code-box">', unsafe_allow_html=True)
-                    st.code(result_str)
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-                    # Prepare download
-                    code_bytes = result_str.encode("utf-8")
-                    b64 = base64.b64encode(code_bytes).decode()
-                    href = f'<a href="data:file/txt;base64,{b64}" download="generated_result.txt">📥 Download Result</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-                else:
-                    st.error("❌ No result returned. Please try again.")
+                    st.markdown(f'<div class="error-box">❌ API call failed: {e}</div>', unsafe_allow_html=True)
+                st.session_state.result_ready = False
             except requests.exceptions.RequestException as e:
-                st.error("❌ Error fetching result.")
-                st.error(str(e))
+                st.markdown(f'<div class="error-box">❌ API call failed: {e}</div>', unsafe_allow_html=True)
+                st.session_state.result_ready = False
+
+# -------------------------------
+# ✅ Display Results & Download
+# -------------------------------
+if st.session_state.result_ready and st.session_state.api_response:
+    result = st.session_state.api_response
+    preds =  result.get("predictions", result)
+    st.session_state.generated = True
+    st.session_state.preds = preds
+    st.markdown("### ✅ Generated Code")
+    formatted = preds.get("file_string", "").replace("\n", "<br>")
+    st.markdown(f'<div class="result-box">{formatted}</div>', unsafe_allow_html=True)
+    
+    file_name = preds.get("file_name", "generated_code")
+    file_b64 = preds.get("file_content", "")
+    file_bytes = base64.b64decode(file_b64) if file_b64 else b""
+
+    if file_bytes:
+        st.download_button(
+            label="📥 Download File",
+            data=file_bytes,
+            file_name=file_name,
+            mime="application/octet-stream"
+        )
 
 
 # ─────────────────────────────────────────────────────────────
