@@ -20,8 +20,69 @@ from src.utils import load_secrets_to_env
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
+class BaseGenerativeModel:
+    """
+    Base utility class for generative models (NO PythonModel inheritance).
+    Provides shared functionality for configuration and environment setup.
+    """
+    
+    def __init__(self):
+        self.model_config = {}
+    
+    @staticmethod
+    def load_config_from_path(config_path: str) -> dict:
+        """Static method to load configuration from file path."""
+        if os.path.exists(config_path):
+            with open(config_path) as file:
+                config = yaml.safe_load(file)
+                logger.info(f"Configuration loaded from {config_path}")
+                return config
+        else:
+            logger.warning(f"Configuration file not found at {config_path}")
+            return {}
+        
+    @staticmethod  
+    def load_secrets_from_path(secrets_path: str) -> dict:
+        """Static method to load secrets from file path."""
+        if secrets_path and os.path.exists(secrets_path):
+            try:
+                with open(secrets_path, 'r') as f:
+                    secrets = yaml.safe_load(f)
+                logger.info(f"Secrets loaded from {secrets_path}")
+                return secrets
+            except Exception as e:
+                logger.warning(f"Failed to load secrets from {secrets_path}: {e}")
+                return {}
+        else:
+            logger.info("No secrets file found")
+            return {}
+        
+    @staticmethod
+    def setup_environment(config: dict) -> None:
+        """Static method to configure environment variables."""
+        try:
+            # Configure proxy if specified in config
+            if "proxy" in config and config["proxy"]:
+                logger.info(f"Setting up proxy: {config['proxy']}")
+                os.environ["HTTPS_PROXY"] = config["proxy"]
+                os.environ["HTTP_PROXY"] = config["proxy"]
+            else:
+                logger.info("No proxy configuration found. Checking system environment variables.")
+                # Check if proxy is set in environment variables
+                system_proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
+                if system_proxy:
+                    logger.info(f"Using system proxy: {system_proxy}")
+                else:
+                    logger.warning("No proxy configuration found in config or environment variables.")
+                    
+        except Exception as e:
+            logger.error(f"Error setting up environment: {str(e)}")
+            # Continue without failing to allow the model to still function
+
+
 class BaseGenerativeService(PythonModel):
-    """Base class for all generative services in AI Studio Templates."""
+    """Base class for all generative services in AI Studio Templates (maintains compatibility)."""
 
     def __init__(self):
         """Initialize the base service with empty configuration."""
