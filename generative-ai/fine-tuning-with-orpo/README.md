@@ -176,6 +176,9 @@ This notebook will:
 - Perform evaluation and comparison between the base and fine-tuned models
 - Generate comparative analysis and metrics
 
+
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### Step 2: Register the Models for Deployment
 
 Execute the model registration notebook:

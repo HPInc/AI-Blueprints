@@ -4,7 +4,7 @@ import requests
 import json
 from pathlib import Path
 
-st.set_page_config(page_title="🤖 Fine Tuning", layout="centered")
+st.set_page_config(page_title="🤖 Fine Tuning with Orpo", layout="centered")
 
 st.markdown("""
     <style>
@@ -40,7 +40,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-st.title("Fine Tuning Agent")
+st.title("Fine Tuning with Orpo")
 
 st.markdown("""
 <div style='background-color:#fff3cd;padding:1rem;border-left:6px solid #ffeeba;'>
@@ -113,10 +113,7 @@ if "test_script" in st.session_state and st.session_state.test_script:
 # ─────────────────────────────────────────────────────────────
 st.markdown(
 """
-*🤖 Fine Tuning Agent © 2025* local, private, fine tuning + MLflow.
-
----
-> Built with ❤️ using [**Z by HP AI Studio**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+> Built with ❤️ using HP AI Studio.
 """,
 unsafe_allow_html=True,
 )
