@@ -1,4 +1,4 @@
-# 🤖 MultiModal RAG with LangChain, Transformers, and Torch
+# 🤖 MultiModal RAG with LangChain
 
 <div align="center">
 
