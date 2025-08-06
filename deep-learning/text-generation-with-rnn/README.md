@@ -18,13 +18,13 @@
 * [🚀 Usage](#usage)
 * [📞 Contact and Support](#contact-and-support)
 
- ## Overview
+## Overview
 
-The objective of this template is to show how to create a simple text generation with trained models from Hugging Face, one character per time using a dataset of Shakespeare's texts.
+The objective of this template is to show how to create a simple text generation with trained models from Hugging Face, one character at a time using a dataset of Shakespeare's texts.
 
  ---
 
- ## Project Structure
+## Project Structure
 ```
 ├── code/                                                     # Demo code
 │                                   
@@ -86,24 +86,24 @@ https://github.com/HPInc/AI-Blueprints.git
 Run the following notebook `/run-workflow-TF.ipynb`:
 1. Obtain Text Data from the shakespeare.txt.
 2. Prepare the textual data. It's needed to encode the data to provide the model a proper numerical representation of the text.
-3. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
+3. Create Training Batches for dividing the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
 4. Create the GRU Model.
 5. Train the model.
 - Train the model with the selected epochs.
   
-6. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
+6. Generate the predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### 1.2 ▪ Run the Notebook (Optional):
 Run the following notebook `/run-workflow-Torch.ipynb`:
-1. Obtain Text Data from the shakespeare.txt.
-2. Prepare the textual data. It's needed to decode and encode the data to give the model a proper numerical representation of the text.
+1. Obtain text data from the shakespeare.txt.
+2. Prepare the textual data. It's necessary to decode and encode the data to give the model a proper numerical representation of the text.
 3. One Hot Encoding to convert categorical data into a fixed-size vector of numerical values.
-4. Create Training Batches for divide the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
+4. Create Training Batches for dividing the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
 5. Create the LSTM Model with the decoder and encoder files
 6. Train the Network to do the Predictions
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
-### Step 2: Deploy the Service  
+### Step 2: Deploy the Service
 1. Execute `/register-model.ipynb ` to register the model in MLflow and create the API logic.  
 2. Navigate to **Deployments > New Service** in AI Studio.  
 3. Name the service and select the registered model.  
@@ -157,7 +157,7 @@ And as response:
 
 ---
 
-## Contact and Support  
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
