@@ -73,11 +73,11 @@ class ChatbotService(BaseGenerativeService):
         config = super().load_config(context)
 
         # Set docs path from artifacts
-        self.docs_path = context.artifacts.get("docs", None)
+        self.docs_path = context.artifacts.get("data", None)
 
         # Add additional chatbot-specific configuration
         config.update({
-            "local_model_path": context.artifacts.get("models", "")
+            "local_model_path": context.artifacts.get("model", "")
         })
 
         return config
@@ -571,15 +571,15 @@ class ChatbotService(BaseGenerativeService):
     @classmethod
     def log_model(
         cls, 
-        artifact_path, 
-        config_path, 
-        docs_path, 
+        artifact_path="AIStudio-Chatbot-Model", 
+        config_path="configs/config.yaml", 
+        docs_path="data/", 
         secrets_dict=None,
         model_path=None, 
         demo_folder=None
     ):
         """
-        Log the model to MLflow.
+        Log the model to MLflow using models-from-code approach.
         
         Args:
             artifact_path: Path to store the model artifacts
@@ -626,40 +626,36 @@ class ChatbotService(BaseGenerativeService):
         import tempfile
         import shutil
         
-        # Create a temporary directory to organize artifacts
+        # Create temporary directory and copy all artifacts
         artifacts_dir = tempfile.mkdtemp(prefix="chatbot_artifacts_")
         
-        # Copy config file to artifacts directory
-        config_dest = os.path.join(artifacts_dir, "config.yaml")
-        shutil.copy2(config_path, config_dest)
-        logger.info(f"Config copied to {config_dest}")
+        # Copy config file
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Config file not found at: {config_path}")
+        shutil.copy2(config_path, os.path.join(artifacts_dir, "config.yaml"))
         
-        # Copy docs directory to artifacts directory
-        docs_dest = os.path.join(artifacts_dir, "docs")
-        shutil.copytree(docs_path, docs_dest)
-        logger.info(f"Documents copied to {docs_dest}")
+        # Copy docs directory as "data"
+        if not os.path.exists(docs_path):
+            raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+        shutil.copytree(docs_path, os.path.join(artifacts_dir, "data"))
         
-        # Handle secrets if provided
+        # Copy secrets if provided
         if secrets_dict:
-            secrets_dest = os.path.join(artifacts_dir, "secrets.yaml")
-            with open(secrets_dest, 'w') as f:
+            with open(os.path.join(artifacts_dir, "secrets.yaml"), 'w') as f:
                 yaml.safe_dump(secrets_dict, f)
-            logger.info(f"Secrets written to {secrets_dest}")
         
-        # Handle model path if provided
-        if model_path:
+        # Copy model if provided
+        if model_path and os.path.exists(model_path):
             models_dest_dir = os.path.join(artifacts_dir, "models")
             os.makedirs(models_dest_dir, exist_ok=True)
             if os.path.isfile(model_path):
-                # Single model file
-                model_filename = os.path.basename(model_path)
-                model_dest = os.path.join(models_dest_dir, model_filename)
-                shutil.copy2(model_path, model_dest)
-                logger.info(f"Model file copied to {model_dest}")
-            elif os.path.isdir(model_path):
-                # Model directory
+                shutil.copy2(model_path, os.path.join(models_dest_dir, os.path.basename(model_path)))
+            else:
                 shutil.copytree(model_path, models_dest_dir, dirs_exist_ok=True)
-                logger.info(f"Model directory copied to {models_dest_dir}")
+        
+        # Copy demo folder if provided
+        if demo_folder and os.path.exists(demo_folder):
+            shutil.copytree(demo_folder, os.path.join(artifacts_dir, "demo"))
         
         # Log model to MLflow using models-from-code approach
         mlflow.pyfunc.log_model(
@@ -670,12 +666,9 @@ class ChatbotService(BaseGenerativeService):
             code_paths=["../core", "../src"],
             pip_requirements="../requirements.txt",
         )
-        logger.info("Model and artifacts successfully registered in MLflow using models-from-code approach.")
         
         # Clean up temporary artifacts directory
-        # Note: MLflow copies the artifacts, so we can safely remove the temp directory
         shutil.rmtree(artifacts_dir)
-        logger.info(f"Temporary artifacts directory {artifacts_dir} cleaned up")
 
     def get_model_info(self):
         """

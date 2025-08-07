@@ -19,10 +19,11 @@ def _load_pyfunc(data_path: str):
     
     Args:
         data_path: Path to model artifacts directory containing:
-            - config.yaml: Model configuration
-            - docs/: Document directory with AIStudioDoc.pdf
+            - config.yaml: Model configuration 
+            - data/: Document directory with AIStudioDoc.pdf
             - secrets.yaml: Encrypted secrets (optional)
             - models/: LLM model files (optional, can be remote path)
+            - demo/: Demo folder with UI components (optional)
     
     Returns:
         ChatbotModel: Initialized model instance ready for prediction
@@ -31,45 +32,38 @@ def _load_pyfunc(data_path: str):
     
     logger.info(f"Loading ChatbotModel from artifacts at: {data_path}")
     
-    # Load configuration from data_path/config.yaml
+    # Load configuration
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Configuration file not found at {config_path}")
+        raise FileNotFoundError(f"Configuration file not found at: {config_path}")
     
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
-    logger.info(f"Configuration loaded from {config_path}")
+    logger.info("Configuration loaded successfully")
     
-    # Load secrets if available from data_path/secrets.yaml
+    # Load secrets if available
     secrets_path = os.path.join(data_path, "secrets.yaml")
     secrets = None
     if os.path.exists(secrets_path):
         with open(secrets_path, 'r') as f:
             secrets = yaml.safe_load(f)
-        logger.info(f"Secrets loaded from {secrets_path}")
-    else:
-        logger.info("No secrets file found, proceeding without secrets")
+        logger.info("Secrets loaded")
     
     # Set up documents path
-    docs_path = os.path.join(data_path, "docs")
+    docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        raise FileNotFoundError(f"Documents directory not found at {docs_path}")
-    logger.info(f"Documents path set to: {docs_path}")
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
-    # Set up model path (optional, might be remote)
+    # Set up model path (optional)
     models_path = os.path.join(data_path, "models")
     model_path = None
     if os.path.exists(models_path):
-        # Look for model files in the models directory
         model_files = [f for f in os.listdir(models_path) if f.endswith(('.gguf', '.bin', '.safetensors'))]
         if model_files:
             model_path = os.path.join(models_path, model_files[0])
             logger.info(f"Local model found at: {model_path}")
     
-    if not model_path:
-        logger.info("No local model found, will use model source from configuration")
-    
-    # Initialize ChatbotModel with artifacts
+    # Initialize ChatbotModel
     try:
         chatbot_model = ChatbotModel(
             config=config,
@@ -81,6 +75,4 @@ def _load_pyfunc(data_path: str):
         return chatbot_model
     except Exception as e:
         logger.error(f"Failed to initialize ChatbotModel: {str(e)}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e
