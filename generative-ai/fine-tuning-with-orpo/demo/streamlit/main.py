@@ -63,7 +63,7 @@ api_url = MLFLOW_ENDPOINT
 
 user_prompt = st.text_input("Add a Prompt")
 
-user_finetuning = st.checkbox("Finetuning")
+user_finetuning = st.checkbox("Use Finetuning")
 
 max_tokens = st.number_input("Tokens", value=0, step=1)
 
