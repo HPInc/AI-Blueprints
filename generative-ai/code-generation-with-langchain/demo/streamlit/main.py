@@ -118,16 +118,13 @@ if st.button("🖥️ Get generated code"):
                 response.raise_for_status()
                 data = response.json()
                 gen_code = data.get("predictions")
-            
-                # Ensure the generated code is a string
-                if isinstance(gen_code, dict):
-                    gen_code_str = json.dumps(gen_code, indent=4)
-                else:
-                    gen_code_str = str(gen_code)
-                
-                formatted_cod = gen_code_str.replace("\n", "<br>")
 
-                if gen_code_str:
+
+                if gen_code and isinstance(gen_code, dict):
+                    gen_code = gen_code.get("result", "N/A")
+                    formatted_cod = gen_code.replace("\n", "<br>")
+
+                if gen_code:
                     st.success("✅ Here is your generated code!")
             
                     # Custom CSS for max-width
@@ -145,7 +142,7 @@ if st.button("🖥️ Get generated code"):
                     st.markdown(f'<div class="custom-code-box">{formatted_cod}</div>', unsafe_allow_html=True)
             
                     # Prepare download
-                    code_bytes = gen_code_str.encode("utf-8")
+                    code_bytes = gen_code.encode("utf-8")
                     b64 = base64.b64encode(code_bytes).decode()
                     href = f'<a href="data:file/txt;base64,{b64}" download="generated_code">📥 Download Code</a>'
                     st.markdown(href, unsafe_allow_html=True)
