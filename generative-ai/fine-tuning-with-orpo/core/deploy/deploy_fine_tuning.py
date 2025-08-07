@@ -442,7 +442,7 @@ def register_llm_comparison_model(
                 "model_no_finetuning": resolved_base_path,
                 "finetuned_model":     resolved_ft_path,
                 "config": str(Path(config_path).resolve()),
-                "demo":str(Path(demo_folder).resolve)
+                "demo":str(Path(demo_folder))
             },
             signature=signature,
             code_paths=[str(core), str(src)],

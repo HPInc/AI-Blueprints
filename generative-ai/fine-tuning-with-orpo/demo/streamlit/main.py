@@ -42,13 +42,6 @@ st.markdown(f"""
 
 st.title("Fine Tuning with Orpo")
 
-st.markdown("""
-<div style='background-color:#fff3cd;padding:1rem;border-left:6px solid #ffeeba;'>
-<strong>Note:</strong> The UI works smoothly only up to <strong>1000 lines of code</strong> due to API timeout.
-For larger inputs, refer the README.
-</div>
-""", unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
 # ─────────────────────────────────────────────────────────────
@@ -71,13 +64,9 @@ max_tokens = st.number_input("Tokens", value=0, step=1)
 # 3 ▸ Call the model
 # ─────────────────────────────────────────────────────────────
 
-generate = st.button("Generate response")
-
-if generate:
-    st.session_state.test_script = ""
-
-    if not user_prompt or user_finetuning or max_tokens:
-        st.error("Please fill all the fields.")
+if st.button("Get response"):
+    if not user_prompt or not max_tokens:
+        st.warning("⚠️ Please fill all the fields")
     else:
         with st.spinner("Generating response..."):
             try:
