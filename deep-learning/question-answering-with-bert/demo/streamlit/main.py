@@ -124,30 +124,30 @@ if st.button("Get answer"):
                 data = response.json()
                 answr = data.get("predictions")
 
-                if answr:
-                    st.success("✅ Here is your answer!")
+                
+                if answr and isinstance(answr, dict):
+                    answer_text = answr.get("answer", "N/A")
+                    score = answr.get("score", 0.0)
                     
-                    st.markdown("""
-                        <style>
-                            .custom-text-area{
-                                background-color: #f9f9f9;
-                                color: #333;
-                                font-family: 'Courier New', monospace;
-                                font-size: 14px;
-                                border: 1px solid #ccc;
-                                border-radius: 8px;
-                                padding: 10px;
-                                box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-                            }
-                        </style>
-                    """, unsafe_allow_html=True)
+                    formatted = f"answer: {answer_text}<br>score: {score:.2f}"
 
-                    st.markdown('<div class="custom-text-area">', unsafe_allow_html=True)
-                    st.text_area("Generated Answer", value=answr, disabled=True, height=300)
-                    st.markdown('</div>', unsafe_allow_html=True)
 
+                    st.success("✅ Here is your answer!")
+                    st.markdown(f"""
+                            <div style="
+                                background-color: #ffffff;
+                                padding: 15px;
+                                border-radius: 10px;
+                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                margin: 10px 0px;
+                                border-left: 8px solid #4CAF50;
+                            ">
+                                <h4 style="color: #2C3E50;">{formatted}</h4>
+                            </div>
+                        """, unsafe_allow_html=True)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
+
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error fetching generated text.")
                 st.error(str(e))
