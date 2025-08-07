@@ -140,7 +140,7 @@ AZURE_DEVOPS_WIKI_IDENTIFIER: "your-wiki-name.wiki"
 Using Secrets Manager (Premium User)
   - Go to **Project Setup > Setup > Secrets Manager** in AI Studio.
   - Add the following secrets:
-    - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) the following access rights:
+    - `ADO_TOKEN`: Your Azure DevOps Personal Access Token (PAT) with the following access rights:
       - **Wiki (Read)**: To read wiki content.
       - **Code (Read)**: To read code content.
       - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)

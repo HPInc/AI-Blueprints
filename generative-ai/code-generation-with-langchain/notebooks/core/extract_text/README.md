@@ -13,7 +13,7 @@ The extractor implements several strategies to extract context from the reposito
 - Files exceeding this limit are skipped
 
 ### 2. Pattern-Based Exclusion
-- Automatic certain of problematic file types:
+- Automatic detection of problematic file types:
   - Minified files (*.min.js, *.min.css)
   - Bundle files with hash suffixes (index-[hash].js)
   - Node modules and dist directories

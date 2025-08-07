@@ -188,7 +188,7 @@ This will:
 ### Step 3:  Deploy the Text Generation Service
 
 1. In AI Studio, navigate to **Deployments > New Service**.
-2. Give your service a name (e.g. “Text Generation Service”), then select the registered Scrript Generation Sevice.
+2. Give your service a name (e.g.“Text Generation Service”), then select the registered Script Generation Service.
 3. Pick the desired model version and enable **GPU acceleration** for best performance.
 4. Click **Deploy** to launch the service.
 
