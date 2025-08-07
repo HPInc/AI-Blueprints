@@ -383,6 +383,10 @@ def get_response_from_llm(llm, system_prompt, user_prompt):
 
 
 # ─────── Helper Functions ───────
+def get_project_root():
+    """Get the project root directory"""
+    return Path(__file__).parent.parent
+
 def display_image(image_bytes: bytes, width: int = 400) -> str:
     """
     Converts image bytes to an HTML string for visualization in Jupyter.
