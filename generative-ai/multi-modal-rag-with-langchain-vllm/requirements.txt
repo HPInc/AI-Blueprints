@@ -3,11 +3,11 @@
 
 torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
 
-chromadb==0.6.3
 langchain==0.3.26
 langchain_community==0.3.26
 langchain_core==0.3.66
 langchain_huggingface==0.3.0
+chromadb==1.0.15
 hf-xet==1.1.4
 opencv-python-headless==4.11.0.86
 jq==1.9.1

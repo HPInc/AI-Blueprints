@@ -143,7 +143,7 @@ def main():
                     for idx, img_path in enumerate(message["images"]):
                         with cols[idx % 4]:
                             if Path(img_path).is_file():
-                                st.image(str(img_path), use_column_width=True)
+                                st.image(str(img_path), use_container_width=True)
                             else:
                                 st.warning(f"Image not found at {Path(img_path).name}")
 
@@ -175,7 +175,7 @@ def main():
                                 for idx, b64_string in enumerate(retrieved_images_b64):
                                     with cols[idx % 4]:
                                         image_bytes = base64.b64decode(b64_string)
-                                        st.image(image_bytes, use_column_width=True)
+                                        st.image(image_bytes, use_container_width=True)
                         except (json.JSONDecodeError, TypeError):
                             st.warning("Could not parse image data from API.")
                         
