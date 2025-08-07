@@ -28,12 +28,13 @@ The **Agentic Audio RAG** blueprint converts speech in audio/video files into se
 
 It delivers:
 
-* 🎙️ Automatic speech-to-text using OpenAI Whisper large-v3 (supports MP3, WAV, OGG, MP4, MOV, AVI …)
-* 🧪 Agentic RAG workflow orchestrated with LangGraph
-* 🦙 Llama.cpp for fast on-device LLM inference
+* 🎙️ Automatic speech-to-text with OpenAI *Whisper* (large-v3) and *Audio-native LLMs* (MiDaSheng LM-7B, Kimi-Audio-7B-Instruct, Qwen 2.5-Omni-7B …) - (supports MP3, WAV, OGG, MP4, MOV, AVI …)
+* 🧪 Agentic RAG workflow orchestrated with **LangGraph**
+* 🦙 **Llama.cpp** for fast on-device LLM inference
+* 📚 Audio-aware **vector database** for semantic search over embeddings
 * 🧬 Reranking stage to improve passage selection accuracy
 * 🔍 Answer generation that also returns the exact transcript snippets and their timestamps
-* 💾 Lightweight memory to cache previous Q&A pairs
+* 💾 Disk-persisted, lightweight memory to cache previous Q&A pairs for instant replays
 * 📦 MLflow model packaging & deployment
 * 🌐 Streamlit UI for uploading media, running queries and inspecting highlighted transcript segments
 
@@ -122,6 +123,23 @@ ui:
   - **Bucket Region**: `us-west-2`
 
 - Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
+
+- Download an audio-capable LLM   
+- Recommended GGUF checkpoints (HF download URLs):
+
+| Model | Repo / filename | Context |
+|-------|-----------------|---------|
+| MiDaShengLM-7B | `MiSpeech/MiDaShengLM-7B-GGUF` | 8 k |
+| Kimi-Audio-7B-Instruct | `Moonshot-AI/Kimi-Audio-7B-Instruct-GGUF` | 16 k |
+| Qwen2.5-Omni-7B | `Qwen/Qwen2_5-Omni-7B-GGUF` | 32 k |
+
+Example (AI Studio “Models” tab):
+
+* **Model Name**: `MiDaShengLM-7B-Q8`
+* **Model Source**: `Hugging Face`
+* **HF Path**     : `MiSpeech/MiDaShengLM-7B-GGUF`
+
+Make sure the GGUF file lands in your workspace folder (`datafabric`).
 
 ## Step 4: Configure Secrets
 
