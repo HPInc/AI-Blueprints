@@ -8,6 +8,13 @@ st.set_page_config(page_title="🤖 Fine Tuning with Orpo", layout="centered")
 
 st.markdown("""
     <style>
+        .result-box {
+            border: 2px solid #4e54c8;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: #f4f6ff;
+        }
         hr, .stHorizontalRule {
             border-color: rgba(0,77,204,0.20);
         }
@@ -69,33 +76,35 @@ if st.button("Get response"):
         st.warning("⚠️ Please fill all the fields")
     else:
         with st.spinner("Generating response..."):
-            try:
-                payload = {
-                    "inputs":{
-                        "prompt":[user_prompt],
-                        "use_finetuning":[user_finetuning],
-                        "max_tokens":[max_tokens]
-                    }
+            payload = {
+                "inputs":{
+                    "prompt":[user_prompt],
+                    "use_finetuning":[user_finetuning],
+                    "max_tokens":[max_tokens]
                 }
+            }
 
-                response = requests.post(
-                    api_url,
-                    headers={"Content-Type": "application/json"},
-                    data=json.dumps(payload),
-                    verify=False
-                )
-                response.raise_for_status()
-                resp = response.json().get("predictions", response.json())
+           
+        try:
+            response = requests.post(api_url, json=payload, verify=False)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Extract the actual string from the list of dictionaries
+            raw_response = data.get("predictions")[0].get("response")
+            
+            # Replace newline characters with <br>
+            formatted_response = raw_response.replace("\n", "<br>")
+            
+            if formatted_response:
+                st.success("✅ Here is your response!")
+                st.markdown(f'<div class="result-box">{formatted_response}</div>', unsafe_allow_html=True)
+            else:
+                st.error("❌ Unexpected response format. Please try again.")
+        except requests.exceptions.RequestException as e:
+            st.error("❌ Error fetching response.")
+            st.error(str(e))
 
-                st.session_state.test_script = resp.get("output_file_string", "[No script content returned]")
-                st.session_state.script_b64 = resp.get("output_file_b64", "")
-
-            except Exception as e:
-                st.error(f"Error: {e}")
-# --- Results ---
-if "test_script" in st.session_state and st.session_state.test_script:
-    st.subheader("🤖 Generated response")
-    st.text_area("Test Script", value=st.session_state.test_script, height=300)
 
 # ─────────────────────────────────────────────────────────────
 # 4 ▸ Footer
