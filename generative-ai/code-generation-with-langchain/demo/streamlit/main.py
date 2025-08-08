@@ -46,6 +46,27 @@ st.markdown("""
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             margin: 10px 0px;
         }
+        .result-box {
+            border: 2px solid #4e54c8;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: #f4f6ff;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            color: #2d2d2d;
+        }
+
+        .result-box code {
+            display: block;
+            background-color: #eaeaff;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
         hr, .stHorizontalRule {
             border-color: rgba(0,77,204,0.20);
         }
@@ -105,44 +126,31 @@ user_question = st.text_input("Enter your query:")
 # ─────────────────────────────────────────────────────────────
 if st.button("🖥️ Get generated code"):
     if not user_question:
-        st.warning("⚠️ Please enter a command")
+        st.warning("⚠️ Please enter a query")
     else:
-        file = {"files":user_question}
         # --- Loading Spinner ---
         with st.spinner("Generating..."):
             payload = {
                 "inputs": {"question": [user_question]},
             }
             try:
-                response = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False)
+                response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-                gen_code = data.get("predictions")
 
+                raw_response = data.get("predictions")[0].get("result")
+            
+                # Replace newline characters with <br>
+                formatted_response = raw_response.replace("\n", "<br>")
 
-                if gen_code and isinstance(gen_code, dict):
-                    gen_code = gen_code.get("result", "N/A")
-                    formatted_cod = gen_code.replace("\n", "<br>")
-
-                if gen_code:
+                if formatted_response:
                     st.success("✅ Here is your generated code!")
             
-                    # Custom CSS for max-width
-                    st.markdown("""
-                        <style>
-                            .custom-code-box {
-                                max-height: 400px;
-                                margin: auto;
-                                overflow-x: auto;
-                            }
-                        </style>
-                    """, unsafe_allow_html=True)
-            
                     # Display code with max-width styling
-                    st.markdown(f'<div class="custom-code-box">{formatted_cod}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="result-box">{formatted_response}</div>', unsafe_allow_html=True)
             
                     # Prepare download
-                    code_bytes = gen_code.encode("utf-8")
+                    code_bytes = raw_response.encode("utf-8")
                     b64 = base64.b64encode(code_bytes).decode()
                     href = f'<a href="data:file/txt;base64,{b64}" download="generated_code">📥 Download Code</a>'
                     st.markdown(href, unsafe_allow_html=True)
