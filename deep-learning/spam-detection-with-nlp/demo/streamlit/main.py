@@ -1,8 +1,8 @@
 import streamlit as st
 import os
-import base64
 import requests
 from io import BytesIO
+import base64
 import numpy as np
 from pathlib import Path
 
@@ -96,9 +96,6 @@ api_url = MLFLOW_ENDPOINT
 # ─────────────────────────────────────────────────────────────
 
 user_text = st.text_input("Enter your message")
-
-if user_text:
-    st.write("Text:", user_text)
 
     
 
