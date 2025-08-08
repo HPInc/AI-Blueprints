@@ -154,6 +154,11 @@ This will:
 1. Follow the instructions in the README file located in the `demo\streamlit-webapp` folder.
 2. Navigate to the shown URL, upload markdown files or enter a GitHub repo URL, preview the corrected files, and download the corrected markdown files. 
 
+### Successful UI Screenshots
+
+- Streamlit
+  ![Grammar Correction Streamlit UI](docs/Streamlit Screenshot 1.png)
+
 ---
 
 # Contact and Support  
