@@ -229,27 +229,24 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         return f"[{text}]({get_next_placeholder(anchor)})"
 
     processed_lines = []
-    for line in lines:
-        # --- MODIFICATION AND REORDERING IS IN THIS BLOCK ---
-        
-        # 1. Protect inline code first, as it can contain any character.
+    for line in lines:        
+        # Protect inline code first, as it can contain any character.
         line = re.sub(
             r"`([^`]+)`", lambda m: f"`{get_next_placeholder(m.group(1))}`", line
         )
         
-        # 2. Protect Markdown images ![](). This is more specific than links.
-        #    We replace the entire image tag with one placeholder.
+        # Protect Markdown images 
         line = re.sub(
             r'!\[([^\]]*)\]\(([^)]+)\)',
             lambda m: get_next_placeholder(m.group(0)),
             line
         )
 
-        # 3. Protect standard Markdown links []() and internal links [](#).
+        # Protect standard Markdown links []() and internal links [](#).
         line = re.sub(r"\[([^\]]+)]\(([^)]+)\)", replace_md_links, line)
         line = re.sub(r"\[([^\]]+)]\(#([^)]+)\)", replace_internal_links, line)
         
-        # 4. Protect raw URLs last, as they are the most generic.
+        # Protect raw URLs last, as they are the most generic.
         line = re.sub(
             r"https?://[^\s)\]}]+", lambda m: get_next_placeholder(m.group(0)), line
         )

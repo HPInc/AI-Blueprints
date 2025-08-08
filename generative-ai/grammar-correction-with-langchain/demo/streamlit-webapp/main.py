@@ -295,7 +295,6 @@ with mid_col:
 
     with tab1:
         repo_url = st.text_input("GitHub Repository URL")
-        # --- MODIFIED: Added input field for the token ---
         github_token = st.text_input(
             "GitHub Access Token",
             type="password",
@@ -304,7 +303,6 @@ with mid_col:
         if st.button("🚀 Correct from URL", key="url_button", use_container_width=True, disabled=not repo_url):
             with st.spinner("Fetching repository files..."):
                 try:
-                    # --- MODIFIED: Use the token from the input field ---
                     processor = GitHubMarkdownProcessor(repo_url=repo_url, access_token=github_token)
                     files_to_process = processor.run()
                     input_description = repo_url
@@ -335,7 +333,6 @@ if files_to_process:
             st.error("Please provide the MLflow API URL.")
             st.stop()
         
-        # --- MODIFIED: Improved warmup with clear error handling ---
         with st.spinner("Initializing the model... This can take a few minutes on the first run."):
             try:
                 # Use a string for the warmup payload to match the real calls
@@ -358,7 +355,7 @@ if files_to_process:
         for i, (filename, content) in enumerate(files_to_process.items()):
             progress_bar.progress((i + 1) / total_files, text=f"Processing file {i+1} of {total_files}: {filename}")
             
-            # 1. Split the file content only if it's an anomaly.
+            # Split the file content only if it's an anomaly.
             # Most files will result in a list with a single item.
             pieces = split_text_if_too_large(content, max_size=LARGE_FILE_CHARACTER_LIMIT)
             
@@ -395,7 +392,7 @@ if files_to_process:
                         corrected_pieces.append(piece)
                         continue
             
-            # 3. Stitch the corrected pieces back together
+            # Stitch the corrected pieces back together
             # If the file wasn't split, this just joins a single-item list.
             final_corrected_text = "\n\n".join(corrected_pieces)
             st.session_state["corrected_files"][filename] = final_corrected_text
@@ -422,7 +419,7 @@ METRIC_MAX_SCORES = {
     "semantic_similarity": 10.0,
 }
 
-if "corrected_files" in st.session_state:
+if st.session_state.corrected_files:
     with mid_col:
         st.success(f"Successfully processed: {st.session_state['last_input_description']}")
         st.subheader("📊 Performance & Evaluation")
@@ -439,7 +436,6 @@ if "corrected_files" in st.session_state:
                 if isinstance(value, (int, float)):
                     max_score = METRIC_MAX_SCORES.get(name)
                     
-                    # --- START OF MODIFICATION ---
                     if max_score:
                         # Logic for grammar_quality_score and semantic_similarity
                         if max_score > 0:
@@ -450,13 +446,11 @@ if "corrected_files" in st.session_state:
                     else:
                         # Logic for readability_improvement and time
                         if name == "readability_improvement":
-                            # Format the delta as a signed percentage, e.g., "+10.5%" or "-5.2%"
                             formatted_value = f"{value:+.1f}%"
-                        else: # Keep original logic for other metrics like 'time'
+                        else: 
                             formatted_value = f"{value:.2f}"
                             if "time" in name.lower():
                                 formatted_value += " s"
-                    # --- END OF MODIFICATION ---
                     
                     formatted_label = name.replace('_', ' ').title()
                     metric_cols[i % 5].metric(label=formatted_label, value=formatted_value)
@@ -495,7 +489,7 @@ if "corrected_files" in st.session_state:
                         display_corrected.extend(corrected_text_content.splitlines()[j1:j2])
 
                 if has_changes:
-                    differ = difflib.HtmlDiff(wrapcolumn=66)
+                    differ = difflib.HtmlDiff(wrapcolumn=70)
                     diff_html = differ.make_file(display_original, display_corrected, fromdesc="Original", todesc="Corrected")
                     
                     font_fix_css = "<style> table.diff td { font-family: system-ui, sans-serif !important; font-size: 1.05em !important; } </style>"
