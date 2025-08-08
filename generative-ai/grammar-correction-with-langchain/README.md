@@ -157,7 +157,7 @@ This will:
 ### Successful UI Screenshots
 
 - Streamlit
-  ![Grammar Correction Streamlit UI](docs/Streamlit Screenshot 1.png)
+  ![Grammar Correction Streamlit UI](docs/grammar-streamlit-ss.pdf)
 
 ---
 
