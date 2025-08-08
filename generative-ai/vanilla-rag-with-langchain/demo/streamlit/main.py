@@ -33,7 +33,7 @@ if "chunks" not in st.session_state:
     st.session_state.chunks = []
 
 # ─── MLflow API Configuration ──────────────────────────────────────────────────
-api_url = "https://localhost:5002/invocations"
+api_url = "http://localhost:5002/invocations"
 
 # ─── Main Form ────────────────────────────────────────────────────────────────
 with st.form("chat_form"):
