@@ -61,6 +61,11 @@ We incorporate:
 │   ├── target_mapper
 │   │   └── lora_target_mapper.py
 │   └── fine_tuning_service.py                                          # Fine-tuning service implementation
+├── demo/                                                               # Compiled Interface Folder
+├── docs
+│   ├── successful-swagger-ui-fine-tuning-result.pdf                    # Swagger screenshot 
+│   ├── streamlit-fine-tuning-with-orpo.pdf                             # Streamlit screenshot
+│   ├── streamlit-fine-tuning-with-orpo.png                             # Streamlit screenshot
 ├── notebooks
 │   ├── register-model.ipynb                                            # Model registration and deployment notebook
 │   └── run-workflow.ipynb                                              # Main workflow notebook for ORPO fine-tuning
@@ -176,6 +181,9 @@ This notebook will:
 - Perform evaluation and comparison between the base and fine-tuned models
 - Generate comparative analysis and metrics
 
+
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### Step 2: Register the Models for Deployment
 
 Execute the model registration notebook:
@@ -204,6 +212,20 @@ The deployed service will allow you to:
 - Send prompts to either the base or fine-tuned model
 - Compare outputs between both models
 - Use the same API endpoint for both model variants
+
+
+### Step 4: Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the fine tuning with orpo.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Fine Tuning Streamlit UI](docs/streamlit-fine-tuning-with-orpo.png)
+
 
 ---
 
