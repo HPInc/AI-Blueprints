@@ -217,7 +217,7 @@ More information on how to run these files can be found in the `demo/streamlit-w
 
 ### Successful Demonstration of the User Interface
 
-![Multimodal RAG Streamlit UI](TBD)
+![Multimodal RAG Streamlit UI](https://github.com/HPInc/AI-Blueprints/blob/testing/mulit-modal-rag-jimmy/generative-ai/multi-modal-rag-with-langchain-vllm/docs/ADO-Wiki-AI-Assistant-Mainpy.pdf)
 
 ---
 
