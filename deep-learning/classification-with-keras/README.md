@@ -22,7 +22,7 @@
 
 # Overview
 
-This project shows how to do a image classification, specifically digits of handwritten images, using TensorFlow and MNIST(Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9.
+This project demonstrates how to perform image classification, specifically for handwritten digits, using TensorFlow and the MNIST (Modified National Institute of Standards and Technology) dataset of handwritten digits. The MNIST dataset consists of a collection of handwritten digits from 0 to 9.
 
 ---
 
@@ -160,6 +160,108 @@ And as response:
   ![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-handwritten-digit-classification.png)
 
 ---
+
+# 🔄 ONNX Model Export
+
+This project includes utilities to automatically convert your trained models to ONNX format during MLflow logging, making them ready for deployment on inference servers like Triton.
+
+## How It Works
+
+### 1. ModelExportConfig Class
+
+Use the `ModelExportConfig` class to configure how each model should be exported:
+
+```python
+from src.onnx_utils import ModelExportConfig
+
+# Configure your model for ONNX export
+config = ModelExportConfig(
+    model_path="my_model.keras",           # Path to your trained model
+    model_name="mnist_classifier",         # Name for the exported model
+    input_shape=(1, 28, 28, 1),           # Input shape (required for Keras/TensorFlow)
+)
+```
+
+**Key Parameters:**
+- `model_path`: Path to your model file (`.keras`, `.nemo`)
+- `model_name`: Name that will be used for the ONNX file
+- `input_shape`: Required for TensorFlow/Keras models (use `input_sample` for PyTorch/NeMo)
+
+### 2. Export Models During MLflow Logging
+
+Pass a list of `ModelExportConfig` objects to the custom `log_model` function:
+
+```python
+from src.onnx_utils import log_model, ModelExportConfig
+
+# Configure models for export
+models_to_export = [
+    ModelExportConfig(
+        model_path="mnist_model.keras",
+        model_name="mnist_classifier",
+        input_shape=(1, 28, 28, 1)
+    )
+]
+
+# Log model with automatic ONNX conversion
+log_model(
+    artifact_path="mnist_pipeline",
+    python_model=YourMLflowModelClass(),
+    models_to_convert_onnx=models_to_export  # This triggers ONNX conversion
+)
+```
+
+### 3. What Gets Created
+
+**Direct ONNX File**
+```
+MLflow Artifacts:
+├── mnist_classifier.onnx       # ONNX file
+```
+
+### 4. Multiple Models
+
+You can export multiple models at once:
+
+```python
+models_to_export = [
+    ModelExportConfig(
+        model_path="encoder.keras",
+        model_name="image_encoder",
+        input_shape=(1, 224, 224, 3)
+    ),
+    ModelExportConfig(
+        model_path="classifier.keras", 
+        model_name="digit_classifier",
+        input_shape=(1, 128)
+    )
+]
+
+log_model(
+    artifact_path="multi_model_pipeline",
+    python_model=YourPipelineModel(),
+    models_to_convert_onnx=models_to_export
+)
+```
+
+### 5. Skip ONNX Export
+
+If you don't want ONNX conversion, simply omit the `models_to_convert_onnx` parameter:
+
+```python
+# Regular MLflow logging without ONNX conversion
+log_model(
+    artifact_path="mnist_pipeline",
+    python_model=YourMLflowModelClass()
+    # No models_to_convert_onnx = automatic ONNX conversion is skipped
+)
+```
+
+### Supported Model Types
+
+- **TensorFlow/Keras**: `.keras`, `.h5`, SavedModel directories
+- **NeMo**: `.nemo` files (requires `input_sample`)
+- **Hugging Face**: Model identifiers or local paths (`translation only`)
 
 # Contact and Support
 
