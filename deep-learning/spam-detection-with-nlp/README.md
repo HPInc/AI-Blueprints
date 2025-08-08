@@ -34,6 +34,7 @@ Text classification model capable of accurately distinguishing between spam and 
 │   └── swagger-ui-spam-detection-with-nlp.pdf                    # Swagger screenshot
 │   └── swagger-ui-spam-detection-with-nlp.png                    # Swagger screenshot
 │   └── streamlit-ui-spam-detection-with-nlp.pdf                  # Streamlit screenshot
+│   └── streamlit-ui-spam-detection-with-nlp.png                  # Streamlit screenshot
 ├── demo/
 │   ├── streamlit/                                                    # Streamlit UI for deployment
 │   │   ├── assets/                                                   # Logo assets
