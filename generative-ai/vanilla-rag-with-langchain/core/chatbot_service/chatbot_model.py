@@ -175,11 +175,14 @@ class ChatbotModel:
             model_source = self.model_config.get("model_source", "local")
             logger.info(f"Loading model with source: {model_source}")
             
-            from src.utils import initialize_llm, get_model_path, DEFAULT_MODELS
+            from src.utils import initialize_llm, DEFAULT_MODELS
             
             # Extract secrets and model path based on configuration
             secrets = self.secrets if self.secrets else {}
-            local_model_path = get_model_path(DEFAULT_MODELS["local"])
+            # Use model_path from notebook if provided, otherwise fall back to default
+            local_model_path = self.model_path if self.model_path else DEFAULT_MODELS["local"]
+            logger.info(f"Using local_model_path: {local_model_path}")
+            
             hf_repo_id = self.model_config.get("hf_repo_id", "")
             
             # Use the shared initialize_llm function

@@ -54,12 +54,20 @@ def _load_pyfunc(data_path: str):
     if not os.path.exists(docs_path):
         raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
+    # Get model path from config (fallback to None if not specified - ChatbotModel handles defaults)
+    model_path = config.get("model_path")
+    if model_path:
+        logger.info(f"Using model path from config: {model_path}")
+    else:
+        logger.info("No model_path found in config, ChatbotModel will use default fallback")
+    
     # Initialize ChatbotModel
     try:
         chatbot_model = ChatbotModel(
             config=config,
             docs_path=docs_path,
-            secrets=secrets
+            secrets=secrets,
+            model_path=model_path
         )
         logger.info("ChatbotModel initialized successfully")
         return chatbot_model

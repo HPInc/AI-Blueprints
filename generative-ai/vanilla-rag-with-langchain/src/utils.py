@@ -15,7 +15,7 @@ from .trt_llm_langchain import TensorRTLangchain
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
@@ -26,13 +26,18 @@ def get_model_path(model_name: str) -> str:
     Get the full path to the model file using the artifacts path and model name.
     
     Args:
-        model_name: Name of the model file
+        model_name: Name of the model file or full path (will extract filename)
         
     Returns:
         Full path to the model file
     """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+    
     artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
-    return os.path.join(artifacts_path, model_name)
+    model_path = os.path.join(artifacts_path, filename)
+    
+    return model_path
 
 # Context window sizes for various models
 MODEL_CONTEXT_WINDOWS = {
@@ -184,7 +189,7 @@ def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
     hf_repo_id: str = "",
-    local_model_path: Optional[str] = None
+    local_model_path: Optional[str] = DEFAULT_MODELS["local"]
 ) -> Any:
     """
     Initialize a language model based on specified source.
@@ -300,10 +305,12 @@ def initialize_llm(
             )
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        model_filename = DEFAULT_MODELS["local"]
-        model_path = get_model_path(model_filename)
+        
+        # Get model path using the utility function
+        model_path = get_model_path(local_model_path)
         
         # For LlamaCpp, get the context window from the filename
+        model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[model_filename]
         else:  
