@@ -54,10 +54,17 @@ def _load_pyfunc(data_path: str):
     if not os.path.exists(docs_path):
         raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
-    # Get model path from config (fallback to None if not specified - ChatbotModel handles defaults)
+    # Get model path from config and resolve it for MLflow artifacts context
     model_path = config.get("model_path")
     if model_path:
-        logger.info(f"Using model path from config: {model_path}")
+        from src.utils import get_model_path
+        
+        # Set MODEL_ARTIFACTS_PATH for get_model_path function
+        os.environ["MODEL_ARTIFACTS_PATH"] = data_path
+        
+        # Resolve model path relative to artifacts
+        resolved_model_path = get_model_path(model_path)
+        model_path = resolved_model_path
     else:
         logger.info("No model_path found in config, ChatbotModel will use default fallback")
     

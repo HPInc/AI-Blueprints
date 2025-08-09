@@ -306,9 +306,6 @@ def initialize_llm(
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         
-        # Get model path using the utility function
-        model_path = get_model_path(local_model_path)
-        
         # For LlamaCpp, get the context window from the filename
         model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
@@ -318,7 +315,7 @@ def initialize_llm(
             context_window = 4096
 
         model = LlamaCpp(
-            model_path=model_path,
+            model_path=local_model_path,
             n_gpu_layers=-1,
             n_batch=512,
             n_ctx=context_window,
