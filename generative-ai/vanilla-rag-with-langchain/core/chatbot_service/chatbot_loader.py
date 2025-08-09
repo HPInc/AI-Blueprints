@@ -1,10 +1,9 @@
 """
 MLflow models-from-code loader module for ChatbotService.
-This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
+This module provides the _load_pyfunc function required by MLflow's.
 """
 
 import os
-import yaml
 import logging
 from typing import Dict, Any, Optional
 
@@ -21,7 +20,7 @@ def _load_pyfunc(data_path: str):
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration 
             - data/: Document directory with AIStudioDoc.pdf
-            - secrets.yaml: Encrypted secrets (optional)
+            - secrets.yaml: Secrets (optional)
             - models/: LLM model files (optional, can be remote path)
             - demo/: Demo folder with UI components (optional)
     
@@ -32,22 +31,25 @@ def _load_pyfunc(data_path: str):
     
     logger.info(f"Loading ChatbotModel from artifacts at: {data_path}")
     
-    # Load configuration
+    # Load configuration using shared utility
+    from src.utils import load_config, load_secrets_to_env, load_secrets
+    
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
     
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
+    # Use relative path for load_config utility
+    config = load_config(config_path)
     logger.info("Configuration loaded successfully")
     
-    # Load secrets if available
+    # Load secrets if available (same approach as notebook)
     secrets_path = os.path.join(data_path, "secrets.yaml")
-    secrets = None
     if os.path.exists(secrets_path):
-        with open(secrets_path, 'r') as f:
-            secrets = yaml.safe_load(f)
-        logger.info("Secrets loaded")
+        load_secrets_to_env(secrets_path)
+        secrets = load_secrets()
+        logger.info("Secrets loaded into environment and retrieved")
+    else:
+        secrets = None
     
     # Set up documents path
     docs_path = os.path.join(data_path, "data")

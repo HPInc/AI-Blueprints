@@ -1,5 +1,5 @@
 """
-Standalone ChatbotModel class for MLflow models-from-code approach.
+Standalone ChatbotModel class.
 
 Business Logic Layer
 - Handles RAG-based question answering with document retrieval

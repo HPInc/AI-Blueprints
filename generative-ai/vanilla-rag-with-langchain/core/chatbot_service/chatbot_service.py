@@ -24,8 +24,7 @@ class ChatbotService:
     """
     Chatbot Service for MLflow model logging.
     This class provides the log_model functionality for packaging RAG-based
-    conversational AI with document retrieval capabilities using MLflow's
-    models-from-code approach.
+    conversational AI with document retrieval capabilities.
     """
     
     def __init__(self):

@@ -1,5 +1,5 @@
 """
-Chatbot service package for MLflow models-from-code approach.
+Chatbot service package
 """
 
 from .chatbot_model import ChatbotModel
