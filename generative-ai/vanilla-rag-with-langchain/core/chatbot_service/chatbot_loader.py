@@ -31,18 +31,16 @@ def _load_pyfunc(data_path: str):
     
     logger.info(f"Loading ChatbotModel from artifacts at: {data_path}")
     
-    # Load configuration using shared utility
     from src.utils import load_config, load_secrets_to_env, load_secrets
     
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
     
-    # Use relative path for load_config utility
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
     
-    # Load secrets if available (same approach as notebook)
+    # Load secrets if available
     secrets_path = os.path.join(data_path, "secrets.yaml")
     if os.path.exists(secrets_path):
         load_secrets_to_env(secrets_path)
@@ -56,21 +54,11 @@ def _load_pyfunc(data_path: str):
     if not os.path.exists(docs_path):
         raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
-    # Set up model path (optional)
-    models_path = os.path.join(data_path, "models")
-    model_path = None
-    if os.path.exists(models_path):
-        model_files = [f for f in os.listdir(models_path) if f.endswith(('.gguf', '.bin', '.safetensors'))]
-        if model_files:
-            model_path = os.path.join(models_path, model_files[0])
-            logger.info(f"Local model found at: {model_path}")
-    
     # Initialize ChatbotModel
     try:
         chatbot_model = ChatbotModel(
             config=config,
             docs_path=docs_path,
-            model_path=model_path,
             secrets=secrets
         )
         logger.info("ChatbotModel initialized successfully")
