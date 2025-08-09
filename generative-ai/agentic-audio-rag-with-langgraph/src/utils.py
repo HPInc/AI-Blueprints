@@ -9,7 +9,6 @@ import yaml
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
-from .trt_llm_langchain import TensorRTLangchain
 
 # ─────── Third-Party Package Imports ───────
 from IPython.display import HTML, display  # Rich HTML display utilities for Jupyter environments
@@ -319,25 +318,6 @@ def initialize_llm(
         )
         model = HuggingFacePipeline(pipeline=pipe)
         
-    elif model_source == "tensorrt":
-        #If a Hugging Face model is specified, it will be used - otherwise, it will try loading the model from local_path
-        try:
-            import tensorrt_llm
-            sampling_params = tensorrt_llm.SamplingParams(temperature=0.1, top_p=0.95, max_tokens=512) 
-            if hf_repo_id != "":
-                return TensorRTLangchain(model_path = hf_repo_id, sampling_params = sampling_params)
-            else:
-                model_config = os.path.join(local_model_path, "config.json")
-                if os.path.isdir(local_model_path) and os.path.isfile(model_config):
-                    return TensorRTLangchain(model_path = local_model_path, sampling_params = sampling_params)
-                else:
-                    raise Exception("Model format incompatible with TensorRT LLM")
-        except ImportError:
-            raise ImportError(
-                "Could not import tensorrt-llm library. "
-                "Please make sure tensorrt-llm is installed properly, or "
-                "consider using workspaces based on the NeMo Framework"
-            )
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         # For LlamaCpp, get the context window from the filename
@@ -386,6 +366,29 @@ def get_response_from_llm(llm, system_prompt, user_prompt):
 def get_project_root():
     """Get the project root directory"""
     return Path(__file__).parent.parent
+
+def get_models_dir():
+    """Get or create the models directory for downloaded models"""
+    models_dir = get_project_root() / "models"
+    models_dir.mkdir(exist_ok=True)
+    return models_dir
+
+def format_model_path(model_id: str) -> Path:
+    """Convert a HuggingFace model ID to a local path"""
+    return get_models_dir() / model_id.replace("/", "__")
+
+def get_model_cache_dir():
+    """Get the directory for caching downloaded models"""
+    cache_dir = get_models_dir() / "cache"
+    cache_dir.mkdir(exist_ok=True)
+    return cache_dir
+
+def setup_model_environment():
+    """Setup model-related environment variables for the project"""
+    # Configure HuggingFace cache to use project directory
+    hf_cache_dir = str(get_model_cache_dir())
+    os.environ["HF_HOME"] = hf_cache_dir
+    os.environ["HF_HUB_CACHE"] = hf_cache_dir
 
 def display_image(image_bytes: bytes, width: int = 400) -> str:
     """
