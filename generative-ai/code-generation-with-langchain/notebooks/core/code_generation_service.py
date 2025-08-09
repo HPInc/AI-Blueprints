@@ -710,7 +710,6 @@ Question: {question}
                             logger.info(f"Collection '{self.collection_name}' has {count} documents")
                             
                             # Use the repository chain with the question
-                            # TODO: Is this chain input correct? Does it match with the prompt template?
                             chain_input = {"question": question, "query": question}
                             logger.info(f"Using repository chain with input: {chain_input}")
                             
