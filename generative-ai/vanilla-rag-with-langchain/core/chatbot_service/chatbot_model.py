@@ -1,7 +1,11 @@
 """
 Standalone ChatbotModel class for MLflow models-from-code approach.
-This class handles RAG-based question answering with document retrieval
-without inheriting from MLflow's PythonModel.
+
+Business Logic Layer
+- Handles RAG-based question answering with document retrieval
+- Manages model initialization, embeddings, vector database, and prediction logic
+- Contains all domain-specific functionality without MLflow dependencies
+- Designed to be framework-agnostic and easily testable
 """
 
 import os
@@ -171,17 +175,20 @@ class ChatbotModel:
             model_source = self.model_config.get("model_source", "local")
             logger.info(f"Loading model with source: {model_source}")
             
-            # Setup callback manager for streaming
-            self.callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+            from src.utils import initialize_llm, DEFAULT_MODELS
             
-            if model_source == "local":
-                self._load_local_model()
-            elif model_source == "hugging-face-local":
-                self._load_local_hf_model()
-            elif model_source == "hugging-face-cloud":
-                self._load_cloud_hf_model()
-            else:
-                raise ValueError(f"Unknown model source: {model_source}")
+            # Extract secrets and model path based on configuration
+            secrets = self.secrets if self.secrets else {}
+            local_model_path = self.model_path if self.model_path else DEFAULT_MODELS["local"]
+            hf_repo_id = self.model_config.get("hf_repo_id", "")
+            
+            # Use the shared initialize_llm function
+            self.llm = initialize_llm(
+                model_source=model_source,
+                secrets=secrets,
+                local_model_path=local_model_path,
+                hf_repo_id=hf_repo_id
+            )
                 
             if self.llm is None:
                 logger.error("Model failed to initialize - llm is None after loading")
@@ -191,97 +198,6 @@ class ChatbotModel:
             
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
-            raise
-    
-    def _load_local_model(self) -> None:
-        """Load a local LlamaCpp model."""
-        try:
-            # Use provided model path or default
-            if self.model_path and os.path.exists(self.model_path):
-                model_path = self.model_path
-            else:
-                model_path = "/mnt/llm-cache/models--meta-llama--Meta-Llama-3.1-8B-Instruct-GGUF/blobs/7ce2831e5c93f5bd7db479f2d3e0ab2a62e3ae90e4b8df19c1dd9fd14c8bbba6"
-            
-            if not os.path.exists(model_path):
-                raise FileNotFoundError(f"Model file not found at {model_path}")
-            
-            # Default context window size
-            context_window = 4096
-            
-            logger.info("Initializing LlamaCpp with the following parameters:")
-            logger.info(f"  - Model Path: {model_path}")
-            logger.info(f"  - n_gpu_layers: 30, n_batch: 512, n_ctx: {context_window}")
-            logger.info(f"  - max_tokens: 1024, f16_kv: True, temperature: 0.2")
-            
-            self.llm = LlamaCpp(
-                model_path=model_path,
-                n_gpu_layers=30,
-                n_batch=512,
-                n_ctx=context_window,
-                max_tokens=1024,
-                f16_kv=True,
-                callback_manager=self.callback_manager,
-                verbose=True, 
-                stop=[],
-                streaming=False,
-                temperature=0.2,
-            )
-            
-            # Store context window in model for later retrieval
-            self.llm.__dict__['_context_window'] = context_window
-            logger.info(f"LlamaCpp model initialized successfully with context window of {context_window} tokens")
-            
-        except Exception as e:
-            logger.error(f"Error in _load_local_model: {str(e)}")
-            raise
-    
-    def _load_local_hf_model(self) -> None:
-        """Load a local Hugging Face model."""
-        try:
-            model_id = "deepseek-ai/deepseek-coder-1.3b-instruct"
-            context_window = 16384
-            
-            tokenizer = AutoTokenizer.from_pretrained(model_id)
-            model = AutoModelForCausalLM.from_pretrained(model_id)
-            pipe = pipeline(
-                "text-generation",
-                model=model,
-                tokenizer=tokenizer,
-                max_new_tokens=1024,
-                device_map="auto",
-            )
-            self.llm = HuggingFacePipeline(pipeline=pipe)
-            self.llm.__dict__['_context_window'] = context_window
-            
-            logger.info(f"Using the local Deep Seek model downloaded from HuggingFace with context window of {context_window} tokens.")
-            
-        except Exception as e:
-            logger.error(f"Error in _load_local_hf_model: {str(e)}")
-            raise
-    
-    def _load_cloud_hf_model(self) -> None:
-        """Load a cloud-based Hugging Face model."""
-        try:
-            # Get HuggingFace API token from environment or config
-            hf_token = os.getenv("AIS_HUGGINGFACE_API_KEY") or self.model_config.get("hf_key")
-            if not hf_token:
-                raise ValueError("HuggingFace API token not found in environment or config")
-            
-            repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
-            self.llm = HuggingFaceEndpoint(
-                huggingfacehub_api_token=hf_token,
-                repo_id=repo_id,
-                task="text-generation",
-            )
-            
-            # Set known context window for Mistral-7B-Instruct-v0.2 (8192 tokens) 
-            context_window = 8192
-            self.llm.__dict__['_context_window'] = context_window
-               
-            logger.info(f"Using the cloud Mistral model on HuggingFace with context window of {context_window} tokens.")
-            
-        except Exception as e:
-            logger.error(f"Error in _load_cloud_hf_model: {str(e)}")
             raise
     
     def _load_prompt(self) -> None:

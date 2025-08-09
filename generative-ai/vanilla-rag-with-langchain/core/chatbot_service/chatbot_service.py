@@ -1,7 +1,11 @@
 """
 Chatbot Service implementation for MLflow model logging.
-This service provides the log_model functionality for packaging 
-RAG-based chatbot models using MLflow's models-from-code approach.
+
+MLflow Registration Layer
+- Provides log_model functionality for packaging RAG-based chatbot models
+- Handles artifact organization and temporary directory management
+- Uses MLflow's models-from-code approach for deployment
+- Manages configuration, documents, secrets, and demo assets
 """
 import os
 import uuid
