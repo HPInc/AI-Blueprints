@@ -102,11 +102,6 @@ class ChatbotService:
         
         try:
             logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
-            
-            # Store current working directory and ensure we're in the right context
-            original_cwd = os.getcwd()
-            logger.info(f"DEBUG: Current working directory: {original_cwd}")
-            
             # Organize temp directory for clean final structure
             # MLflow will place this under /artifacts/data/ automatically
             

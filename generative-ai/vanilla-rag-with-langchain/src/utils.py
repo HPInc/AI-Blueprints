@@ -198,7 +198,7 @@ def initialize_llm(
         model_source: Source of the model. Options are "local", "hugging-face-local", or "hugging-face-cloud".
         secrets: Dictionary containing API keys for cloud services.
         hf_repo_id: Repository ID for HuggingFace models.
-        local_model_path: Path to local model files (used for tensorrt models).
+        local_model_path: Path to local model file
 
     Returns:
         Initialized language model object.
