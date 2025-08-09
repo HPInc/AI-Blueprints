@@ -46,17 +46,19 @@ class ChatbotModel:
     Handles RAG-based question answering with document retrieval.
     """
     
-    def __init__(self, config: dict, docs_path: str, secrets: dict = None):
+    def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
         """
         Initialize the ChatbotModel with configuration and artifacts.
         
         Args:
             config: Model configuration dictionary
             docs_path: Path to documents directory
+            model_path: Path to local model file (optional)
             secrets: Dictionary containing secrets (optional)
         """
         self.model_config = config
         self.docs_path = docs_path
+        self.model_path = model_path
         self.secrets = secrets
         
         # Initialize components
@@ -173,11 +175,11 @@ class ChatbotModel:
             model_source = self.model_config.get("model_source", "local")
             logger.info(f"Loading model with source: {model_source}")
             
-            from src.utils import initialize_llm, DEFAULT_MODELS
+            from src.utils import initialize_llm, get_model_path, DEFAULT_MODELS
             
             # Extract secrets and model path based on configuration
             secrets = self.secrets if self.secrets else {}
-            local_model_path = DEFAULT_MODELS["local"]
+            local_model_path = get_model_path(DEFAULT_MODELS["local"])
             hf_repo_id = self.model_config.get("hf_repo_id", "")
             
             # Use the shared initialize_llm function

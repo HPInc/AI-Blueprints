@@ -15,11 +15,24 @@ from .trt_llm_langchain import TensorRTLangchain
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+    "local": "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     "tensorrt": "",
     "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
 }
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+    
+    Args:
+        model_name: Name of the model file
+        
+    Returns:
+        Full path to the model file
+    """
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    return os.path.join(artifacts_path, model_name)
 
 # Context window sizes for various models
 MODEL_CONTEXT_WINDOWS = {
@@ -170,8 +183,8 @@ def configure_proxy(config: Dict[str, Any]) -> None:
 def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
-    local_model_path: str = DEFAULT_MODELS["local"],
-    hf_repo_id: str = ""
+    hf_repo_id: str = "",
+    local_model_path: Optional[str] = None
 ) -> Any:
     """
     Initialize a language model based on specified source.
@@ -179,7 +192,8 @@ def initialize_llm(
     Args:
         model_source: Source of the model. Options are "local", "hugging-face-local", or "hugging-face-cloud".
         secrets: Dictionary containing API keys for cloud services.
-        local_model_path: Path to local model file.
+        hf_repo_id: Repository ID for HuggingFace models.
+        local_model_path: Path to local model files (used for tensorrt models).
 
     Returns:
         Initialized language model object.
@@ -286,8 +300,10 @@ def initialize_llm(
             )
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+        model_filename = DEFAULT_MODELS["local"]
+        model_path = get_model_path(model_filename)
+        
         # For LlamaCpp, get the context window from the filename
-        model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[model_filename]
         else:  
@@ -295,7 +311,7 @@ def initialize_llm(
             context_window = 4096
 
         model = LlamaCpp(
-            model_path=local_model_path,
+            model_path=model_path,
             n_gpu_layers=-1,
             n_batch=512,
             n_ctx=context_window,
