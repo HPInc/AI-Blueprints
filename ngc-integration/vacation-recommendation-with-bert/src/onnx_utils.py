@@ -100,6 +100,13 @@ logger = logging.getLogger("register_model_logger")
 
 @dataclass
 class ModelExportConfig:
+    """
+    Configuration for ONNX model export from loaded models.
+    
+    All model-specific parameters should be passed as kwargs when creating the config.
+    This keeps the interface clean and allows each export method to receive 
+    only the parameters it needs.
+    """
     model: Any                      # Model already loaded in memory (required)
     model_name: str                 # Model name for file/directory
     input_shape: Optional[Tuple] = None
@@ -107,10 +114,48 @@ class ModelExportConfig:
     model_type: Optional[str] = None  # Auto-detect if None
     task: str = "text-classification"  # for Transformers models
     create_triton_structure: bool = False  # Create Triton-style directories or just save ONNX file
-    input_names: Optional[List[str]] = None  # Input names for ONNX export
-    output_names: Optional[List[str]] = None  # Output names for ONNX export
-    dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None  # Dynamic axes for ONNX export
-    extra_params: Dict[str, Any] = field(default_factory=dict)
+    
+    def __init__(self, model: Any, model_name: str, **kwargs):
+        """
+        Initialize ModelExportConfig with model-specific parameters as kwargs.
+        
+        Args:
+            model: Model already loaded in memory
+            model_name: Model name for file/directory
+            **kwargs: All other parameters including model-specific ones
+        """
+        self.model = model
+        self.model_name = model_name
+        
+        # Extract common parameters
+        self.input_shape = kwargs.pop('input_shape', None)
+        self.input_sample = kwargs.pop('input_sample', None)
+        self.model_type = kwargs.pop('model_type', None)
+        self.task = kwargs.pop('task', 'text-classification')
+        self.create_triton_structure = kwargs.pop('create_triton_structure', False)
+        
+        # Store all remaining kwargs for the export methods
+        self.export_kwargs = kwargs
+        
+        # Auto-detect model type if not provided
+        if self.model_type is None:
+            from onnx_export import identify_model_type
+            self.model_type = identify_model_type(self.model)
+    
+    def get_onnx_filename(self) -> str:
+        """Return ONNX filename."""
+        return f"{self.model_name}.onnx"
+    
+    def validate(self) -> None:
+        """Validate configuration."""
+        if self.model is None:
+            raise ValueError("Model object must be provided (no file paths supported)")
+            
+        if self.model_type in ['nemo', 'pytorch', 'sklearn'] and self.input_sample is None:
+            raise ValueError(f"Input sample required for {self.model_type} model '{self.model_name}'.")
+        
+        if self.model_type == 'tensorflow' and self.input_shape is None and self.input_sample is None:
+            raise ValueError(f"Input shape or input sample required for TensorFlow model '{self.model_name}'.")
     
     def __post_init__(self):
         """Auto-detect model type from loaded model"""
@@ -194,29 +239,34 @@ def create_model_export_configs(
 
 def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
     """
-    Convert a single model to ONNX format using ModelExportConfig.
+    Convert a single model to ONNX format with model-specific parameters.
     
     Args:
-        config: ModelExportConfig containing all model configuration
+        config: Model export configuration with all parameters
+        output_path: Where to save the ONNX file
         
     Returns:
-        Path to converted ONNX model
+        Path to the exported ONNX model
     """
-    from onnx_export import export_model_to_onnx
-    
-    onnx_filename = config.get_onnx_filename()
-    logger.info(f"🔄 Converting {config.model_type} model (from memory) -> {onnx_filename}")
-    
-    return export_model_to_onnx(
-        model=config.model,
-        input_sample=config.input_sample,
-        output_path=onnx_filename,
-        model_name=config.model_name,
-        task=config.task,
-        input_names=config.input_names,
-        output_names=config.output_names,
-        dynamic_axes=config.dynamic_axes
-    )
+    try:
+        from onnx_export import export_model_to_onnx
+        onnx_filename = config.get_onnx_filename()
+        
+        logger.info(f"🔄 Converting {config.model_type} model: {config.model_name}")
+        
+        # Use the main API with all kwargs passed through
+        return export_model_to_onnx(
+            model=config.model,
+            input_sample=config.input_sample,
+            output_path=onnx_filename,
+            model_name=config.model_name,
+            task=config.task,
+            **config.export_kwargs  # Pass all kwargs directly
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to convert {config.model_name}: {e}")
+        raise
 
 
 def _generate_onnx_from_models(model_configs: List[ModelExportConfig]) -> Union[str, Dict[str, str]]:

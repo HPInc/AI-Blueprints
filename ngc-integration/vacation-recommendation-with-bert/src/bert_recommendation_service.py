@@ -193,27 +193,26 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long)
         token_type_ids = torch.zeros((batch_size, seq_len), dtype=torch.long)
     
-        model_configs = [
-            ModelExportConfig(
-                model=wrapped_model,                           # 🚀 Pre-loaded model object!
-                model_name="bert_tourism_onnx",             # ONNX file naming
-                input_sample=(                             
+        # Create ONNX export configuration
+        model_configs = ModelExportConfig(
+            model=wrapped_model,
+            model_name="bert_tourism_onnx",
+            input_sample=(                             
                     input_ids.to(device),
                     attention_mask.to(device),
                     token_type_ids.to(device)
                 ),
-                input_names=["input_ids", "attention_mask", "token_type_ids"],
-                output_names=["embedding"],
-                dynamic_axes={
-                    "input_ids": {0: "batch", 1: "sequence"},
-                    "attention_mask": {0: "batch", 1: "sequence"},
-                    "token_type_ids": {0: "batch", 1: "sequence"},
-                    "embedding": {0: "batch_size"}
-                },
-            )    
-        ]
-
-        # Log the model with automatic ONNX conversion from memory
+            opset_version=12,
+            do_constant_folding=True,
+            input_names=['input_ids', 'attention_mask', 'token_type_ids'],
+            output_names=['embedding'],
+            dynamic_axes={
+                'input_ids': {0: 'batch_size', 1: 'sequence'},
+                'attention_mask': {0: 'batch_size', 1: 'sequence'},
+                'token_type_ids': {0: 'batch_size', 1: 'sequence'},
+                'embedding': {0: 'batch_size'}
+            }
+        )        # Log the model with automatic ONNX conversion from memory
         log_model(
                 artifact_path=model_name,
                 python_model=cls(),
