@@ -97,7 +97,7 @@ num_inference_steps = st.number_input("Number of inference steps:", min_value=1,
 
 # --- Button to Call the Model ---
 if st.button("Get result"):
-    if prompt or use_finetuning or height or width or num_images or num_inference_steps not in st.session_state:
+    if not all([prompt, height, width, num_images, num_inference_steps]):
         st.warning("⚠️ Please fill all fields!")
     else:
         payload = {
@@ -117,16 +117,33 @@ if st.button("Get result"):
                 response.raise_for_status()
                 data = response.json()
 
-                base64_image = data.get("predictions", [None])[0]
+                base64_images = data.get("predictions", [])
 
-                if base64_image and isinstance(base64_image, str):
-                    image_bytes = base64.b64decode(base64_image)
-                    image = Image.open(BytesIO(image_bytes))
-                    st.session_state["enhanced_image"] = image
-                    st.success("✅ Here is your image!")
+                if base64_images and isinstance(base64_images, list):
+                    st.success("✅ Here are your images!")
+                    for i, base64_image in enumerate(base64_images):
+                        try:
+                            image_bytes = base64.b64decode(base64_image)
+                            image = Image.open(BytesIO(image_bytes))
+                            st.image(image, caption=f"Image {i+1}", use_container_width=True)
+
+                            # Download button for each image
+                            buffer = BytesIO()
+                            image.save(buffer, format="PNG")
+                            buffer.seek(0)
+
+                            st.download_button(
+                                label=f"📥 Download Image {i+1}",
+                                data=buffer,
+                                file_name=f"image_output_{i+1}.png",
+                                mime="image/png"
+                            )
+                        except Exception as e:
+                            st.error(f"❌ Error displaying image {i+1}: {str(e)}")
                 else:
                     st.error("❌ No valid image data returned from the model.")
                     st.write("Raw response:", data)
+
 
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error fetching prediction.")
