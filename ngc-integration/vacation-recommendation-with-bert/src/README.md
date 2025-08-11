@@ -29,22 +29,36 @@ log_model(
 
 ## ModelExportConfig Examples by Framework
 
-### 1. NeMo
+### 1. NeMo - Audio Translation with Nemo
 
 ```python
-from nemo.collections.nlp.models import BERTLMModel
-nemo_model = BERTLMModel.restore_from("bert_model.nemo")
-input_sample = {
-    'input_ids': torch.randint(0, 30522, (1, 128)),
-    'attention_mask': torch.ones((1, 128))
-}
-config = ModelExportConfig(
-    model=nemo_model,
-    model_name="nemo_bert_model",
-    input_sample=input_sample,  
-    check_trace=True,           # NeMo-specific
-    verbose=False
-)
+mt_model = MarianMTModel.from_pretrained(MT_MODEL)
+asr_model = nemo_asr.models.EncDecCTCModel.restore_from(nemo_models["enc_dec_CTC"])
+fast_pitch_model = nemo_tts.models.FastPitchModel.restore_from(nemo_models["fast_pitch"])
+hifi_gan_model = nemo_tts.models.HifiGanModel.restore_from(nemo_models["hifi_gan"])
+      
+model_configs = [ 
+            ModelExportConfig(
+                model=mt_model,                         # 🚀 Pre-loaded Transformers model!
+                model_name="Helsinki-NLP",              # ONNX file naming
+                task="translation",                     # Model task
+            ),
+            # NeMo ASR model
+            ModelExportConfig(
+                model=asr_model.to(device),                        # 🚀 Pre-loaded NeMo ASR model!
+                model_name="enc_dec_CTC",               # ONNX file naming
+            ),
+            # NeMo FastPitch model
+            ModelExportConfig(
+                model=fast_pitch_model.to(device),                 # 🚀 Pre-loaded NeMo TTS model!
+                model_name="fast_pitch",                # ONNX file naming
+            ),
+            # NeMo HifiGAN model
+            ModelExportConfig(
+                model=hifi_gan_model.to(device),                   # 🚀 Pre-loaded NeMo Vocoder model!
+                model_name="hifi_gan",                  # ONNX file naming
+            ),
+        ] 
 ```
 
 If your NeMo model does not support export, you should try to wrap it as a PyTorch model and try to use the torch converter, config example:

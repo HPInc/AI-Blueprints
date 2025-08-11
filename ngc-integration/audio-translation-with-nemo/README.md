@@ -193,31 +193,13 @@ The audio translation pipeline supports automatic model export to ONNX format th
 - **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
 - **Keras Models**: TensorFlow/Keras models for neural network-based processing
 - **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
-
-## Adding Custom Models
-
-To add support for additional models in the audio translation pipeline, extend the `ModelExportConfig` class:
-
-```python
-from core.model_export import ModelExportConfig
-
-# Example configuration for a custom NeMo STT model
-stt_export_config = ModelExportConfig(
-    model_name="custom_citrinet_model",
-    model_type="nemo",
-)
-
-# Example configuration for translation model
-translation_export_config = ModelExportConfig(
-    model_name="custom_translation_model", 
-    model_type="transformers",
-    task="translation"
-)
-```
+- **Pytorch Models**: Pytorch models that can be exported
 
 ## ONNX Export Control
 
 You can control ONNX generation not sending ModelExportConfig list to the log_model method.
+
+For More information about the exportation can be found on the readme inside /src folder on blueprint.
 
 ---
 
