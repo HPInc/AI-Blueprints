@@ -122,10 +122,12 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
+
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 
 - **Configure Secrets in Secrets Manager (Premium users):**
+
   - Add your API keys to the project's Secrets Manager vault, located in the `Project Setup` tab -> `Setup` -> `Project Secrets`:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
   - In `Secrets Name` field add: `HUGGINGFACE_API_KEY`
@@ -170,6 +172,7 @@ notebooks/register-model.ipynb
 ```
 
 This will:
+
 - Register the model in MLflow
 
 ### Step 3: Deploy the Summarization Service
