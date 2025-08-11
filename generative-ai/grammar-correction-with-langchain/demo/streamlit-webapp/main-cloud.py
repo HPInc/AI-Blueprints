@@ -81,6 +81,12 @@ def split_text_if_too_large(text: str, max_size: int = LARGE_FILE_CHARACTER_LIMI
     return split_text_if_too_large(part1, max_size) + split_text_if_too_large(part2, max_size)
 
 # ==============================================================================
+# CONSTANTS
+# ==============================================================================
+
+API_URL = "https://7c42b47a662a.ngrok-free.app/invocations"
+
+# ==============================================================================
 # GITHUB EXTRACTOR CLASS
 # ==============================================================================
 class GitHubMarkdownProcessor:
@@ -283,9 +289,6 @@ _, mid_col, _ = st.columns([1, 4, 1])
 with mid_col:
     st.title("📚 Markdown Grammar Corrector")
     st.markdown("Enter a public GitHub repository URL or upload files to correct grammar.")
-    
-    with st.expander("⚙️ API Configuration"):
-        api_url = st.text_input("MLflow Model /invocations URL", value="https://localhost:55919/invocations")
 
     st.subheader("Choose Input Method")
     tab1, tab2 = st.tabs(["🔗 GitHub URL", "📁 Upload Files"])
@@ -329,9 +332,6 @@ with mid_col:
 # ==============================================================================
 if files_to_process:
     with mid_col: 
-        if not api_url:
-            st.error("Please provide the MLflow API URL.")
-            st.stop()
         
         with st.spinner("Initializing the model... This can take a few minutes on the first run."):
             try:
@@ -339,7 +339,7 @@ if files_to_process:
                 warmup_df = pd.DataFrame([{"repo_url": None, "files": "This is a warmup."}])
                 warmup_payload = {"dataframe_split": warmup_df.to_dict("split")}
                 # Check the response and raise an error if it fails
-                requests.post(api_url, json=warmup_payload, timeout=180, verify=False).raise_for_status()
+                requests.post(API_URL, json=warmup_payload, timeout=180, verify=False).raise_for_status()
             except Exception as e:
                 st.error(f"Failed to initialize the model. Please check the API URL and ensure the backend is running correctly. Error: {e}")
                 st.stop() # Stop the app if the model can't be reached
@@ -372,7 +372,7 @@ if files_to_process:
                         # Process each piece (which could be the whole file)
                         input_df = pd.DataFrame([{"repo_url": None, "files": piece}])
                         payload = {"dataframe_split": input_df.to_dict("split")}
-                        res = requests.post(api_url, json=payload, timeout=300, verify=False)
+                        res = requests.post(API_URL, json=payload, timeout=300, verify=False)
                         res.raise_for_status()
                         
                         response_data = res.json()["predictions"][0]
@@ -411,7 +411,7 @@ if files_to_process:
         st.rerun()
 
 # ==============================================================================
-# DISPLAY RESULTS 
+# DISPLAY RESULTS 
 # ==============================================================================
 
 METRIC_MAX_SCORES = {
@@ -419,7 +419,7 @@ METRIC_MAX_SCORES = {
     "semantic_similarity": 10.0,
 }
 
-if st.session_state.corrected_files:
+if "corrected_files" in st.session_state:
     with mid_col:
         st.success(f"Successfully processed: {st.session_state['last_input_description']}")
         st.subheader("📊 Performance & Evaluation")
@@ -446,8 +446,9 @@ if st.session_state.corrected_files:
                     else:
                         # Logic for readability_improvement and time
                         if name == "readability_improvement":
+                            # Format the delta as a signed percentage, e.g., "+10.5%" or "-5.2%"
                             formatted_value = f"{value:+.1f}%"
-                        else: 
+                        else: # Keep original logic for other metrics like 'time'
                             formatted_value = f"{value:.2f}"
                             if "time" in name.lower():
                                 formatted_value += " s"
@@ -489,7 +490,7 @@ if st.session_state.corrected_files:
                         display_corrected.extend(corrected_text_content.splitlines()[j1:j2])
 
                 if has_changes:
-                    differ = difflib.HtmlDiff(wrapcolumn=70)
+                    differ = difflib.HtmlDiff(wrapcolumn=66)
                     diff_html = differ.make_file(display_original, display_corrected, fromdesc="Original", todesc="Corrected")
                     
                     font_fix_css = "<style> table.diff td { font-family: system-ui, sans-serif !important; font-size: 1.05em !important; } </style>"
