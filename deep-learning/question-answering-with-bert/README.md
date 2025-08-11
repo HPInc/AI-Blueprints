@@ -34,6 +34,8 @@
 ├── docs/
 │   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
 │   └── html-ui-handwritten-digit-classification.png                  # UI screenshot
+│   └── streamlit-ui-handwritten-digit-classification.pdf             # Streamlit screenshot
+│   └── streamlit-ui-handwritten-digit-classification.png             # Streamlit screenshot
 │   └── swagger-ui-question-answering-with-bert.pdf                   # Swagger screenshot
 │   └── swagger-ui-question-answering-with-bert.png                   # Swagger screenshot
 │
@@ -90,6 +92,8 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### 2 ▪ Run the Notebook
 Run the following notebook `/register-model.ipynb`:
 1. Log Model to MLflow
@@ -141,6 +145,19 @@ And as response:
   }
 }
 ```
+### Step 4 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the Q&A with BERT.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Q&A with BERT Streamlit UI](docs/streamlit-ui-question-answering-with-bert.png)
+
+
 ---
 
 # Contact and Support
