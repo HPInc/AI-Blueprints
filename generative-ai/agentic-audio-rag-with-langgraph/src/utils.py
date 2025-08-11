@@ -6,6 +6,7 @@ import time  # Time-related utilities
 from functools import wraps  # Function decorators support
 import os
 import yaml
+import subprocess
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
@@ -363,6 +364,20 @@ def get_response_from_llm(llm, system_prompt, user_prompt):
 
 
 # ─────── Helper Functions ───────
+def ensure_wav(input_path: str) -> str:
+    p = Path(input_path)
+    if p.suffix.lower() == ".wav":
+        return str(p)
+    out = str(p.with_suffix(".wav"))
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(p), "-ar", "16000", "-ac", "1", out],
+            check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        return out if Path(out).exists() else str(p)
+    except Exception:
+        return str(p)
+
 def get_project_root():
     """Get the project root directory"""
     return Path(__file__).parent.parent
