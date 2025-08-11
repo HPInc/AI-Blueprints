@@ -34,7 +34,11 @@ This project demonstrates how to build a semantic chunking and summarization pip
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
 ├── core
 │   ├── __init__.py
-│   └── text_summarization_service.py                                   # Text summarization service implementation
+│   └── summarization_service/                                          # Text summarization service package
+│       ├── __init__.py
+│       ├── summarization_model.py                                      # Business logic layer - core functionality
+│       ├── summarization_loader.py                                     # MLflow integration layer - model loading
+│       └── summarization_service.py                                    # Registration layer - model packaging
 ├── data
 │   ├── inputs/                                                         # Input data directory
 │   └── outputs/                                                        # Generated summaries directory
