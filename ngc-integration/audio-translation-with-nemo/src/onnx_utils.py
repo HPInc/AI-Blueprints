@@ -1,28 +1,28 @@
 """
-AI-Blueprints MLflow Utilities with ONNX Integration and Model Directory Support
+AI-Blueprints MLflow Utilities with ONNX Integration for In-Memory Models
 
 Provides enhanced MLflow logging capabilities with automatic ONNX export support
-and individual model directory generation for ML pipelines.
-Focused on Keras/TensorFlow and NeMo models for audio translation pipelines.
+for models already loaded in memory. Supports individual model directory generation 
+for ML pipelines with maximum efficiency.
 
-Uses ModelExportConfig for clean, per-model configuration.
+Uses ModelExportConfig for clean, per-model configuration with manual object creation.
 
-Supported Model Types:
-- 🎙️ NeMo: .nemo (ASR, TTS, Translation, etc.)
-- 🧠 TensorFlow/Keras: .keras, .h5, .pb, SavedModel directories
-- 🤖 PyTorch: .pt, .pth files
-- 🔤 Transformers: Hugging Face models
-- 📊 Scikit-learn: .pkl, .joblib files
+Supported Model Types (In-Memory Only):
+- 🎙️ NeMo: Loaded NeMo models (ASR, TTS, Translation, etc.)
+- 🧠 TensorFlow/Keras: Loaded tf.keras.Model objects
+- 🤖 PyTorch: Loaded torch.nn.Module objects
+- 🔤 Transformers: Loaded Hugging Face transformer models
+- 📊 Scikit-learn: Loaded sklearn models
 
 Generated Artifacts:
-- Original models (.nemo, .keras, etc.)
-- ONNX versions (.onnx) with naming: {triton_model_name}.onnx
+- ONNX versions (.onnx) with naming: {model_name}.onnx
 - External weights (.onnx.data) for models >2GB
 - Individual model directories ready for deployment
 - MLflow artifacts and signatures
 
 Key Features:
-- ✅ Per-model configuration with ModelExportConfig
+- ✅ Manual ModelExportConfig object creation
+- 🚀 Works ONLY with pre-loaded models (maximum efficiency!)
 - ✅ Automatic ONNX conversion from multiple model formats
 - ✅ Individual model directories for each model
 - ✅ Support for both single and multiple model pipelines
@@ -32,68 +32,47 @@ Key Features:
 
 API Examples:
 
-    # Individual model configuration
     from ais_utils.utils import ModelExportConfig, log_model
     
+    # Your models already loaded in memory
+    encoder_model = tf.keras.models.load_model("encoder.keras")
+    decoder_model = nemo_asr.models.EncDecCTCModel.restore_from("decoder.nemo")
+    
+    # Create configs manually
     model_configs = [
         ModelExportConfig(
-            model_path="encoder.keras",
-            model_name="bert_encoder",         # Model name for directory/file
-            input_shape=(1, 224, 224, 3),
-            create_triton_structure=True      # Create Triton-style directories
+            model=encoder_model,
+            model_name="bert_encoder",
+            input_sample=sample_input,
+            create_triton_structure=True
         ),
         ModelExportConfig(
-            model_path="decoder.nemo",
-            model_name="bert_decoder",         # Model name for directory/file
+            model=decoder_model,
+            model_name="bert_decoder", 
             input_sample=sample_audio,
-            create_triton_structure=False     # Just save ONNX file directly
-        ),
+            create_triton_structure=True
+        )
     ]
     
     log_model(
         artifact_path="bert_pipeline",
         python_model=BERTTourismModel(),
         artifacts={"corpus": "corpus.csv", "embeddings": "embeddings.csv"},
-        models_to_convert_onnx=model_configs        # ONNX conversion + model directories/files
+        models_to_convert_onnx=model_configs
     )
-    
-    # Helper function for easier configuration
-    from ais_utils.utils import create_model_export_configs
-    
-    configs = create_model_export_configs(
-        models_dict={"bert_encoder": "encoder.keras", "bert_decoder": "decoder.nemo"},
-        input_shapes={"bert_encoder": (1, 224, 224, 3)},
-        input_samples={"bert_decoder": sample_audio},
-        create_triton_structure=True  # Apply to all models
-    )
-
-Generated Model Structure:
-    MLflow Artifacts (create_triton_structure=True):
-    ├── model_bert_encoder/                 # Triton-style model directory
-    │   └── 1/
-    │       └── model.onnx                 # ONNX model
-    ├── model_bert_decoder/                # Triton-style model directory  
-    │   └── 1/
-    │       └── model.onnx                 # ONNX model
-    ├── onnx_bert_encoder.onnx             # Original ONNX files
-    └── onnx_bert_decoder.onnx
-
-    MLflow Artifacts (create_triton_structure=False):
-    ├── model_bert_encoder.onnx            # Direct ONNX file with model_name
-    ├── model_bert_decoder.onnx            # Direct ONNX file with model_name
-    ├── onnx_bert_encoder.onnx             # Original ONNX files (temporary)
-    └── onnx_bert_decoder.onnx
 
 Benefits:
+- 🚀 Maximum efficiency: No file I/O overhead
+- 💾 Reduced memory usage: No model duplication
+- 🛡️ Simplified error handling: No file path issues
+- 🧹 Cleaner code: Single API approach
+- ⚡ Faster execution: Direct memory to ONNX conversion
+- ✅ Manual control over model configuration
 - ✅ Individual model directories as MLflow artifacts (Triton-style)
 - ✅ Direct ONNX file storage option (simple file copy)
 - ✅ Per-model input shapes and samples
 - ✅ Flexible structure creation (Triton directories or direct files)
-- ✅ Better validation and error messages
-- ✅ Cleaner, more maintainable code
-- ✅ Type safety and documentation
-- ✅ Extensible for new model types
-- ✅ Easy model deployment and management"""
+"""
 
 import os
 import tempfile
@@ -117,63 +96,140 @@ except ImportError:
     np = None
 
 # Set up logging
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("register_model_logger")
 
 @dataclass
 class ModelExportConfig:
-    model_path: str
-    model_name: str  # Name for the model directory
+    """
+    Configuration for ONNX model export from loaded models.
+    
+    All model-specific parameters should be passed as kwargs when creating the config.
+    This keeps the interface clean and allows each export method to receive 
+    only the parameters it needs.
+    """
+    model: Any                      # Model already loaded in memory (required)
+    model_name: str                 # Model name for file/directory
     input_shape: Optional[Tuple] = None
     input_sample: Optional[Any] = None
     model_type: Optional[str] = None  # Auto-detect if None
     task: str = "text-classification"  # for Transformers models
     create_triton_structure: bool = False  # Create Triton-style directories or just save ONNX file
-    extra_params: Dict[str, Any] = field(default_factory=dict)
     
-    def __post_init__(self):
-        """Auto-detect if type is None"""
+    def __init__(self, model: Any, model_name: str, **kwargs):
+        """
+        Initialize ModelExportConfig with model-specific parameters as kwargs.
+        
+        Args:
+            model: Model already loaded in memory
+            model_name: Model name for file/directory
+            **kwargs: All other parameters including model-specific ones
+        """
+        self.model = model
+        self.model_name = model_name
+        
+        # Extract common parameters
+        self.input_shape = kwargs.pop('input_shape', None)
+        self.input_sample = kwargs.pop('input_sample', None)
+        self.model_type = kwargs.pop('model_type', None)
+        self.task = kwargs.pop('task', 'text-classification')
+        self.create_triton_structure = kwargs.pop('create_triton_structure', False)
+        
+        # Store all remaining kwargs for the export methods
+        self.export_kwargs = kwargs
+        
+        # Auto-detect model type if not provided
         if self.model_type is None:
-            self.model_type = _detect_model_type(self.model_path)
+            from onnx_export import identify_model_type
+            self.model_type = identify_model_type(self.model)
     
     def get_onnx_filename(self) -> str:
-        """return ONNX filename."""
+        """Return ONNX filename."""
         return f"{self.model_name}.onnx"
     
     def validate(self) -> None:
-        """Validade configuration."""
+        """Validate configuration."""
+        if self.model is None:
+            raise ValueError("Model object must be provided (no file paths supported)")
+            
         if self.model_type in ['nemo', 'pytorch', 'sklearn'] and self.input_sample is None:
             raise ValueError(f"Input sample required for {self.model_type} model '{self.model_name}'.")
         
-        if self.model_type == 'tensorflow' and self.input_shape is None:
-            raise ValueError(f"Input shape required for TensorFlow model '{self.model_name}'.")
+        if self.model_type == 'tensorflow' and self.input_shape is None and self.input_sample is None:
+            raise ValueError(f"Input shape or input sample required for TensorFlow model '{self.model_name}'.")
+    
+    def __post_init__(self):
+        """Auto-detect model type from loaded model"""
+        if self.model_type is None:
+            from onnx_export import identify_model_type
+            self.model_type = identify_model_type(self.model)
+    
+    def get_onnx_filename(self) -> str:
+        """Return ONNX filename."""
+        return f"{self.model_name}.onnx"
+    
+    def validate(self) -> None:
+        """Validate configuration."""
+        if self.model is None:
+            raise ValueError("Model object must be provided (no file paths supported)")
+            
+        if self.model_type in ['nemo', 'pytorch', 'sklearn'] and self.input_sample is None:
+            raise ValueError(f"Input sample required for {self.model_type} model '{self.model_name}'.")
+        
+        if self.model_type == 'tensorflow' and self.input_shape is None and self.input_sample is None:
+            raise ValueError(f"Input shape or input sample required for TensorFlow model '{self.model_name}'.")
 
 def create_model_export_configs(
-    models_dict: Dict[str, str],
+    models_dict: Dict[str, Any],
+    model_names: Dict[str, str],
     input_shapes: Optional[Dict[str, Tuple]] = None,
     input_samples: Optional[Dict[str, Any]] = None,
-    create_triton_structure: bool = True
+    create_triton_structure: bool = True,
+    tasks: Optional[Dict[str, str]] = None
 ) -> List[ModelExportConfig]:
     """
-    Create a list of ModelExportConfig objects from a models dictionary.
+    Helper function to create ModelExportConfig objects from loaded models.
+    
+    RECOMMENDATION: Use manual ModelExportConfig creation for better control:
+    
+        # Manual creation (preferred):
+        configs = [
+            ModelExportConfig(
+                model=encoder_model,
+                model_name="bert_encoder",
+                input_sample=sample_input,
+                create_triton_structure=True
+            ),
+            ModelExportConfig(
+                model=decoder_model,
+                model_name="bert_decoder", 
+                input_sample=sample_audio,
+                create_triton_structure=True
+            )
+        ]
     
     Args:
-        models_dict: Dictionary mapping model_name to model_path
-        input_shapes: Optional dictionary mapping model_name to input_shape (for TensorFlow models)
-        input_samples: Optional dictionary mapping model_name to input_sample (for NeMo/PyTorch/sklearn)
+        models_dict: Dictionary mapping model_key to loaded model object
+        model_names: Dictionary mapping model_key to model_name (for file naming)
+        input_shapes: Optional dictionary mapping model_key to input_shape (for TensorFlow models)
+        input_samples: Optional dictionary mapping model_key to input_sample (for NeMo/PyTorch/sklearn)
         create_triton_structure: Whether to create Triton-style directories for all models
+        tasks: Optional dictionary mapping model_key to task (for Transformers models)
         
     Returns:
         List of ModelExportConfig objects
     """
     configs = []
     
-    for model_name, model_path in models_dict.items():
+    for model_key, model_obj in models_dict.items():
+        if model_key not in model_names:
+            raise ValueError(f"Model name not provided for model_key: {model_key}")
+            
         config = ModelExportConfig(
-            model_path=model_path,
-            model_name=model_name,
-            input_shape=input_shapes.get(model_name) if input_shapes else None,
-            input_sample=input_samples.get(model_name) if input_samples else None,
+            model=model_obj,
+            model_name=model_names[model_key],
+            input_shape=input_shapes.get(model_key) if input_shapes else None,
+            input_sample=input_samples.get(model_key) if input_samples else None,
+            task=tasks.get(model_key, "text-classification") if tasks else "text-classification",
             create_triton_structure=create_triton_structure
         )
         configs.append(config)
@@ -181,100 +237,36 @@ def create_model_export_configs(
     return configs
 
 
-def _detect_model_type(model_path: str) -> str:
-    """
-    Detect model type based on file extension.
-    
-    Returns:
-        Model type: 'nemo', 'tensorflow', 'pytorch', 'sklearn', 'transformers', or 'unsupported'
-    """
-    path = Path(model_path)
-    
-    if path.suffix == '.nemo':
-        return 'nemo'
-    elif path.suffix in ['.keras', '.h5'] or path.name.endswith('.pb') or path.is_dir():
-        # Check if it's a SavedModel directory
-        if path.is_dir() and (path / 'saved_model.pb').exists():
-            return 'tensorflow'
-        elif path.suffix in ['.keras', '.h5'] or path.name.endswith('.pb'):
-            return 'tensorflow'
-        # Could be a transformers model directory
-        elif path.is_dir() and (path / 'config.json').exists():
-            return 'transformers'
-        else:
-            return 'tensorflow'  # Default assumption for directories
-    elif path.suffix in ['.pt', '.pth']:
-        return 'pytorch'
-    elif path.suffix in ['.pkl', '.pickle', '.joblib']:
-        return 'sklearn'
-    elif path.name in ['pytorch_model.bin', 'model.safetensors']:
-        return 'transformers'
-    else:
-        # Check if it's a model identifier (like "bert-base-uncased")
-        if '/' in str(path) or '-' in str(path) and not path.exists():
-            return 'transformers'
-        else:
-            return 'unsupported'
-
-
 def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
     """
-    Convert a single model to ONNX format using ModelExportConfig.
+    Convert a single model to ONNX format with model-specific parameters.
     
     Args:
-        config: ModelExportConfig containing all model configuration
+        config: Model export configuration with all parameters
+        output_path: Where to save the ONNX file
         
     Returns:
-        Path to converted ONNX model
+        Path to the exported ONNX model
     """
-    from onnx_export import (
-        export_tensorflow_to_onnx, 
-        export_nemo_to_onnx,
-        export_pytorch_to_onnx,
-        export_transformers_to_onnx,
-        export_sklearn_to_onnx
-    )
-    
-    onnx_filename = config.get_onnx_filename()
-    logger.info(f"🔄 Converting {config.model_type} model: {config.model_path} -> {onnx_filename}")
-    
-    if config.model_type == 'tensorflow':
-        return export_tensorflow_to_onnx(
-            model_path=config.model_path,
-            input_shape=config.input_shape,
-            output_path=onnx_filename,
-            model_name=config.model_name
-        )
-    elif config.model_type == 'nemo':
-        return export_nemo_to_onnx(
-            model_path=config.model_path,
+    try:
+        from onnx_export import export_model_to_onnx
+        onnx_filename = config.get_onnx_filename()
+        
+        logger.info(f"🔄 Converting {config.model_type} model: {config.model_name}")
+        
+        # Use the main API with all kwargs passed through
+        return export_model_to_onnx(
+            model=config.model,
             input_sample=config.input_sample,
             output_path=onnx_filename,
-            model_name=config.model_name
-        )
-    elif config.model_type == 'pytorch':
-        return export_pytorch_to_onnx(
-            model_path=config.model_path,
-            input_sample=config.input_sample,
-            output_path=onnx_filename,
-            model_name=config.model_name
-        )
-    elif config.model_type == 'transformers':
-        return export_transformers_to_onnx(
-            model_name_or_path=config.model_path,
+            model_name=config.model_name,
             task=config.task,
-            output_path=onnx_filename,
-            model_name=config.model_name
+            **config.export_kwargs  # Pass all kwargs directly
         )
-    elif config.model_type == 'sklearn':
-        return export_sklearn_to_onnx(
-            model_path=config.model_path,
-            input_sample=config.input_sample,
-            output_path=onnx_filename,
-            model_name=config.model_name
-        )
-    else:
-        raise ValueError(f"Unsupported model type '{config.model_type}' for model: {config.model_path}")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to convert {config.model_name}: {e}")
+        raise
 
 
 def _generate_onnx_from_models(model_configs: List[ModelExportConfig]) -> Union[str, Dict[str, str]]:
