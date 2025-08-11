@@ -150,6 +150,8 @@ notebooks/run-workflow.ipynb
 2. In the Training DreamBooth section of the notebook:
   - Train your DreamBooth model.
 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### Step 2: Run the Register Notebook
 
 Execute the notebook inside the `notebooks` folder:
