@@ -1,4 +1,4 @@
-# 📈 Stock Analysis with Pandas and cuDF  
+# 📈 Stock Analysis with Pandas and cuDF
 
 <div align="center">
 
@@ -9,34 +9,36 @@
 
 </div>
 
-## Content  
-* [🧠 Overview](#overview)
-* [🗂 Project Structure](#project-structure)
-* [⚙️ Setup](#setup)
-* [🚀 Usage](#usage)
-* [📞 Contact and Support](#contact-and-support)  
+## Content
 
-## Overview  
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
+
+## Overview
 
 In this project, we provide notebooks to compare the execution time of dataset operations using traditional **Pandas** (CPU) versus **NVIDIA’s cuDF**, a GPU-accelerated drop-in replacement for Pandas. This example is presented in two different formats:
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two sets of notebooks: one set using Pandas (CPU) and the other set using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from the **datafabric** folder in AI Studio. The evaluation is split across two sets of notebooks: one set using Pandas (CPU) and the other set using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
-## Project Structure  
+## Project Structure
+
 ```
-├── docs                                                  
+├── docs
 |   ├── Analysis-with-Pandas-5M.png                       # Stock analysis using Pandas UI screenshot (5M dataset size)
 |   ├── Analysis-with-Pandas-10M.png                      # Stock analysis using Pandas UI screenshot (10M dataset size)
 |   ├── Analysis-with-Pandas-and-cuDF-5M.png              # Stock analysis using Pandas and cuDF UI screenshot (5M dataset size)
 |   └── Analysis-with-Pandas-and-cuDF-10M.png             # Stock analysis using Pandas and cuDF UI screenshot (10M dataset size)
-├── notebooks                                            
+├── notebooks
 │   ├── stock-analysis-with-pandas                        # Directory of notebooks using Pandas only (CPU)
 |   |   └── run-workflow.ipynb                            # Notebook used for executing the pipeline using custom inputs and configurations
 │   └── stock-analysis-with-pandas-and-cudf               # Directory of notebooks using cuDF (GPU)
 |       └── run-workflow.ipynb                            # Notebook used for executing the pipeline using custom inputs and configurations
 ├── README.md                                             # Project documentation
 └── requirements.txt                                      # Python dependencies (used with pip install)
-```  
+```
 
 ## Setup
 
@@ -44,8 +46,8 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
@@ -64,35 +66,38 @@ https://github.com/HPInc/AI-Blueprints.git
 
 - Ensure all files are available after workspace creation.
 
----  
+---
 
 ### Step 4: Add the Dataset to Workspace
-1.  Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
-  - **Dataset Name**: `USA_Stocks`
-  - **Dataset Source**: `AWS S3`
-  - **S3 URI**: `s3://dsp-demo-bucket/rapids-data`
-  - **Bucket Region**: `us-west-2`
+
+1. Download the **USA_Stocks** dataset from AWS S3 using the Datasets tab in your AI Studio project:
+
+- **Dataset Name**: `USA_Stocks`
+- **Dataset Source**: `AWS S3`
+- **S3 URI**: `s3://dsp-demo-bucket/rapids-data`
+- **Bucket Region**: `us-west-2`
+
 2. Make sure that the dataset is in the `datafabric` folder inside your workspace.
 
-### Step 5: Use a Custom Kernel for Notebooks  
+### Step 5: Use a Custom Kernel for Notebooks
+
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-
-## Usage 
+## Usage
 
 ### Step 1: Run the Notebooks
 
-You can choose to run the **two data analysis 'run-workflow' notebooks** located in their respective directories inside the  `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).  
+You can choose to run the **two data analysis 'run-workflow' notebooks** located in their respective directories inside the `notebooks` folder to compare the performance of **vanilla Pandas** (CPU) and **cuDF** (GPU).
 
-For the two data analysis *run-workflow* notebooks, results are available both **within the notebook** and through **MLflow tracking**.
+For the two data analysis _run-workflow_ notebooks, results are available both **within the notebook** and through **MLflow tracking**.
 
 ---
 
-## Contact and Support  
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

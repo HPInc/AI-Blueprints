@@ -12,11 +12,12 @@
 
 # 📚 Contents
 
-* [🧠 Overview](#overview)
-* [🗂 Project Structure](#project-structure)
-* [⚙️ Setup](#setup)
-* [🚀 Usage](#usage)
-* [📞 Contact and Support](#contact-and-support)
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [� Model Export Configuration](#model-export-configuration)
+- [�📞 Contact and Support](#contact-and-support)
 
 ---
 
@@ -24,9 +25,9 @@
 
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
-1. **Speech-to-Text (STT)** conversion using Citrinet  
+1. **Speech-to-Text (STT)** conversion using Citrinet
 2. **Text Translation (TT)** from English to Spanish using opus-mt-en-es
-3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
+3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN
 
 All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
 
@@ -35,12 +36,15 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 ## Project Structure
 
 ```
+├── configs/                                                        # Configuration files
+│   └── config.yaml                                                 # Blueprint configuration (UI mode, ports, service settings)
 ├── data                                                            # Data assets used in the project
 │   ├── ForrestGump.mp3
 │   └── June18.mp3
 ├── demo                                                            # UI-related files
-│   └── ...
-├── docs  
+│   ├── static/                                                     # Static HTML UI files
+│   └── streamlit/                                                  # Streamlit webapp files
+├── docs
 │   ├── successful-streamlit-ui-audio-translation-result.pdf        # Streamlit UI screenshot pdf file
 │   └── successful-swagger-ui-audio-translation-result.pdf          # Swagger UI screenshot pdf file
 ├── notebooks
@@ -58,8 +62,8 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 
 Ensure your environment meets the minimum hardware requirements for smooth model inference:
 
-- RAM: 16 GB  
-- VRAM: 8 GB  
+- RAM: 16 GB
+- VRAM: 8 GB
 - GPU: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
@@ -82,12 +86,13 @@ https://github.com/HPInc/AI-Blueprints.git
 
 From the **Models** tab, add the following models from the model catalog in AI Studio:
 
-1. **Speech-to-Text (STT)**  
-   - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`  
+1. **Speech-to-Text (STT)**
+
+   - Model: `stt_en_citrinet_1024_gamma_0_25-1.0.0`
    - Asset Name: `STT En Citrinet 1024 Gamma 0.25`
 
-2. **Text-to-Speech (TTS)**  
-   - Model: `tts_es_multispeaker_fastpitchhifigan-1.15.0`  
+2. **Text-to-Speech (TTS)**
+   - Model: `tts_es_multispeaker_fastpitchhifigan-1.15.0`
    - Asset Name: `TTS Es Multispeaker FastPitch HiFiGAN`
 
 Make sure these models are downloaded and available in the `datafabric` folder inside your workspace.
@@ -129,16 +134,17 @@ This will:
 
 ### 3 ▪ Deploy the Nemo Translation Service
 
-- In AI Studio, navigate to **Deployments > New Service**.  
-- Give your service a name (e.g. “NemoTranslation”), then select the registered NemoTranslationModel.  
-- Pick the desired model version and enable **GPU acceleration** for best performance.  
+- In AI Studio, navigate to **Deployments > New Service**.
+- Give your service a name (e.g. “NemoTranslation”), then select the registered NemoTranslationModel.
+- Pick the desired model version and enable **GPU acceleration** for best performance.
 - Click **Deploy** to launch the service.
 
 ### 4 ▪ Swagger / Raw API
 
-Once your service is running, open the **Swagger UI** from its Service URL.  
+Once your service is running, open the **Swagger UI** from its Service URL.
 
 #### Example payload for text-only translation:
+
 ```jsonc
 {
   "dataframe_records": [
@@ -151,7 +157,7 @@ Once your service is running, open the **Swagger UI** from its Service URL.
     "use_audio": false
   }
 }
-````
+```
 
 Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
 
@@ -159,32 +165,67 @@ Paste that into the Swagger “/invocations” endpoint and click **Try it out**
 
 From the Swagger page, click the **“Demo”** link to interact via a simple web form:
 
-* Enter your source text.
-* Click **Translate**.
-* View the translated text right in the browser.
+- Enter your source text.
+- Click **Translate**.
+- View the translated text right in the browser.
 
 ### 6 ▪ Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
 2. Enter text to translate, hit **Translate**, and enjoy the live results!
 
-
-
 ### Successful UI demo
 
 - React
-![Automated Evaluation React UI](docs/react_ui_for_audio_translation.png)  
+  ![Automated Evaluation React UI](docs/react_ui_for_audio_translation.png)
 
 - Streamlit
-![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_audio_translation.png)  
+  ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_audio_translation.png)
 
 ---
 
-## Contact and Support
+# Model Export Configuration
+
+The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
+
+## Supported Model Types
+
+- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
+- **Keras Models**: TensorFlow/Keras models for neural network-based processing
+- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
+
+## Adding Custom Models
+
+To add support for additional models in the audio translation pipeline, extend the `ModelExportConfig` class:
+
+```python
+from core.model_export import ModelExportConfig
+
+# Example configuration for a custom NeMo STT model
+stt_export_config = ModelExportConfig(
+    model_name="custom_citrinet_model",
+    model_type="nemo",
+)
+
+# Example configuration for translation model
+translation_export_config = ModelExportConfig(
+    model_name="custom_translation_model", 
+    model_type="transformers",
+    task="translation"
+)
+```
+
+## ONNX Export Control
+
+You can control ONNX generation not sending ModelExportConfig list to the log_model method.
+
+---
+
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

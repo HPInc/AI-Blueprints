@@ -1,4 +1,4 @@
-# English Correction with LangChain
+# Grammar Correction with LangChain
 
 <div align="center">
 
@@ -22,7 +22,7 @@
 
 # Overview
 
-This project demonstrates how to perform English grammar correction in GitHub Markdown fules using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniques to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories. 
+This project demonstrates how to perform English grammar correction in GitHub Markdown files using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniques to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories. 
 
 ---
 
@@ -68,13 +68,13 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 1 ▪ Create an AI Studio Project
 
-1.  Create a **New Project** in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+1. Create a **New Project** in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 2. (Optional) Add a description and relevant tags.
 
 ### Step 2 ▪ Set Up a Workspace
 
 1. Choose **Local Gen AI** as the base image.
-2. Upload the requirements.txt fule and install dependancies.
+2. Upload the requirements.txt file and install dependencies.
 
 ### Step 3: Verify Project Files
 
@@ -104,7 +104,8 @@ Ensure your environment meets the minimum compute requirements for smooth image 
      - GITHUB_ACCESS_TOKEN: Your GitHub Personal Access Token (PAT)
      - Settings > Developer settings > Personal access tokens > Tokens (classic) > Generate new token (classic) > Check the `repo` checkbox > Generate token
 
-#### Step 5: Use a Custom Kernel for Notebooks
+### Step 6: Use a Custom Kernel for Notebooks
+
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
 ---
@@ -123,7 +124,7 @@ This will:
 
 - Extract GitHub markdown files from the given repository.
 - Parse the markdown files with placeholders.
-- Chunk the placeheld markdown files.
+- Chunk the placeholder markdown files.
 - Initialize a LLaMa model and pass all markdown chunks through it.
 - Output results into a directory.
   
@@ -161,7 +162,7 @@ This will:
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
@@ -172,4 +173,3 @@ This will:
 ---
 
 > Built with ❤️ using [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
-

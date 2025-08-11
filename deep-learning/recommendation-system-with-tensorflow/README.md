@@ -29,17 +29,23 @@ It trains on user-item interaction data to predict movie preferences with Model-
 # Project Structure
 
 ```
-├── docs/      
+├── configs/
+│   └── config.yaml                                                   # Configuration management
+├── demo/
+│   ├── streamlit/                                                    # Streamlit UI for deployment
+│   │   ├── assets/                                                   # Logo assets
+│   │   ├── main.py                                                   # Streamlit application
+│   │   └── ...                                                       # Additional Streamlit files
+├── docs/
 │   └── streamlit-ui-for-recommender-system.pdf                       # UI screenshot
 │   └── streamlit-ui-for-recommender-system.png                       # UI screenshot
-│   ├── swagger-ui-recommendation-system-with-tensorflow.pdf          # Swagger UI screenshot 
-│   └── swagger-ui-recommendation-system-with-tensorflow. pdf         # Swagger UI screenshot
-├── demo
-│   └── streamlit-webapp/                                             # Streamlit UI
-│   │  └── assets/                                                    # Logo assets
-├── notebooks
+│   ├── swagger-ui-recommendation-system-with-tensorflow.pdf          # Swagger UI screenshot
+│   └── swagger-ui-recommendation-system-with-tensorflow.pdf          # Swagger UI screenshot
+├── notebooks/
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations
+├── src/
+│   └── utils.py                                                      # Utility functions for configuration and helpers
 ├── README.md                                                         # Project documentation
 ```
 
@@ -51,8 +57,8 @@ It trains on user-item interaction data to predict movie preferences with Model-
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1 ▪ Create an AI Studio Project
@@ -67,7 +73,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 - Download the `tutorial_data dataset`
 
-  - **Asset Name**: `tutorial` 
+  - **Asset Name**: `tutorial`
   - **Source**: `AWS S3`
   - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
   - **Resource Type**: `public`
@@ -77,7 +83,8 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 4: Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
@@ -99,9 +106,9 @@ run-workflow.ipynb
 This will:
 
 - Load and prepare the data
-- Create the model architecture  
+- Create the model architecture
 - Train the model
-- Make inference 
+- Make inference
 
 ### 2 ▪ Run the Notebook
 
@@ -129,7 +136,6 @@ This will:
 ### 4 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
-
 
 Paste a payload like:
 
@@ -178,23 +184,22 @@ And as response:
 
 ### 5 ▪ Launch the Streamlit UI
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
 2. Navigate to the shown URL and view the handwritten classification.
 
 ### Successful UI demo
 
 - Streamlit
-![Recommender System Streamlit UI](docs/streamlit-ui-recommender-system.png)
-
+  ![Recommender System Streamlit UI](docs/streamlit-ui-recommender-system.png)
 
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

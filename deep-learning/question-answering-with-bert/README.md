@@ -19,9 +19,9 @@
 * [🚀 Usage](#usage)
 * [📞 Contact and Support](#contact-and-support)
 
- ## Overview
+## Overview
 
- The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be finetuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial taskspecific architecture modifications.
+ The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications.
   
  ---
 
@@ -34,6 +34,8 @@
 ├── docs/
 │   └── html-ui-handwritten-digit-classification.pdf                  # UI screenshot
 │   └── html-ui-handwritten-digit-classification.png                  # UI screenshot
+│   └── streamlit-ui-handwritten-digit-classification.pdf             # Streamlit screenshot
+│   └── streamlit-ui-handwritten-digit-classification.png             # Streamlit screenshot
 │   └── swagger-ui-question-answering-with-bert.pdf                   # Swagger screenshot
 │   └── swagger-ui-question-answering-with-bert.png                   # Swagger screenshot
 │
@@ -81,7 +83,7 @@ https://github.com/HPInc/AI-Blueprints.git
 Run the following notebook `/run-workflow.ipynb`:
 1. Download the dataset from the HuggingFace datasets repository.
 2. Tokenize, preparing the inputs for the model.
-3. Load metrics and transforms the output model(Logits) to numbers.
+3. Load metrics and transform the output model (Logits) to numbers.
 4. Train, using the model:
 ```
 model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
@@ -89,6 +91,8 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 ```
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
+
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
 
 ### 2 ▪ Run the Notebook
 Run the following notebook `/register-model.ipynb`:
@@ -141,9 +145,22 @@ And as response:
   }
 }
 ```
+### Step 4 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the Q&A with BERT.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Q&A with BERT Streamlit UI](docs/streamlit-ui-question-answering-with-bert.png)
+
+
 ---
 
-# Contact and Support  
+# Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 

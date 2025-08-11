@@ -12,50 +12,57 @@
 
 ### 📚 Content
 
-* [🧠 Overview](#overview)
-* [🗂 Project Structure](#project-structure)
-* [⚙️ Setup](#setup)
-* [🚀 Usage](#usage)
-* [📞 Contact and Support](#contact-and-support)
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
- ## Overview
+## Overview
 
 In this template, our objective is to increase the resolution of images, that is, to increase the number of pixels, using the FSRCNN model, a convolutional neural network model that offers faster runtime, which receives a low-resolution image and returns a higher-resolution image that is X times larger.
 
- ---
- ## Project Structure
+---
 
- ```
+## Project Structure
+
+```
+├── configs/
+│   └── config.yaml                                                     # Configuration management
+├── demo/
+│   ├── streamlit/                                                      # Streamlit UI for deployment
+│   │   ├── assets/                                                     # Logo assets
+│   │   ├── main.py                                                     # Streamlit application
+│   │   └── ...                                                         # Additional Streamlit files
 ├── docs/
 │   └── streamlit-ui-image-super-resolution-with-fsrcnn.pdf             # UI screenshot
 │   └── streamlit-ui-image-super-resolution-with-fsrcnn.png             # UI screenshot
 │   └── swagger_UI_image_super_resolution_with_fsrcnn.pdf               # Swagger screenshot
-│   └── swagger_UI_image_super_resolution_with_fsrcnn.png               # Swagger screenshot 
-├── demo
-│   └── streamlit-webapp/                                               # Streamlit UI
-│   │  └── assets/                                                      # Logo assets
-├── notebooks
+│   └── swagger_UI_image_super_resolution_with_fsrcnn.png               # Swagger screenshot
+├── notebooks/
 │   └── register-model.ipynb                                            # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                              # Notebook for executing the pipeline using custom inputs and configurations  
-│
+│   └── run-workflow.ipynb                                              # Notebook for executing the pipeline using custom inputs and configurations
+├── src/
+│   └── utils.py                                                        # Utility functions for configuration and helpers
 ├── README.md                                                           # Project documentation
 ```
 
- ## Setup
+## Setup
 
 ### 0 ▪ Minimum Hardware Requirements
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
-### 1 ▪ Create an AI Studio Project 
-1. Create a **New Project** in AI Studio.   
-2. (Optional) Add a description and relevant tags. 
+### 1 ▪ Create an AI Studio Project
 
-### Step 2: Create a Workspace  
+1. Create a **New Project** in AI Studio.
+2. (Optional) Add a description and relevant tags.
+
+### Step 2: Create a Workspace
 
 - Choose **Deep Learning** as the base image.
 
@@ -63,7 +70,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 - Download the `DIV2K dataset`
 
-  - **Asset Name**: `DIV2K` 
+  - **Asset Name**: `DIV2K`
   - **Source**: `AWS S3`
   - **S3 URI**: `s3://dsp-demo-bucket/div2k-data`
   - **Resource Type**: `public`
@@ -86,21 +93,32 @@ https://github.com/HPInc/AI-Blueprints.git
 ### 1 ▪ Run the Notebook
 
 Run the following notebook `run-workflow.ipynb`:
+
 1. Model:
-- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding and deconvolution.
+
+- Run the model architecture, which will do the feature extraction, shrinking, non-linear mapping, expanding, and deconvolution.
+
 2. Dataloader / preprocessing:
+
 - The preprocessing of the DIV2K dataset will be done here.
+
 3. Training and Validation:
+
 - Train your FSRCNN model.
 - Monitor metrics using the **Monitor tab**, MLflow, and TensorBoard.
+
 4. Inference:
+
 - Save the model and perform inference on the predicted image and the high-resolution image.
+
 5. HR and LR image comparison:
+
 - Compare the low-resolution and high-resolution images after training.
 
 ### 2 ▪ Run the Notebook
 
 Run the following notebook `register-model.ipynb`:
+
 - Log Model to MLflow
 - Fetch the Latest Model Version from MLflow
 - Load the Model and Run Inference
@@ -118,7 +136,6 @@ Run the following notebook `register-model.ipynb`:
 
 Once deployed, access the **Swagger UI** via the Service URL.
 
-
 Paste a payload like:
 
 ```
@@ -131,7 +148,9 @@ Paste a payload like:
   "params": {}
 }
 ```
+
 And as response:
+
 ```
 {
   "predictions": [
@@ -142,22 +161,22 @@ And as response:
 
 ### 5 ▪ Launch the Streamlit UI
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
 2. Navigate to the shown URL and view the Image Super Resolution.
 
 ### Successful UI demo
 
 - Streamlit
-![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-image-super-resolution-with-fsrcnn.png)
+  ![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-image-super-resolution-with-fsrcnn.png)
 
 ---
 
-## Contact and Support  
+## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

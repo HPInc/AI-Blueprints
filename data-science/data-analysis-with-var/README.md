@@ -15,6 +15,7 @@
 - [⚙️ Setup](#setup)
 - [🚀 Usage](#usage)
 - [📞 Contact and Support](#contact-and-support)
+
 ---
 
 # Overview
@@ -27,21 +28,26 @@ It highlights how city-level movement patterns changed during the crisis. The pr
 
 # Project Structure
 
-
 ```
+├── configs/
+│   └── config.yaml                                                # Configuration settings for deployment
 ├── docs/
 │   └── swagger-UI-data-analysis-with-var.pdf                      # Swagger screenshot(PDF)
 │   └── swagger-UI_data-analysis-with-var.png                      # Swagger screenshot(PNG)
 │   └── successful-streamlit-ui_for-data-analysis-with-var.pdf     # Streamlit screenshot(PDF)
 │   └── successful-streamlit-ui-for-data-analysis-with-var.png     # Streamlit screenshot(PNG)
 ├── demo/
-│   └── streamlit-webapp/                                          # Streamlit UI
-│   └── assets/                                                    # Assets for the streamlit UI
+│   └── streamlit/                                                 # Streamlit web application
+│       ├── main.py                                                # Main Streamlit application
+│       ├── assets/                                                # UI assets and images
+│       └── README.md                                              # Deployment instructions
 ├── notebooks/
 │   └── run-workflow.ipynb                                         # One‑click notebook for executing the pipeline using custom inputs
 │   └── register-model.ipynb                                       # One‑click notebook for registering trained models to MLflow, generating API
+├── src/
+│   └── utils.py                                                   # Utility functions for configuration loading
 ├── README.md                                                      # Project documentation
-                                                                    
+
 ```
 
 ---
@@ -52,7 +58,7 @@ It highlights how city-level movement patterns changed during the crisis. The pr
 
 Ensure your environment meets the minimum compute requirements for smooth analysis performance and running of a regression algorithm:
 
-- **RAM**: 4 GB  
+- **RAM**: 4 GB
 
 ### 1 ▪ Create an AI Studio Project
 
@@ -63,6 +69,7 @@ Ensure your environment meets the minimum compute requirements for smooth analys
 - Choose **Data Science** as the base image.
 
 ### 3 ▪ Download the Dataset
+
 1. This experiment requires the **tutorial_data dataset** to run.
 2. Download the dataset by going to the **Datasets** tab of AI Studio, click on **Add Dataset** button and fill in the following:
    - **Asset/Dataset Name**: tutorial
@@ -71,10 +78,10 @@ Ensure your environment meets the minimum compute requirements for smooth analys
    - **Resource Type**: Public(No credentials required)
    - **Bucket Region**: `us-west-2`
 
-
 ### 4 ▪ Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
+
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```
@@ -86,7 +93,6 @@ Ensure your environment meets the minimum compute requirements for smooth analys
 # Usage
 
 ### 1 ▪ Run the Notebook
-
 
 Execute the run-workflow notebook first inside the `notebooks` folder which will save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder :
 
@@ -110,7 +116,6 @@ This will:
 - Evaluate the model
 - Save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder
 
-
 Execute the register-model notebook second inside the `notebooks` folder:
 
 ```bash
@@ -123,7 +128,6 @@ This will:
 - Load the saved models as well as the training metrics
 - Integrate MLflow
 - Run a trial inference with logged model
-
 
 ### 2 ▪ Deploy the COVID Movement Patterns with VAR Service
 

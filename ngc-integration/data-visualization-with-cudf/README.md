@@ -12,11 +12,11 @@
 
 ## 📚 Contents
 
-* [🧠 Overview](#overview)
-* [🗂 Project Structure](#project-structure)
-* [⚙️ Setup](#setup)
-* [🚀 Usage](#usage)
-* [📞 Contact and Support](#contact-and-support)
+- [🧠 Overview](#overview)
+- [🗂 Project Structure](#project-structure)
+- [⚙️ Setup](#setup)
+- [🚀 Usage](#usage)
+- [📞 Contact and Support](#contact-and-support)
 
 ---
 
@@ -30,19 +30,17 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 ## Project Structure
 
-```
+````
 ├── docs
 |   ├── ui-opencellid-EU.png                                   # opencellid UI screenshot (European Union map)
 │   └── ui-opencellid-US.png                                   # opencellid UI screenshot (United States map)
 ├── notebooks
 │   └── run-workflow.ipynb                                     # Main notebook for the project
 ├── src                                                        # Core Python modules
-│   └── opencellid_downloader.py               
+│   └── opencellid_downloader.py
 ├── README.md                                                  # Project documentation
 └── requirements.txt                                           # Python dependencies (used with pip install)
-```
-
----
+```---
 
 ## Setup
 
@@ -50,8 +48,8 @@ You can explore cell tower distributions by radio type, operator, country, and t
 
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
@@ -66,7 +64,7 @@ Ensure your environment meets the minimum compute requirements for smooth dashbo
 
 ```bash
 https://github.com/HPInc/AI-Blueprints.git
-```
+````
 
 - Ensure all files are available after workspace creation.
 
@@ -84,22 +82,22 @@ notebooks/run-workflow.ipynb
 
 This will:
 
-- Load the OpenCellID tower data and enrich it with operator metadata  
-- Apply GPU-accelerated filters with `cudf.pandas`  
-- Launch an interactive dashboard using `panel` and `pydeck` for geospatial rendering  
+- Load the OpenCellID tower data and enrich it with operator metadata
+- Apply GPU-accelerated filters with `cudf.pandas`
+- Launch an interactive dashboard using `panel` and `pydeck` for geospatial rendering
 
 ### Step 2: Use the Dashboard
 
 The notebook launches an embedded interactive dashboard featuring:
 
-- **Filters**: Radio Type, Operator, Country, First Seen (Year), Point Budget  
-- **Charts**: Bar plots for radio and operator distributions  
-- **Map**: 3D scatterplot of cell tower locations with hover interactivity  
-- **Performance Metrics**: Visual indicators for data size and compute time  
+- **Filters**: Radio Type, Operator, Country, First Seen (Year), Point Budget
+- **Charts**: Bar plots for radio and operator distributions
+- **Map**: 3D scatterplot of cell tower locations with hover interactivity
+- **Performance Metrics**: Visual indicators for data size and compute time
 
 ### Example Dashboard Snapshot
 
-![Opencellid Dashboard UI](docs/ui-opencellid-EU.png) 
+![Opencellid Dashboard UI](docs/ui-opencellid-EU.png)
 
 ---
 

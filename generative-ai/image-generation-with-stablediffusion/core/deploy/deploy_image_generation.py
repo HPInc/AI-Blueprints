@@ -273,9 +273,13 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
 
    
     @classmethod
-    def log_model(cls, finetuned_model_path: str, model_no_finetuning_path: str,
-                  artifact_path: str = "image_generation_model",
-                  config_path: str = "../configs/config.yaml"):
+    def log_model(
+        cls, 
+        finetuned_model_path: str, 
+        model_no_finetuning_path: str,
+        artifact_path: str = "image_generation_model",
+        config_path: str = "../configs/config.yaml"
+    ):
         input_schema  = Schema([
             ColSpec("string",  "prompt"),
             ColSpec("boolean", "use_finetuning"),
@@ -298,17 +302,6 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
         (core / "__init__.py").touch(exist_ok=True)
         (src_dir / "__init__.py").touch(exist_ok=True)
 
-        # Essential pip requirements
-        pip_requirements = [
-            "torch>=1.10.0", 
-            "diffusers>=0.14.0", 
-            "transformers>=4.25.1", 
-            "accelerate>=0.16.0",
-            "pillow>=8.0.0",
-            "pandas>=1.3.0",
-            "mlflow>=2.0.0",
-        ]
-
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,
             python_model=cls(),
@@ -319,7 +312,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
             },
             signature=signature,
             code_paths=[str(core), str(src_dir)],
-            pip_requirements=pip_requirements,
+            pip_requirements="../requirements.txt",
         )
         logging.info("✅ Model logged to MLflow at '%s'", artifact_path)
 
