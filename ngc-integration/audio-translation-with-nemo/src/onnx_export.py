@@ -5,7 +5,35 @@ Simple API for converting various model formats to ONNX format.
 Supports TensorFlow/Keras, NeMo, PyTorch, and Hugging Face Transformers models.
 Automatically uses external weights files for models larger than 2GB.
 
-Usage:
+Main Usage (New - accepts loaded models):
+    from ais_utils.onnx_export import export_model_to_onnx
+    
+    # Automatically detect model type and convert
+    # Works with any supported model already loaded in memory
+    model = load_your_model()  # Your loaded model
+    input_sample = create_sample_input()  # Sample input for the model
+    export_model_to_onnx(model, input_sample, output_path="model.onnx")
+    
+    # For Transformers models, specify the task
+    export_model_to_onnx(transformers_model, None, output_path="bert.onnx", task="text-classification")
+
+Direct Usage (accepts loaded models):
+    from ais_utils.onnx_export import (
+        export_tensorflow_model_to_onnx,
+        export_pytorch_model_to_onnx,
+        export_transformers_model_to_onnx,
+        export_nemo_model_to_onnx,
+        export_sklearn_model_to_onnx
+    )
+    
+    # Convert loaded models directly
+    export_tensorflow_model_to_onnx(tf_model, input_sample, "tf_model.onnx")
+    export_pytorch_model_to_onnx(torch_model, input_tensor, "torch_model.onnx")
+    export_transformers_model_to_onnx(hf_model, output_path="hf_model.onnx", task="text-classification")
+    export_nemo_model_to_onnx(nemo_model, input_sample, "nemo_model.onnx")
+    export_sklearn_model_to_onnx(sklearn_model, input_array, "sklearn_model.onnx")
+
+Legacy Usage (from file paths - maintained for compatibility):
     from ais_utils.onnx_export import (
         export_tensorflow_to_onnx, 
         export_nemo_to_onnx,
@@ -14,19 +42,11 @@ Usage:
         export_sklearn_to_onnx
     )
     
-    # Convert a trained TensorFlow/Keras model
+    # Convert from saved model files
     export_tensorflow_to_onnx("model.keras", input_shape=(1, 28, 28, 1), output_path="model.onnx")
-    
-    # Convert a NeMo model
     export_nemo_to_onnx("asr_model.nemo", input_sample={}, output_path="asr_model.onnx")
-    
-    # Convert a PyTorch model
     export_pytorch_to_onnx("model.pt", input_sample=torch.randn(1, 3, 224, 224), output_path="model.onnx")
-    
-    # Convert a Hugging Face model
     export_transformers_to_onnx("bert-base-uncased", task="text-classification", output_path="bert.onnx")
-    
-    # Convert a Scikit-learn model
     export_sklearn_to_onnx("model.pkl", input_sample=[[1, 2, 3, 4]], output_path="sklearn_model.onnx")
 """
 
@@ -35,6 +55,9 @@ import warnings
 from typing import Any, Optional, Tuple, Union, List, Dict
 from pathlib import Path
 import tempfile
+import torch
+import inspect
+import logging
 
 # Optional imports - will be imported when needed
 try:
@@ -45,6 +68,111 @@ except ImportError:
     np = None
     # Fallback type for when numpy is not available
     NDArray = Any
+
+logger = logging.getLogger("register_model_logger")
+
+
+def identify_model_type(model: Any) -> str:
+    """
+    Automatically identifies the model type based on the loaded object.
+    
+    Args:
+        model: Model object already loaded in memory
+        
+    Returns:
+        String identifying the type: 'pytorch', 'tensorflow', 'transformers', 'nemo', 'sklearn'
+    """
+    model_type_str = str(type(model)).lower()
+    
+    # TensorFlow/Keras models (check first to avoid NeMo false positives!)
+    try:
+        import tensorflow as tf
+        if isinstance(model, (tf.keras.Model, tf.Module)):
+            return "tensorflow"
+        if hasattr(model, 'call') and hasattr(model, 'trainable_variables'):
+            return "tensorflow"
+    except ImportError:
+        pass
+    
+    # NeMo models (check before PyTorch - if has export method, prioritize NeMo!)
+    if "nemo" in model_type_str or (
+        hasattr(model, 'export') and "nemo" in getattr(type(model), "__module__", "").lower()
+    ):
+        return "nemo"
+    
+    # PyTorch models (check after NeMo)
+    try:
+        import torch
+        if isinstance(model, torch.nn.Module):
+            # Check if it's a Hugging Face Transformers model
+            if hasattr(model, 'config') and hasattr(model.config, 'model_type'):
+                return "transformers"
+            return "pytorch"
+    except ImportError:
+        pass
+    
+    # Hugging Face Transformers (fallback check)
+    if "transformers" in model_type_str or hasattr(model, 'generate'):
+        return "transformers"
+    
+    # Scikit-learn models
+    try:
+        from sklearn.base import BaseEstimator
+        if isinstance(model, BaseEstimator):
+            return "sklearn"
+    except ImportError:
+        pass
+    
+    # Check for common ML library patterns
+    if hasattr(model, 'predict') and hasattr(model, 'fit'):
+        return "sklearn"
+    
+    return "unknown"
+
+
+def export_model_to_onnx(model: Any, 
+                        input_sample: Any,
+                        output_path: str = "model.onnx",
+                        model_name: str = "model",
+                        task: Optional[str] = None,
+                        **kwargs) -> str:
+    """
+    Automatically exports any model to ONNX based on detected type.
+    
+    Args:
+        model: Model object already loaded in memory
+        input_sample: Input sample for the model
+        output_path: Path to save the ONNX model
+        model_name: Model name
+        task: Task type (for Transformers models: text-classification, token-classification, translation)
+        **kwargs: Additional arguments for specific export methods
+        
+    Returns:
+        Path to the exported ONNX model
+    """
+    model_type = identify_model_type(model)
+    logger.info(f"🔍 Model identified as: {model_type}")
+    
+    if model_type == "pytorch":
+        return export_pytorch_model_to_onnx(model, input_sample, output_path, model_name, **kwargs)
+    
+    elif model_type == "tensorflow":
+        return export_tensorflow_model_to_onnx(model, input_sample, output_path, model_name, **kwargs)
+    
+    elif model_type == "transformers":
+        if task is None:
+            task = "text-classification"  # default task
+        return export_transformers_model_to_onnx(model, output_path, model_name, task, **kwargs)
+    
+    elif model_type == "nemo":
+        return export_nemo_model_to_onnx(model, input_sample, output_path, model_name, **kwargs)
+    
+    elif model_type == "sklearn":
+        return export_sklearn_model_to_onnx(model, input_sample, output_path, model_name, **kwargs)
+    
+    else:
+        raise ValueError(f"Unsupported model type: {model_type}. Supported types: pytorch, tensorflow, transformers, nemo, sklearn")
+
 
 
 def _save_with_external_data(onnx_model: Any, output_path: str, size_threshold: int = 2 * 1024 * 1024 * 1024) -> None:
@@ -73,113 +201,158 @@ def _save_with_external_data(onnx_model: Any, output_path: str, size_threshold: 
                 size_threshold=1024,  # Save tensors > 1KB externally
                 convert_attribute=False
             )
-            print(f"Large model saved with external weights: {output_path}")
+            logger.info(f"Large model saved with external weights: {output_path}")
         else:
             # Save normally for smaller models
             with open(output_path, "wb") as f:
                 f.write(onnx_model.SerializeToString())
-            print(f"Model saved to ONNX: {output_path}")
+            logger.info(f"Model saved to ONNX: {output_path}")
             
     except ImportError:
         # Fallback to basic save if onnx package not available
         with open(output_path, "wb") as f:
             f.write(onnx_model.SerializeToString())
-        print(f"Model saved to ONNX (fallback): {output_path}")
+        logger.info(f"Model saved to ONNX (fallback): {output_path}")
 
 
-def export_tensorflow_to_onnx(model_path: str, input_shape: Optional[Tuple] = None,
-                              output_path: str = "tensorflow_model.onnx",
-                              model_name: str = "tensorflow_model") -> str:
+def export_tensorflow_model_to_onnx(model: Any, 
+                                   input_sample: Any,
+                                   output_path: str = "tensorflow_model.onnx",
+                                   model_name: str = "tensorflow_model",
+                                   **kwargs) -> str:
     """
-    Export a TensorFlow/Keras model to ONNX format with external weights support.
+    Exports a TensorFlow/Keras model already loaded to ONNX format.
     
     Args:
-        model_path: Path to saved Keras/TensorFlow model file (.keras, .h5, SavedModel dir)
-        input_shape: Input shape tuple (batch_size, ...). If None, inferred from model
+        model: TensorFlow/Keras model already loaded
+        input_sample: Input sample (used to infer input_shape if needed)
         output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
+        model_name: Model name
+        **kwargs: Additional arguments:
+            - opset (int): ONNX opset version (default: 12)
+            - use_saved_model (bool): Force SavedModel conversion (default: False)
+            - verbose (bool): Enable verbose logging (default: False)
         
     Returns:
-        Path to saved ONNX model
+        Path to the saved ONNX model
     """
     try:
         import tf2onnx
         import tensorflow as tf
-        from tensorflow.keras.models import load_model
         import tempfile
+        import numpy as np
         
-        # Load model from file path
-        model = load_model(model_path)
+        # Extract kwargs with defaults
+        opset = kwargs.get('opset', 12)
+        use_saved_model = kwargs.get('use_saved_model', False)
+        verbose = kwargs.get('verbose', False)
         
-        # Infer input shape if not provided
-        if input_shape is None:
-            input_shape = model.input_shape
+        if verbose:
+            logger.setLevel(logging.DEBUG)
             
-        print(f"Converting model with input shape: {input_shape}")
+        logger.info(f"🔄 Converting loaded TensorFlow/Keras model with opset {opset}...")
         
-        try:
-            # Method 1: Direct conversion with patched model
-            print("Attempting direct conversion from Keras model...")
+        # Infer input shape from sample if needed
+        if hasattr(input_sample, 'shape'):
+            input_shape = input_sample.shape
+        elif isinstance(input_sample, (list, tuple)):
+            input_shape = (1,) + tuple(np.array(input_sample).shape[1:]) if len(input_sample) > 0 else None
+        else:
+            input_shape = model.input_shape if hasattr(model, 'input_shape') else None
             
-            # Patch the model to add output_names if missing (Keras 3 compatibility)
-            if not hasattr(model, 'output_names'):
-                if hasattr(model, 'output'):
-                    if isinstance(model.output, list):
-                        model.output_names = [f"output_{i}" for i in range(len(model.output))]
-                    else:
-                        model.output_names = ['output']
-                else:
-                    model.output_names = ['output']
-            
-            # Create input signature
-            spec = tf.TensorSpec(input_shape, tf.float32, name="input")
-            
-            # Convert using tf2onnx with input signature
-            onnx_model, _ = tf2onnx.convert.from_keras(
-                model, 
-                input_signature=[spec], 
-                opset=12
-            )
-            print("✅ Direct conversion successful!")
-            
-        except Exception as e:
-            print(f"Direct conversion failed: {e}")
-            print("Trying SavedModel approach...")
-            
-            # Method 2: SavedModel fallback with explicit signatures
+        logger.info(f"Converting model with input shape: {input_shape}")
+        
+        if use_saved_model:
+            logger.info("Using forced SavedModel approach...")
+            # Force SavedModel approach
             with tempfile.TemporaryDirectory() as temp_dir:
                 saved_model_path = os.path.join(temp_dir, "temp_saved_model")
                 
-                # Create a wrapper function for Sequential models
                 @tf.function
                 def model_func(x):
                     return model(x)
                 
-                # Get concrete function with proper signature
-                concrete_func = model_func.get_concrete_function(
-                    tf.TensorSpec(input_shape, tf.float32, name="input")
-                )
+                if input_shape:
+                    concrete_func = model_func.get_concrete_function(
+                        tf.TensorSpec(input_shape, tf.float32, name="input")
+                    )
+                    
+                    tf.saved_model.save(
+                        model, 
+                        saved_model_path,
+                        signatures={'serving_default': concrete_func}
+                    )
+                else:
+                    tf.saved_model.save(model, saved_model_path)
                 
-                # Save with explicit signatures to avoid auto-detection issues
-                tf.saved_model.save(
-                    model, 
-                    saved_model_path,
-                    signatures={
-                        'serving_default': concrete_func
-                    }
-                )
-                
-                # Convert SavedModel to ONNX
                 onnx_model, _ = tf2onnx.convert.from_saved_model(
                     saved_model_path,
-                    input_signature=None,
-                    opset=12
+                    opset=opset
                 )
-                print("✅ SavedModel conversion successful!")
+                logger.info("✅ SavedModel conversion successful!")
+        else:
+            try:
+                # Method 1: Direct Keras model conversion
+                logger.info("Trying direct Keras model conversion...")
+                
+                # Patch for Keras 3 compatibility
+                if not hasattr(model, 'output_names'):
+                    if hasattr(model, 'output'):
+                        if isinstance(model.output, list):
+                            model.output_names = [f"output_{i}" for i in range(len(model.output))]
+                        else:
+                            model.output_names = ['output']
+                    else:
+                        model.output_names = ['output']
+                
+                # Create input signature
+                if input_shape:
+                    spec = tf.TensorSpec(input_shape, tf.float32, name="input")
+                    onnx_model, _ = tf2onnx.convert.from_keras(
+                        model, 
+                        input_signature=[spec], 
+                        opset=opset
+                    )
+                else:
+                    # Try without specific signature
+                    onnx_model, _ = tf2onnx.convert.from_keras(model, opset=opset)
+                    
+                logger.info("✅ Direct conversion successful!")
+                
+            except Exception as e:
+                logger.info(f"Direct conversion failed: {e}")
+                logger.info("Trying SavedModel approach...")
+                
+                # Method 2: Fallback via SavedModel
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    saved_model_path = os.path.join(temp_dir, "temp_saved_model")
+                    
+                    @tf.function
+                    def model_func(x):
+                        return model(x)
+                    
+                    if input_shape:
+                        concrete_func = model_func.get_concrete_function(
+                            tf.TensorSpec(input_shape, tf.float32, name="input")
+                        )
+                        
+                        tf.saved_model.save(
+                            model, 
+                            saved_model_path,
+                            signatures={'serving_default': concrete_func}
+                        )
+                    else:
+                        tf.saved_model.save(model, saved_model_path)
+                    
+                    onnx_model, _ = tf2onnx.convert.from_saved_model(
+                        saved_model_path,
+                        opset=opset
+                    )
+                    logger.info("✅ SavedModel conversion successful!")
         
         # Save with external data support
         _save_with_external_data(onnx_model, output_path)
-        print(f"✅ ONNX model saved to: {output_path}")
+        logger.info(f"✅ ONNX model saved to: {output_path}")
             
         return output_path
         
@@ -187,333 +360,28 @@ def export_tensorflow_to_onnx(model_path: str, input_shape: Optional[Tuple] = No
         raise ImportError("tf2onnx is required. Install with: pip install tf2onnx")
 
 
-def export_nemo_to_onnx(model_path: str, 
-                        input_sample: Any,
-                        output_path: str = "nemo_model.onnx",
-                        model_name: str = "nemo_model") -> str:
+def export_pytorch_model_to_onnx(model: Any,
+                                input_sample: Any,
+                                output_path: str = "pytorch_model.onnx",
+                                model_name: str = "pytorch_model",
+                                **kwargs) -> str:
     """
-    Export NeMo model to ONNX format using NVIDIA's official export() method.
+    Exports a PyTorch model already loaded to ONNX format.
     
     Args:
-        model_path: Path to saved NeMo model file (.nemo)
-        input_sample: Sample input for the model (required)
+        model: PyTorch model already loaded
+        input_sample: Example input tensor
         output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
+        model_name: Model name
+        **kwargs: Additional arguments:
+            - input_names (List[str]): Input names (default: ['input'])
+            - output_names (List[str]): Output names (default: ['output'])
+            - dynamic_axes (Dict): Dynamic axes configuration
+            - opset_version (int): ONNX opset version (default: 12)
+            - do_constant_folding (bool): Enable constant folding (default: True)
+            - export_params (bool): Export model parameters (default: True)
+            - verbose (bool): Enable verbose logging (default: False)
         
-    Returns:
-        Path to saved ONNX model
-    """
-    try:
-        import onnx
-        import os
-        
-        # Single model case only - simplified
-        return _export_single_nemo_model(model_path, input_sample, output_path, model_name)
-            
-    except ImportError:
-        raise ImportError("nemo_toolkit and onnx are required. Install with: pip install nemo_toolkit onnx")
-
-
-def _export_single_nemo_model(model_path: str, 
-                             input_sample: Any,
-                             output_path: str,
-                             model_name: str) -> str:
-    """
-    Export a single NeMo model to ONNX format using NVIDIA's official export() method.
-    
-    Args:
-        model_path: Path to saved NeMo model file (.nemo)
-        input_sample: Sample input for the model
-        output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
-        
-    Returns:
-        Path to saved ONNX model
-    """
-    import onnx
-    import os
-    import tempfile
-    
-    # Load NeMo model from file
-    try:
-        from nemo.core.classes import ModelPT
-        model = ModelPT.restore_from(model_path)
-    except ImportError:
-        raise ImportError("nemo_toolkit is required for NeMo model loading")
-    
-    # Set model to evaluation mode
-    if hasattr(model, 'eval'):
-        model.eval()
-    
-    # Use NVIDIA's official export() method
-    if hasattr(model, 'export'):
-        with tempfile.NamedTemporaryFile(suffix='.onnx', delete=False) as temp_file:
-            temp_path = temp_file.name
-        
-        try:
-            # Use NeMo's built-in export method with official API
-            print(f"🔄 Using NVIDIA's official export() method for {os.path.basename(model_path)}")
-            model.export(temp_path, input_example=input_sample, verbose=False)
-            
-            # Load and re-save with external data support
-            onnx_model = onnx.load(temp_path)
-            _save_with_external_data(onnx_model, output_path)
-            
-            # Clean up temp file
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-                
-            return output_path
-            
-        except Exception as export_error:
-            # Clean up temp file on error
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-            
-            print(f"❌ NVIDIA export() failed: {export_error}")
-            
-            # Fallback to PyTorch export if model has PyTorch components
-            if hasattr(model, 'state_dict'):
-                print("🔄 Falling back to PyTorch export...")
-                return _export_nemo_via_pytorch_fallback(model, input_sample, output_path, model_name)
-            else:
-                raise NotImplementedError(f"NeMo model does not support ONNX export: {export_error}")
-    else:
-        # Fallback to PyTorch export if model has PyTorch components
-        if hasattr(model, 'state_dict'):
-            print("🔄 Using PyTorch export fallback...")
-            return _export_nemo_via_pytorch_fallback(model, input_sample, output_path, model_name)
-        else:
-            raise NotImplementedError("NeMo model does not support ONNX export")
-
-
-def _export_nemo_via_pytorch_fallback(model, input_sample, output_path: str, model_name: str) -> str:
-    """
-    Export NeMo model via PyTorch ONNX export as fallback.
-    Note: This is a simplified fallback approach.
-    """
-    import torch
-    import tempfile
-    import warnings
-    
-    warnings.warn("Using PyTorch fallback for NeMo export. Results may vary.")
-    
-    # Save as PyTorch model temporarily
-    with tempfile.NamedTemporaryFile(suffix='.pth', delete=False) as temp_file:
-        temp_pytorch_path = temp_file.name
-    
-    try:
-        torch.save(model, temp_pytorch_path)
-        
-        # Simple PyTorch export without calling external function
-        import torch
-        import onnx
-        import io
-        
-        # Load model
-        pytorch_model = torch.load(temp_pytorch_path, map_location='cpu')
-        pytorch_model.eval()
-        
-        # Convert numpy to tensor if needed
-        if isinstance(input_sample, np) and np is not None:
-            if hasattr(np, 'ndarray') and isinstance(input_sample, np.ndarray):
-                input_sample = torch.from_numpy(input_sample).float()
-        
-        # Export to ONNX in memory first
-        f = io.BytesIO()
-        torch.onnx.export(
-            pytorch_model,
-            input_sample,
-            f,
-            export_params=True,
-            opset_version=12,
-            do_constant_folding=True,
-            input_names=['input'],
-            output_names=['output']
-        )
-        
-        # Load the ONNX model and save with external data support
-        f.seek(0)
-        onnx_model = onnx.load_model_from_string(f.getvalue())
-        _save_with_external_data(onnx_model, output_path)
-        
-        # Clean up temp file
-        if os.path.exists(temp_pytorch_path):
-            os.remove(temp_pytorch_path)
-            
-    except Exception as e:
-        print(f"❌ Failed to export PyTorch model: {e}")
-        raise
-
-
-def export_transformers_to_onnx(model_name_or_path: str, 
-                                task: str = "text-classification",
-                                output_path: str = "transformers_model.onnx",
-                                model_name: str = "transformers_model") -> str:
-    """
-    Convert a Hugging Face Transformers model to ONNX format.
-    
-    Args:
-        model_name_or_path: Model name from Hugging Face Hub or local path
-        task: Task type (text-classification, token-classification, translation)
-        output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
-        
-    Returns:
-        Path to the exported ONNX model
-    """
-    try:
-        import os
-        from pathlib import Path
-        from transformers import (
-            AutoTokenizer,
-            AutoModelForSequenceClassification,
-            AutoModelForTokenClassification,
-            AutoModelForSeq2SeqLM,
-        )
-        from transformers.onnx import export,FeaturesManager
-        from transformers.onnx.config import OnnxConfig
-        from optimum.onnxruntime import (
-            ORTModelForSequenceClassification,
-            ORTModelForTokenClassification,
-        )
-        import torch
-        import onnx
-
-        print(f"🤗 Converting Transformers model: {model_name_or_path}")
-
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        output_dir = Path(output_path).with_suffix('')  # remove ".onnx"
-
-        if task == "text-classification":
-            model = ORTModelForSequenceClassification.from_pretrained(model_name_or_path, export=True)
-            model.save_pretrained(output_dir)
-            tokenizer.save_pretrained(output_dir)
-
-            onnx_file = output_dir / "model.onnx"
-            if onnx_file.exists():
-                os.rename(onnx_file, output_path)
-
-        elif task == "token-classification":
-            model = ORTModelForTokenClassification.from_pretrained(model_name_or_path, export=True)
-            model.save_pretrained(output_dir)
-            tokenizer.save_pretrained(output_dir)
-
-            onnx_file = output_dir / "model.onnx"
-            if onnx_file.exists():
-                os.rename(onnx_file, output_path)
-
-        elif task == "translation":
-            model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
-            model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(model, feature="seq2seq-lm")
-            onnx_config = model_onnx_config(model.config)
-          
-            export(
-                preprocessor=tokenizer,
-                model=model,
-                config=onnx_config,
-                opset=13,
-                output=Path(output_path)
-            )
-
-        else:
-            raise ValueError(f"Unsupported task: {task}")
-
-        print(f"✅ Transformers model exported to: {output_path}")
-        return str(output_path)
-
-    except Exception as e:
-        print(f"❌ Failed to export Transformers model: {e}")
-        raise
-
-
-def export_sklearn_to_onnx(model_path: str,
-                          input_sample: Any,
-                          output_path: str = "sklearn_model.onnx", 
-                          model_name: str = "sklearn_model") -> str:
-    """
-    Convert a Scikit-learn model to ONNX format.
-    
-    Args:
-        model_path: Path to the pickle file containing the sklearn model
-        input_sample: Sample input data for shape inference
-        output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
-        
-    Returns:
-        Path to the exported ONNX model
-        
-    Example:
-        export_sklearn_to_onnx("model.pkl", [[1, 2, 3, 4]], "sklearn_model.onnx")
-    """
-    try:
-        from skl2onnx import to_onnx
-        import joblib
-        import numpy as np
-        
-        print(f"🔬 Converting Scikit-learn model: {model_path}")
-        
-        # Load the model
-        if model_path.endswith('.joblib'):
-            sklearn_model = joblib.load(model_path)
-        else:
-            # Assume pickle format
-            import pickle
-            with open(model_path, 'rb') as f:
-                sklearn_model = pickle.load(f)
-        
-        # Convert input sample to numpy array if needed
-        if not isinstance(input_sample, np.ndarray):
-            input_sample = np.array(input_sample, dtype=np.float32)
-        
-        # Convert to ONNX
-        onnx_model = to_onnx(sklearn_model, input_sample, target_opset=12)
-        
-        # Save with external data support
-        _save_with_external_data(onnx_model, output_path)
-        
-        print(f"✅ Scikit-learn model exported to: {output_path}")
-        return output_path
-        
-    except Exception as e:
-        print(f"❌ Failed to export Scikit-learn model: {e}")
-        raise
-
-
-def export_stable_diffusion_to_onnx(model_path: str,
-                                   output_path: str = "stable_diffusion.onnx",
-                                   model_name: str = "stable_diffusion") -> str:
-    """
-    Note: Stable Diffusion models are complex pipelines that are not easily 
-    converted to a single ONNX model. This function is a placeholder.
-    
-    For Stable Diffusion, consider using the individual components:
-    - Text Encoder
-    - UNet
-    - VAE Decoder
-    
-    Each can be converted separately if needed.
-    """
-    raise NotImplementedError(
-        "Stable Diffusion models are complex pipelines that cannot be easily "
-        "converted to a single ONNX model. Consider converting individual components "
-        "or using TensorRT for acceleration instead."
-    )
-
-
-# Main exports
-
-def export_pytorch_to_onnx(model_path: str,
-                           input_sample: Any,
-                           output_path: str = "pytorch_model.onnx",
-                           model_name: str = "pytorch_model") -> str:
-    """
-    Export a PyTorch model to ONNX format.
-    Args:
-        model_path: Path to the PyTorch model file (.pt, .pth)
-        input_sample: Sample input tensor (torch.Tensor or numpy.ndarray)
-        output_path: Path to save the ONNX model
-        model_name: Name for the ONNX model
     Returns:
         Path to the exported ONNX model
     """
@@ -522,10 +390,22 @@ def export_pytorch_to_onnx(model_path: str,
         import onnx
         import io
         import numpy as np
-
-        print(f"🔄 Exporting PyTorch model: {model_path}")
-        # Load model
-        model = torch.load(model_path, map_location='cpu')
+        
+        # Extract kwargs with defaults
+        input_names = kwargs.get('input_names', ['input'])
+        output_names = kwargs.get('output_names', ['output'])
+        dynamic_axes = kwargs.get('dynamic_axes', None)
+        opset_version = kwargs.get('opset_version', 12)
+        do_constant_folding = kwargs.get('do_constant_folding', True)
+        export_params = kwargs.get('export_params', True)
+        verbose = kwargs.get('verbose', False)
+        
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+            
+        logger.info(f"🔄 Exporting loaded PyTorch model with opset {opset_version}...")
+        
+        # Ensure model is in evaluation mode
         model.eval()
 
         # Convert numpy input to tensor if needed
@@ -538,11 +418,13 @@ def export_pytorch_to_onnx(model_path: str,
             model,
             input_sample,
             f,
-            export_params=True,
-            opset_version=12,
-            do_constant_folding=True,
-            input_names=['input'],
-            output_names=['output']
+            export_params=export_params,
+            opset_version=opset_version,
+            do_constant_folding=do_constant_folding,
+            input_names=input_names,
+            output_names=output_names,
+            dynamic_axes=dynamic_axes,
+            verbose=verbose
         )
 
         # Load ONNX model and save with external data support
@@ -550,17 +432,314 @@ def export_pytorch_to_onnx(model_path: str,
         onnx_model = onnx.load_model_from_string(f.getvalue())
         _save_with_external_data(onnx_model, output_path)
 
-        print(f"✅ PyTorch model exported to: {output_path}")
+        logger.info(f"✅ PyTorch model exported to: {output_path}")
         return output_path
+        
     except Exception as e:
-        print(f"❌ Failed to export PyTorch model: {e}")
+        logger.info(f"❌ Failed to export PyTorch model: {e}")
+        raise
+def export_transformers_model_to_onnx(model: Any,
+                                    output_path: str = "transformers_model.onnx",
+                                    model_name: str = "transformers_model",
+                                    task: str = "text-classification",
+                                    **kwargs) -> str:
+    """
+    Exports a Hugging Face Transformers model already loaded to ONNX format.
+    
+    Args:
+        model: Transformers model already loaded
+        output_path: Path to save the ONNX model
+        model_name: Model name
+        task: Task type (text-classification, token-classification, translation, seq2seq-lm)
+        **kwargs: Additional arguments:
+            - opset (int): ONNX opset version (default: 12)
+            - feature (str): Feature for transformers export (e.g., "seq2seq-lm")
+            - verbose (bool): Enable verbose logging (default: False)
+        
+    Returns:
+        Path to the exported ONNX model
+    """
+    try:
+        import os
+        from pathlib import Path
+        from transformers import AutoTokenizer
+        from transformers.onnx import export, FeaturesManager
+        import torch
+        import onnx
+        import tempfile
+        import io
+
+        # Extract kwargs with defaults
+        opset = kwargs.get('opset', 12)
+        feature = kwargs.get('feature', None)
+        verbose = kwargs.get('verbose', False)
+
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+            
+        logger.info(f"🤗 Converting loaded Transformers model for task: {task} with opset {opset}")
+
+        # Try to get the tokenizer from the model
+        tokenizer = None
+        if hasattr(model, 'config') and hasattr(model.config, 'name_or_path'):
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(model.config.name_or_path)
+            except:
+                pass
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            if task in ["text-classification", "token-classification"]:
+                # For these types, use PyTorch export directly
+                input_sample = torch.randint(0, 1000, (1, 128))  # Example input_ids
+                
+                f = io.BytesIO()
+                torch.onnx.export(
+                    model,
+                    (input_sample,),
+                    f,
+                    export_params=True,
+                    opset_version=opset,
+                    do_constant_folding=True,
+                    input_names=['input_ids'],
+                    output_names=['logits'],
+                    verbose=verbose
+                )
+                
+                f.seek(0)
+                onnx_model = onnx.load_model_from_string(f.getvalue())
+                _save_with_external_data(onnx_model, output_path)
+                
+            elif task in ["translation", "seq2seq-lm"]:
+                # Use feature if provided, otherwise infer from task
+                feature_name = feature or "seq2seq-lm"
+                
+                try:
+                    # Para tradução, usar a API oficial do Transformers
+                    model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(
+                        model, feature=feature_name
+                    )
+                    onnx_config = model_onnx_config(model.config)
+                  
+                    export(
+                        preprocessor=tokenizer,
+                        model=model,
+                        config=onnx_config,
+                        opset=opset,
+                        output=Path(output_path)
+                    )
+                except Exception as e:
+                    logger.warning(f"Official export failed: {e}, trying PyTorch fallback")
+                    # Fallback to PyTorch export
+                    input_sample = torch.randint(0, 1000, (1, 128))
+                    
+                    f = io.BytesIO()
+                    torch.onnx.export(
+                        model,
+                        (input_sample,),
+                        f,
+                        export_params=True,
+                        opset_version=opset,
+                        do_constant_folding=True,
+                        input_names=['input_ids'],
+                        output_names=['logits'],
+                        verbose=verbose
+                    )
+                    
+                    f.seek(0)
+                    onnx_model = onnx.load_model_from_string(f.getvalue())
+                    _save_with_external_data(onnx_model, output_path)
+            else:
+                # General fallback for other tasks
+                input_sample = torch.randint(0, 1000, (1, 128))
+                
+                f = io.BytesIO()
+                torch.onnx.export(
+                    model,
+                    (input_sample,),
+                    f,
+                    export_params=True,
+                    opset_version=opset,
+                    do_constant_folding=True,
+                    input_names=['input_ids'],
+                    output_names=['logits'],
+                    verbose=verbose
+                )
+                
+                f.seek(0)
+                onnx_model = onnx.load_model_from_string(f.getvalue())
+                _save_with_external_data(onnx_model, output_path)
+
+        logger.info(f"✅ Transformers model exported to: {output_path}")
+        return str(output_path)
+
+    except Exception as e:
+        logger.info(f"❌ Failed to export Transformers model: {e}")
         raise
 
+
+def export_nemo_model_to_onnx(model: Any,
+                             input_sample: Any,
+                             output_path: str = "nemo_model.onnx",
+                             model_name: str = "nemo_model",
+                             **kwargs) -> str:
+    """
+    Exports a NeMo model already loaded to ONNX format.
+    
+    Args:
+        model: NeMo model already loaded
+        input_sample: Input sample for the model
+        output_path: Path to save the ONNX model
+        model_name: Model name
+        **kwargs: Additional arguments:
+            - export_format (str): NeMo export format (default: "ONNX")
+            - check_trace (bool): Check trace for NeMo models (default: True)
+            - verbose (bool): Enable verbose logging (default: False)
+            - input_names (List[str]): Input names for fallback PyTorch export
+            - output_names (List[str]): Output names for fallback PyTorch export
+            - dynamic_axes (Dict): Dynamic axes for fallback PyTorch export
+        
+    Returns:
+        Path to the saved ONNX model
+    """
+    try:
+        import onnx
+        import os
+        import tempfile
+        import inspect
+        
+        # Extract kwargs with defaults
+        export_format = kwargs.get('export_format', 'ONNX')
+        check_trace = kwargs.get('check_trace', False)
+        verbose = kwargs.get('verbose', False)
+        input_names = kwargs.get('input_names', None)
+        output_names = kwargs.get('output_names', None)
+        dynamic_axes = kwargs.get('dynamic_axes', None)
+        
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+            
+        logger.info(f"🔄 Exporting loaded NeMo model with format: {export_format}")
+        
+        # Set model to evaluation mode
+        if hasattr(model, 'eval'):
+            model.eval()
+        
+        # Use official NVIDIA export() method if available
+        if hasattr(model, 'export'):
+            with tempfile.NamedTemporaryFile(suffix='.onnx', delete=False) as temp_file:
+                temp_path = temp_file.name
+            
+            try:
+                logger.info(f"🔄 Using official NVIDIA export() method")
+                
+                model.export(temp_path, input_example=input_sample, verbose=verbose, check_trace=check_trace)
+                
+                # Load and re-save with external data support
+                onnx_model = onnx.load(temp_path)
+                _save_with_external_data(onnx_model, output_path)
+                
+                # Clean up temporary file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+                    
+                return output_path
+                
+            except Exception as export_error:
+                # Clean up temporary file on error
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+                
+                logger.info(f"❌ NVIDIA export() failed: {export_error}")
+        
+        # Fallback to PyTorch export if model has PyTorch components
+        if hasattr(model, 'state_dict'):
+            logger.info("🔄 Using PyTorch export fallback...")
+
+            return export_pytorch_model_to_onnx(
+                model=model,
+                input_sample=input_sample,
+                output_path=output_path,
+                model_name=model_name,
+                input_names=input_names,
+                output_names=output_names,
+                dynamic_axes=dynamic_axes,
+                verbose=verbose
+            )
+        else:
+            raise NotImplementedError("NeMo model does not support ONNX export")
+            
+    except ImportError:
+        raise ImportError("nemo_toolkit and onnx are required. Install with: pip install nemo_toolkit onnx")
+
+
+def export_sklearn_model_to_onnx(model: Any,
+                                input_sample: Any,
+                                output_path: str = "sklearn_model.onnx", 
+                                model_name: str = "sklearn_model",
+                                **kwargs) -> str:
+    """
+    Exports a Scikit-learn model already loaded to ONNX format.
+    
+    Args:
+        model: Sklearn model already loaded
+        input_sample: Example input data for shape inference
+        output_path: Path to save the ONNX model
+        model_name: Model name
+        **kwargs: Additional arguments:
+            - target_opset (int): Target ONNX opset version (default: 12)
+            - initial_types (List): Initial types for sklearn conversion
+            - verbose (bool): Enable verbose logging (default: False)
+        
+    Returns:
+        Path to the exported ONNX model
+    """
+    try:
+        from skl2onnx import to_onnx
+        import numpy as np
+        
+        # Extract kwargs with defaults
+        target_opset = kwargs.get('target_opset', 12)
+        initial_types = kwargs.get('initial_types', None)
+        verbose = kwargs.get('verbose', False)
+        
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+            
+        logger.info(f"🔬 Converting loaded Scikit-learn model with opset {target_opset}...")
+        
+        # Convert input sample to numpy array if needed
+        if not isinstance(input_sample, np.ndarray):
+            input_sample = np.array(input_sample, dtype=np.float32)
+        
+        # Build conversion arguments
+        convert_kwargs = {
+            'target_opset': target_opset
+        }
+        
+        if initial_types is not None:
+            convert_kwargs['initial_types'] = initial_types
+        
+        # Convert to ONNX
+        onnx_model = to_onnx(model, input_sample, **convert_kwargs)
+        
+        # Save with external data support
+        _save_with_external_data(onnx_model, output_path)
+        
+        logger.info(f"✅ Scikit-learn model exported to: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.info(f"❌ Failed to export Scikit-learn model: {e}")
+        raise
+
+
 __all__ = [
-    'export_tensorflow_to_onnx',
-    'export_nemo_to_onnx',
-    'export_pytorch_to_onnx',
-    'export_transformers_to_onnx',
-    'export_sklearn_to_onnx',
-    'export_stable_diffusion_to_onnx'
+   
+    'export_model_to_onnx',
+    'identify_model_type',
+    'export_tensorflow_model_to_onnx',
+    'export_pytorch_model_to_onnx', 
+    'export_transformers_model_to_onnx',
+    'export_nemo_model_to_onnx',
+    'export_sklearn_model_to_onnx',
 ]
