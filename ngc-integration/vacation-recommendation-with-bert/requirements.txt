@@ -6,3 +6,7 @@ pandas==1.5.3
 setuptools>=65.6
 protobuf>=4.25.8,<5
 mlflow==2.21.2
+optimum==1.14.0
+onnxruntime
+huggingface_hub>=0.20.0
+nemo-toolkit==1.22.0

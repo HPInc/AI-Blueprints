@@ -119,6 +119,25 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ---
 
+# Model Export Configuration
+
+The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
+
+## Supported Model Types
+
+- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
+- **Keras Models**: TensorFlow/Keras models for neural network-based processing
+- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
+- **Pytorch Models**: Pytorch models that can be exported
+
+## ONNX Export Control
+
+You can control ONNX generation not sending ModelExportConfig list to the log_model method.
+
+For More information about the exportation can be found on the readme inside /src folder on blueprint.
+
+---
+
 ## Contact and Support
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
