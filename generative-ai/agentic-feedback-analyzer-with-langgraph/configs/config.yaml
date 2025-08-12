@@ -1,0 +1,24 @@
+# Configuration for Agentic Feedback Analyzer with LangGraph
+
+# Model configuration
+model_source: "local"  # Options: "local", "huggingface", "openai"
+
+# Path to the local model file (used when model_source is "local")
+model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+
+# Memory configuration
+memory_path: "memory"  # Directory for storing agent memory
+
+# LangGraph configuration
+graph:
+  max_iterations: 10
+  timeout: 300  # seconds
+
+# LLM configuration
+llm:
+  n_gpu_layers: -1
+  n_batch: 512
+  n_ctx: 8192
+  max_tokens: 1024
+  temperature: 0.0
+  seed: 42
