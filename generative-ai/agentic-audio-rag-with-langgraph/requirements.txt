@@ -11,3 +11,6 @@ openai-whisper==20231117
 tqdm>=4.66.4
 pydantic<3
 transformers==4.53.2
+pyttsx3
+torchaudio
+torchvision==0.21.0
