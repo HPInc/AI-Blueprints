@@ -1,44 +1,99 @@
 """
-DEPRECATED: This file is maintained for backwards compatibility only.
+Code Generation Model implementation containing all business logic.
 
-All code generation functionality has been migrated to models-from-code architecture.
-Please use the new structure:
-- core.code_generation_service.code_generation_model.CodeGenerationModel (business logic)
-- core.code_generation_service.code_generation_service.CodeGenerationService (registration)
-- core.code_generation_service.code_generation_loader (MLflow loading)
+This model provides code generation capabilities using LLM models with vector retrieval
+for enhanced context-aware code generation. It can extract context from GitHub repositories 
+to provide more relevant and accurate code generation responses.
+
+NO MLflow dependencies - pure domain functionality.
 """
 
-import sys
 import os
-import warnings
+import sys
+import logging
+import traceback
+import time
+import json
+import datetime
+import numpy as np
+from typing import Dict, Any, List, Optional
+import pandas as pd
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.schema import StrOutputParser, Document
+from langchain_community.llms import LlamaCpp
 
-# Add path for new service location
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+# Fix for Pydantic model rebuild issue
+if hasattr(LlamaCpp, "model_rebuild"):
+    LlamaCpp.model_rebuild()
+from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
+from langchain_community.vectorstores import Chroma
+from langchain.schema.runnable import RunnablePassthrough
+from core.chroma_embedding_adapter import ChromaEmbeddingAdapter
+import chromadb
 
-# Import from new location with deprecation warning
-warnings.warn(
-    "Importing from notebooks.core.code_generation_service is deprecated. "
-    "Use core.code_generation_service.code_generation_service.CodeGenerationService instead.",
-    DeprecationWarning,
-    stacklevel=2
-)
+from langchain_huggingface import HuggingFaceEmbeddings
 
-# Import the new service class
-from core.code_generation_service.code_generation_service import CodeGenerationService
+# Import utilities
+from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, clean_code, get_model_context_window
 
-# For backwards compatibility, expose the old class name
-__all__ = ["CodeGenerationService"]
+# Import GitHub extraction and context storage tools
+from core.extract_text.github_repository_extractor import GitHubRepositoryExtractor
+from core.generate_metadata.llm_context_updater import LLMContextUpdater
+from core.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
+from core.vector_database.vector_store_writer import VectorStoreWriter
+from core.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
+from core.generate_metadata.repository_status_tracker import RepositoryStatusTracker, ProcessingStatus
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
+class CodeGenerationModel:
+    """
+    Standalone model class containing all code generation business logic.
+    NO MLflow inheritance - pure domain functionality.
+    """
+
+    def __init__(self, llm, config, embedding_function=None, chroma_embedding_function=None, 
+                 vector_store=None, collection=None, delay_async_init=False):
+        """
+        Direct dependency injection - no MLflow context.
+        Extract all initialization logic from original service.
+        
+        Args:
+            llm: The language model instance
+            config: Configuration dictionary
+            embedding_function: HuggingFace embeddings instance
+            chroma_embedding_function: ChromaDB-compatible embedding adapter
+            vector_store: Vector store for retrieval
+            collection: ChromaDB collection instance
+            delay_async_init: If True, delay initialization of thread-based components
+        """
+        self.llm = llm
+        self.config = config
+        self.vector_store = vector_store
+        self.retriever = None
+        self.collection = collection
         self.collection_name = "my_collection"
         self.embedding_path = None
-        self.context_window = None
+        self.context_window = getattr(llm, '_context_window', None) if llm else None
         
         # Repository cache to avoid re-processing the same repositories
         self.repository_cache = {}
         
-        # The embedding_function will be initialized in load_context
-        # or can be manually initialized by calling initialize_embedding_function
-        self.embedding_function = None
-        self.chroma_embedding_function = None
+        # Embedding functions
+        self.embedding_function = embedding_function
+        self.chroma_embedding_function = chroma_embedding_function
+        
+        # Prompt templates
+        self.prompt_str = None
+        self.prompt = None
+        self.code_description_prompt = None
+        self.code_generation_prompt = None
+        
+        # Chains
+        self.chain = None
+        self.repository_chain = None
+        self.direct_chain = None
         
         # Initialize status tracker and async repository processor
         if not delay_async_init:
@@ -57,7 +112,13 @@ __all__ = ["CodeGenerationService"]
             if isinstance(handler, logging.StreamHandler):
                 formatter = logging.Formatter('[%(levelname)s] %(message)s')
                 handler.setFormatter(formatter)
-    
+        
+        # Initialize prompt templates
+        self._load_prompt_templates()
+        
+        # Initialize chains
+        self._load_chains()
+
     def _initialize_async_components(self):
         """
         Initialize the asynchronous repository processing components.
@@ -76,35 +137,51 @@ __all__ = ["CodeGenerationService"]
             self.repository_status_tracker = None
             self.repository_processor = None
 
-    def initialize_embedding_function(self, embedding_model_path=None):
-        """Initialize the embedding function.
+    def _load_prompt_templates(self):
+        """Load the prompt templates for code generation."""
+        # Template for code generation with repository context
+        self.code_description_template = """You will receive three pieces of information: a code snippet, a file name, and an optional context. Based on this information, explain in a clear, summarized and concise way what the code snippet is doing.
+
+Code:
+{code}
+
+File name:
+{filename}
+
+Context:
+{context}
+
+Describe what the code above does.
+"""
+
+        # Template for direct code generation without repository context
+        self.code_generation_template = """You are a code generator AI that ONLY outputs working Python code.
+NEVER ask questions or request clarification.
+ALWAYS respond with complete, executable Python code.
+DO NOT include any explanations, comments, or non-code text.
+If you're uncertain about implementation details, make reasonable assumptions and provide working code.
+
+Context:
+{context}
+
+Task: {question}
+"""
+
+        # Default prompt for backward compatibility with existing chain structure
+        self.prompt_str = """You are a Python wizard tasked with generating code for a Jupyter Notebook (.ipynb) based on the given context.
+Your answer should consist of just the Python code, without any additional text or explanation.
+
+Context:
+{context}
+
+Question: {question}
+"""
+        self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
         
-        Args:
-            embedding_model_path: Path to a locally saved embedding model (optional)
-            
-        Returns:
-            An initialized HuggingFaceEmbeddings object
-        """
-        logger.info("Initializing embedding function")
-        
-        # Determine which model path to use
-        model_name = embedding_model_path if embedding_model_path else "all-MiniLM-L6-v2"
-        if embedding_model_path:
-            logger.info(f"Using provided embedding model path: {embedding_model_path}")
-        else:
-            logger.info("Using default embedding model: all-MiniLM-L6-v2")
-        
-        # Initialize the embedding function
-        self.embedding_function = HuggingFaceEmbeddings(model_name=model_name)
-        logger.info(f"Successfully initialized HuggingFaceEmbeddings with model: {model_name}")
-        
-        # Create the adapter 
-        self.chroma_embedding_function = ChromaEmbeddingAdapter(self.embedding_function)
-        
-        logger.info("ChromaEmbeddingAdapter successfully initialized with all required methods")
-            
-        return self.embedding_function
-    
+        # Create additional prompt objects
+        self.code_description_prompt = ChatPromptTemplate.from_template(self.code_description_template)
+        self.code_generation_prompt = ChatPromptTemplate.from_template(self.code_generation_template)
+
     def extract_repository(self, repository_url: str, metadata_only: bool = False) -> Dict[str, Any]:
         """
         Extract code and metadata from a GitHub repository.
@@ -167,9 +244,7 @@ __all__ = ["CodeGenerationService"]
         
         # Return the current processing status
         return {"status": status, "repository_url": repository_url}
-    
 
-    
     def custom_retriever(self, query: str, top_n: int = None) -> List[Document]:
         """
         Custom retriever function 
@@ -224,7 +299,7 @@ __all__ = ["CodeGenerationService"]
             logger.error(f"Error retrieving documents: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-    
+
     def load_vector_store(self, persist_directory="./chroma_db"):
         """
         Load or create a vector store for code retrieval.
@@ -262,178 +337,8 @@ __all__ = ["CodeGenerationService"]
         except Exception as e:
             logger.error(f"Error loading vector store: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
-    
-    def load_model(self, context) -> None:
-        """
-        Load the appropriate model based on configuration.
-        
-        Args:
-            context: MLflow model context containing artifacts
-        """
-        try:
-            model_source = self.model_config.get("model_source", "local")
-            logger.info(f"Attempting to load model from source: {model_source}")
-            
-            if model_source == "local":
-                self.load_local_model(context)
-            else:
-                logger.info(f"Using model source: {model_source}")
-                # Import utility function for initializing LLM
-                from src.utils import initialize_llm
-                
-                # Extract secrets from config
-                secrets = {}
-                if "secrets" in self.model_config:
-                    secrets = self.model_config["secrets"]
-                
-                # Get local model path from artifacts
-                local_model_path = None
-                if "models" in context.artifacts:
-                    local_model_path = context.artifacts["models"]
-                
-                # Initialize LLM using the utility function
-                self.llm = initialize_llm(model_source, secrets, local_model_path)
-                
-            if self.llm is None:
-                logger.error("Failed to initialize model from any source")
-                raise ValueError("No model could be initialized")
-                
-            logger.info(f"Model of type {type(self.llm).__name__} loaded successfully")
-        except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            logger.error(f"Exception type: {type(e).__name__}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            raise
-    
-    def load_local_model(self, context):
-        """
-        Load a local LlamaCpp model.
-        
-        Args:
-            context: MLflow model context containing artifacts
-        """
-        try:
-            logger.info("Initializing local LlamaCpp model.")
-            model_path = context.artifacts.get("models", None)
-            
-            logger.info(f"Model path: {model_path}")
-            
-            if not model_path or not os.path.exists(model_path):
-                logger.error(f"Model file not found at path: {model_path}")
-                raise FileNotFoundError(f"Model file not found: {model_path}")
-            
-            logger.info(f"Model file exists. Size: {os.path.getsize(model_path) / (1024 * 1024):.2f} MB")
-            
-            logger.info("Setting up callback manager")
-            self.callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-            
-            # Determine optimal context window for this model using the utility function
-            
-            # Create a temporary model object with model_path attribute
-            temp_model = type('TempModel', (), {'model_path': model_path})
-            
-            # Get context window using the utility function
-            context_window = get_model_context_window(temp_model)
-            logger.info(f"Determined context window: {context_window} tokens")
-            
-            logger.info("Initializing LlamaCpp with the following parameters:")
-            logger.info(f"  - Model Path: {model_path}")
-            
-            # Check CUDA availability
-            cuda_available = False
-            try:
-                # Try to check if CUDA is available
-                import subprocess
-                try:
-                    subprocess.check_output(['ldconfig', '-p'], stderr=subprocess.STDOUT)
-                    libcuda_check = subprocess.check_output(['ldconfig', '-p', '|', 'grep', 'libcuda.so.1'], stderr=subprocess.STDOUT, shell=True)
-                    if libcuda_check:
-                        cuda_available = True
-                except (subprocess.SubprocessError, FileNotFoundError):
-                    cuda_available = False
-            except Exception:
-                cuda_available = False
-                
-            logger.info(f"CUDA availability check: {'Available' if cuda_available else 'Not available'}")
-            
-            # Configure GPU layers based on CUDA availability
-            n_gpu_layers = 30 if cuda_available else 0
-            logger.info(f"  - n_gpu_layers: {n_gpu_layers}, n_batch: 512, n_ctx: {context_window}")
-            logger.info(f"  - max_tokens: 1024, f16_kv: True, temperature: 0.2")
-            
-            try:
-                self.llm = LlamaCpp(
-                    model_path=model_path,
-                    n_gpu_layers=n_gpu_layers,
-                    n_batch=512,
-                    n_ctx=context_window,
-                    f16_kv=True,
-                    callback_manager=None,
-                    verbose=False,
-                    max_tokens=1024,
-                    temperature=0.2
-                )
-                
-                self.llm.__dict__['_context_window'] = context_window
-                self.context_window = context_window
-                logger.info(f"Using local LlamaCpp model for code generation with {'GPU' if cuda_available else 'CPU'} mode.")
-            except Exception as model_error:
-                logger.error(f"Failed to initialize LlamaCpp model: {str(model_error)}")
-                logger.error(f"Exception type: {type(model_error).__name__}")
-                logger.error(f"Traceback: {traceback.format_exc()}")
-                raise
-        except Exception as e:
-            logger.error(f"Error in load_local_model: {str(e)}")
-            logger.error(f"Exception type: {type(e).__name__}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            raise
-    
-    def load_prompt(self) -> None:
-        """Load the prompt templates for code generation."""
-        # Template for code generation with repository context
-        self.code_description_template = """You will receive three pieces of information: a code snippet, a file name, and an optional context. Based on this information, explain in a clear, summarized and concise way what the code snippet is doing.
 
-Code:
-{code}
-
-File name:
-{filename}
-
-Context:
-{context}
-
-Describe what the code above does.
-"""
-
-        # Template for direct code generation without repository context
-        self.code_generation_template = """You are a code generator AI that ONLY outputs working Python code.
-NEVER ask questions or request clarification.
-ALWAYS respond with complete, executable Python code.
-DO NOT include any explanations, comments, or non-code text.
-If you're uncertain about implementation details, make reasonable assumptions and provide working code.
-
-Context:
-{context}
-
-Task: {question}
-"""
-
-        # Default prompt for backward compatibility with existing chain structure
-        self.prompt_str = """You are a Python wizard tasked with generating code for a Jupyter Notebook (.ipynb) based on the given context.
-Your answer should consist of just the Python code, without any additional text or explanation.
-
-Context:
-{context}
-
-Question: {question}
-"""
-        self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
-        
-        # Create additional prompt objects
-        self.code_description_prompt = ChatPromptTemplate.from_template(self.code_description_template)
-        self.code_generation_prompt = ChatPromptTemplate.from_template(self.code_generation_template)
-    
-    def load_chain(self) -> None:
+    def _load_chains(self):
         """Create the code generation chains using the loaded model, prompts, and retriever."""
         try:
             # Load the vector store first
@@ -527,18 +432,21 @@ Question: {question}
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-    
-    def predict(self, context, model_input: Dict[str, Any]) -> pd.DataFrame:
+
+    def predict(self, model_input: Dict[str, Any], params=None) -> pd.DataFrame:
         """
+        Core business logic extracted from original service predict method.
         Generate code based on the input parameters.
+        Use instance variables instead of context.
+        Must return same pandas.DataFrame structure as original.
         
         Args:
-            context: MLflow model context
             model_input: Input data for code generation, expecting:
                          - A dict with "inputs" containing any of:
                            - "question": User's code generation request (required)
                            - "repository_url": GitHub repository URL (optional)
                            - "metadata_only": Process only metadata without full LLM analysis (optional, default: False)
+            params: Additional parameters (unused)
             
         Returns:
             DataFrame with the generated code in a "result" column
@@ -662,7 +570,6 @@ Question: {question}
                             logger.info(f"Collection '{self.collection_name}' has {count} documents")
                             
                             # Use the repository chain with the question
-                            # TODO: Is this chain input correct? Does it match with the prompt template?
                             chain_input = {"question": question, "query": question}
                             logger.info(f"Using repository chain with input: {chain_input}")
                             
@@ -744,132 +651,7 @@ Question: {question}
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             return pd.DataFrame([{"result": f"# Error during processing\n# {error_message}\n\n# Falling back to basic response\n\n# Your question was: {question}\n\n# Please try again with metadata_only=True or a smaller repository"}])
-    
-    @classmethod
-    def log_model(
-        cls,
-        config_path,
-        artifact_path="code_generation_service",
-        secrets_dict=None, 
-        model_path=None, 
-        embedding_model_path=None, 
-        delay_async_init=True, 
-        demo_folder=None
-    ):
-        """
-        Log the model to MLflow.
-        
-        Args:
-            config_path: Path to the configuration file
-            artifact_path: Path to store the model artifacts
-            secrets_dict: Dict with secrets to persist as YAML (optional)
-            model_path: Path to the LLM model file (optional)
-            embedding_model_path: Path to the locally saved embedding model directory (optional)
-                                 If provided, will be used instead of downloading the model
-            delay_async_init: If True, delay thread-based component initialization during serialization (default: True)
-                             to prevent MLflow serialization errors with thread locks
-            demo_folder: Path to the demo folder (optional)
-            
-        Returns:
-            None
-        """
-        import mlflow
-        from mlflow.models.signature import ModelSignature
-        from mlflow.types.schema import Schema, ColSpec
-        import logging
-        import os
-        
-        logger = logging.getLogger(__name__)
-        
-        # Define model input/output schema with all parameters
-        input_schema = Schema([
-            ColSpec("string", "question"),
-            ColSpec("string", "repository_url", required=False),  # Optional repository URL
-            #ColSpec("boolean", "metadata_only", required=False),  # Optional metadata-only flag
-        ])
-        output_schema = Schema([
-            ColSpec("string", "result")
-        ])
-        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-        
-        # Prepare artifacts
-        artifacts = {
-            "config": config_path
-        }
 
-        if secrets_dict:
-            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
-            yaml.safe_dump(secrets_dict, tmp)
-            tmp.close()
-            artifacts["secrets"] = tmp.name
-            logging.info(f"Secrets artifact written to temporary file {tmp.name}")
-        
-        if model_path:
-            artifacts["models"] = model_path
-            
-        # Add demo folder to artifacts if provided
-        if demo_folder:
-            artifacts["demo"] = demo_folder
-            
-        # Add embedding model path to artifacts if provided and exists
-        # This will allow us to use a locally saved model instead of downloading it during initialization
-        if embedding_model_path and os.path.exists(embedding_model_path):
-            artifacts["embedding_model"] = embedding_model_path
-            logger.info(f"Using local embedding model from: {embedding_model_path}")
-        else:
-            logger.warning("No local embedding model path provided or path doesn't exist. " 
-                         "The service will download the embedding model during initialization.")
-        
-        # Log model to MLflow
-        mlflow.pyfunc.log_model(
-            artifact_path=artifact_path,
-            python_model=cls(delay_async_init=delay_async_init),  # Create instance with delayed initialization
-            artifacts=artifacts,
-            signature=signature,
-            code_paths=["./core", "../src"],
-            pip_requirements="../requirements.txt",
-        )
-        logger.info("Model and artifacts successfully registered in MLflow.")
-    
-    def load_context(self, context) -> None:
-        """
-        Load context for the model, including configuration, model, and chains.
-        This is an override of the BaseGenerativeService's load_context method.
-        
-        Args:
-            context: MLflow model context
-        """
-        # First, initialize the embedding function - will check for artifact model first
-        embedding_model_path = None
-        if "embedding_model" in context.artifacts:
-            embedding_model_path = context.artifacts["embedding_model"]
-            if os.path.exists(embedding_model_path):
-                logger.info(f"Found saved embedding model in artifacts: {embedding_model_path}")
-            else:
-                logger.warning(f"Embedding model path provided in artifacts but not found: {embedding_model_path}")
-                embedding_model_path = None
-        
-        # Initialize the embedding function with the artifact path if available, otherwise use default
-        try:
-            self.initialize_embedding_function(embedding_model_path)
-        except Exception as e:
-            logger.warning(f"Failed to initialize embedding function: {str(e)}")
-            logger.warning("Will attempt to initialize default embedding model as fallback")
-            try:
-                self.initialize_embedding_function()
-            except Exception as e2:
-                logger.error(f"Failed to initialize default embedding model: {str(e2)}")
-                # Continue with initialization even if embedding fails - some functions might not need it
-        
-        # Initialize async components if they haven't been initialized yet
-        # This is needed when loading from MLflow after serialization
-        if self.repository_status_tracker is None:
-            self._initialize_async_components()
-            logger.info("Initialized async components during model loading")
-        
-        # Call the parent load_context method to handle the rest of the initialization
-        super().load_context(context)
-    
     def reset_repository_state(self, repository_url=None):
         """
         Reset the repository state if no specific repository URL is provided.
@@ -915,7 +697,7 @@ Question: {question}
             if repository_url in self.repository_cache:
                 logger.info(f"Repository {repository_url} found in cache, activating")
                 self.collection = self.repository_cache[repository_url]["collection"]
-    
+
     def _on_repository_complete(self, repo_id: str, data: List[Dict[str, Any]]) -> None:
         """
         Callback for when repository processing completes.
