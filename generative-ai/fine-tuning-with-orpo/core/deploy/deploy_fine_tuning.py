@@ -363,10 +363,10 @@ def register_llm_comparison_model(
     demo_folder: str  = "../demo"
 ):
     """
-    Register an adaptive LLM comparison model with MLflow.
+    DEPRECATED: Legacy wrapper function for backward compatibility.
     
-    This model automatically adapts to memory constraints and available hardware,
-    providing robust deployment across different environments.
+    This function is maintained for backward compatibility but delegates to the new
+    FineTuningService.register_model method which uses models-from-code approach.
     
     Args:
         model_base_path: Path to base model (can be relative to project)
@@ -375,82 +375,24 @@ def register_llm_comparison_model(
         run_name: MLflow run name
         registry_name: Model registry name
         config_path: Path to configuration file (default: ../configs/config.yaml)
+        demo_folder: Path to demo folder (default: ../demo)
     """
-    # Validate and resolve paths
-    def resolve_model_path(path_str: str) -> str:
-        """Resolve model path, making it project-relative if needed."""
-        path = Path(path_str)
-        
-        # If absolute path and exists, use as-is
-        if path.is_absolute() and path.exists():
-            return str(path)
-            
-        # If relative path, try to resolve relative to project directories
-        project_root = get_project_root()
-        
-        # Try models directory
-        models_path = get_models_dir() / path_str
-        if models_path.exists():
-            return str(models_path)
-            
-        # Try fine-tuned models directory
-        ft_path = get_fine_tuned_models_dir() / path_str
-        if ft_path.exists():
-            return str(ft_path)
-            
-        # Try relative to project root
-        root_path = project_root / path_str
-        if root_path.exists():
-            return str(root_path)
-            
-        # If it's a HuggingFace model ID, return as-is
-        if "/" in path_str and not path_str.startswith("../"):
-            return path_str
-            
-        # Return original path and let downstream handle the error
-        logging.warning(f"Could not resolve model path: {path_str}")
-        return path_str
+    # Import the new service
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+    from core.fine_tuning_service import FineTuningService
     
-    resolved_base_path = resolve_model_path(model_base_path)
-    resolved_ft_path = resolve_model_path(model_finetuned_path)
+    logger = logging.getLogger(__name__)
+    logger.info("🔄 Using legacy wrapper - delegating to new FineTuningService")
     
-    logging.info(f"Resolved base model path: {resolved_base_path}")
-    logging.info(f"Resolved fine-tuned model path: {resolved_ft_path}")
-    
-    core = Path(__file__).resolve().parent.parent
-    src = core.parent / "src"
-    (core / "__init__.py").touch(exist_ok=True)
-    (src / "__init__.py").touch(exist_ok=True)
-
-    mlflow.set_experiment(experiment)
-    with mlflow.start_run(run_name=run_name) as run:
-        signature = ModelSignature(
-            inputs=Schema(
-                [
-                    ColSpec("string",  "prompt"),
-                    ColSpec("boolean", "use_finetuning"),
-                    ColSpec("integer", "max_tokens"),
-                ]
-            ),
-            outputs=Schema([ColSpec("string", "response")]),
-        )
-
-        mlflow.pyfunc.log_model(
-            artifact_path="llm_serving_model",
-            python_model=LLMComparisonModel(),
-            artifacts={
-                "model_no_finetuning": resolved_base_path,
-                "finetuned_model":     resolved_ft_path,
-                "config": str(Path(config_path).resolve()),
-                "demo":str(Path(demo_folder))
-            },
-            signature=signature,
-            code_paths=[str(core), str(src)],
-            pip_requirements="../requirements.txt",
-        )
-
-        mlflow.register_model(
-            model_uri=f"runs:/{run.info.run_id}/llm_serving_model",
-            name=registry_name,
-        )
-        logging.info("✅ Adaptive LLM comparison model registered as `%s` (run %s)", registry_name, run.info.run_id)
+    # Delegate to the new service
+    FineTuningService.register_model(
+        model_base_path=model_base_path,
+        model_finetuned_path=model_finetuned_path,
+        experiment=experiment,
+        run_name=run_name,
+        registry_name=registry_name,
+        config_path=config_path,
+        demo_folder=demo_folder
+    )
