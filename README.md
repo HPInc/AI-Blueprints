@@ -15,11 +15,37 @@
 
 # Overview
 
-This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.
 
-The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **Nemotron** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.
+This repository hosts a growing collection of AI blueprint projects that run end-to-end using Jupyter notebooks, MLflow deployments, and Streamlit web apps. Each blueprint is designed to be plug-and-play, giving you ready-to-use solutions across key AI domains like data science, machine learning, deep learning, and generative AI. All projects are built to work seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), please feel free to open a new issue in this repository — we welcome your feedback!
+These blueprints make use of local, open-source models including:
+
+* **LLaMA** (Meta)
+* **Qwen** (Alibaba)
+* **BERT** (Google)
+* **LLaMA Nemotron** (NVIDIA)
+
+In addition, some examples use hosted models from **Hugging Face** for added flexibility.
+
+## ✨ Use cases include:
+
+* Data visualization
+* Data analysis
+* Image classification
+* Super resolution
+* LLM fine-tuning
+* Multi-modal RAG
+* Audio translation
+* Agentic RAG
+* And much more
+
+We’re actively expanding this collection. If you have ideas or want to suggest a blueprint for [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), feel free to [open an issue](https://github.com/HPInc/AI-Blueprints/issues). We’d love to hear from you.
+
+
+## 🚀 Get Started with HP AI Studio
+
+To run any of these projects quickly and effortlessly, you can [**download HP AI Studio for free**](https://reinvent.hp.com/AI-Studio-Free-Sign-Up).
+
 
 ---
 
@@ -60,13 +86,13 @@ We are continuously expanding this collection with new projects. If you have sug
 
 # Data Science
 
-The sample projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **2 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 🌸 Classification with SVM
 
-This project is a simple **classification** experiment focused on predicting species of **Iris flowers**.
+This project is a simple **classification** experiment focused on predicting species of **iris flowers**.
 
 It runs on the **Data Science Workspace**, demonstrating basic supervised learning techniques for multi-class classification tasks.
 
@@ -80,7 +106,7 @@ It highlights how city-level movement patterns changed during the crisis. The ex
 
 # Deep Learning
 
-The sample projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **6 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
@@ -122,18 +148,18 @@ It trains on a dataset containing **Shakespeare's texts**, demonstrating the fun
 
 # Generative AI
 
-The sample projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **7 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 📊 Automated Evaluation with Structured Outputs
 
-**Automated Evaluation with Structured Outputs** turns a local **Meta‑Llama‑3** model into an MLflow‑served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
+**Automated Evaluation with Structured Outputs** turns a local **Meta-Llama-3** model into an MLflow-served scorer that rates any batch of texts (e.g., project abstracts) against arbitrary rubric criteria.
 
-- Generates scores locally via `llama.cpp` (no data leaves your machine)
+- Generates scores locally via `llama.cpp` (no data leaves your machine)
 - Registers the evaluator as a **pyfunc** model in MLflow
 - Exposes a REST `/invocations` endpoint
-- Ships two front‑ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human‑friendly interaction and CSV download.
+- Ships two front-ends — a **Streamlit** dashboard and a pure **HTML/JS** UI — for instant human-friendly interaction and CSV download.
 
 ### Code Generation with Langchain
 
@@ -152,11 +178,11 @@ A comparative setup to benchmark base vs fine-tuned models on the same prompts
 
 ### Image Generation with Stable Diffusion
 
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
+This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics, such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with PromptQuality for evaluation and tracking.
 
 ### Text Generation with LangChain
 
-This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It also integrates Galileo Prompt Quality for evaluation and logging, and supports multi-source model loading including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
+This notebook implements a full Retrieval-Augmented Generation (RAG) pipeline for automatically generating a scientific presentation script. It integrates paper retrieval from arXiv, text extraction and chunking, embedding generation with HuggingFace, vector storage with ChromaDB, and context-aware generation using LLMs. It also integrates Galileo Prompt Quality for evaluation and logging, and supports multi-source model loading, including local Llama.cpp, HuggingFace-hosted, and HuggingFace-cloud models like Mistral or DeepSeek.
 
 ### Text Summarization with LangChain
 
@@ -170,7 +196,7 @@ This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatb
 
 # NVIDIA GPU Cloud Integration
 
-The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **5 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
@@ -199,7 +225,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 - **Original Example Notebook**: This version, created by NVIDIA, runs the entire evaluation within a single notebook. It includes downloading the data and restarting the kernel to activate the cuDF extension.
 
-- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
+- **Data Analysis Notebooks**: These notebooks use preprocessed datasets of varying sizes from the **datafabric** folder in AI Studio. The evaluation is split across two notebooks—one using Pandas (CPU) and the other using cuDF (GPU)—with performance metrics logged to **MLflow**.
 
 ### 📡 Data Visualization with cuDF
 
