@@ -149,6 +149,21 @@ if st.button("Get result"):
                 st.error("❌ Error fetching prediction.")
                 st.error(str(e))
 
+# --- Display Enhanced Image and Download Button ---
+if "enhanced_image" in st.session_state:
+    st.image(st.session_state["enhanced_image"], caption="Output", use_container_width=True)
+
+    buffer = BytesIO()
+    st.session_state["enhanced_image"].save(buffer, format="PNG")
+    buffer.seek(0)
+
+    st.download_button(
+        label="📥 Download Image",
+        data=buffer,
+        file_name="image_output.png",
+        mime="image/png"
+    )
+
 # --- Footer ---
 st.markdown(
     """
