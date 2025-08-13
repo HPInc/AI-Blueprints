@@ -19,7 +19,7 @@ st.markdown(
     .stApp, .stApp *:not(h1) {
       font-family: "Segoe UI", sans-serif;
       font-size: 20px !important;
-      line-height: 1.45 !important;
+      line-height: 1.6 !important;
       color: #1E1E1E;
     }
     /* PAGE BACKGROUND */
