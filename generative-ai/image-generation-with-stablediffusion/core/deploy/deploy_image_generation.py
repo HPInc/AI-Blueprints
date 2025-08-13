@@ -310,7 +310,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 "finetuned_model":     finetuned_model_path,
                 "model_no_finetuning": model_no_finetuning_path,
                 "config": str(Path(config_path).resolve()),
-                "demo": str(Path(demo_path).resolve())
+                "demo": str(Path(demo_path))
             },
             signature=signature,
             code_paths=[str(core), str(src_dir)],
