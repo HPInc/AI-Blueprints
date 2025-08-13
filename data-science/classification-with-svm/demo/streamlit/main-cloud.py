@@ -75,7 +75,7 @@ st.markdown(
     }
     /* TEXT & NUMBER INPUTS */
     div[data-baseweb="input"] > div > input {
-      height: 56px !important;
+      height: 75px !important;
       font-size: 20px !important;
       padding: 0 1rem !important;
     }
@@ -84,7 +84,7 @@ st.markdown(
     }
     /* SLIDERS */
     .stSlider > div input {
-      height: 56px !important;
+      height: 75px !important;
     }
     /* DIVIDER & FOOTER */
     hr, .stHorizontalRule { border-color: rgba(0,77,204,0.20); }
