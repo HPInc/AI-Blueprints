@@ -117,7 +117,7 @@ if st.button("Get result"):
                 response.raise_for_status()
                 data = response.json()
 
-                base64_images = data.get("predictions", [])
+                base64_images = data.get("output_images", [])
 
                 if base64_images and isinstance(base64_images, list):
                     st.success("✅ Here are your images!")
@@ -148,21 +148,6 @@ if st.button("Get result"):
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error fetching prediction.")
                 st.error(str(e))
-
-# --- Display Enhanced Image and Download Button ---
-if "enhanced_image" in st.session_state:
-    st.image(st.session_state["enhanced_image"], caption="Output", use_container_width=True)
-
-    buffer = BytesIO()
-    st.session_state["enhanced_image"].save(buffer, format="PNG")
-    buffer.seek(0)
-
-    st.download_button(
-        label="📥 Download Image",
-        data=buffer,
-        file_name="image_output.png",
-        mime="image/png"
-    )
 
 # --- Footer ---
 st.markdown(

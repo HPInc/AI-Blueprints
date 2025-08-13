@@ -7,7 +7,7 @@ model_source: "local"
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
-# proxy: "http://web-proxy.austin.hp.com:8080"
+proxy: "http://web-proxy.austin.hp.com:8080"
 
 # UI Configuration
 ui:
