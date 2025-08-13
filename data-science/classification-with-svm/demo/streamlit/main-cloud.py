@@ -19,7 +19,7 @@ st.markdown(
     .stApp, .stApp *:not(h1) {
       font-family: "Segoe UI", sans-serif;
       font-size: 20px !important;
-      line-height: 1.6 !important;
+      line-height: 1.8 !important;
       color: #1E1E1E;
     }
     /* PAGE BACKGROUND */
@@ -80,7 +80,7 @@ st.markdown(
       padding: 0 1rem !important;
     }
     div[data-baseweb="input"] svg {
-      width: 1.2rem; height: 1.2rem;
+      width: 1.2rem; height: 1.6rem;
     }
     /* SLIDERS */
     .stSlider > div input {
@@ -92,7 +92,7 @@ st.markdown(
     img[alt="HP Logo"],
     img[alt="AI Studio Logo"],
     img[alt="Z by HP Logo"] {
-      height: 90px;
+      height: 100px;
     }
     </style>
     """,
