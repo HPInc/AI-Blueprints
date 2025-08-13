@@ -15,11 +15,37 @@
 
 # Overview
 
-This repository contains a collection of sample projects that you can run quickly and effortlessly, designed to integrate seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html). Each project runs end-to-end, offering out-of-the-box, ready-to-use solutions across various domains, including data science, machine learning, deep learning, and generative AI.
 
-The projects leverage local open-source models such as **LLaMA** (Meta), **BERT** (Google), and **Nemotron** (NVIDIA), alongside selected online models accessible via **Hugging Face**. These examples cover a wide range of use cases, including **data visualization**, **stock analysis**, **audio translation**, **agentic RAG applications**, and much more.
+This repository hosts a growing collection of AI blueprint projects that run end-to-end using Jupyter notebooks, MLflow deployments, and Streamlit web apps. Each blueprint is designed to be plug-and-play, giving you ready-to-use solutions across key AI domains like data science, machine learning, deep learning, and generative AI. All projects are built to work seamlessly with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We are continuously expanding this collection with new projects. If you have suggestions or would like to see a specific sample project integrated with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), please feel free to open a new issue in this repository — we welcome your feedback!
+These blueprints make use of local, open-source models including:
+
+* **LLaMA** (Meta)
+* **Qwen** (Alibaba)
+* **BERT** (Google)
+* **LLaMA Nemotron** (NVIDIA)
+
+In addition, some examples use hosted models from **Hugging Face** for added flexibility.
+
+## ✨ Use cases include:
+
+* Data visualization
+* Data analysis
+* Image classification
+* Super resolution
+* LLM fine-tuning
+* Multi-modal RAG
+* Audio translation
+* Agentic RAG
+* And much more
+
+We’re actively expanding this collection. If you have ideas or want to suggest a blueprint for [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html), feel free to [open an issue](https://github.com/HPInc/AI-Blueprints/issues). We’d love to hear from you.
+
+
+## 🚀 Get Started with HP AI Studio
+
+To run any of these projects quickly and effortlessly, you can [**download HP AI Studio for free**](https://reinvent.hp.com/AI-Studio-Free-Sign-Up).
+
 
 ---
 
@@ -60,7 +86,7 @@ We are continuously expanding this collection with new projects. If you have sug
 
 # Data Science
 
-The sample projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build data science applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **2 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
@@ -80,7 +106,7 @@ It highlights how city-level movement patterns changed during the crisis. The ex
 
 # Deep Learning
 
-The sample projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build deep learning applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **6 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
@@ -122,7 +148,7 @@ It trains on a dataset containing **Shakespeare's texts**, demonstrating the fun
 
 # Generative AI
 
-The sample projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **7 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
@@ -170,7 +196,7 @@ This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatb
 
 # NVIDIA GPU Cloud Integration
 
-The sample projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
+The blueprint projects in this folder demonstrate how to integrate **NVIDIA NGC (NVIDIA GPU Cloud)** resources with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
 We provide **5 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
