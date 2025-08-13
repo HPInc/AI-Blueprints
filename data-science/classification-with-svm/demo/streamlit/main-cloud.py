@@ -83,8 +83,27 @@ st.markdown(
       width: 1.2rem; height: 1.6rem;
     }
     /* SLIDERS */
-    .stSlider > div input {
-      height: 75px !important;
+    .stSlider {
+        padding-top: 1rem !important;     /* extra space above */
+        padding-bottom: 1.2rem !important; /* extra space below */
+    }
+    
+    .stSlider > div {
+        height: 90px !important; /* taller overall container */
+    }
+    
+    .stSlider label {
+        font-size: 22px !important; /* make labels bigger */
+    }
+    
+    .stSlider .css-1r6slb0, /* track container */
+    .stSlider .css-14xtw13 { /* slider wrapper in newer versions */
+        height: 14px !important; /* thicker track */
+    }
+    
+    .stSlider .st-bo { /* slider thumb wrapper */
+        height: 24px !important;
+        width: 24px !important;
     }
     /* DIVIDER & FOOTER */
     hr, .stHorizontalRule { border-color: rgba(0,77,204,0.20); }
