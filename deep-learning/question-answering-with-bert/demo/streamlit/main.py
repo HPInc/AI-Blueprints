@@ -87,7 +87,7 @@ st.markdown("<h1 style='text-align: center; color: #2C3E50;'>❓ Question Answer
 # 1 ▸ MLflow API Configuration
 # ─────────────────────────────────────────────────────────────
 # Standardized MLflow endpoint for containerized deployment
-MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+MLFLOW_ENDPOINT = "https://localhost:38907/invocations"
 api_url = MLFLOW_ENDPOINT
 
     
