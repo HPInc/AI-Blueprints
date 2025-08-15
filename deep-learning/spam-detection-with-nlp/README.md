@@ -28,14 +28,25 @@ Text classification model capable of accurately distinguishing between spam and 
 # Project Structure
 
 ```
+├── configs/
+│   └── config.yaml  
 ├── docs/
 │   └── swagger-ui-spam-detection-with-nlp.pdf                    # Swagger screenshot
 │   └── swagger-ui-spam-detection-with-nlp.png                    # Swagger screenshot
+│   └── streamlit-ui-spam-detection-with-nlp.pdf                  # Streamlit screenshot
+│   └── streamlit-ui-spam-detection-with-nlp.png                  # Streamlit screenshot
+├── demo/
+│   ├── streamlit/                                                    # Streamlit UI for deployment
+│   │   ├── assets/                                                   # Logo assets
+│   │   ├── main.py                                                   # Streamlit application
+│   │   └── ...                                                       # Additional Streamlit files
 ├── notebooks
 │   └── register-model.ipynb                                      # Notebook for registering trained models to MLflow
 │   └── run-workflow.ipynb                                        # Notebook for executing the pipeline using custom inputs and configurations             
 ├── README.md                                                     # Project documentation
 │
+├── src/
+│   └── utils.py                                                      # Utility functions for configuration and helpers
 ├── requirements.txt                                              # Dependency file for installing required packages
 ```
 
@@ -153,6 +164,21 @@ And as response:
 }
 
 ```
+
+### 5 ▪ Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the spam classification.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Spam Classification Streamlit UI](docs/streamlit-ui-spam-detection-with-npl.png)
+
+---
+
 ---
 
 # Contact and Support

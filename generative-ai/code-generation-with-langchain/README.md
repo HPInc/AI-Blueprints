@@ -29,11 +29,18 @@ This notebook performs automatic code explanation by extracting code snippets fr
 
 ```text
 ├── configs
-│   └── config.yaml                                                    # Blueprint configuration (UI mode, ports, service settings)
+│   └── config.yaml                                                   # Blueprint configuration (UI mode, ports, service settings)
+├── demo/
+│   ├── streamlit/                                                    # Streamlit UI for deployment
+│   │   ├── assets/                                                   # Logo assets
+│   │   ├── main.py                                                   # Streamlit application
+│   │   └── ...                                                       # Additional Streamlit files
 ├── docs
-│   └── successful-swagger-ui-code-generation-result.pdf               # Streamlit UI page
+│   └── successful-swagger-ui-code-generation-result.pdf              # Swagger UI page
+│   └── swagger-ui-spam-detection-with-nlp.png                        # Swagger screenshot
+│   └── streamlit-ui-spam-detection-with-nlp.pdf                      # Streamlit screenshot
 ├── notebooks
-│   ├── core/                                                          # Core modules within notebooks
+│   ├── core/                                                         # Core modules within notebooks
 │   │   ├── chroma_embedding_adapter.py
 │   │   ├── code_generation_service.py
 │   │   ├── dataflow/
@@ -188,9 +195,52 @@ This will:
 - Name the service and select the registered model.
 - Choose a model version and enable **GPU acceleration**.
 - Start the deployment.
-- Once deployed, access the **Swagger UI** via the Service URL.
+
+### Step 4: Swagger / raw API
+
+Once deployed, access the **Swagger UI** via the Service URL.
+
+Paste a payload like:
+
+```
+{
+  "inputs": {
+    "question": [
+      "Write Python code to scrape a website and extract all links"
+    ]
+  },
+  "params": {}
+}
+
+```
+
+And as response:
+
+```
+{
+  "predictions": [
+    {
+      "result": "import requests\nfrom bs4 import BeautifulSoup\n\ndef scrape_website(url):\n    headers = {'User-Agent': 'Mozilla/5.0'}\n    response = requests.get(url, headers=headers)\n    soup = BeautifulSoup(response.text, 'html.parser')\n    links = []\n    for link in soup.find_all('a'):\n        try:\n            href = link.get('href')\n            if href and not href.startswith('#'):\n                links.append(href)\n        except Exception as e:\n            print(f\"An error occurred: {str(e)}\")\n    return links\n\nurl = 'https://www.example.com'\nprint(scrape_website(url))"
+    }
+  ]
+}
+
+```
+
+### Step 5: Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the code genration.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Code Generation Streamlit UI](docs/streamlit-ui-code-generation.png)
 
 ---
+
 
 ## Contact and Support
 
