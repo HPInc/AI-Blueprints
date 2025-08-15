@@ -24,19 +24,20 @@
 
 ## 🧠 Overview
 
-The **Agentic Audio RAG** blueprint converts speech in audio/video files into searchable knowledge and information, allowing the user to query that information based on the generated transcripts through a LangGraph-driven Retrieval Augmented Generation pipeline.
+The **Agentic Audio RAG** blueprint turns speech in audio/video files into **searchable knowledge** and lets you ask questions directly about the **actual audio** (not just text). A LangGraph-driven agent retrieves the most relevant **timestamped audio segments**, and an audio-native LLM (Qwen Omni) “listens” to those clips to produce precise answers.
 
 It delivers:
 
-* 🎙️ Automatic speech-to-text with OpenAI *Whisper* (large-v3) and *Audio-native LLMs* (MiDaSheng LM-7B, Kimi-Audio-7B-Instruct, Qwen 2.5-Omni-7B …) - (supports MP3, WAV, OGG, MP4, MOV, AVI …)
-* 🧪 Agentic RAG workflow orchestrated with **LangGraph**
-* 🦙 **Llama.cpp** for fast on-device LLM inference
-* 📚 Audio-aware **vector database** for semantic search over embeddings
-* 🧬 Reranking stage to improve passage selection accuracy
-* 🔍 Answer generation that also returns the exact transcript snippets and their timestamps
-* 💾 Disk-persisted, lightweight memory to cache previous Q&A pairs for instant replays
-* 📦 MLflow model packaging & deployment
-* 🌐 Streamlit UI for uploading media, running queries and inspecting highlighted transcript segments
+* 🎧 **Audio-native LLM QA** — the model consumes selected audio windows directly for reasoning (supports MP3, WAV, OGG, FLAC, and audio tracks from MP4, MOV, MKV, AVI, …).
+* 🔊 **Audio embedding with CLAP** — builds a segment-level vector index over audio; retrieve by embedding the user’s text query into the **same audio↔text space**.
+* 🧪 **Agentic RAG orchestration via LangGraph** — retrieval → (optional rerank) → generation → memory, all modular and node-based.
+* 🦙 **Llama.cpp** for fast, local text LLM utilities (e.g., lightweight reranking/scoring or text-only reasoning when needed).
+* 📚 **Audio-aware vector database (FAISS)** — stores CLAP embeddings for efficient semantic search over timestamped segments.
+* 🧬 **Reranking stage** to sharpen selection (MMR diversification and/or lightweight LLM scoring).
+* 🕒 **Evidence with timestamps** — answers highlight the exact audio spans (start/end seconds) used to support the response.
+* 💾 **Disk-backed memory cache** — stores recent Q&A pairs to accelerate repeat queries.
+* 📦 **MLflow integration** — experiment tracking and model packaging aligned with the agentic-feedback-analyzer blueprint.
+* 🌐 **Streamlit UI** — upload media, run queries, and inspect highlighted evidence.
 
 ---
 
@@ -112,36 +113,7 @@ ui:
 
 2. Ensure all files are available after workspace creation.
 
-### Step 3: Add Required Assets
-
-- Download the Meta Llama 3.1 model with 8B parameters via Models tab:
-
-  - **Model Name**: `meta-llama3.1-8b-Q8`
-  - **Model Source**: `AWS S3`
-  - **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
-  - **Resource Type**: `public`
-  - **Bucket Region**: `us-west-2`
-
-- Make sure that the model is in the `datafabric` folder inside your workspace. If the model does not appear after downloading, please restart your workspace.
-
-- Download an audio-capable LLM   
-- Recommended GGUF checkpoints (HF download URLs):
-
-| Model | Repo / filename | Context |
-|-------|-----------------|---------|
-| MiDaShengLM-7B | `MiSpeech/MiDaShengLM-7B-GGUF` | 8 k |
-| Kimi-Audio-7B-Instruct | `Moonshot-AI/Kimi-Audio-7B-Instruct-GGUF` | 16 k |
-| Qwen2.5-Omni-7B | `Qwen/Qwen2_5-Omni-7B-GGUF` | 32 k |
-
-Example (AI Studio “Models” tab):
-
-* **Model Name**: `MiDaShengLM-7B-Q8`
-* **Model Source**: `Hugging Face`
-* **HF Path**     : `MiSpeech/MiDaShengLM-7B-GGUF`
-
-Make sure the GGUF file lands in your workspace folder (`datafabric`).
-
-## Step 4: Configure Secrets
+## Step 3: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
@@ -180,9 +152,9 @@ notebooks/run-workflow.ipynb
 
 This notebook will:
 
-* Extract transcripts from the sample audio / video files in `data/inputs`
-* Chunk the transcript and build a vector store index
-* Run the agentic retrieval-and-rerank workflow on a few demo queries
+* Scan data/inputs for audio/video, normalize audio, and segment into timestamped windows
+* Build a true audio embedding index over segments using CLAP (audio↔text joint space)
+* Run the agentic retrieval-and-rerank workflow, sending the top audio windows to the model to listen and answer directly
 * Show the generated answers together with the highlighted transcript segments and timestamps
 
 ### 🧠 Step 2: Register Model with MLflow
@@ -194,7 +166,7 @@ notebooks/register-model.ipynb
 ```
 This notebook will:
 
-* Packages the complete **Agentic Audio RAG** workflow (Whisper encoder, vector store, reranker, LangGraph DAG, Llama.cpp generator, memory module) as a single MLflow artifact
+* Packages the complete **Agentic Audio RAG** workflow (vector store, reranker, LangGraph DAG, memory module) as a single MLflow artifact
 * Registers the model to MLflow so it can be queried over HTTP
 
 ### 📦 Step 3: Deploy the Service
