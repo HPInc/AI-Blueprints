@@ -129,7 +129,7 @@ ui:
 
   **Note: If both options (YAML option and Secrets Manager) are used, the Secrets Manager option will override the YAML option.**
 
-### Step 5: Setup Configuration
+### Step 4: Setup Configuration
 
 - Edit `config.yaml` with relevant configuration details:
   - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
