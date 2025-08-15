@@ -10,3 +10,4 @@ langchain_core
 langchain_huggingface
 tokenizers>=0.13.0
 httpx>=0.24.0
+mlflow==2.21.2
