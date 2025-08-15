@@ -1,3 +1,4 @@
 pandas==2.2.3
 PyYAML==6.0.2
 tqdm==4.67.0
+mlflow==2.21.2
