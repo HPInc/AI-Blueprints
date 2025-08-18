@@ -144,7 +144,7 @@ class ModelExportConfig:
     
     def get_onnx_filename(self) -> str:
         """Return ONNX filename."""
-        return f"{self.model_name}.onnx"
+        return "model.onnx"
     
     def validate(self) -> None:
         """Validate configuration."""
@@ -243,26 +243,35 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
     
     Args:
         config: Model export configuration with all parameters
-        output_path: Where to save the ONNX file
         
     Returns:
-        Path to the exported ONNX model
+        Path to the model directory containing the ONNX model and other files
     """
     try:
         from onnx_export import export_model_to_onnx
-        onnx_filename = config.get_onnx_filename()
+        
+        # Create model directory
+        model_dir = config.model_name
+        os.makedirs(model_dir, exist_ok=True)
+        
+        # ONNX file path inside the model directory
+        onnx_path = os.path.join(model_dir, config.get_onnx_filename())
         
         logger.info(f"🔄 Converting {config.model_type} model: {config.model_name}")
+        logger.info(f"📁 Model directory: {model_dir}")
         
         # Use the main API with all kwargs passed through
-        return export_model_to_onnx(
+        export_model_to_onnx(
             model=config.model,
             input_sample=config.input_sample,
-            output_path=onnx_filename,
+            output_path=onnx_path,
             model_name=config.model_name,
             task=config.task,
             **config.export_kwargs  # Pass all kwargs directly
         )
+        
+        # Return the model directory path (not the ONNX file path)
+        return model_dir
         
     except Exception as e:
         logger.error(f"❌ Failed to convert {config.model_name}: {e}")
@@ -277,26 +286,26 @@ def _generate_onnx_from_models(model_configs: List[ModelExportConfig]) -> Union[
         model_configs: List of ModelExportConfig objects
         
     Returns:
-        String path for single model or Dict of {model_key: onnx_path} for multiple
+        String path for single model directory or Dict of {model_key: model_dir_path} for multiple
     """
     if not model_configs:
         return None
     
-    onnx_results = {}
+    model_results = {}
     
     for config in model_configs:
         try:
-            onnx_path = _convert_single_model_to_onnx(config)
-            onnx_results[config.model_name] = onnx_path
-            logger.info(f"✅ Converted {config.model_name}: {onnx_path}")
+            model_dir = _convert_single_model_to_onnx(config)
+            model_results[config.model_name] = model_dir
+            logger.info(f"✅ Converted {config.model_name} to directory: {model_dir}")
         except Exception as e:
             logger.error(f"❌ Failed to convert {config.model_name}: {e}")
             continue
     
-    if len(onnx_results) == 1:
-        return list(onnx_results.values())[0]
-    elif len(onnx_results) > 1:
-        return onnx_results
+    if len(model_results) == 1:
+        return list(model_results.values())[0]
+    elif len(model_results) > 1:
+        return model_results
     else:
         return None
 
@@ -304,113 +313,103 @@ def _generate_onnx_from_models(model_configs: List[ModelExportConfig]) -> Union[
 
 
 
-def _create_model_directories(onnx_models: Union[str, Dict[str, str]], 
+def _create_model_directories(model_dirs: Union[str, Dict[str, str]], 
                             create_triton_structure: bool = False) -> Dict[str, str]:
     """
     Create individual model directories with ONNX models for MLflow artifacts.
     
     Args:
-        onnx_models: Single ONNX path or dict of {model_name: onnx_path}
-        create_triton_structure: If True, creates Triton-style directories ({model_name}/1/model.onnx).
-                                If False, just copies the ONNX file with the model_name as filename.
+        model_dirs: Single model directory path or dict of {model_name: model_dir_path}
+        create_triton_structure: If True, creates Triton-style directories ({model_name}/1/).
+                                If False, uses the model directories as-is.
         
     Returns:
-        Dictionary mapping model_names to their directory paths or file paths
+        Dictionary mapping model_names to their directory paths
         
     Generated Structure (create_triton_structure=True):
         {model_name}/
         └── 1/
             └── model.onnx
+            └── [all other files from source model directory]
             
     Generated Structure (create_triton_structure=False):
-        {model_name}.onnx
+        {model_name}/
+        └── model.onnx
+        └── [all other files from source model directory]
     """
     
     model_paths = {}
     
     # Handle single model or multiple models
     models_to_process = {}
-    if isinstance(onnx_models, str):
-        # Single model - use filename as model_name
-        model_name = Path(onnx_models).stem
-        models_to_process[model_name] = onnx_models
-    elif isinstance(onnx_models, dict):
-        models_to_process = onnx_models
+    if isinstance(model_dirs, str):
+        # Single model - use directory name as model_name
+        model_name = Path(model_dirs).name
+        models_to_process[model_name] = model_dirs
+    elif isinstance(model_dirs, dict):
+        models_to_process = model_dirs
     
     if create_triton_structure:
         logger.info(f"  Creating Triton model directories for {len(models_to_process)} models: {list(models_to_process.keys())}")
     else:
-        logger.info(f"  Copying ONNX models for {len(models_to_process)} models: {list(models_to_process.keys())}")
+        logger.info(f"  Using model directories for {len(models_to_process)} models: {list(models_to_process.keys())}")
     
-    for model_name, onnx_path in models_to_process.items():
-        if not os.path.exists(onnx_path):
-            logger.warning(f"⚠️ Model file not found: {onnx_path}")
+    for model_name, source_dir in models_to_process.items():
+        if not os.path.exists(source_dir):
+            logger.warning(f"⚠️ Model directory not found: {source_dir}")
             continue
         
         try:
             if create_triton_structure:
                 # Create Triton-style model directory structure
-                model_dir = model_name
-                version_dir = os.path.join(model_dir, "1")  # Always use version 1
+                target_model_dir = f"{model_name}_triton"
+                version_dir = os.path.join(target_model_dir, "1")  # Always use version 1
                 
                 os.makedirs(version_dir, exist_ok=True)
                 
-                # Detect model file type and copy with appropriate name
-                original_path = Path(onnx_path)
-                if original_path.suffix == '.onnx':
-                    model_dest = os.path.join(version_dir, "model.onnx")
-                elif original_path.suffix in ['.pt', '.pth']:
-                    model_dest = os.path.join(version_dir, "model.pt")
-                elif original_path.suffix in ['.keras', '.h5']:
-                    model_dest = os.path.join(version_dir, "model.savedmodel")  # TensorFlow format
+                # Copy all contents from source directory to version directory
+                source_path = Path(source_dir)
+                if source_path.is_dir():
+                    logger.info(f"📁 Copying all contents from {source_dir} to {version_dir}")
+                    
+                    # Copy all files and subdirectories from source to version directory
+                    for item in source_path.iterdir():
+                        dest_path = os.path.join(version_dir, item.name)
+                        if item.is_file():
+                            shutil.copy2(str(item), dest_path)
+                            logger.debug(f"  📄 Copied file: {item.name}")
+                        elif item.is_dir():
+                            shutil.copytree(str(item), dest_path, dirs_exist_ok=True)
+                            logger.debug(f"  📁 Copied directory: {item.name}")
+                    
+                    # Ensure there's a model.onnx file in the version directory
+                    model_onnx_path = os.path.join(version_dir, "model.onnx")
+                    if not os.path.exists(model_onnx_path):
+                        # Look for any .onnx file in the version directory and rename it to model.onnx
+                        onnx_files = [f for f in os.listdir(version_dir) if f.endswith('.onnx')]
+                        if onnx_files:
+                            original_onnx = os.path.join(version_dir, onnx_files[0])
+                            os.rename(original_onnx, model_onnx_path)
+                            logger.info(f"📄 Renamed {onnx_files[0]} to model.onnx")
+                        else:
+                            logger.warning(f"⚠️ No ONNX file found in directory {source_dir}")
+                    
+                    logger.info(f"� Created Triton model directory: {target_model_dir}/1/")
+                    model_paths[model_name] = target_model_dir
                 else:
-                    # Default to ONNX naming for other formats
-                    model_dest = os.path.join(version_dir, "model.onnx")
-                
-                shutil.copy2(onnx_path, model_dest)
-                logger.info(f"📁 Created Triton model directory: {model_name}/1/{Path(model_dest).name}")
-                
-                # Copy external data file if it exists (for ONNX models >2GB)
-                onnx_data_path = f"{onnx_path}.data"
-                if os.path.exists(onnx_data_path):
-                    data_dest = os.path.join(version_dir, f"{Path(model_dest).name}.data")
-                    shutil.copy2(onnx_data_path, data_dest)
-                    logger.info(f"📁 Added model data: {model_name}/1/{Path(model_dest).name}.data")
-                
-                model_paths[model_name] = model_dir
+                    logger.error(f"❌ Source is not a directory: {source_dir}")
+                    continue
                 
             else:
-                # Just copy the ONNX file with model_name as filename
-                original_path = Path(onnx_path)
-                if original_path.suffix == '.onnx':
-                    model_dest = f"{model_name}.onnx"
-                elif original_path.suffix in ['.pt', '.pth']:
-                    model_dest = f"{model_name}.pt"
-                elif original_path.suffix in ['.keras', '.h5']:
-                    model_dest = f"{model_name}.keras"
+                # Use the source directory as-is (already contains model files)
+                source_path = Path(source_dir)
+                if source_path.is_dir():
+                    # Just return the existing directory path
+                    logger.info(f"📁 Using existing model directory: {source_dir}")
+                    model_paths[model_name] = source_dir
                 else:
-                    # Default to ONNX extension
-                    model_dest = f"{model_name}.onnx"
-                
-                # Check if source and destination are the same file
-                if os.path.abspath(onnx_path) == os.path.abspath(model_dest):
-                    logger.info(f"📄 Model file already has correct name: {model_dest}")
-                    model_paths[model_name] = model_dest
-                else:
-                    shutil.copy2(onnx_path, model_dest)
-                    logger.info(f"📄 Copied model file: {model_dest}")
-                    model_paths[model_name] = model_dest
-                
-                # Copy external data file if it exists (for ONNX models >2GB)
-                onnx_data_path = f"{onnx_path}.data"
-                if os.path.exists(onnx_data_path):
-                    data_dest = f"{model_dest}.data"
-                    # Check if data files are the same
-                    if os.path.abspath(onnx_data_path) != os.path.abspath(data_dest):
-                        shutil.copy2(onnx_data_path, data_dest)
-                        logger.info(f"📄 Added model data: {data_dest}")
-                    else:
-                        logger.info(f"📄 Model data file already has correct name: {data_dest}")
+                    logger.error(f"❌ Source is not a directory: {source_dir}")
+                    continue
                 
         except Exception as e:
             logger.error(f"❌ Failed to process model {model_name}: {e}")
@@ -485,64 +484,58 @@ def log_model(artifact_path: str,
     final_artifacts = artifacts.copy() if artifacts else {}
     
     # Generate ONNX model(s) if specified
-    onnx_result = None
-    triton_paths = None
+    model_result = None
     
     if models_to_convert_onnx:
         logger.info("🔧 Generating ONNX model(s) for specified models...")
         
-        onnx_result = _generate_onnx_from_models(
+        model_result = _generate_onnx_from_models(
             model_configs=models_to_convert_onnx
         )
         
-        # Add ONNX models as individual artifacts
-        if onnx_result:
-            if isinstance(onnx_result, dict):
-                # Multiple models - add each as individual artifact
-                for model_name, onnx_path in onnx_result.items():
-                    artifact_key = f"onnx_{model_name}"
-                    final_artifacts[artifact_key] = onnx_path
-                    logger.info(f"📦 Added ONNX artifact: {artifact_key} -> {onnx_path}")
-            elif isinstance(onnx_result, str):
-                # Single model
-                final_artifacts["onnx_model"] = onnx_result
-                logger.info(f"📦 Added ONNX artifact: onnx_model -> {onnx_result}")
+        # Add model directories as individual artifacts (these now contain ONNX + other files)
+        if model_result:
+            if isinstance(model_result, dict):
+                # Multiple models - add each model directory as individual artifact
+                for model_name, model_dir in model_result.items():
+                    artifact_key = f"model_{model_name}"
+                    final_artifacts[artifact_key] = model_dir
+                    logger.info(f"📦 Added model directory artifact: {artifact_key} -> {model_dir}")
+            elif isinstance(model_result, str):
+                # Single model directory
+                final_artifacts["model_directory"] = model_result
+                logger.info(f"📦 Added model directory artifact: model_directory -> {model_result}")
       
-        # Create individual model directories for artifacts
-        if onnx_result:
-            logger.info("  Creating individual model directories for artifacts...")
+        # Create Triton-style directories if needed
+        if model_result:
             
             try:
                 # Check if any model config requires Triton structure
                 create_triton = any(config.create_triton_structure for config in models_to_convert_onnx)
                 
-                model_paths = _create_model_directories(
-                    onnx_models=onnx_result,
-                    create_triton_structure=create_triton
-                )
-                
-                # Add each model directory/file as a separate artifact
-                if model_paths:
-                    for model_name, model_path in model_paths.items():
-                        if create_triton:
-                            artifact_key = f"model_{model_name}"
-                            logger.info(f"📦 Added Triton model artifact: {artifact_key} -> {model_path}")
-                        else:
-                            artifact_key = f"model_{model_name}"
-                            logger.info(f"📦 Added model file artifact: {artifact_key} -> {model_path}")
-                        final_artifacts[artifact_key] = model_path
+                if create_triton:
+                    triton_paths = _create_model_directories(
+                        model_dirs=model_result,
+                        create_triton_structure=True
+                    )
                     
-                    if create_triton:
-                        logger.info(f"✅ Created {len(model_paths)} Triton model directories!")
-                    else:
-                        logger.info(f"✅ Copied {len(model_paths)} model files!")
+                    # Add each Triton model directory as a separate artifact
+                    if triton_paths:
+                        for model_name, triton_path in triton_paths.items():
+                            artifact_key = f"triton_{model_name}"
+                            final_artifacts[artifact_key] = triton_path
+                            logger.info(f"📦 Added Triton model artifact: {artifact_key} -> {triton_path}")
+                        
+                        logger.info(f"✅ Created {len(triton_paths)} Triton model directories!")
+                else:
+                    logger.info("  No Triton structure requested, using model directories as-is")
                 
             except Exception as e:
-                logger.error(f"❌ Failed to create model directories: {e}")
-                # Note: ONNX artifacts are already added above as fallback
+                logger.error(f"❌ Failed to create Triton directories: {e}")
+                # Note: Model directory artifacts are already added above as fallback
     
     try:
-        # MLflow logging with ONNX and Triton artifacts included
+        # MLflow logging with model directory artifacts included
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,
             python_model=python_model,
@@ -561,15 +554,11 @@ def log_model(artifact_path: str,
         artifact_list = list(final_artifacts.keys()) if final_artifacts else []
         logger.info(f"Model logged with artifacts: {artifact_list}")
         
-        if models_to_convert_onnx and onnx_result:
-            if model_paths:
-                logger.info(f"✅ Model logged with {len(model_paths)} model directories created!")
+        if models_to_convert_onnx and model_result:
+            if isinstance(model_result, dict):
+                logger.info(f"✅ Model logged with {len(model_result)} model directories created!")
             else:
-                # Log ONNX success without model directories
-                if isinstance(onnx_result, dict):
-                    logger.info(f"✅ Model logged with {len(onnx_result)} ONNX conversions!")
-                else:
-                    logger.info("✅ Model logged with ONNX conversion!")
+                logger.info("✅ Model logged with model directory created!")
         
         if not models_to_convert_onnx:
             logger.info("✅ Model logged successfully!")
@@ -578,87 +567,75 @@ def log_model(artifact_path: str,
         logger.error(f"Error logging model: {e}")
         raise
     finally:
-        # Clean up temporary ONNX files when model directories were created
-        if onnx_result and model_paths:
-            try:
-                if isinstance(onnx_result, dict):
-                    # Multiple models cleanup
-                    for model_name, onnx_path in onnx_result.items():
-                        if os.path.exists(onnx_path):
-                            os.remove(onnx_path)
-                            logger.debug(f"🧹 Cleaned up temporary ONNX: {onnx_path}")
-                        if os.path.exists(f"{onnx_path}.data"):
-                            os.remove(f"{onnx_path}.data")
-                            logger.debug(f"🧹 Cleaned up temporary ONNX data: {onnx_path}.data")
-                elif isinstance(onnx_result, str):
-                    # Single model cleanup
-                    if os.path.exists(onnx_result):
-                        os.remove(onnx_result)
-                        logger.debug(f"🧹 Cleaned up temporary ONNX: {onnx_result}")
-                    if os.path.exists(f"{onnx_result}.data"):
-                        os.remove(f"{onnx_result}.data")
-                        logger.debug(f"🧹 Cleaned up temporary ONNX data: {onnx_result}.data")
-            except Exception as cleanup_error:
-                logger.warning(f"Failed to clean up temporary ONNX files: {cleanup_error}")
+        # Note: Since we now create persistent model directories (not temporary files),
+        # we don't need cleanup. The model directories are intentionally kept as artifacts.
+        logger.debug("Model directories are preserved as artifacts (no cleanup needed)")
 
 
-def create_model_directories_standalone(onnx_models: Union[str, Dict[str, str], List[str]],
+def create_model_directories_standalone(model_sources: Union[str, Dict[str, str], List[str]],
                                      output_dir: Optional[str] = None,
                                      create_triton_structure: bool = True) -> Dict[str, str]:
     """
-    Create individual model directories from existing ONNX models.
+    Create individual model directories from existing model files or directories.
     
     This is a standalone function that can be used independently of MLflow logging.
     
     Args:
-        onnx_models: Single ONNX path, dict of {model_name: onnx_path}, or list of ONNX paths
+        model_sources: Single model path, dict of {model_name: model_path}, or list of model paths
+                      (can be files or directories)
         output_dir: Optional output directory (if None, creates directories in current working directory)
-        create_triton_structure: If True, creates Triton-style directories. If False, just copies files.
+        create_triton_structure: If True, creates Triton-style directories. If False, uses source as-is.
         
     Returns:
-        Dictionary mapping model names to their directory/file paths
+        Dictionary mapping model names to their directory paths
         
     Example:
-        # Single model with Triton structure
-        model_paths = create_model_directories_standalone("my_model.onnx", create_triton_structure=True)
+        # Single model directory with Triton structure
+        model_paths = create_model_directories_standalone("my_model_dir", create_triton_structure=True)
         
-        # Multiple models without Triton structure (just copy files)
-        models = {"densenet_onnx": "encoder.onnx", "bert_pytorch": "decoder.pt"}
+        # Multiple model directories without Triton structure
+        models = {"densenet_onnx": "encoder_dir", "bert_pytorch": "decoder_dir"}
         model_paths = create_model_directories_standalone(models, create_triton_structure=False)
         
         # Result structure (create_triton_structure=True):
-        # densenet_onnx/
+        # densenet_onnx_triton/
         # └── 1/
         #     └── model.onnx
-        # bert_pytorch/
+        #     └── [all other files from source directory]
+        # bert_pytorch_triton/
         # └── 1/
-        #     └── model.pt
+        #     └── model.onnx 
+        #     └── [all other files from source directory]
         
         # Result structure (create_triton_structure=False):
-        # densenet_onnx.onnx
-        # bert_pytorch.pt
+        # densenet_onnx/ (uses source directory as-is)
+        # └── model.onnx
+        # └── [all other files from source directory]
+        # bert_pytorch/ (uses source directory as-is)
+        # └── model.onnx
+        # └── [all other files from source directory]
     """
     # Convert different input formats to consistent dict format
-    if isinstance(onnx_models, str):
-        # Single model path
-        model_name = Path(onnx_models).stem
-        models_dict = {model_name: onnx_models}
-    elif isinstance(onnx_models, list):
+    if isinstance(model_sources, str):
+        # Single model path (file or directory)
+        model_name = Path(model_sources).stem
+        models_dict = {model_name: model_sources}
+    elif isinstance(model_sources, list):
         # List of model paths
         models_dict = {}
-        for path in onnx_models:
+        for path in model_sources:
             model_name = Path(path).stem
             models_dict[model_name] = path
-    elif isinstance(onnx_models, dict):
+    elif isinstance(model_sources, dict):
         # Already in correct format
-        models_dict = onnx_models
+        models_dict = model_sources
     else:
-        raise ValueError(f"Unsupported onnx_models type: {type(onnx_models)}")
+        raise ValueError(f"Unsupported model_sources type: {type(model_sources)}")
     
     if create_triton_structure:
         logger.info(f"  Creating Triton model directories for {len(models_dict)} models")
     else:
-        logger.info(f"  Copying model files for {len(models_dict)} models")
+        logger.info(f"  Using model directories for {len(models_dict)} models")
     
     # Change working directory if output_dir is specified
     original_cwd = None
@@ -669,7 +646,7 @@ def create_model_directories_standalone(onnx_models: Union[str, Dict[str, str], 
     
     try:
         return _create_model_directories(
-            onnx_models=models_dict,
+            model_dirs=models_dict,
             create_triton_structure=create_triton_structure
         )
     finally:
