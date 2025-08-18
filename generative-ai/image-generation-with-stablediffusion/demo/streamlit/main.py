@@ -119,17 +119,16 @@ if st.button("Get result"):
                 
                 predictions = data.get("predictions", [])
 
-                if predictions:
+                if "predictions" in st.session_state:
+                    predictions = st.session_state["predictions"]
                     for i, pred in enumerate(predictions):
                         base64_image = pred.get("output_images", "")
                         if base64_image and isinstance(base64_image, str):
                             try:
-
                                 image_bytes = base64.b64decode(base64_image)
                                 image = Image.open(BytesIO(image_bytes))
                                 st.image(image, caption=f"Image {i+1}", use_container_width=True)
 
-                                # Download button for each image
                                 buffer = BytesIO()
                                 image.save(buffer, format="PNG")
                                 buffer.seek(0)
@@ -144,6 +143,7 @@ if st.button("Get result"):
                                 st.error(f"❌ Error displaying image {i+1}: {str(e)}")
                         else:
                             st.warning(f"⚠️ No image data found for prediction {i+1}.")
+
                 else:
                     st.error("❌ No predictions returned from the model.")
 
