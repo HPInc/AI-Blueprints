@@ -116,53 +116,40 @@ if st.button("Get result"):
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
+                
+                predictions = data.get("predictions", [])
 
-                base64_images = data.get("output_images", [])
+                if predictions:
+                    for i, pred in enumerate(predictions):
+                        base64_image = pred.get("output_images", "")
+                        if base64_image and isinstance(base64_image, str):
+                            try:
 
-                if base64_images and isinstance(base64_images, list):
-                    st.success("✅ Here are your images!")
-                    for i, base64_image in enumerate(base64_images):
-                        try:
-                            image_bytes = base64.b64decode(base64_image)
-                            image = Image.open(BytesIO(image_bytes))
-                            st.image(image, caption=f"Image {i+1}", use_container_width=True)
+                                image_bytes = base64.b64decode(base64_image)
+                                image = Image.open(BytesIO(image_bytes))
+                                st.image(image, caption=f"Image {i+1}", use_container_width=True)
 
-                            # Download button for each image
-                            buffer = BytesIO()
-                            image.save(buffer, format="PNG")
-                            buffer.seek(0)
+                                # Download button for each image
+                                buffer = BytesIO()
+                                image.save(buffer, format="PNG")
+                                buffer.seek(0)
 
-                            st.download_button(
-                                label=f"📥 Download Image {i+1}",
-                                data=buffer,
-                                file_name=f"image_output_{i+1}.png",
-                                mime="image/png"
-                            )
-                        except Exception as e:
-                            st.error(f"❌ Error displaying image {i+1}: {str(e)}")
+                                st.download_button(
+                                    label=f"📥 Download Image {i+1}",
+                                    data=buffer,
+                                    file_name=f"image_{i+1}.png",
+                                    mime="image/png"
+                                )
+                            except Exception as e:
+                                st.error(f"❌ Error displaying image {i+1}: {str(e)}")
+                        else:
+                            st.warning(f"⚠️ No image data found for prediction {i+1}.")
                 else:
-                    st.error("❌ No valid image data returned from the model.")
-                    st.write("Raw response:", data)
-
+                    st.error("❌ No predictions returned from the model.")
 
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error fetching prediction.")
                 st.error(str(e))
-
-# --- Display Enhanced Image and Download Button ---
-if "enhanced_image" in st.session_state:
-    st.image(st.session_state["enhanced_image"], caption="Output", use_container_width=True)
-
-    buffer = BytesIO()
-    st.session_state["enhanced_image"].save(buffer, format="PNG")
-    buffer.seek(0)
-
-    st.download_button(
-        label="📥 Download Image",
-        data=buffer,
-        file_name="image_output.png",
-        mime="image/png"
-    )
 
 # --- Footer ---
 st.markdown(
