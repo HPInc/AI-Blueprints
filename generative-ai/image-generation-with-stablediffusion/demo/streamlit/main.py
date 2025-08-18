@@ -103,12 +103,12 @@ if st.button("Get result"):
         payload = {
             "inputs": {
                 "prompt": [prompt],
-                "use_finetuning":[use_finetuning],
-                "height":[height],
-                "width":[width],
+                "use_finetuning": [use_finetuning],
+                "height": [height],
+                "width": [width],
                 "num_images": [num_images],
-                "num_inference_steps": [num_inference_steps]   
-                       },
+                "num_inference_steps": [num_inference_steps]
+            },
         }
 
         with st.spinner("Generating image..."):
@@ -116,40 +116,39 @@ if st.button("Get result"):
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
-                
-                predictions = data.get("predictions", [])
 
-                if "predictions" in st.session_state:
-                    predictions = st.session_state["predictions"]
-                    for i, pred in enumerate(predictions):
-                        base64_image = pred.get("output_images", "")
-                        if base64_image and isinstance(base64_image, str):
-                            try:
-                                image_bytes = base64.b64decode(base64_image)
-                                image = Image.open(BytesIO(image_bytes))
-                                st.image(image, caption=f"Image {i+1}", use_container_width=True)
-
-                                buffer = BytesIO()
-                                image.save(buffer, format="PNG")
-                                buffer.seek(0)
-
-                                st.download_button(
-                                    label=f"📥 Download Image {i+1}",
-                                    data=buffer,
-                                    file_name=f"image_{i+1}.png",
-                                    mime="image/png"
-                                )
-                            except Exception as e:
-                                st.error(f"❌ Error displaying image {i+1}: {str(e)}")
-                        else:
-                            st.warning(f"⚠️ No image data found for prediction {i+1}.")
-
-                else:
-                    st.error("❌ No predictions returned from the model.")
+                # ✅ Save predictions to session state
+                st.session_state["predictions"] = data.get("predictions", [])
 
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error fetching prediction.")
                 st.error(str(e))
+
+# ✅ Always display images if they exist in session state
+if "predictions" in st.session_state:
+    predictions = st.session_state["predictions"]
+    for i, pred in enumerate(predictions):
+        base64_image = pred.get("output_images", "")
+        if base64_image and isinstance(base64_image, str):
+            try:
+                image_bytes = base64.b64decode(base64_image)
+                image = Image.open(BytesIO(image_bytes))
+                st.image(image, caption=f"Image {i+1}", use_container_width=True)
+
+                buffer = BytesIO()
+                image.save(buffer, format="PNG")
+                buffer.seek(0)
+
+                st.download_button(
+                    label=f"📥 Download Image {i+1}",
+                    data=buffer,
+                    file_name=f"image_{i+1}.png",
+                    mime="image/png"
+                )
+            except Exception as e:
+                st.error(f"❌ Error displaying image {i+1}: {str(e)}")
+        else:
+            st.warning(f"⚠️ No image data found for prediction {i+1}.")
 
 # --- Footer ---
 st.markdown(
