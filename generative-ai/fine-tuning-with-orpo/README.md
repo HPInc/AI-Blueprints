@@ -182,7 +182,7 @@ This notebook will:
 - Generate comparative analysis and metrics
 
 
-**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps and the size of training and validation datasets has been intentionally reduced to optimize computational efficiency and minimize training time. However, these parameters can be adjusted if further model performance improvements are desired. 
 
 ### Step 2: Register the Models for Deployment
 
