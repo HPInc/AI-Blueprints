@@ -186,7 +186,7 @@ This notebook will:
 
 ### Step 2: Register the Models for Deployment
 
-Execute the model registration notebook:
+Only after executing the 'run-workflow' notebook inside the `notebooks` folder, execute the 'register-model' notebook:
 
 ```bash
 notebooks/register-model.ipynb
