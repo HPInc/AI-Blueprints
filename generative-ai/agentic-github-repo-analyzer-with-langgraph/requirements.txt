@@ -7,4 +7,3 @@ pypdf==5.8.0
 python-docx==1.2.0
 msoffcrypto-tool==5.4.2
 openpyxl==3.1.5
-mlflow==2.21.2
