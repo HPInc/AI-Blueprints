@@ -151,7 +151,7 @@ class ModelExportConfig:
         if self.model is None:
             raise ValueError("Model object must be provided (no file paths supported)")
             
-        if self.model_type in ['nemo', 'pytorch', 'sklearn'] and self.input_sample is None:
+        if self.model_type in ['pytorch', 'sklearn'] and self.input_sample is None:
             raise ValueError(f"Input sample required for {self.model_type} model '{self.model_name}'.")
         
         if self.model_type == 'tensorflow' and self.input_shape is None and self.input_sample is None:
@@ -162,21 +162,7 @@ class ModelExportConfig:
         if self.model_type is None:
             from onnx_export import identify_model_type
             self.model_type = identify_model_type(self.model)
-    
-    def get_onnx_filename(self) -> str:
-        """Return ONNX filename."""
-        return f"{self.model_name}.onnx"
-    
-    def validate(self) -> None:
-        """Validate configuration."""
-        if self.model is None:
-            raise ValueError("Model object must be provided (no file paths supported)")
-            
-        if self.model_type in ['nemo', 'pytorch', 'sklearn'] and self.input_sample is None:
-            raise ValueError(f"Input sample required for {self.model_type} model '{self.model_name}'.")
-        
-        if self.model_type == 'tensorflow' and self.input_shape is None and self.input_sample is None:
-            raise ValueError(f"Input shape or input sample required for TensorFlow model '{self.model_name}'.")
+  
 
 def create_model_export_configs(
     models_dict: Dict[str, Any],
@@ -253,6 +239,8 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
         # Create model directory
         model_dir = config.model_name
         os.makedirs(model_dir, exist_ok=True)
+
+        config.validate()  # Validate configuration before export
         
         # ONNX file path inside the model directory
         onnx_path = os.path.join(model_dir, config.get_onnx_filename())
@@ -653,5 +641,3 @@ def create_model_directories_standalone(model_sources: Union[str, Dict[str, str]
         # Restore original working directory
         if original_cwd:
             os.chdir(original_cwd)
-
-

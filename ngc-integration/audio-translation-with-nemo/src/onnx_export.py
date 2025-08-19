@@ -395,7 +395,7 @@ def export_pytorch_model_to_onnx(model: Any,
         input_names = kwargs.get('input_names', ['input'])
         output_names = kwargs.get('output_names', ['output'])
         dynamic_axes = kwargs.get('dynamic_axes', None)
-        opset_version = kwargs.get('opset_version', 12)
+        opset_version = kwargs.get('opset', 12)
         do_constant_folding = kwargs.get('do_constant_folding', True)
         export_params = kwargs.get('export_params', True)
         verbose = kwargs.get('verbose', False)
@@ -411,21 +411,36 @@ def export_pytorch_model_to_onnx(model: Any,
         # Convert numpy input to tensor if needed
         if isinstance(input_sample, np.ndarray):
             input_sample = torch.from_numpy(input_sample).float()
-
-        # Export to ONNX in memory
-        torch.onnx.export(
-            model,
-            input_sample,
-            output_path,
-            export_params=export_params,
-            opset_version=opset_version,
-            do_constant_folding=do_constant_folding,
-            input_names=input_names,
-            output_names=output_names,
-            dynamic_axes=dynamic_axes,
-            verbose=verbose,
-            use_external_data_format=True
-        )
+        try:
+            torch.onnx.export(
+                model,
+                input_sample,
+                output_path,
+                export_params=export_params,
+                opset_version=opset_version,
+                do_constant_folding=do_constant_folding,
+                input_names=input_names,
+                output_names=output_names,
+                dynamic_axes=dynamic_axes,
+                verbose=verbose,
+                use_external_data_format=True
+            )
+        except TypeError as e:
+            if "use_external_data_format" in str(e):
+                torch.onnx.export(
+                model,
+                input_sample,
+                output_path,
+                export_params=export_params,
+                opset_version=opset_version,
+                do_constant_folding=do_constant_folding,
+                input_names=input_names,
+                output_names=output_names,
+                dynamic_axes=dynamic_axes,
+                verbose=verbose
+                )
+            else:
+                raise
         
 
         logger.info(f"✅ PyTorch model exported to: {output_path}")
@@ -496,22 +511,38 @@ def export_transformers_model_to_onnx(model: Any,
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if task in ["text-classification", "token-classification"]:
-              
-                torch.onnx.export(
-                    model,
-                    args_input,
-                    output_path,
-                    export_params=True,
-                    opset_version=opset,
-                    do_constant_folding=do_constant_folding,
-                    dynamic_axes=dynamic_axes,
-                    input_names=input_names,
-                    output_names=output_names,
-                    verbose=verbose,
-                    use_external_data_format=True
-                    
-                )
-                
+
+                try:
+                    torch.onnx.export(
+                        model,
+                        args_input,
+                        output_path,
+                        export_params=True,
+                        opset_version=opset,
+                        do_constant_folding=do_constant_folding,
+                        dynamic_axes=dynamic_axes,
+                        input_names=input_names,
+                        output_names=output_names,
+                        verbose=verbose,
+                        use_external_data_format=True
+                    )
+                except TypeError as e:
+                    if "use_external_data_format" in str(e):
+                        torch.onnx.export(
+                            model,
+                            args_input,
+                            output_path,
+                            export_params=True,
+                            opset_version=opset,
+                            do_constant_folding=do_constant_folding,
+                            dynamic_axes=dynamic_axes,
+                            input_names=input_names,
+                            output_names=output_names,
+                            verbose=verbose
+                        )
+                    else:
+                        raise
+
             elif task in ["translation", "seq2seq-lm"]:
                 # Use feature if provided, otherwise infer from task
                 feature_name = feature or "seq2seq-lm"
@@ -533,6 +564,41 @@ def export_transformers_model_to_onnx(model: Any,
                 except Exception as e:
                     logger.warning(f"Official export failed: {e}, trying PyTorch fallback")
                   
+                   
+
+                    try:
+                        torch.onnx.export(
+                            model,
+                            args_input,
+                            output_path,
+                            export_params=True,
+                            opset_version=opset,
+                            do_constant_folding=do_constant_folding,
+                            dynamic_axes=dynamic_axes,
+                            input_names=input_names,
+                            output_names=output_names,
+                            verbose=verbose,
+                            use_external_data_format=True
+                        )
+                    except TypeError as e:
+                        if "use_external_data_format" in str(e):
+                            torch.onnx.export(
+                                model,
+                                args_input,
+                                output_path,
+                                export_params=True,
+                                opset_version=opset,
+                                do_constant_folding=do_constant_folding,
+                                dynamic_axes=dynamic_axes,
+                                input_names=input_names,
+                                output_names=output_names,
+                                verbose=verbose
+                            )
+                        else:
+                            raise
+          
+            else:
+                try:
                     torch.onnx.export(
                         model,
                         args_input,
@@ -546,21 +612,22 @@ def export_transformers_model_to_onnx(model: Any,
                         verbose=verbose,
                         use_external_data_format=True
                     )
-          
-            else:
-                torch.onnx.export(
-                    model,
-                    args_input,
-                    output_path,
-                    export_params=True,
-                    opset_version=opset,
-                    do_constant_folding=do_constant_folding,
-                    dynamic_axes=dynamic_axes,
-                    input_names=input_names,
-                    output_names=output_names,
-                    verbose=verbose,
-                    use_external_data_format=True
-                )
+                except TypeError as e:
+                    if "use_external_data_format" in str(e):
+                            torch.onnx.export(
+                            model,
+                            args_input,
+                            output_path,
+                            export_params=True,
+                            opset_version=opset,
+                            do_constant_folding=do_constant_folding,
+                            dynamic_axes=dynamic_axes,
+                            input_names=input_names,
+                            output_names=output_names,
+                            verbose=verbose
+                        )
+                    else:
+                        raise
 
         logger.info(f"✅ Transformers model exported to: {output_path}")
         return str(output_path)
@@ -691,7 +758,7 @@ def export_sklearn_model_to_onnx(model: Any,
         import numpy as np
         
         # Extract kwargs with defaults
-        target_opset = kwargs.get('target_opset', 12)
+        target_opset = kwargs.get('opset', 12)
         initial_types = kwargs.get('initial_types', None)
         verbose = kwargs.get('verbose', False)
         

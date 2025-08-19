@@ -76,7 +76,7 @@ config = ModelExportConfig(
     model=bert_model,
     model_name="bert_pytorch",
     input_sample=(input_ids, attention_mask, token_type_ids),
-    opset_version=14,           # PyTorch-specific
+    opset=14,           
     do_constant_folding=True,   # PyTorch-specific
     input_names=['input_ids', 'attention_mask', 'token_type_ids'],
     output_names=['logits'],
@@ -135,7 +135,7 @@ Below are the most relevant parameters for each framework:
 | Framework      | Parameters                                                                 |
 |--------------- |----------------------------------------------------------------------------|
 | **NeMo**       | `export_format`, `check_trace`, `verbose`, `input_sample`                  |
-| **PyTorch**    | `opset_version`, `do_constant_folding`, `input_names`, `output_names`, `dynamic_axes`, `verbose`, `input_sample` |
+| **PyTorch**    | `opset`, `do_constant_folding`, `input_names`, `output_names`, `dynamic_axes`, `verbose`, `input_sample` |
 | **Keras**      | `opset`, `use_saved_model`, `verbose`, `input_sample`                      |
 | **Transformers (translation)** | `task`, `opset`, `feature`, `verbose`                      |
 
