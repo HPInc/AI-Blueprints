@@ -16,7 +16,7 @@ from IPython.display import HTML, display  # Rich HTML display utilities for Jup
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    #"local": "/home/jovyan/datafabric/",
+    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
     #"hugging-face-local": "",
     "hugging-face-cloud": ["Qwen/Qwen2.5-Omni-7B", "laion/clap-htsat-unfused"]
 }
@@ -355,19 +355,19 @@ def get_response_from_llm(llm, system_prompt, user_prompt):
 
 
 # ─────── Helper Functions ───────
-def ensure_wav(input_path: str) -> str:
-    p = Path(input_path)
-    if p.suffix.lower() == ".wav":
-        return str(p)
-    out = str(p.with_suffix(".wav"))
-    try:
-        subprocess.run(
-            ["ffmpeg", "-y", "-i", str(p), "-ar", "16000", "-ac", "1", out],
-            check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        return out if Path(out).exists() else str(p)
-    except Exception:
-        return str(p)
+# def ensure_wav(input_path: str) -> str:
+#     p = Path(input_path)
+#     if p.suffix.lower() == ".wav":
+#         return str(p)
+#     out = str(p.with_suffix(".wav"))
+#     try:
+#         subprocess.run(
+#             ["ffmpeg", "-y", "-i", str(p), "-ar", "16000", "-ac", "1", out],
+#             check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+#         )
+#         return out if Path(out).exists() else str(p)
+#     except Exception:
+#         return str(p)
 
 def get_project_root():
     """Get the project root directory"""

@@ -83,7 +83,7 @@ def generate_meeting_audio(media_path: Path) -> None:
 
 ######### Helper functions for audio conversion ##########
 
-def ensure_ffmpeg() -> str | None:
+def ensure_ffmpeg_bin() -> str | None:
     path = shutil.which("ffmpeg")
     if path:
         return path
@@ -100,7 +100,7 @@ def ensure_ffmpeg() -> str | None:
     except Exception:
         return None
     
-FFMPEG_BIN = ensure_ffmpeg()
+FFMPEG_BIN = ensure_ffmpeg_bin()
     
 # def ffmpeg_ok():
 #     return shutil.which("ffmpeg") is not None
