@@ -16,19 +16,13 @@ from IPython.display import HTML, display  # Rich HTML display utilities for Jup
 
 #Default models to be loaded in our examples:
 DEFAULT_MODELS = {
-    "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
-    "tensorrt": "",
-    "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
-    "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3"
+    #"local": "/home/jovyan/datafabric/",
+    #"hugging-face-local": "",
+    "hugging-face-cloud": ["Qwen/Qwen2.5-Omni-7B", "laion/clap-htsat-unfused"]
 }
 
 # Context window sizes for various models
 MODEL_CONTEXT_WINDOWS = {
-    # LlamaCpp models
-    'ggml-model-f16-Q5_K_M.gguf': 4096,
-    'ggml-model-7b-q4_0.bin': 4096,
-    'gguf-model-7b-4bit.bin': 4096,
-
     # HuggingFace models
     'mistralai/Mistral-7B-Instruct-v0.3': 8192,
     'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B': 4096,
@@ -51,6 +45,8 @@ MODEL_CONTEXT_WINDOWS = {
     'claude-3-haiku-20240307': 48000,
 
     # Other models
+    'Qwen/Qwen2.5-Omni-7B': 8192,
+    'laion/clap-htsat-unfused': 8192,
     'qwen/Qwen-7B': 8192,
     'microsoft/phi-2': 2048,
     'tiiuae/falcon-7b': 4096,
@@ -255,11 +251,6 @@ def initialize_llm(
     # Import required libraries
     from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint
     from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
-    from langchain_community.llms import LlamaCpp
-
-    # Fix for Pydantic model rebuild issue
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
 
     model = None
     context_window = None
@@ -281,7 +272,7 @@ def initialize_llm(
         model = HuggingFaceEndpoint(
             huggingfacehub_api_token=huggingfacehub_api_token,
             repo_id=repo_id,
-            task="code-generation",
+            task="audio-rag",
         )
 
     elif model_source == "hugging-face-local":
@@ -308,7 +299,7 @@ def initialize_llm(
             tokenizer.chat_template = None
 
         pipe = pipeline(
-            "code-generation", 
+            "audio-rag", 
             model=hf_model, 
             tokenizer=tokenizer, 
             max_new_tokens=100, 
@@ -319,30 +310,30 @@ def initialize_llm(
         )
         model = HuggingFacePipeline(pipeline=pipe)
         
-    elif model_source == "local":
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        # For LlamaCpp, get the context window from the filename
-        model_filename = os.path.basename(local_model_path)
-        if model_filename in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[model_filename]
-        else:  
-            # Default context window for LlamaCpp models (explicitly set)
-            context_window = 4096
+    # elif model_source == "local":
+    #     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+    #     # For LlamaCpp, get the context window from the filename
+    #     model_filename = os.path.basename(local_model_path)
+    #     if model_filename in MODEL_CONTEXT_WINDOWS:
+    #         context_window = MODEL_CONTEXT_WINDOWS[model_filename]
+    #     else:  
+    #         # Default context window for LlamaCpp models (explicitly set)
+    #         context_window = 4096
 
-        model = LlamaCpp(
-            model_path=local_model_path,
-            n_gpu_layers=-1,
-            n_batch=512,
-            n_ctx=context_window,
-            max_tokens=1024,
-            f16_kv=True,
-            callback_manager=callback_manager,
-            verbose=False,
-            stop=[],
-            streaming=False,
-            temperature=0.2,
-            use_mmap=False,
-        )
+    #     model = LlamaCpp(
+    #         model_path=local_model_path,
+    #         n_gpu_layers=-1,
+    #         n_batch=512,
+    #         n_ctx=context_window,
+    #         max_tokens=1024,
+    #         f16_kv=True,
+    #         callback_manager=callback_manager,
+    #         verbose=False,
+    #         stop=[],
+    #         streaming=False,
+    #         temperature=0.2,
+    #         use_mmap=False,
+    #     )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
 
@@ -353,14 +344,14 @@ def initialize_llm(
     return model
 
 def get_response_from_llm(llm, system_prompt, user_prompt):
-    meta_llama_prompt = f'''
+    model_prompt = f'''
     <|begin_of_text|><|start_header_id|>system<|end_header_id|>
     
     {system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
     
     {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
     '''
-    return llm(meta_llama_prompt)
+    return llm(model_prompt)
 
 
 # ─────── Helper Functions ───────
