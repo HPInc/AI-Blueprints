@@ -37,9 +37,15 @@ This notebook performs image generation inference using the Stable Diffusion arc
 ├── data
 │   ├── inputs/                                                         # Input data directory
 │   └── outputs/                                                        # Generated images directory
+├── demo/
+│   ├── streamlit/                                                    # Streamlit UI for deployment
+│   │   ├── assets/                                                   # Logo assets
+│   │   ├── main.py                                                   # Streamlit application
+│   │   └── ...                                                       # Additional Streamlit files
 ├── docs
 │   ├── Diagram dreambooth.png                                          # DreamBooth architecture diagram
 │   └── successful-swagger-ui-image-generation-result.pdf               # Swagger UI documentation
+│   └── streamlit-ui-image-generation.pdf                               # Streamlit UI documentation
 ├── notebooks
 │   ├── register-model.ipynb                                            # Model registration notebook
 │   └── run-workflow.ipynb                                              # Main image generation notebook
@@ -150,6 +156,8 @@ notebooks/run-workflow.ipynb
 2. In the Training DreamBooth section of the notebook:
   - Train your DreamBooth model.
 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+
 ### Step 2: Run the Register Notebook
 
 Execute the notebook inside the `notebooks` folder:
@@ -182,6 +190,21 @@ This will:
 | `num_inference_steps` | Number of denoising steps used by Stable Diffusion                         |
 
 8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
+
+### Step 3: Launch the Streamlit UI
+
+1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+
+2. Navigate to the shown URL and view the image generation.
+
+### Successful UI demo
+
+- Streamlit
+
+  ![Image Generation Streamlit UI](docs/streamlit-ui-image-generation.png)
+
+
+---
 
 ## Contact and Support
 
