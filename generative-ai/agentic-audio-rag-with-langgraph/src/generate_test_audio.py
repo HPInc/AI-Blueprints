@@ -101,9 +101,6 @@ def ensure_ffmpeg_bin() -> str | None:
         return None
     
 FFMPEG_BIN = ensure_ffmpeg_bin()
-    
-# def ffmpeg_ok():
-#     return shutil.which("ffmpeg") is not None
 
 def ffmpeg_ok():
     return FFMPEG_BIN is not None or shutil.which("ffmpeg") is not None
@@ -112,18 +109,6 @@ def _ffmpeg_cmd() -> list[str]:
     # Use the explicit binary if we found one; else rely on PATH
     exe = FFMPEG_BIN if FFMPEG_BIN else "ffmpeg"
     return [exe, "-y", "-hide_banner", "-loglevel", "error"]
-
-# def convert_ffmpeg(src, dst, acodec=None, vcodec=None, extra=None):
-#     cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(src)]
-#     if vcodec: cmd += ["-c:v", vcodec, "-pix_fmt", "yuv420p"]
-#     if acodec: cmd += ["-c:a", acodec]
-#     if extra:  cmd += extra
-#     cmd += [str(dst)]
-#     try:
-#         subprocess.run(cmd, check=True)
-#         print("✅", dst)
-#     except Exception as e:
-#         print("⚠️  ffmpeg failed:", dst, "-", e)
 
 def convert_ffmpeg(src, dst, acodec=None, vcodec=None, extra=None):
     if not ffmpeg_ok():
@@ -138,33 +123,6 @@ def convert_ffmpeg(src, dst, acodec=None, vcodec=None, extra=None):
         print("✅", dst)
     except Exception as e:
         print("⚠️  ffmpeg failed:", dst, "-", e)
-
-
-# def make_video_with_audio_ffmpeg(audio_path: Path, out_path: Path, *, 
-#                                  size="1280x720", fps=24, bg_color="black",
-#                                  vcodec="libx264", acodec="aac", extra=None):
-#     """
-#     Create a solid-color video (lavfi color) and mux the given audio. No moviepy needed.
-#     """
-#     if not ffmpeg_ok():
-#         print("⚠️  ffmpeg not found; skipping", out_path.name); return
-#     cmd = [
-#         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-#         # video source: solid color frames
-#         "-f", "lavfi", "-r", str(fps), "-i", f"color=c={bg_color}:s={size}",
-#         # audio source
-#         "-i", str(audio_path),
-#         "-shortest",
-#         "-c:v", vcodec, "-pix_fmt", "yuv420p",
-#         "-c:a", acodec,
-#     ]
-#     if extra: cmd += extra
-#     cmd += [str(out_path)]
-#     try:
-#         subprocess.run(cmd, check=True)
-#         print("✅", out_path)
-#     except Exception as e:
-#         print("⚠️  ffmpeg failed:", out_path, "-", e)
 
 def make_video_with_audio_ffmpeg(audio_path: Path, out_path: Path, *,
                                  size="1280x720", fps=24, bg_color="black",
@@ -225,9 +183,6 @@ def generate_and_convert_formats(media_path: Path) -> Dict[str, str]:
                 print(f"⚠️  soundfile {fmt} failed, trying ffmpeg:", e)
                 acodec = "flac" if fmt == "flac" else "libvorbis"
                 convert_ffmpeg(MASTER_WAV, path, acodec=acodec)
-                # if ffmpeg_ok():
-                #     acodec = "flac" if fmt == "flac" else "libvorbis"
-                #     convert_ffmpeg(MASTER_WAV, path, acodec=acodec)
 
     # MP3/M4A via ffmpeg
     if ffmpeg_ok():
