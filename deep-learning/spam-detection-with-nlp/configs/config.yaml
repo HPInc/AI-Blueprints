@@ -12,7 +12,7 @@ model_source: "local"
 # UI Configuration
 ui:
   # UI mode: gradio, streamlit, or static
-  mode: "static"
+  mode: "streamlit"
 
 # Port Configuration  
 ports:
