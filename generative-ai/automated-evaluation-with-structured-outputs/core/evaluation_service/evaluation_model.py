@@ -93,11 +93,12 @@ class EvaluationModel:
         key_col = params.get("key_column", "title")
         eval_col = params.get("eval_column", "abstract")
         criteria = params.get("criteria", {
-            "Originality": 20,
-            "Clarity": 20,
-            "Relevance": 20,
-            "Feasibility": 20,
-            "Impact": 20
+            "Originality": 3,
+            "ScientificRigor": 4,
+            "Clarity": 2,
+            "Relevance": 1,
+            "Feasibility": 3,
+            "Brevity": 2
         })
         
         # Handle criteria as JSON string
@@ -120,14 +121,14 @@ class EvaluationModel:
 
         def extract_score(text: str) -> int:
             """Extract numeric score from LLM response text."""
-            match = re.search(r"\\b(10|[1-9])\\b", text)
+            match = re.search(r"\b(10|[1-9])\b", text)
             return int(match.group(1)) if match else -1
 
         def eval_criterion(text: str, crit: str) -> int:
             """Evaluate text against criterion using LLM."""
             prompt = (
-                f"Evaluate abstract by '{crit}', return integer 1-10 only.\\n"
-                f"Abstract:\\n{text.strip()}\\nScore:"
+                f"Evaluate abstract by '{crit}', return integer 1-10 only.\n"
+                f"Abstract:\n{text.strip()}\nScore:"
             )
             resp = self.llm(prompt)["choices"][0]["text"]
             return extract_score(resp)
