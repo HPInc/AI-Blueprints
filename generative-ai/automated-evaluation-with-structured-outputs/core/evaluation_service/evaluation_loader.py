@@ -49,9 +49,7 @@ def _load_pyfunc(data_path: str):
         resolved_model_path = get_model_path(model_path)
         model_path = resolved_model_path
     else:
-        # Use default model path if not specified in config
-        model_path = "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-        logger.info("No model_path found in config, using default LLaMA model path")
+        logger.info("No model_path found in config, EvaluationModel will use default fallback")
     
     # Initialize EvaluationModel
     try:

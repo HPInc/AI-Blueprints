@@ -89,7 +89,7 @@ class EvaluationService:
         
         # Create temp directory
         temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "evaluation_model_artifacts")
+        temp_dir = os.path.join(temp_base, "model_artifacts")
         
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
@@ -114,16 +114,20 @@ class EvaluationService:
             else:
                 logger.info("Demo folder not provided or doesn't exist - skipping")
                     
-            # ✅ Handle model files -> /artifacts/data/models/
+            # ✅ Handle model files -> /artifacts/data/{model_filename}
             if model_path and os.path.exists(model_path):
-                models_temp_dir = os.path.join(temp_dir, "models")
-                os.makedirs(models_temp_dir, exist_ok=True)
                 if os.path.isfile(model_path):
-                    shutil.copy2(model_path, os.path.join(models_temp_dir, os.path.basename(model_path)))
+                    shutil.copy2(model_path, os.path.join(temp_dir, os.path.basename(model_path)))
                     logger.info(f"Copied model file: {os.path.basename(model_path)}")
                 else:
-                    shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied model directory: {model_path}")
+                    # For model directories, copy contents to temp_dir directly
+                    for item in os.listdir(model_path):
+                        item_path = os.path.join(model_path, item)
+                        if os.path.isfile(item_path):
+                            shutil.copy2(item_path, temp_dir)
+                        else:
+                            shutil.copytree(item_path, os.path.join(temp_dir, item))
+                    logger.info(f"Copied model directory contents: {model_path}")
             else:
                 logger.info("Model path not provided or doesn't exist - skipping")
             
