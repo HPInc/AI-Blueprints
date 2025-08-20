@@ -1,12 +1,9 @@
 import os
-import logging
 from pathlib import Path
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import HfHubHTTPError
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoProcessor, ClapModel, Qwen2_5OmniProcessor, Qwen2_5OmniThinkerForConditionalGeneration
-
-from src.utils import get_models_dir, format_model_path, setup_model_environment
-
+from src.utils import get_models_dir, format_model_path, setup_model_environment, logger
 
 class ModelAccessException(Exception):
     """
@@ -19,7 +16,6 @@ class ModelAccessException(Exception):
             f"{message} Please request access at: https://huggingface.co/{model_id}"
         )
         super().__init__(self.message)
-
 
 class ModelSelector:
     """
@@ -56,11 +52,7 @@ class ModelSelector:
         self.model = None
         self.processor = None
         self.tokenizer = None
-
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger("ModelSelector")
-
-    
+        self.logger = logger
 
     def log(self, message: str):
         self.logger.info(f"[ModelSelector] {message}")
@@ -91,7 +83,7 @@ class ModelSelector:
         Falls back to creating the full directory tree if FileNotFoundError occurs.
         """
         model_path = format_model_path(self.model_id)
-        self.log("⬇️ Downloading model %s to → %s", self.model_id, str(model_path))
+        self.log(f"⬇️ Downloading model {self.model_id} to → {str(model_path)}")
 
         try:
             # Ensure the directory exists
