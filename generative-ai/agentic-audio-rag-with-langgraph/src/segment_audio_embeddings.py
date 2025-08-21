@@ -166,7 +166,6 @@ def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_
     """
 
     # Build index over INPUT_PATH
-    #logger.info("📂 Scanning media: %s", INPUT_PATH)
     audio_index = AudioIndex(dim=512)  # CLAP audio/text proj dim is 512
     docs_for_ui: List[Document] = []
 
@@ -209,40 +208,25 @@ def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_
                 },
             ))
 
-   # logger.info("📇 Indexed %d media files, %d segments", len(media_paths), len(audio_index.meta))
     return audio_index, media_paths
 
-def retrieve_audio_segments(
-        clap_processor, 
-        clap_model, 
-        INPUT_PATH: str, 
-        MEDIA_EXTS: List[str], 
-        AUDIO_EXTS: List[str],
-        VIDEO_EXTS: List[str],
-        query: str, 
-        top_k: int = 6, 
-        fetch_k: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+def retrieve_audio_segments_from_index(
+    audio_index,
+    clap_processor,
+    clap_model,
+    query: str,
+    *,
+    top_k: int = 6,
+    fetch_k: int | None = None
+) -> list[dict]:
     """
-    Retrieve audio segments based on a text query using CLAP embeddings.
-    clap_processor: CLAP processor for text/audio.
-    clap_model: CLAP model for embeddings.
-    INPUT_PATH: Directory containing media files.
-    MEDIA_EXTS: List of valid media file extensions.
-    AUDIO_EXTS: List of valid audio file extensions.
-    query: Text query to search for.
-    top_k: Number of top results to return.
-    fetch_k: Optional; if provided, use this as k for high-recall vector fetch.
+    Search the existing index using CLAP embeddings
     """
-    # Stage 1: hihg-recall vector fetch. If fetch_k is provided, use that as k
-    audio_index, _ = segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH, MEDIA_EXTS, AUDIO_EXTS, VIDEO_EXTS)
     if not getattr(audio_index, "meta", None):
-        logger.warning("Audio index is empty; build it first.")
         return []
-    k = fetch_k or top_k
+    k = int(fetch_k or top_k)
     qvec = clap_embed_text(clap_processor, clap_model, query)
     return audio_index.search(qvec, k=k)
-
 
 # --- Reranker: MMR over CLAP embeddings for top-N candidates ---
 
@@ -311,3 +295,26 @@ def rerank_hits_mmr(clap_processor, clap_model, query: str, hits: list[dict], to
         avail.remove(best_i)
 
     return chosen
+
+# --- Reranker: MMR over CLAP embeddings for top-N candidates ---
+def retrieve_and_rerank(
+    audio_index,
+    clap_processor,
+    clap_model,
+    query: str,
+    *,
+    fetch_k: int = 24,
+    top_k: int = 6,
+    lam: float = 0.6,
+) -> list[dict]:
+    # High-recall ANN fetch
+    hits = retrieve_audio_segments_from_index(
+        audio_index, clap_processor, clap_model, query, top_k=top_k, fetch_k=fetch_k
+    )
+    if not hits:
+        return []
+    # Re-embed candidate windows and apply MMR
+    return rerank_hits_mmr(clap_processor, clap_model, query, hits, top_k=top_k, fetch_k=fetch_k, lam=lam)
+
+
+    
