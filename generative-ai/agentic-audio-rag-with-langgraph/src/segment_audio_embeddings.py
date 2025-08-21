@@ -157,7 +157,7 @@ def clap_embed_audio(clap_processor, clap_model, wav: np.ndarray, sr: int) -> np
     vec = vec / (np.linalg.norm(vec) + 1e-12)
     return vec.astype(np.float32)
 
-def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_EXTS: List[str], AUDIO_EXTS: List[str], VIDEO_EXTS: List[str]) -> AudioIndex:
+def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_EXTS: List[str], AUDIO_EXTS: List[str], VIDEO_EXTS: List[str]):
     """
     Segment audio files in INPUT_PATH, extract embeddings using CLAP, and build an index.
     INPUT_PATH: Directory containing media files.
@@ -166,7 +166,7 @@ def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_
     """
 
     # Build index over INPUT_PATH
-    logger.info("📂 Scanning media: %s", INPUT_PATH)
+    #logger.info("📂 Scanning media: %s", INPUT_PATH)
     audio_index = AudioIndex(dim=512)  # CLAP audio/text proj dim is 512
     docs_for_ui: List[Document] = []
 
@@ -209,8 +209,8 @@ def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_
                 },
             ))
 
-    logger.info("📇 Indexed %d media files, %d segments", len(media_paths), len(audio_index.meta))
-    return audio_index
+   # logger.info("📇 Indexed %d media files, %d segments", len(media_paths), len(audio_index.meta))
+    return audio_index, media_paths
 
 def retrieve_audio_segments(
         clap_processor, 
@@ -235,7 +235,7 @@ def retrieve_audio_segments(
     fetch_k: Optional; if provided, use this as k for high-recall vector fetch.
     """
     # Stage 1: hihg-recall vector fetch. If fetch_k is provided, use that as k
-    audio_index = segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH, MEDIA_EXTS, AUDIO_EXTS, VIDEO_EXTS)
+    audio_index, _ = segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH, MEDIA_EXTS, AUDIO_EXTS, VIDEO_EXTS)
     if not getattr(audio_index, "meta", None):
         logger.warning("Audio index is empty; build it first.")
         return []
