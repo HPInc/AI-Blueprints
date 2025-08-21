@@ -8,7 +8,8 @@ import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Optional
-from src.utils import logger, Document
+from src.utils import logger
+from langchain.docstore.document import Document
 from src.generate_test_audio import generate_test_audio, generate_and_convert_formats, ensure_ffmpeg_bin, ffmpeg_ok
 
 
@@ -42,7 +43,7 @@ def _resample_numpy(wav: np.ndarray, sr_from: int, sr_to: int) -> np.ndarray:
     y = np.interp(np.linspace(0, 1, num=n_to, endpoint=False), x, wav.astype(np.float64))
     return y.astype(np.float32)
 
-def ensure_wav(src_path: str | Path, sr: int = 16000, mono: bool = True) -> str:
+def ensure_wav(AUDIO_EXTS: List[str], VIDEO_EXTS: List[str],  src_path: str | Path, sr: int = 16000, mono: bool = True) -> str:
     """
     Ensure a WAV (mono, sr Hz) version exists for any audio/video input.
     Returns the WAV file path.
@@ -156,7 +157,7 @@ def clap_embed_audio(clap_processor, clap_model, wav: np.ndarray, sr: int) -> np
     vec = vec / (np.linalg.norm(vec) + 1e-12)
     return vec.astype(np.float32)
 
-def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_EXTS: List[str], AUDIO_EXTS: List[str]) -> AudioIndex:
+def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_EXTS: List[str], AUDIO_EXTS: List[str], VIDEO_EXTS: List[str]) -> AudioIndex:
     """
     Segment audio files in INPUT_PATH, extract embeddings using CLAP, and build an index.
     INPUT_PATH: Directory containing media files.
@@ -177,7 +178,7 @@ def segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH: str, MEDIA_
             media_paths.append(p)
 
     for media_path in media_paths:
-        wav = ensure_wav(str(media_path))  # OK if this is 16k; we upsample to 48k per segment for CLAP
+        wav = ensure_wav(AUDIO_EXTS, VIDEO_EXTS, str(media_path))  # OK if this is 16k; we upsample to 48k per segment for CLAP
         segs = segment_audio(wav, window_s=30.0, hop_s=15.0)
 
         vecs, metas = [], []
@@ -216,7 +217,8 @@ def retrieve_audio_segments(
         clap_model, 
         INPUT_PATH: str, 
         MEDIA_EXTS: List[str], 
-        AUDIO_EXTS: List[str], 
+        AUDIO_EXTS: List[str],
+        VIDEO_EXTS: List[str],
         query: str, 
         top_k: int = 6, 
         fetch_k: Optional[int] = None
@@ -233,12 +235,12 @@ def retrieve_audio_segments(
     fetch_k: Optional; if provided, use this as k for high-recall vector fetch.
     """
     # Stage 1: hihg-recall vector fetch. If fetch_k is provided, use that as k
-    audio_index = segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH, MEDIA_EXTS, AUDIO_EXTS)
+    audio_index = segment_audio_embeddings(clap_processor, clap_model, INPUT_PATH, MEDIA_EXTS, AUDIO_EXTS, VIDEO_EXTS)
     if not getattr(audio_index, "meta", None):
         logger.warning("Audio index is empty; build it first.")
         return []
     k = fetch_k or top_k
-    qvec = clap_embed_text(query)
+    qvec = clap_embed_text(clap_processor, clap_model, query)
     return audio_index.search(qvec, k=k)
 
 
@@ -252,7 +254,7 @@ def _extract_window(wav_path: str, start_s: float, end_s: float) -> tuple[np.nda
     i1 = max(i0, int(end_s * sr))
     return audio[i0:i1].astype(np.float32, copy=False), sr
 
-def rerank_hits_mmr(query: str, hits: list[dict], top_k: int = 6, fetch_k: int = 24, lam: float = 0.6) -> list[dict]:
+def rerank_hits_mmr(clap_processor, clap_model, query: str, hits: list[dict], top_k: int = 6, fetch_k: int = 24, lam: float = 0.6) -> list[dict]:
     """
     Two-stage reranking:
       1) Start from the first `fetch_k` retrievals.
@@ -267,7 +269,7 @@ def rerank_hits_mmr(query: str, hits: list[dict], top_k: int = 6, fetch_k: int =
     cands = hits[:max(fetch_k, top_k)]
 
     # Query vector in CLAP (text encoder)
-    qvec = clap_embed_text(query)
+    qvec = clap_embed_text(clap_processor, clap_model, query)
     qvec = qvec / (np.linalg.norm(qvec) + 1e-12)
 
     # Re-embed each candidate on the exact window using CLAP audio encoder
@@ -277,7 +279,7 @@ def rerank_hits_mmr(query: str, hits: list[dict], top_k: int = 6, fetch_k: int =
         if wav_seg.size == 0:
             cand_vecs.append(None)
             continue
-        v = clap_embed_audio(wav_seg, sr)
+        v = clap_embed_audio(clap_processor, clap_model, wav_seg, sr)
         v = v / (np.linalg.norm(v) + 1e-12)
         cand_vecs.append(v)
 
