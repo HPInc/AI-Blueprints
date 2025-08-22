@@ -142,4 +142,53 @@ Below are the most relevant parameters for each framework:
 **Notes:**
 - For Keras 3 or custom models, set `use_saved_model=True`.
 - For Transformers translation, always set `task="translation"` and `feature="seq2seq-lm"`.
+
 ---
+
+## Official Library Support
+
+This project uses the **official export APIs** from each framework (PyTorch, TensorFlow/Keras, Hugging Face Transformers, and NVIDIA NeMo) to ensure maximum compatibility and reliability.  
+All parameters supported by `ModelExportConfig` are passed directly to the respective library's export function. For advanced usage or troubleshooting, you can always refer to the official documentation of each framework for more details:
+
+- [PyTorch ONNX Export](https://pytorch.org/docs/stable/onnx.html)
+- [TensorFlow/Keras ONNX Export (tf2onnx)](https://github.com/onnx/tensorflow-onnx)
+- [Hugging Face Transformers ONNX Export](https://huggingface.co/docs/transformers/serialization#export-to-onnx)
+- [NVIDIA NeMo Export](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/stable/)
+
+---
+
+## About `input_sample`, `dynamic_axes`, `opset`, `input_names`, and `output_names`
+
+Some models—especially PyTorch and Keras—may require additional parameters for correct ONNX export:
+
+- **`input_sample`**:  
+  A sample input (tensor or tuple of tensors) used to trace the model during export.  
+  - **Required for:** PyTorch, Keras, NeMo (when native export is not supported).
+  - **Transformers:** Usually not needed, unless you have a custom model.
+
+- **`dynamic_axes`**:  
+  Allows you to specify variable dimensions (e.g., batch size or sequence length) for inputs and outputs.  
+  - **Important for:** Models that accept variable-length inputs, such as NLP or vision models.
+  - **Example:**  
+    ```python
+    dynamic_axes={
+        'input_ids': {0: 'batch_size', 1: 'sequence'},
+        'logits': {0: 'batch_size'}
+    }
+    ```
+
+- **`opset`**:  
+  The ONNX operator set version used for export.  
+  - **Tip:** Use the version recommended for your stack (e.g., 14 for PyTorch, 12 for Keras).
+  - **Compatibility:** If you encounter export errors, try changing the opset version.
+
+- **`input_names` and `output_names`**:  
+  Names for the ONNX model's inputs and outputs.  
+  - **Required for:** PyTorch (to identify tensors in the ONNX graph).
+  - **Tip:** Use clear, descriptive names compatible with your inference pipeline.
+
+**Summary:**  
+- For PyTorch and Keras models, always provide a representative `input_sample`.
+- Adjust `dynamic_axes` if your model supports variable input sizes.
+- If you get export errors, try changing the `opset` version.
+- Set `input_names` and `output_names` for easier integration
