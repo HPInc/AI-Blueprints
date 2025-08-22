@@ -278,7 +278,8 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
         finetuned_model_path: str, 
         model_no_finetuning_path: str,
         artifact_path: str = "image_generation_model",
-        config_path: str = "../configs/config.yaml"
+        config_path: str = "../configs/config.yaml",
+        demo_path: str = "../demo"
     ):
         input_schema  = Schema([
             ColSpec("string",  "prompt"),
@@ -309,6 +310,7 @@ class ImageGenerationModel(mlflow.pyfunc.PythonModel):
                 "finetuned_model":     finetuned_model_path,
                 "model_no_finetuning": model_no_finetuning_path,
                 "config": str(Path(config_path).resolve()),
+                "demo": str(Path(demo_path).resolve())
             },
             signature=signature,
             code_paths=[str(core), str(src_dir)],
@@ -402,6 +404,7 @@ def deploy_model():
                 finetuned_model_path=finetuned,
                 model_no_finetuning_path=base,
                 config_path="../configs/config.yaml",
+                demo_path = "../demo"
             )
             
             # Post-deployment cleanup
