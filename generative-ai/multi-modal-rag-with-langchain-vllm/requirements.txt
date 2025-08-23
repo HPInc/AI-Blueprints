@@ -4,6 +4,16 @@
 torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
 
+
+# torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+
+# This provides libcusparseLt.so.0 which caused your deploy crash:
+nvidia-cusparselt-cu12==0.6.*
+
+# (Optional but recommended for completeness; use a loose major range)
+nvidia-cuda-runtime-cu12>=12.4,<13
+nvidia-cublas-cu12>=12.4,<13
+
 chromadb==1.0.15
 langchain==0.3.26
 langchain_community==0.3.26
@@ -23,5 +33,5 @@ GitPython==3.1.44
 rank-bm25==0.2.2
 qwen-vl-utils==0.0.11
 vllm==0.9.2
-flashinfer-python==0.2.6
+#flashinfer-python==0.2.6
 mlflow==2.21.2

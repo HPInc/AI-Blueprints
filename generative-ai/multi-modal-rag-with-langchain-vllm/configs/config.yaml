@@ -10,3 +10,31 @@ AZURE_DEVOPS_WIKI_IDENTIFIER: "Phoenix-DS-Platform.wiki"
 # For example, if you need to access Galileo from a restricted network,
 # you should specify the proxy in this config.yaml file.
 # proxy: "http://web-proxy.austin.hp.com:8080"
+
+# Optional outbound proxy (sets HTTPS_PROXY inside the container)
+# proxy: "http://your-corp-proxy:8080"
+
+ui:
+  # gradio | streamlit | static
+  mode: "streamlit"
+
+ports:
+  # External port exposed by Envoy (don’t change)
+  external: 5000
+
+  # Internal app ports inside the container
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+service:
+  # MLflow pyfunc server timeout (seconds)
+  mlflow_timeout: 600
+  # Time to wait for the UI/service to come up during health checks (seconds)
+  health_check_timeout: 600
+  #Grace period so health probes don’t trip while the model warms up
+  startup_grace_period: 120
+
+env:
+  LD_LIBRARY_PATH: "${LD_LIBRARY_PATH}:/opt/conda/envs/aistudio/lib/python3.12/site-packages/nvidia/cusparselt/lib:/home/jovyan/.local/lib/python3.12/site-packages/nvidia/cusparselt/lib:/opt/conda/lib/python3.12/site-packages/nvidia/cusparselt/lib"
