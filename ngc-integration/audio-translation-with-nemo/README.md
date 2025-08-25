@@ -139,6 +139,8 @@ This will:
 - Pick the desired model version and enable **GPU acceleration** for best performance.
 - Click **Deploy** to launch the service.
 
+The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
+
 ### 4 ▪ Swagger / Raw API
 
 Once your service is running, open the **Swagger UI** from its Service URL.
@@ -181,26 +183,6 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 
 - Streamlit
   ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_audio_translation.png)
-
----
-
-# Model Export Configuration
-
-The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
-
-## Supported Model Types
-
-- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
-- **Keras Models**: TensorFlow/Keras models for neural network-based processing
-- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
-- **Pytorch Models**: Pytorch models that can be exported
-
-## ONNX Export Control
-
-You can control ONNX generation not sending ModelExportConfig list to the log_model method.
-
-For More information about the exportation can be found on the readme inside /src folder on blueprint.
-
 ---
 
 # Contact and Support

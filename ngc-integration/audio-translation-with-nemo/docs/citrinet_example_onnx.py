@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cliente Triton para enc_dec_CTC (Citrinet) com chunking + pad automático para múltiplo do stride.
+Triton client for enc_dec_CTC (Citrinet) with chunking + automatic padding.
 """
 
 import io

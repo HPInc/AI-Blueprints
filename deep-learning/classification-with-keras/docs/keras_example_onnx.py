@@ -2,10 +2,10 @@
 """
 Simple Triton Inference Script for MNIST Keras Model
 
-Este script:
-- Usa uma variável BASE_64 para receber a imagem MNIST (28x28, escala de cinza, PNG ou JPEG) codificada em base64.
-- Faz a inferência no Triton usando apenas essa imagem.
-- Mostra o resultado da predição.
+This script:
+- Uses a BASE_64 variable to receive an MNIST image (28x28, grayscale, PNG or JPEG) encoded in base64.
+- Runs inference on Triton using only this image.
+- Shows the prediction result.
 """
 
 import numpy as np
@@ -30,7 +30,7 @@ def image_from_base64(b64_string: str) -> np.ndarray:
     return img_array.reshape(1, 28, 28, 1)
 
 def run_triton_inference(endpoint: str, image: np.ndarray):
-    """Executa inferência no Triton para uma única imagem."""
+    """Runs inference on Triton for a single image."""
     print("🚀 MNIST Triton Inference (BASE64)")
     print("=" * 40)
     print(f"🌐 Endpoint: {endpoint}")
