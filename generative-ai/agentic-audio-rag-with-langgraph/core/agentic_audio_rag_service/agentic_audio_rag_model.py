@@ -1,22 +1,29 @@
+"""
+Standalone AgenticAudioModel class.
+
+Business Logic Layer
+- Manages model initialization, embeddings, vector database, and prediction logic
+- Contains all domain-specific functionality without MLflow dependencies
+- Designed to be framework-agnostic and easily testable
+"""
+
 # ─────── Standard Library Imports ───────
 from __future__ import annotations # Future-proofing for type annotations
 import json  # JSON parsing and serialization
 import re # Regular expressions
 import logging  # Logging utilities
-import multiprocessing  # Multi-process support for concurrency
 import os  # Operating system interaction
-import time  # Time-related functions
-from datetime import datetime  # Date and time manipulation
 from pathlib import Path  # Object-oriented filesystem paths
-from typing import Any, Dict, List, TypedDict, Annotated  # Static typing support
+from typing import Any, Dict, List, TypedDict, Annotated, Optional  # Static typing support
 import numpy as np  # Numerical computing with arrays
 import soundfile as sf # Audio file reading and writing
 from types import SimpleNamespace # Simple object for attribute access
 import operator # Functional programming utilities
+import uuid
+import sys
+import pandas as pd
 
 # ─────── Third-Party Package Imports ───────
-import mlflow  # ML lifecycle platform
-import mlflow.pyfunc  # MLflow support for custom Python models
 from langchain.docstore.document import Document  # Core document abstraction for LangChain
 from langgraph.graph import StateGraph, END  # LangGraph for stateful agent workflows
 from pydantic import BaseModel  # Data validation and model parsing
@@ -28,17 +35,24 @@ from transformers import (
 from qwen_omni_utils import process_mm_info
 
 # ─────── Local Application-Specific Imports ───────
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.agentic_workflow import build_audio_agentic_graph  # Custom LangGraph construction logic
 from src.simple_kv_memory import SimpleKVMemory, _mem_get, _mem_put  # In-memory key-value store for agent state
 from src.model_selection import ModelSelector # Model selection utility
 from src.utils import setup_model_environment  # Project-wide configured logger
 from src.segment_audio_embeddings import AudioIndex
 
+# Add the src directory to the path to import utilities
+from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, load_secrets_to_env
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
 INDEX_VECS_NPY = "audio_vecs.npy"
 INDEX_META_JSON = "audio_meta.json"
 MEMORY_FILENAME = "kv_memory.json"
 
- # adapter (same logic as in the notebook, with guards)
+ # 
 class _QwenAdapter:
     def __init__(self, proc, model):
         self.processor = proc
@@ -54,7 +68,6 @@ class _QwenAdapter:
         return txt
 
     def answer(self, question: str, audio_hits: list, return_audio: bool = False) -> dict:
-        import numpy as np, soundfile as sf
         user_content = [{
             "type": "text",
             "text": ("Answer ONLY using the provided audio clips. "
@@ -146,113 +159,147 @@ class _QwenAdapter:
 
         return {"answer": (answer if answer else "Not found in audio."), "evidence": evid}
 
-
-
 def _normalize_vecs(vecs: np.ndarray) -> np.ndarray:
     x = vecs.astype(np.float32, copy=False)
     n = np.linalg.norm(x, axis=1, keepdims=True) + 1e-12
     return (x / n).astype(np.float32)
-
-# def _dot_search(vecs: np.ndarray, metas: List[Dict[str, Any]], qvec: np.ndarray, k: int) -> List[Dict[str, Any]]:
-#     q = qvec.astype(np.float32)
-#     q = q / (np.linalg.norm(q) + 1e-12)
-#     scores = (vecs @ q)
-#     idx = np.argsort(-scores)[:k]
-#     out = []
-#     for i in idx:
-#         m = dict(metas[i])
-#         m["score"] = float(scores[i])
-#         out.append(m)
-#     return out
-
-# def _mmr(hits: List[Dict[str, Any]], lam: float = 0.6, top_k: int = 6) -> List[Dict[str, Any]]:
-#     # simple score-only MMR placeholder (no cross-sim); preserves input order prioritizing high scores
-#     if not hits:
-#         return []
-#     chosen = []
-#     pool = hits.copy()
-#     while pool and len(chosen) < top_k:
-#         best = max(pool, key=lambda h: h.get("score", 0.0))
-#         pool.remove(best)
-#         chosen.append(best)
-#     # annotate as score_mmr for display
-#     for h in chosen:
-#         h["score_mmr"] = h.get("score", 0.0)
-#     return chosen
-
-class AudioAgenticPyFunc(mlflow.pyfunc.PythonModel):
+    
+class AgenticAudioModel:
     """
-    Code-based pyfunc model to run the Audio agentic graph.
-    Loads artifacts ({index vecs/meta}, config), CLAP (CPU), Qwen Omni, and compiles the graph.
+    Standalone agentic audio RAG model class with no MLflow inheritance.
+    Handles RAG-based question answering with audio files.
+      - CLAP for retrieval + MMR reranking
+      - Qwen2.5 Omni Thinker for audio reasoning
+      - LangGraph for memory → retrieve → generate → memoize
     """
-
-    def load_context(self, context):
-        setup_model_environment()
-
-        # --- Artifacts ---
-        index_dir   = Path(context.artifacts["index_dir"])
-        config_path = Path(context.artifacts["config_path"])
-        memory_dir  = Path(context.artifacts["memory_dir"])
-        memory_dir.mkdir(parents=True, exist_ok=True)
-
-        # names (allow env override)
-        vecs_name = INDEX_VECS_NPY
-        meta_name = INDEX_META_JSON
-
-        self.vecs  = _normalize_vecs(np.load(index_dir / vecs_name).astype(np.float32))
-        with open(index_dir / meta_name, "r") as f:
-            self.metas = json.load(f)
-        with open(config_path, "r") as f:
-            cfg = json.load(f)
-
-        self.relevance_threshold = float(cfg.get("relevance_threshold", 0.18))
-        self.fetch_k = int(cfg.get("fetch_k", 24))
-        self.top_k   = int(cfg.get("top_k", 6))
-
-        # --- CLAP (CPU to avoid OOM) ---
-        # keep CLAP on CPU; embed queries quickly and cheaply
-        self.clap_processor = ClapProcessor.from_pretrained(cfg["clap_repo"])
-        self.clap_model = ClapModel.from_pretrained(cfg["clap_repo"]).eval()
+    
+    def __init__(self, context, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
+        """
+        Initialize the AgenticAudioModel with configuration and artifacts.
+        
+        Args:
+            config: Model configuration dictionary
+            docs_path: Path to documents directory
+            model_path: Path to local model file (optional)
+            secrets: Dictionary containing secrets (optional)
+        """
+        self.model_config = config
+        self.docs_path = docs_path
+        self.model_path = model_path
+        self.secrets = secrets
+        
+        # Initialize components
+        self.llm = None
+        self.embeddings = None
+        self.vectordb = None
+        self.retriever = None
+        self.chain = None
+        self.prompt = None
+        self.prompt_str = ""
+        self.memory = []
+        self.callback_manager = None
+        
+        # Setup environment and load components
         try:
-            self.clap_model.to("cpu")
-        except Exception:
-            pass
+            self._setup_environment()
+            # self._load_embeddings()
+            # self._load_vectordb()
+            # self._load_model()
+            # self._load_prompt()
+            # self._load_chain()
+            
+             # --- Artifacts ---
+            index_dir   = Path(context.artifacts["index_dir"])
+            config_path = Path(context.artifacts["config_path"])
+            memory_dir  = Path(context.artifacts["memory_dir"])
+            memory_dir.mkdir(parents=True, exist_ok=True)
 
-        # --- Memory ---
-        # mem_file = os.environ.get("MEMORY_FILENAME", "kv_memory.json")
-        self.memory = SimpleKVMemory(memory_dir / MEMORY_FILENAME)
+            # names (allow env override)
+            vecs_name = INDEX_VECS_NPY
+            meta_name = INDEX_META_JSON
 
-        # --- Qwen Omni (audio agent) ---
-        audio_llm_id = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
-        # selector = ModelSelector()
-        # local_dir = Path(selector.format_model_path(audio_llm_id))
-        # local_dir.mkdir(parents=True, exist_ok=True)
+            self.vecs = _normalize_vecs(np.load(index_dir / vecs_name).astype(np.float32))
+            with open(index_dir / meta_name, "r") as f:
+                self.metas = json.load(f)
+            with open(config_path, "r") as f:
+                cfg = json.load(f)
 
-        self.q_processor = Qwen2_5OmniProcessor.from_pretrained(audio_llm_id, trust_remote_code=True)
-        self.q_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
-            audio_llm_id,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-            device_map="auto",
-            trust_remote_code=True,
-            low_cpu_mem_usage=True,
-        ).eval()
+            self.relevance_threshold = float(cfg.get("relevance_threshold", 0.18))
+            self.fetch_k = int(cfg.get("fetch_k", 24))
+            self.top_k   = int(cfg.get("top_k", 6))
 
-        self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
-        self.audio_index = AudioIndex(dim=self.vecs.shape[1])
-        self.audio_index.add(self.vecs, self.metas)
+            # --- CLAP (CPU to avoid OOM) ---
+            # keep CLAP on CPU; embed queries quickly and cheaply
+            self.clap_processor = ClapProcessor.from_pretrained(cfg["clap_repo"])
+            self.clap_model = ClapModel.from_pretrained(cfg["clap_repo"]).eval()
+            try:
+                self.clap_model.to("cpu")
+            except Exception:
+                pass
 
-        self.graph = build_audio_agentic_graph(
-            relevance_threshold = self.relevance_threshold,
-            fetch_k = self.fetch_k,
-            top_k = self.top_k,
-            vecs = self.vecs,
-            metas = self.metas,
-            audio_index = self.audio_index,
-            clap_processor = self.clap_processor,
-            clap_model = self.clap_model,
-        )
+            # --- Memory ---
+            # mem_file = os.environ.get("MEMORY_FILENAME", "kv_memory.json")
+            self.memory = SimpleKVMemory(memory_dir / MEMORY_FILENAME)
 
-       
+            # --- Qwen Omni (audio agent) ---
+            audio_llm_id = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
+            # selector = ModelSelector()
+            # local_dir = Path(selector.format_model_path(audio_llm_id))
+            # local_dir.mkdir(parents=True, exist_ok=True)
+
+            self.q_processor = Qwen2_5OmniProcessor.from_pretrained(audio_llm_id, trust_remote_code=True)
+            self.q_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                audio_llm_id,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                device_map="auto",
+                trust_remote_code=True,
+                low_cpu_mem_usage=True,
+            ).eval()
+
+            self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
+            self.audio_index = AudioIndex(dim=self.vecs.shape[1])
+            self.audio_index.add(self.vecs, self.metas)
+
+            self.graph = build_audio_agentic_graph(
+                relevance_threshold = self.relevance_threshold,
+                fetch_k = self.fetch_k,
+                top_k = self.top_k,
+                vecs = self.vecs,
+                metas = self.metas,
+                audio_index = self.audio_index,
+                clap_processor = self.clap_processor,
+                clap_model = self.clap_model,
+            )
+            
+            logger.info("AgenticAudioModel initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize AgenticAudioModel: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise RuntimeError(f"AgenticAudioModel initialization failed: {str(e)}") from e
+    
+    def _setup_environment(self) -> None:
+        """Configure environment variables based on configuration and secrets."""
+        setup_model_environment()
+        try:
+            # Load secrets into environment if provided
+            if self.secrets:
+                for key, value in self.secrets.items():
+                    os.environ[key] = str(value)
+                logger.info("Secrets loaded into environment")
+            
+            # Configure proxy if specified in config
+            if "proxy" in self.model_config and self.model_config["proxy"]:
+                logger.info(f"Setting up proxy: {self.model_config['proxy']}")
+                os.environ["HTTPS_PROXY"] = self.model_config["proxy"]
+                os.environ["HTTP_PROXY"] = self.model_config["proxy"]
+            else:
+                logger.info("No proxy configuration found")
+                    
+        except Exception as e:
+            logger.error(f"Error setting up environment: {str(e)}")
+            # Continue without failing to allow the model to still function
+    
     # Wrapper used by mlflow
     def _invoke(self, question: str, file_id: str = "global") -> dict:
         return self.graph.invoke({
@@ -262,9 +309,8 @@ class AudioAgenticPyFunc(mlflow.pyfunc.PythonModel):
             "audio_llm": self.audio_llm,
             "messages": [],
         })
-
+        
     def predict(self, context, model_input):
-        import pandas as pd
         if isinstance(model_input, pd.DataFrame):
             records = model_input.to_dict(orient="records")
         elif isinstance(model_input, list):
@@ -296,3 +342,8 @@ class AudioAgenticPyFunc(mlflow.pyfunc.PythonModel):
                     "error": f"{type(e).__name__}: {e}",
                 })
         return out
+    
+    
+   
+    
+   

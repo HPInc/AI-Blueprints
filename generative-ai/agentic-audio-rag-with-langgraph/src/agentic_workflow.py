@@ -12,18 +12,24 @@ class AudioState(TypedDict, total=False):
     file_id: str
     memory: Any
     audio_llm: Any
-
     is_relevant: bool
     from_memory: bool
     hits_raw: List[Dict[str, Any]]
     hits: List[Dict[str, Any]]
     evidence: List[Dict[str, Any]]
     answer: str
-
     messages: Messages
 
-def build_audio_agentic_graph(relevance_threshold: float, fetch_k: int, top_k: int,
-                                         vecs: np.ndarray, metas: list[dict]):
+def build_audio_agentic_graph(
+    relevance_threshold: float, 
+    fetch_k: int, 
+    top_k: int,
+    vecs: np.ndarray, 
+    metas: list[dict],
+    audio_index,
+    clap_processor,
+    clap_model,
+):
     def _mem_get(mem, key):
         if isinstance(mem, dict): return mem.get(key)
         return mem.get(key) if hasattr(mem, "get") else None
@@ -42,7 +48,7 @@ def build_audio_agentic_graph(relevance_threshold: float, fetch_k: int, top_k: i
 
     def node_check_relevance_audio(state: AudioState) -> AudioState:
         q = state["question"]
-        probe = retrieve_audio_segments_from_index(q, vecs, metas, k=8)
+        probe = retrieve_audio_segments_from_index(audio_index, clap_processor, clap_model, q, top_k=5, fetch_k=8)
         max_score = max([h.get("score", 0.0) for h in probe], default=0.0)
         is_rel = bool(max_score >= relevance_threshold)
         updates: AudioState = {"is_relevant": is_rel,
@@ -66,11 +72,11 @@ def build_audio_agentic_graph(relevance_threshold: float, fetch_k: int, top_k: i
                     "messages": [{"role":"developer","content": f"Cache miss for {key}"}]}
 
     def node_retrieve(state: AudioState) -> AudioState:
-        hits_raw = retrieve_audio_segments_from_index(state["question"], vecs, metas, k=fetch_k)
+        hits_raw = retrieve_audio_segments_from_index(audio_index, clap_processor, clap_model, state["question"], top_k=top_k, fetch_k=fetch_k)
         return {"hits_raw": hits_raw}
 
     def node_rerank(state: AudioState) -> AudioState:
-        hits = rerank_hits_mmr(state["question"], state.get("hits_raw", []), top_k=top_k, fetch_k=fetch_k, lam=0.6)
+        hits = rerank_hits_mmr(clap_processor, clap_model, state["question"], state.get("hits_raw", []), top_k=top_k, fetch_k=fetch_k, lam=0.6)
         return {"hits": hits}
 
     def node_generate_audio_only(state: AudioState) -> AudioState:
