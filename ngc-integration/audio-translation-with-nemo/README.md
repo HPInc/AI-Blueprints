@@ -178,11 +178,7 @@ From the Swagger page, click the **“Demo”** link to interact via a simple we
 
 ### Successful UI demo
 
-- React
-  ![Automated Evaluation React UI](docs/react_ui_for_audio_translation.png)
-
-- Streamlit
-  ![Automated Evaluation Streamlit UI](docs/streamlit_ui_for_audio_translation.png)
+![Streamlit UI](docs/StreamlitUI.png)
 ---
 
 # Contact and Support
