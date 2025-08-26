@@ -36,3 +36,14 @@ When interacting with the app:
 - **Important:** The MLflow endpoint **must** use **HTTPS** (not HTTP).
 - **Note:** In **Z by HP AI Studio**, the **port number** for your MLflow API **changes with each deployment**, so always verify the correct URL and port before starting a session.
 - **Example URL:** `https://localhost:<port>/invocations`
+
+## 5. Enter the corresponding information to your Azure DevOps Wiki
+
+Example ADO Wiki Page Link:
+`https://myorganization.visualstudio.com/Important_Project/_wiki/wikis/Important_Project.wiki/1234/Knowledge-Share`
+
+Based on the above link, the breakdown of the fields you need are:
+- **ADO Organization**: `myorganization`
+- **ADO Project**: `Important_Project`
+- **ADO Wiki Name**: `Important_Project.wiki`
+- **ADO Personal Access Token**: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows

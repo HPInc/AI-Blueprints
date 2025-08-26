@@ -3,6 +3,7 @@
 
 import sys
 import os  
+import logging
 from datetime import datetime
 import warnings
 from pathlib import Path
@@ -25,9 +26,42 @@ import mlflow
 from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema, TensorSpec, ParamSchema, ParamSpec
 
+# Configure loggin
+logger = logging.getLogger("register_model_logger")
+
 project_root = Path(__file__).resolve().parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
+
+# Add src directory to path to ensure onnx_utils is found
+src_dir = Path(__file__).resolve().parent
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
+from onnx_utils import ModelExportConfig, log_model
+
+class BERTModelWithHiddenStates(torch.nn.Module): #Pytorch models that use **kwargs needs to create wrapper, we need more work on that
+    def __init__(self, bert_model):
+        super().__init__()
+        self.bert = bert_model
+    
+    def forward(self, input_ids, attention_mask, token_type_ids):
+        outputs = self.bert.bert_model(
+            input_ids=input_ids,
+            token_type_ids=token_type_ids,
+            attention_mask=attention_mask,
+        )
+        
+        if isinstance(outputs, tuple):
+            last_hidden_state = outputs[0]
+        else:
+            last_hidden_state = outputs
+
+       
+        cls_embedding = last_hidden_state[:, 0, :]
+
+        return cls_embedding
+
 
 class BERTTourismModel(mlflow.pyfunc.PythonModel):
     # ── make the *empty* instance pickle-safe ──────────────────────────────
@@ -56,7 +90,7 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         
         # Load pre-trained BERT model
         self.bert_model = BERTLMModel.restore_from(context.artifacts['bert_model_path'], strict=False).to(self.device)
-    
+        
     def generate_query_embedding(self, query):
         """
         Generate BERT embeddings for the input query.
@@ -112,7 +146,11 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
     ):
         """
         Logs the model to MLflow with appropriate artifacts and schema.
+        Now uses in-memory model loading for ONNX export efficiency.
         """
+
+        from nemo.collections.nlp.models import BERTLMModel
+        
         # Define input and output schema
         input_schema = Schema([ColSpec("string", "query")])
         output_schema = Schema([
@@ -136,16 +174,65 @@ class BERTTourismModel(mlflow.pyfunc.PythonModel):
         }
 
         src_dir = str(Path(__file__).parent.resolve())
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(f"Loading BERT model from: {bert_model_datafabric_path}")
+       
         
-        # Log the model in MLflow
-        mlflow.pyfunc.log_model(
-            artifact_path=model_name,
-            python_model=cls(),
-            artifacts=artifacts,
-            signature=signature,
-            pip_requirements="../requirements.txt",
-            code_paths=[src_dir],
+        # Load the NeMo BERT model into memory
+        bert_model =  BERTLMModel.restore_from(bert_model_datafabric_path, strict=False).to(device)
+        bert_model.eval() 
+
+        wrapped_model = BERTModelWithHiddenStates(bert_model) #it doesn't have oficial nemo export function so its necessary to recreate the model as torch to use torch conversion
+     
+        batch_size = 1
+        seq_len = 128
+        vocab_size = 30522
+
+        input_ids = torch.randint(0, vocab_size, (batch_size, seq_len), dtype=torch.long)
+        attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long)
+        token_type_ids = torch.zeros((batch_size, seq_len), dtype=torch.long)
+    
+        model_configs = [
+            ModelExportConfig(
+                model=wrapped_model,                           # 🚀 Pre-loaded model object!
+                model_name="bert_tourism_onnx",             # ONNX file naming
+                input_sample=(                             
+                    input_ids.to(device),
+                    attention_mask.to(device),
+                    token_type_ids.to(device)
+                ),
+                input_names=["input_ids", "attention_mask", "token_type_ids"],
+                output_names=["embedding"],
+                dynamic_axes={
+                    "input_ids": {0: "batch", 1: "sequence"},
+                    "attention_mask": {0: "batch", 1: "sequence"},
+                    "token_type_ids": {0: "batch", 1: "sequence"},
+                    "embedding": {0: "batch_size"}
+                },
+            )    
+        ]
+        
+        log_model(
+                artifact_path=model_name,
+                python_model=cls(),
+                artifacts=artifacts,
+                signature=signature,
+                models_to_convert_onnx=model_configs,     
+                pip_requirements= "../requirements.txt",
+                code_paths=[src_dir],
         )
+      
+        
+        # Legacy code kept for reference (commented out)
+        #mlflow.pyfunc.log_model(
+            #artifact_path=model_name,
+            #python_model=cls(),
+            #artifacts=artifacts,
+            #signature=signature,
+            #pip_requirements="../requirements.txt",
+            #code_paths=[src_dir],
+       # )
 
 # ── MLflow code-based entry-point ─────────────────────────────────────────────
 def _load_pyfunc(context):
