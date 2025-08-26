@@ -98,7 +98,7 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 ### Step 2: Deploy the Service
 
-1. Execute the `register-model.ipynb` to register the BERT model in MLflow and create the API logic.
+1. Only after running the 'run-workflow' notebook, execute the `register-model.ipynb` to register the BERT model in MLflow and create the API logic.
 2. Navigate to **Deployments > New Service** in AI Studio.
 3. Name the service and select the registered model.
 4. Choose an available model version and configure it with **GPU acceleration**.
