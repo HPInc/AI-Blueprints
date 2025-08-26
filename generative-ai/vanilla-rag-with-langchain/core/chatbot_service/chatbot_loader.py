@@ -60,11 +60,14 @@ def _load_pyfunc(data_path: str):
         from src.utils import get_model_path
         
         # Set MODEL_ARTIFACTS_PATH for get_model_path function
-        os.environ["MODEL_ARTIFACTS_PATH"] = data_path
+        # In the artifacts structure, models are stored in the models/ subdirectory
+        models_artifacts_path = os.path.join(data_path, "models")
+        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
         
         # Resolve model path relative to artifacts
         resolved_model_path = get_model_path(model_path)
         model_path = resolved_model_path
+        logger.info(f"Resolved model path: {model_path}")
     else:
         logger.info("No model_path found in config, ChatbotModel will use default fallback")
     
