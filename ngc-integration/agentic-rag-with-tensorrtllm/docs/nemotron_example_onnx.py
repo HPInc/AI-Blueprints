@@ -20,27 +20,27 @@ inputs = tokenizer(
 input_ids = np.ascontiguousarray(inputs["input_ids"].astype(np.int64))
 attention_mask = np.ascontiguousarray(inputs["attention_mask"].astype(np.int64))
 
-# --- Conecta no Triton via gRPC ---
-triton_client = grpcclient.InferenceServerClient(url="localhost:8001")  # gRPC padrão 8001
+# --- Connect to Triton via gRPC ---
+triton_client = grpcclient.InferenceServerClient(url="localhost:8001")  # default gRPC 8001
 
-# --- Monta inputs ---
+# --- Create inputs ---
 input0 = grpcclient.InferInput("input_ids", input_ids.shape, np_to_triton_dtype(input_ids.dtype))
 input1 = grpcclient.InferInput("attention_mask", attention_mask.shape, np_to_triton_dtype(attention_mask.dtype))
 
 input0.set_data_from_numpy(input_ids)
 input1.set_data_from_numpy(attention_mask)
 
-# --- Monta output (receber FP16) ---
+# --- Create output (receive FP16) ---
 output = grpcclient.InferRequestedOutput("logits")
 
-# --- Faz a inferência ---
+# --- Do the inference ---
 response = triton_client.infer(
     model_name="nemotron_model",
     inputs=[input0, input1],
     outputs=[output]
 )
 
-# --- Pega o resultado ---
+# --- Get the result ---
 logits = response.as_numpy("logits")
 print("logits shape:", logits.shape)
 print(logits)
