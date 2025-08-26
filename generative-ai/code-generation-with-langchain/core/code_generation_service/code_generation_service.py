@@ -109,7 +109,7 @@ class CodeGenerationService:
                 "pip",
                 {
                     "pip": [
-                        "-r requirements.txt"
+                        "-r ../requirements.txt"
                     ]
                 }
             ],
@@ -122,7 +122,7 @@ class CodeGenerationService:
             loader_module="core.code_generation_service.code_generation_loader",
             code_paths=["../core", "../src"],
             signature=signature,
-            pip_requirements=conda_env,
+            conda_env=conda_env,
             
 
         )
