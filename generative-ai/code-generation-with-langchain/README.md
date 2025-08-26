@@ -30,6 +30,15 @@ This notebook performs automatic code explanation by extracting code snippets fr
 ```text
 ├── configs
 │   └── config.yaml                                                   # Blueprint configuration (UI mode, ports, service settings)
+├── core/                                                             # Core modules within notebooks
+│   └── code_generation_service/
+│   ├── chroma_embedding_adapter.py
+│   ├── code_generation_service.py                                    # DEPRECATED: This file is maintained for backwards compatibility only.
+│   ├── dataflow/
+│   ├── extract_text/
+│   ├── generate_metadata/
+│   ├── prompt_templates.py
+│   └── vector_database/
 ├── demo/
 │   ├── streamlit/                                                    # Streamlit UI for deployment
 │   │   ├── assets/                                                   # Logo assets
@@ -40,14 +49,6 @@ This notebook performs automatic code explanation by extracting code snippets fr
 │   └── swagger-ui-spam-detection-with-nlp.png                        # Swagger screenshot
 │   └── streamlit-ui-spam-detection-with-nlp.pdf                      # Streamlit screenshot
 ├── notebooks
-│   ├── core/                                                         # Core modules within notebooks
-│   │   ├── chroma_embedding_adapter.py
-│   │   ├── code_generation_service.py
-│   │   ├── dataflow/
-│   │   ├── extract_text/
-│   │   ├── generate_metadata/
-│   │   ├── prompt_templates.py
-│   │   └── vector_database/
 │   ├── register-model.ipynb                                           # Model registration notebook
 │   └── run-workflow.ipynb                                             # Main workflow notebook
 ├── src

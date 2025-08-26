@@ -117,13 +117,14 @@ class CodeGenerationService:
         }
         
         # Log model to MLflow using models-from-code
-        mlflow.models.save_model(
-            path=artifact_path,
+        mlflow.pyfunc.log_model(
+            artifact_path=artifact_path,
             loader_module="core.code_generation_service.code_generation_loader",
+            code_paths=["../core", "../src"],
             signature=signature,
-            conda_env=conda_env,
-            code_paths=["./core", "../src"],
-            artifacts=artifacts
+            pip_requirements=conda_env,
+            
+
         )
         logger.info("Model and artifacts successfully registered in MLflow using models-from-code.")
 
