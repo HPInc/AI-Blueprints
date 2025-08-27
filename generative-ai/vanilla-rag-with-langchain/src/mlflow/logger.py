@@ -2,7 +2,7 @@
 Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
-- Provides log_model functionality for packaging RAG-based chatbot models
+- Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
 - Uses MLflow's models-from-code approach for deployment
 - Manages configuration, documents, secrets, and demo assets
@@ -34,7 +34,7 @@ class Logger:
     @classmethod
     def log_model(
         cls,
-        artifact_path="AIStudio-Chatbot-Model",
+        artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
         docs_path="data/",
         secrets_dict=None,
