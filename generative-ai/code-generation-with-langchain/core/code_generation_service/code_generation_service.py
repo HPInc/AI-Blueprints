@@ -101,32 +101,79 @@ class CodeGenerationService:
             logger.warning("No local embedding model path provided or path doesn't exist. " 
                          "The service will download the embedding model during initialization.")
         
-        # Prepare conda environment
-        conda_env = {
-            "channels": ["defaults", "conda-forge"],
-            "dependencies": [
-                "python=3.9",
-                "pip",
-                {
-                    "pip": [
-                        "-r ../requirements.txt"
-                    ]
-                }
-            ],
-            "name": "code_generation_env"
-        }
+        # Create temp directory for artifacts (similar to working PR #227)
+        import tempfile
+        import shutil
         
-        # Log model to MLflow using models-from-code
-        mlflow.pyfunc.log_model(
-            artifact_path=artifact_path,
-            loader_module="core.code_generation_service.code_generation_loader",
-            code_paths=["../core", "../src"],
-            signature=signature,
-            conda_env=conda_env,
+        temp_base = tempfile.gettempdir()
+        temp_dir = os.path.join(temp_base, "model_artifacts")
+        
+        # Clean slate for deterministic results
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        os.makedirs(temp_dir)
+        
+        try:
+            logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
             
-
-        )
-        logger.info("Model and artifacts successfully registered in MLflow using models-from-code.")
+            # Copy config to temp directory -> /artifacts/data/config.yaml
+            if not os.path.exists(config_path):
+                raise FileNotFoundError(f"Config file not found at: {config_path}")
+            shutil.copy2(config_path, os.path.join(temp_dir, "config.yaml"))
+            logger.info(f"Copied config from {config_path} to temp directory")
+            
+            # Copy demo folder if provided -> /artifacts/data/demo/
+            if demo_folder and os.path.exists(demo_folder):
+                shutil.copytree(demo_folder, os.path.join(temp_dir, "demo"))
+                logger.info(f"Copied demo folder from {demo_folder}")
+            else:
+                logger.info("Demo folder not provided or doesn't exist - skipping")
+            
+            # Handle model files if provided -> /artifacts/data/models/
+            if model_path and os.path.exists(model_path):
+                models_dir = os.path.join(temp_dir, "models")
+                os.makedirs(models_dir, exist_ok=True)
+                if os.path.isfile(model_path):
+                    shutil.copy2(model_path, models_dir)
+                    logger.info(f"Copied model file: {os.path.basename(model_path)}")
+                else:
+                    # For model directories, copy contents
+                    for item in os.listdir(model_path):
+                        item_path = os.path.join(model_path, item)
+                        if os.path.isfile(item_path):
+                            shutil.copy2(item_path, models_dir)
+                        else:
+                            shutil.copytree(item_path, os.path.join(models_dir, item))
+                    logger.info(f"Copied model directory contents: {model_path}")
+            else:
+                logger.info("Model path not provided or doesn't exist - skipping")
+            
+            # Handle embedding model if provided -> /artifacts/data/embedding_model/
+            if embedding_model_path and os.path.exists(embedding_model_path):
+                shutil.copytree(embedding_model_path, os.path.join(temp_dir, "embedding_model"))
+                logger.info(f"Copied embedding model from {embedding_model_path}")
+            else:
+                logger.info("Embedding model path not provided or doesn't exist - will download during runtime")
+            
+            # Log model to MLflow using models-from-code with data_path
+            mlflow.pyfunc.log_model(
+                artifact_path=artifact_path,
+                loader_module="core.code_generation_service.code_generation_loader",
+                data_path=temp_dir,  # Use data_path instead of artifacts
+                code_paths=["../core", "../src"],
+                signature=signature,
+                pip_requirements="../requirements.txt"
+            )
+            logger.info("Model and artifacts successfully registered in MLflow using models-from-code.")
+            
+        except Exception as e:
+            logger.error(f"Error during model logging: {str(e)}")
+            raise
+        finally:
+            # Clean up temporary directory
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+                logger.info("Cleaned up temporary directory")
 
     def get_model_info(self):
         """

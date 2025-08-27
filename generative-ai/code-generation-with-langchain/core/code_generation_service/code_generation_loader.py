@@ -19,31 +19,35 @@ from src.utils import load_secrets_to_env, initialize_llm, get_model_path
 # Set up logger
 logger = logging.getLogger(__name__)
 
-def _load_model(model_uri):
+def _load_pyfunc(data_path: str):
     """
-    Load model components and return configured CodeGenerationModel instance.
+    MLflow models-from-code loader function.
+    Called by MLflow to load the code generation model from artifacts.
     
     Args:
-        model_uri: MLflow model URI containing artifacts
-        
+        data_path: Path to model artifacts directory containing:
+            - config.yaml: Model configuration 
+            - models/: LLM model files (optional, can be remote path)
+            - embedding_model/: Local embedding model (optional)
+    
     Returns:
-        Configured CodeGenerationModel instance
+        CodeGenerationModel: Initialized model instance ready for prediction
     """
-    import mlflow.artifacts
+    logger.info(f"Loading CodeGenerationModel from artifacts at: {data_path}")
     
-    # Get artifacts directory from model URI
-    artifacts_path = mlflow.artifacts.download_artifacts(model_uri)
+    # Load configuration 
+    config_path = os.path.join(data_path, "config.yaml")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file not found at: {config_path}")
     
-    # Load configuration
-    config_path = os.path.join(artifacts_path, "config")
-    config = _load_config(config_path, artifacts_path)
+    config = _load_config(config_path, data_path)
     
     # Initialize embedding function first (critical order)
-    embedding_function = _initialize_embedding_function(artifacts_path)
+    embedding_function = _initialize_embedding_function(data_path)
     chroma_embedding_function = ChromaEmbeddingAdapter(embedding_function)
     
     # Initialize LLM
-    llm = _initialize_llm(config, artifacts_path)
+    llm = _initialize_llm(config, data_path)
     
     # Create and return model instance
     model = CodeGenerationModel(
@@ -100,10 +104,18 @@ def _load_config(config_path: str, artifacts_path: str) -> Dict[str, Any]:
         "model_source": config.get("model_source", "local"),
     }
     
-    # Add model path if local model is specified
-    if "models" in os.listdir(artifacts_path):
-        models_path = os.path.join(artifacts_path, "models")
-        model_config["local_model_path"] = models_path
+    # Add model path if local model is specified - check both "models" directory and direct path
+    models_dir = os.path.join(artifacts_path, "models")
+    if os.path.exists(models_dir):
+        # Look for model files in the models directory
+        model_files = [f for f in os.listdir(models_dir) if f.endswith(('.gguf', '.bin', '.pt', '.pth'))]
+        if model_files:
+            model_config["local_model_path"] = os.path.join(models_dir, model_files[0])
+            logger.info(f"Found model file in models directory: {model_files[0]}")
+    elif "model_path" in config:
+        # Use the model path from config if no models directory
+        model_config["local_model_path"] = config["model_path"]
+        logger.info(f"Using model path from config: {config['model_path']}")
     
     return model_config
 
@@ -158,19 +170,27 @@ def _initialize_llm(config: Dict[str, Any], artifacts_path: str):
     if "hf_key" in config:
         secrets["AIS_HUGGINGFACE_API_KEY"] = config["hf_key"]
     
-    # Get local model path from artifacts
+    # Get local model path from artifacts or config
     local_model_path = None
     if model_source == "local":
-        models_artifact_path = os.path.join(artifacts_path, "models")
-        if os.path.exists(models_artifact_path):
-            local_model_path = models_artifact_path
-        elif "local_model_path" in config:
-            # Fall back to config-specified path
+        # First check if we have a local_model_path from config processing
+        if "local_model_path" in config:
             local_model_path = config["local_model_path"]
+            logger.info(f"Using local model path from config: {local_model_path}")
+        else:
+            # Check for models directory in artifacts
+            models_artifact_path = os.path.join(artifacts_path, "models")
+            if os.path.exists(models_artifact_path):
+                # Look for model files
+                model_files = [f for f in os.listdir(models_artifact_path) if f.endswith(('.gguf', '.bin', '.pt', '.pth'))]
+                if model_files:
+                    local_model_path = os.path.join(models_artifact_path, model_files[0])
+                    logger.info(f"Found model file in artifacts: {local_model_path}")
             
-        # Use get_model_path utility if no direct path found
-        if not local_model_path and "model_path" in config:
-            local_model_path = get_model_path(config["model_path"])
+            # Use get_model_path utility if no direct path found
+            if not local_model_path and "model_path" in config:
+                local_model_path = get_model_path(config["model_path"])
+                logger.info(f"Resolved model path using utility: {local_model_path}")
     
     # Initialize LLM using the utility function
     llm = initialize_llm(model_source, secrets, local_model_path)
