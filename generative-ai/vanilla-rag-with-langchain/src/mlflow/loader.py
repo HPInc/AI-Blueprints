@@ -1,5 +1,5 @@
 """
-MLflow models-from-code loader module for ChatbotService.
+MLflow models-from-code loader module for Logger.
 This module provides the _load_pyfunc function required by MLflow's.
 """
 
@@ -25,11 +25,11 @@ def _load_pyfunc(data_path: str):
             - demo/: Demo folder with UI components (optional)
     
     Returns:
-        ChatbotModel: Initialized model instance ready for prediction
+        Model: Initialized model instance ready for prediction
     """
-    from core.chatbot_service.chatbot_model import ChatbotModel
+    from src.mlflow.model import Model
     
-    logger.info(f"Loading ChatbotModel from artifacts at: {data_path}")
+    logger.info(f"Loading Model from artifacts at: {data_path}")
     
     from src.utils import load_config, load_secrets_to_env, load_secrets
     
@@ -69,18 +69,18 @@ def _load_pyfunc(data_path: str):
         model_path = resolved_model_path
         logger.info(f"Resolved model path: {model_path}")
     else:
-        logger.info("No model_path found in config, ChatbotModel will use default fallback")
+        logger.info("No model_path found in config, Model will use default fallback")
     
-    # Initialize ChatbotModel
+    # Initialize Model
     try:
-        chatbot_model = ChatbotModel(
+        model = Model(
             config=config,
             docs_path=docs_path,
             secrets=secrets,
             model_path=model_path
         )
-        logger.info("ChatbotModel initialized successfully")
-        return chatbot_model
+        logger.info("Model initialized successfully")
+        return model
     except Exception as e:
-        logger.error(f"Failed to initialize ChatbotModel: {str(e)}")
+        logger.error(f"Failed to initialize Model: {str(e)}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e

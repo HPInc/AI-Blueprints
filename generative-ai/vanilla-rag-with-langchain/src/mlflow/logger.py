@@ -1,5 +1,5 @@
 """
-Chatbot Service implementation for MLflow model logging.
+Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
 - Provides log_model functionality for packaging RAG-based chatbot models
@@ -20,16 +20,16 @@ import pandas as pd
 # Set up logger
 logger = logging.getLogger(__name__)
 
-class ChatbotService:
+class Logger:
     """
-    Chatbot Service for MLflow model logging.
+    Logger Service for MLflow model logging.
     This class provides the log_model functionality for packaging RAG-based
     conversational AI with document retrieval capabilities.
     """
     
     def __init__(self):
-        """Initialize the chatbot service for logging purposes."""
-        logger.info("ChatbotService initialized for MLflow model logging")
+        """Initialize the logger service for logging purposes."""
+        logger.info("Logger initialized for MLflow model logging")
 
     @classmethod
     def log_model(
@@ -156,9 +156,9 @@ class ChatbotService:
             
             mlflow.pyfunc.log_model(
                 artifact_path=artifact_path,                          
-                loader_module="core.chatbot_service.chatbot_loader",  
+                loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
-                code_paths=["../core", "../src"],                    
+                code_paths=["../src"],                    
                 signature=signature,
                 pip_requirements="../requirements.txt"
             )

@@ -1,5 +1,5 @@
 """
-Standalone ChatbotModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles RAG-based question answering with document retrieval
@@ -40,15 +40,15 @@ from src.utils import get_context_window, dynamic_retriever, format_docs_with_ad
 logger = logging.getLogger(__name__)
 
 
-class ChatbotModel:
+class Model:
     """
-    Standalone chatbot model class with no MLflow inheritance.
+    Standalone model class with no MLflow inheritance.
     Handles RAG-based question answering with document retrieval.
     """
     
     def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
         """
-        Initialize the ChatbotModel with configuration and artifacts.
+        Initialize the Model with configuration and artifacts.
         
         Args:
             config: Model configuration dictionary
@@ -81,12 +81,12 @@ class ChatbotModel:
             self._load_prompt()
             self._load_chain()
             
-            logger.info("ChatbotModel initialized successfully")
+            logger.info("Model initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize ChatbotModel: {str(e)}")
+            logger.error(f"Failed to initialize Model: {str(e)}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
-            raise RuntimeError(f"ChatbotModel initialization failed: {str(e)}") from e
+            raise RuntimeError(f"Model initialization failed: {str(e)}") from e
     
     def _setup_environment(self) -> None:
         """Configure environment variables based on configuration and secrets."""
