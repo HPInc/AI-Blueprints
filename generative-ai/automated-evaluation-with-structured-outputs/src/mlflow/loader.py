@@ -1,5 +1,5 @@
 """
-MLflow models-from-code loader module for EvaluationService.
+MLflow models-from-code loader module for Logger.
 This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
 """
 
@@ -22,11 +22,11 @@ def _load_pyfunc(data_path: str):
             - models/: LLM model files (optional, can be remote path)
     
     Returns:
-        EvaluationModel: Initialized model instance ready for prediction
+        Model: Initialized model instance ready for prediction
     """
-    from core.evaluation_service.evaluation_model import EvaluationModel
+    from src.mlflow.model import Model
     
-    logger.info(f"Loading EvaluationModel from artifacts at: {data_path}")
+    logger.info(f"Loading Model from artifacts at: {data_path}")
     
     from src.utils import load_config
     
@@ -49,16 +49,16 @@ def _load_pyfunc(data_path: str):
         resolved_model_path = get_model_path(model_path)
         model_path = resolved_model_path
     else:
-        logger.info("No model_path found in config, EvaluationModel will use default fallback")
+        logger.info("No model_path found in config, Model will use default fallback")
     
-    # Initialize EvaluationModel
+    # Initialize Model
     try:
-        evaluation_model = EvaluationModel(
+        model = Model(
             llm_model_path=model_path,
             config=config
         )
-        logger.info("EvaluationModel initialized successfully")
-        return evaluation_model
+        logger.info("Model initialized successfully")
+        return model
     except Exception as e:
-        logger.error(f"Failed to initialize EvaluationModel: {str(e)}")
+        logger.error(f"Failed to initialize Model: {str(e)}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e

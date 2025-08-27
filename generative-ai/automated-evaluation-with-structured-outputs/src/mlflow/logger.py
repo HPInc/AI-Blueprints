@@ -1,5 +1,5 @@
 """
-Evaluation Service implementation for MLflow model logging.
+Logger implementation for MLflow model logging.
 
 MLflow Registration Layer
 - Provides log_model functionality for packaging automated evaluation models
@@ -20,20 +20,21 @@ import pandas as pd
 # Set up logger
 logger = logging.getLogger(__name__)
 
-class EvaluationService:
+class Logger:
     """
-    Evaluation Service for MLflow model logging.
+    Logger for MLflow model logging.
     This class provides the log_model functionality for packaging automated evaluation models
     with structured outputs capabilities.
     """
     
     def __init__(self):
-        """Initialize the evaluation service for logging purposes."""
-        logger.info("EvaluationService initialized for MLflow model logging")
+        """Initialize the logger for logging purposes."""
+        logger.info("Logger initialized for MLflow model logging")
 
     @classmethod
     def log_model(
         cls,
+        signature,
         artifact_path="AIStudio-Evaluation-Model",
         config_path="configs/config.yaml",
         model_path=None,
@@ -53,6 +54,7 @@ class EvaluationService:
               └── demo/                # UI components (optional)
         
         Args:
+            signature: MLflow ModelSignature defining input/output schema for the model
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
             model_path: Path to the LLaMA model file (optional)
@@ -62,30 +64,10 @@ class EvaluationService:
             None
         """
         import mlflow
-        from mlflow.models.signature import ModelSignature
-        from mlflow.types.schema import Schema, ColSpec
         import tempfile
         import shutil
         import os
         import yaml
-        
-        # Define model input/output schema
-        input_schema = Schema([
-            ColSpec("string", "title"),
-            ColSpec("string", "abstract")
-        ])
-        output_schema = Schema([
-            ColSpec("string", "title"),
-            ColSpec("string", "abstract"),
-            ColSpec("integer", "Originality"),
-            ColSpec("integer", "Clarity"),
-            ColSpec("integer", "Relevance"),
-            ColSpec("integer", "Feasibility"),
-            ColSpec("integer", "Impact"),
-            ColSpec("integer", "TotalScore")
-        ])
-        # Create signature without param_schema for now to avoid compatibility issues
-        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
         
         # Create temp directory
         temp_base = tempfile.gettempdir()
@@ -133,9 +115,9 @@ class EvaluationService:
             
             mlflow.pyfunc.log_model(
                 artifact_path=artifact_path,                          
-                loader_module="core.evaluation_service.evaluation_loader",  
+                loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
-                code_paths=["../core", "../src"],                    
+                code_paths=["../src"],                    
                 signature=signature,
                 pip_requirements="../requirements.txt"
             )

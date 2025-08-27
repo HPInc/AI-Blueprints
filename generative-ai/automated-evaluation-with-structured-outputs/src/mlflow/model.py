@@ -1,5 +1,5 @@
 """
-Standalone EvaluationModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles automated evaluation of texts using LLaMA model with structured outputs
@@ -20,7 +20,7 @@ from llama_cpp import Llama
 logger = logging.getLogger(__name__)
 
 
-class EvaluationModel:
+class Model:
     """
     Standalone evaluation model class with no MLflow inheritance.
     Handles automated evaluation of texts using LLaMA model with structured outputs.
@@ -28,7 +28,7 @@ class EvaluationModel:
     
     def __init__(self, llm_model_path: str, config: dict = None):
         """
-        Initialize the EvaluationModel with LLM and configuration.
+        Initialize the Model with LLM and configuration.
         
         Args:
             llm_model_path: Path to the LLaMA model file
@@ -41,10 +41,10 @@ class EvaluationModel:
         # Initialize LLM
         try:
             self._load_llm()
-            logger.info("EvaluationModel initialized successfully")
+            logger.info("Model initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize EvaluationModel: {str(e)}")
-            raise RuntimeError(f"EvaluationModel initialization failed: {str(e)}") from e
+            logger.error(f"Failed to initialize Model: {str(e)}")
+            raise RuntimeError(f"Model initialization failed: {str(e)}") from e
     
     def _load_llm(self) -> None:
         """Load LLaMA model with optimized configuration."""
