@@ -148,7 +148,7 @@ class SummarizationService:
                 }
                 
                 # Code paths to include
-                code_paths = ["core", "src"]
+                code_paths = ["../core", "../src"]
                 
                 # Additional kwargs handling
                 extra_kwargs = {}
@@ -161,14 +161,14 @@ class SummarizationService:
                         extra_kwargs['pip_requirements'] = requirements_path
                 
                 # Log model using models-from-code approach
-                mlflow.models.save_model(
-                    path=artifact_path,
+                mlflow.pyfunc.log_model(
+                    name=artifact_path,
                     loader_module="core.summarization_service.summarization_loader",
                     data_path=data_path,
-                    signature=signature,
-                    conda_env=conda_env,
                     code_paths=code_paths,
-                    **extra_kwargs
+                    signature=signature,
+                    conda_env=conda_env
+                    
                 )
                 
                 logger.info("Model successfully logged to MLflow using models-from-code approach")
