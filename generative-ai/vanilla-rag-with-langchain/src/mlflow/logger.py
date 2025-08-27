@@ -34,6 +34,7 @@ class Logger:
     @classmethod
     def log_model(
         cls,
+        signature,
         artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
         docs_path="data/",
@@ -57,6 +58,7 @@ class Logger:
               └── secrets.yaml         # Secrets (optional)
         
         Args:
+            signature: MLflow ModelSignature defining input/output schema for the model
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
             docs_path: Path to the documents directory
@@ -68,28 +70,10 @@ class Logger:
             None
         """
         import mlflow
-        from mlflow.models.signature import ModelSignature
-        from mlflow.types.schema import Schema, ColSpec
         import tempfile
         import shutil
         import os
         import yaml
-        
-        # Define model input/output schema
-        input_schema = Schema([
-            ColSpec("string", "query"),
-            ColSpec("string", "prompt"),
-            ColSpec("string", "document")
-        ])
-        output_schema = Schema([
-            ColSpec("string", "chunks"),
-            ColSpec("string", "history"), 
-            ColSpec("string", "prompt"),
-            ColSpec("string", "output"),
-            ColSpec("boolean", "success")
-        ])
-        # Create signature without param_schema for now to avoid compatibility issues
-        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
         
         # Create temp directory
         temp_base = tempfile.gettempdir()
@@ -116,9 +100,6 @@ class Logger:
             os.makedirs(data_temp_dir, exist_ok=True)
             
             # Copy documents to data subdirectory
-            if not os.path.exists(docs_path):
-                raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
-                
             for item in os.listdir(docs_path):
                 item_path = os.path.join(docs_path, item)
                 if os.path.isfile(item_path):
