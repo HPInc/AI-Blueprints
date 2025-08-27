@@ -120,6 +120,8 @@ This will:
 - Start the deployment.
 - Note: This is a local deployment running on your machine. As a result, if API processing takes more than a few minutes, it may return a timeout error. If you need to work with inputs that require longer processing times, we recommend using the provided notebook in the project files instead of accessing the API via Swagger or the web app UI.
 
+The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
+
 ### 3 ▪ Swagger / raw API
 
 Once deployed, access the **Swagger UI** via the Service URL.
@@ -161,24 +163,6 @@ And as response:
 
 ---
 
-# Model Export Configuration
-
-The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
-
-## Supported Model Types
-
-- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
-- **Keras Models**: TensorFlow/Keras models for neural network-based processing
-- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
-- **Pytorch Models**: Pytorch models that can be exported
-
-## ONNX Export Control
-
-You can control ONNX generation not sending ModelExportConfig list to the log_model method.
-
-For More information about the exportation can be found on the readme inside /src folder on blueprint.
-
----
 
 # Contact and Support
 
