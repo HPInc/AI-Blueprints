@@ -123,17 +123,30 @@ class Logger:
                 logger.info("Created secrets.yaml in temp directory")
                     
             # ✅ Handle model files -> /artifacts/data/models/
+            models_temp_dir = os.path.join(temp_dir, "models")
+            os.makedirs(models_temp_dir, exist_ok=True)
+            
+            # Handle LLM model files
             if model_path and os.path.exists(model_path):
-                models_temp_dir = os.path.join(temp_dir, "models")
-                os.makedirs(models_temp_dir, exist_ok=True)
+                llm_temp_dir = os.path.join(models_temp_dir, "llm")
+                os.makedirs(llm_temp_dir, exist_ok=True)
                 if os.path.isfile(model_path):
-                    shutil.copy2(model_path, os.path.join(models_temp_dir, os.path.basename(model_path)))
-                    logger.info(f"Copied model file: {os.path.basename(model_path)}")
+                    shutil.copy2(model_path, os.path.join(llm_temp_dir, os.path.basename(model_path)))
+                    logger.info(f"Copied LLM model file: {os.path.basename(model_path)}")
                 else:
-                    shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied model directory: {model_path}")
+                    shutil.copytree(model_path, llm_temp_dir, dirs_exist_ok=True)
+                    logger.info(f"Copied LLM model directory: {model_path}")
             else:
-                logger.info("Model path not provided or doesn't exist - skipping")
+                logger.info("LLM model path not provided or doesn't exist - skipping")
+            
+            # ✅ Handle embedding models -> /artifacts/data/models/embeddings/
+            embeddings_source_dir = "models/embeddings"
+            if os.path.exists(embeddings_source_dir):
+                embeddings_temp_dir = os.path.join(models_temp_dir, "embeddings")
+                shutil.copytree(embeddings_source_dir, embeddings_temp_dir)
+                logger.info(f"Copied embedding models from {embeddings_source_dir}")
+            else:
+                logger.info("No embedding models directory found - skipping")
             
             mlflow.pyfunc.log_model(
                 artifact_path=artifact_path,                          
