@@ -31,7 +31,7 @@ def _load_pyfunc(data_path: str):
     
     logger.info(f"Loading Model from artifacts at: {data_path}")
     
-    from src.utils import load_config, load_secrets_to_env, load_secrets
+    from src.utils import load_config
     
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -43,6 +43,7 @@ def _load_pyfunc(data_path: str):
     # Load secrets if available
     secrets_path = os.path.join(data_path, "secrets.yaml")
     if os.path.exists(secrets_path):
+        from src.utils import load_secrets_to_env, load_secrets
         load_secrets_to_env(secrets_path)
         secrets = load_secrets()
         logger.info("Secrets loaded into environment and retrieved")
@@ -71,23 +72,13 @@ def _load_pyfunc(data_path: str):
     else:
         logger.info("No model_path found in config, Model will use default fallback")
     
-    # Check for local embedding model in artifacts - single location following industry standards
-    embedding_model_path = None
-    embedding_model_dir = os.path.join(data_path, "models", "embeddings")
-    if os.path.exists(embedding_model_dir):
-        embedding_model_path = embedding_model_dir
-        logger.info(f"Found local embedding models at: {embedding_model_path}")
-    else:
-        logger.info("No local embedding models found, Model will use default embedding model")
-    
     # Initialize Model
     try:
         model = Model(
             config=config,
             docs_path=docs_path,
             secrets=secrets,
-            model_path=model_path,
-            embedding_model_path=embedding_model_path
+            model_path=model_path
         )
         logger.info("Model initialized successfully")
         return model
