@@ -53,7 +53,7 @@ class Model:
     NO MLflow inheritance - pure domain functionality.
     """
 
-    def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None, embedding_model_path: str = None):
+    def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
         """
         Initialize the Model with configuration and artifacts following PR #208 pattern.
         
@@ -62,13 +62,11 @@ class Model:
             docs_path: Path to documents directory  
             model_path: Path to local model file (optional)
             secrets: Dictionary containing secrets (optional)
-            embedding_model_path: Path to local embedding model file (optional)
         """
         self.config = config
         self.docs_path = docs_path
         self.model_path = model_path
         self.secrets = secrets
-        self.embedding_model_path = embedding_model_path
         
         # Initialize model components
         self.llm = None
@@ -135,15 +133,11 @@ class Model:
             # Continue without failing to allow the model to still function
     
     def _load_embeddings(self) -> None:
-        """Load HuggingFace embeddings model (local if available, otherwise default)."""
+        """Load HuggingFace embeddings model using hardcoded default."""
         try:
-            # Check if local embedding model is available
-            if self.embedding_model_path and os.path.exists(self.embedding_model_path):
-                model_name = self.embedding_model_path
-                logger.info(f"Using local embedding model from: {model_name}")
-            else:
-                model_name = "sentence-transformers/all-MiniLM-L6-v2"
-                logger.info(f"Using default embedding model: {model_name}")
+            # Use hardcoded default embedding model
+            model_name = "sentence-transformers/all-MiniLM-L6-v2"
+            logger.info(f"Using default embedding model: {model_name}")
                 
             model_kwargs = {"device": "cpu"}
             encode_kwargs = {"normalize_embeddings": False}
