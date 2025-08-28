@@ -1,5 +1,8 @@
 # Blueprint Configuration
-# This file configures the UI mode and ports for the model service
+# This file configures the iris classification model and UI settings
+
+# Dataset Configuration
+dataset_url: "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
 model_source: "local"
