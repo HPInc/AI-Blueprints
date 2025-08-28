@@ -3,7 +3,7 @@ langchain
 chromadb
 langchain_core
 langchain_huggingface
-langchain_community
+llama-cpp-python
 sentence-transformers
 gitpython
 pyyaml
