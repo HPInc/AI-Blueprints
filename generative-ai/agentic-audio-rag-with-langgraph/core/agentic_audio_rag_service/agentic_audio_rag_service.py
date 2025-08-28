@@ -78,16 +78,18 @@ class AgenticAudioService:
         
         # Define model input/output schema
         input_schema = Schema([
-            ColSpec("string", "query"),
-            ColSpec("string", "prompt"),
-            ColSpec("string", "document")
+            ColSpec("string", "question"),
+            ColSpec("string", "file_id"),
+            # ColSpec("string", "memory")
         ])
         output_schema = Schema([
-            ColSpec("string", "chunks"),
-            ColSpec("string", "history"), 
-            ColSpec("string", "prompt"),
-            ColSpec("string", "output"),
-            ColSpec("boolean", "success")
+            ColSpec("string", "answer"),
+            ColSpec("boolean", "from_memory"),
+           # ColSpec("Dict", "evidence")
+            # ColSpec("string", "history"), 
+            # ColSpec("string", "prompt"),
+            # ColSpec("string", "output"),
+            # ColSpec("boolean", "success")
         ])
         # Create signature without param_schema for now to avoid compatibility issues
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)

@@ -503,7 +503,7 @@ class AgenticAudioModel:
             "messages": [],
         })
         
-    def predict(self, context, model_input):
+    def predict(self, model_input):
         if isinstance(model_input, pd.DataFrame):
             records = model_input.to_dict(orient="records")
         elif isinstance(model_input, list):
