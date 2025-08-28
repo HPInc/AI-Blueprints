@@ -71,13 +71,31 @@ def _load_pyfunc(data_path: str):
     else:
         logger.info("No model_path found in config, Model will use default fallback")
     
+    # Check for local embedding model in artifacts
+    embedding_model_path = None
+    
+    # Check primary location (artifacts/data/embedding_model/)
+    embedding_model_dir = os.path.join(data_path, "embedding_model")
+    if os.path.exists(embedding_model_dir):
+        embedding_model_path = embedding_model_dir
+        logger.info(f"Found local embedding model at: {embedding_model_path}")
+    else:
+        # Check secondary location (artifacts/data/demo/embedding_model/)
+        demo_embedding_dir = os.path.join(data_path, "demo", "embedding_model")
+        if os.path.exists(demo_embedding_dir):
+            embedding_model_path = demo_embedding_dir
+            logger.info(f"Found local embedding model in demo folder at: {embedding_model_path}")
+        else:
+            logger.info("No local embedding model found, Model will use default embedding model")
+    
     # Initialize Model
     try:
         model = Model(
             config=config,
             docs_path=docs_path,
             secrets=secrets,
-            model_path=model_path
+            model_path=model_path,
+            embedding_model_path=embedding_model_path
         )
         logger.info("Model initialized successfully")
         return model
