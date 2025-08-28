@@ -37,6 +37,7 @@ class AgenticAudioService:
         artifact_path="AIStudio-Agentic_Audio-RAG-Model",
         config_path="configs/config.yaml",
         docs_path="data/input/meeting_recording/",
+       # bundle_path=None,
         secrets_dict=None,
         model_path=None,
         demo_folder=None

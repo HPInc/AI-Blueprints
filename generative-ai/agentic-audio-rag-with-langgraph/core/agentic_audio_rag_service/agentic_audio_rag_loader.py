@@ -6,10 +6,35 @@ This module provides the _load_pyfunc function required by MLflow.
 import os
 import logging
 from typing import Dict, Any, Optional
+from pathlib import Path
 
 # Set up logger
 logger = logging.getLogger(__name__)
 
+class _Context:
+        def __init__(self, artifacts: Dict[str, str]):
+            self.artifacts = artifacts
+            
+# def _bundle_root(root: Path) -> Path:
+#     if (root / "index").exists():
+#         return root
+#     if (root / "model_artifacts" / "index").exists():
+#         return root / "model_artifacts"
+    
+#     try:
+#         for child in root.iterdir():
+#             if child.is_dir() and (child / "index").exists():
+#                 return child
+#     except Exception:
+#         pass
+    
+#     children =[]
+#     try:
+#         children = [p.name for p in root.iterdir()]
+#     except Exception:
+#         pass
+#     raise FileNotFoundError(f"Could not locate a bundle root under {root}"
+#                             f"Expected 'index/' there. Found children: {children}")
 
 def _load_pyfunc(data_path: str):
     """
@@ -33,6 +58,20 @@ def _load_pyfunc(data_path: str):
     logger.info(f"Loading AgenticAudioModel from artifacts at: {data_path}")
     
     from src.utils import load_config, load_secrets_to_env, load_secrets
+    
+    root = Path(data_path)
+    # bundle_root = _bundle_root(root)
+    
+    (root / "index").mkdir(parents=True, exist_ok=True)
+    (root / "config").mkdir(parents=True, exist_ok=True)
+    (root / "memory").mkdir(parents=True, exist_ok=True)  
+    
+    artifacts = {
+        "index_dir": str(root / "index"),
+        "config_path": str(root / "config" / "config.json"),
+        "memory_dir": str(root / "memory"),
+    }
+    ctx = _Context(artifacts)
     
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -72,6 +111,7 @@ def _load_pyfunc(data_path: str):
     # Initialize AgenticAudioModel
     try:
         agentic_audio_model = AgenticAudioModel(
+            context=ctx,
             config=config,
             docs_path=docs_path,
             secrets=secrets,
