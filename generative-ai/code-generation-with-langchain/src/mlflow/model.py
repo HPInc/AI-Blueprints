@@ -28,7 +28,7 @@ if hasattr(LlamaCpp, "model_rebuild"):
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
-from core.chroma_embedding_adapter import ChromaEmbeddingAdapter
+from src.chroma_embedding_adapter import ChromaEmbeddingAdapter
 import chromadb
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -37,12 +37,12 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, clean_code, get_model_context_window
 
 # Import GitHub extraction and context storage tools
-from core.extract_text.github_repository_extractor import GitHubRepositoryExtractor
-from core.generate_metadata.llm_context_updater import LLMContextUpdater
-from core.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
-from core.vector_database.vector_store_writer import VectorStoreWriter
-from core.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
-from core.generate_metadata.repository_status_tracker import RepositoryStatusTracker, ProcessingStatus
+from src.extract_text.github_repository_extractor import GitHubRepositoryExtractor
+from src.generate_metadata.llm_context_updater import LLMContextUpdater
+from src.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
+from src.vector_database.vector_store_writer import VectorStoreWriter
+from src.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
+from src.generate_metadata.repository_status_tracker import RepositoryStatusTracker, ProcessingStatus
 
 # Set up logger
 logger = logging.getLogger(__name__)
