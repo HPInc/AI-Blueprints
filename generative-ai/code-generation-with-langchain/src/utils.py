@@ -835,3 +835,113 @@ def check_context_fits(text: str, context_window: int, model=None, reserve_token
     fits = estimated_tokens <= available_tokens
     
     return fits, estimated_tokens
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+    
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+        
+    Returns:
+        Full path to the model file
+    """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+    
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+    
+    return model_path
+
+
+def load_secrets(secret_keys: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Load secrets from secrets environment variables.
+
+    Args:
+        secret_keys: List of expected secret names.  
+        If None, every project environment variable with 'AIS' prefix is returned.
+        
+    Returns:
+        Dictionary containing all secrets for the project.
+        
+    ValueError:       
+        Requested secret(s) are missing or none found with AIS- prefix.
+    """
+    # Build secrets from environment
+    if secret_keys is None:
+        secrets = {
+            k: v for k, v in os.environ.items()
+            if k.isupper() and k.startswith("AIS_")
+        }
+        if not secrets:
+            raise ValueError(
+                "No environment variables found with prefix 'AIS_'. "
+                "Please set your required project secrets in AIS Secrets Manager."
+            )
+    else:
+        secrets = {k: os.environ.get(k) for k in secret_keys}
+        missing = [k for k, v in secrets.items() if v is None]
+        if missing:
+            raise ValueError(
+                f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
+            )
+    return secrets
+
+
+def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
+    """
+    Loads secrets from a YAML file and sets them as environment variables.
+
+    Parameters:
+    - secrets_path (str): Path to the secrets YAML file.
+    """
+    secrets_file = Path(secrets_path).resolve()
+
+    if not secrets_file.exists():
+        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
+
+    with secrets_file.open("r", encoding="utf-8") as file:
+        try:
+            secrets = yaml.safe_load(file)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Failed to parse YAML: {e}")
+
+    if not isinstance(secrets, dict):
+        raise ValueError("Secrets file must contain a top-level dictionary.")
+
+    for key, value in secrets.items():
+        if not isinstance(key, str):
+            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
+        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
+        env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
+        os.environ[env_key] = str(value)
+
+    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
+
+
+def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
+
+    Args:
+        config_path: Path to the configuration YAML file.
+
+    Returns:
+        Dictionary containing the project configurations.
+
+    Raises:
+        FileNotFoundError: If the config file is not found.
+    """
+    # Convert to absolute paths if needed
+    config_path = os.path.abspath(config_path)
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+
+    with open(config_path) as file:
+        config = yaml.safe_load(file)
+
+    return config
