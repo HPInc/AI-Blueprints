@@ -82,16 +82,32 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ## Usage
 
-### 1.1 ▪ Run the Notebook (Optional):
-Run the following notebook `/run-workflow-TF.ipynb`:
-1. Obtain Text Data from the shakespeare.txt.
-2. Prepare the textual data. It's needed to encode the data to provide the model a proper numerical representation of the text.
-3. Create Training Batches for dividing the dataset into smaller, manageable groups of data points that are fed into a machine learning model during the training process.
-4. Create the GRU Model.
-5. Train the model.
-- Train the model with the selected epochs.
-  
-6. Generate the predictions with the words 'Confidence' and 'Love'. The words can be changed.
+### 1.1 ▪ Run the Notebook (Optional)
+
+Execute the notebook `/run-workflow-TF.ipynb` to train and test the model. The workflow includes the following steps:
+
+1. **Load the Dataset**  
+   Import the text data from `shakespeare.txt`.
+
+2. **Prepare the Data**  
+   Encode the textual data into a numerical format suitable for training the model.
+
+3. **Create Training Batches**  
+   Split the dataset into smaller, manageable batches to feed into the model during training.
+
+4. **Build the GRU Model**  
+   Define and compile a GRU-based neural network for text generation.
+
+5. **Train the Model**  
+   Train the model for the selected number of epochs.
+
+6. **Generate Predictions**  
+   Produce predictions using the seed words *"Confidence"* and *"Love"*. (You can modify these seed words as desired.)
+
+---
+
+> **Disclaimer**  
+> The number of training steps and the size of the training/validation datasets have been intentionally reduced to optimize computational efficiency and minimize runtime. These parameters can be adjusted if additional performance improvements are required.
 
 ### 1.2 ▪ Run the Notebook (Optional):
 Run the following notebook `/run-workflow-Torch.ipynb`:
