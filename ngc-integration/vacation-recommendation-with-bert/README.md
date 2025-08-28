@@ -108,6 +108,8 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 8. Enter a search query (e.g., _"Suggest a budget-friendly resort vacation."_).
 9. Click **Get Recommendations** to view the results.
 
+The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
+
 ### Step 3: Launch the Streamlit UI
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the demo/streamlit-webapp folder.
@@ -116,25 +118,6 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 ### Successful Demonstration of the User Interface
 
 ![Vacation Recommendation Demo UI](docs/html-ui-vacation-recommendation.png)
-
----
-
-# Model Export Configuration
-
-The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
-
-## Supported Model Types
-
-- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
-- **Keras Models**: TensorFlow/Keras models for neural network-based processing
-- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
-- **Pytorch Models**: Pytorch models that can be exported
-
-## ONNX Export Control
-
-You can control ONNX generation not sending ModelExportConfig list to the log_model method.
-
-For More information about the exportation can be found on the readme inside /src folder on blueprint.
 
 ---
 

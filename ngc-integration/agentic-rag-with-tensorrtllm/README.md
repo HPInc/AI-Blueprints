@@ -122,25 +122,7 @@ Run the following notebook in the `notebooks/` folder to register the Agentic RA
 
 Currently, deploying this service locally in AI Studio is not possible due to limitations in the version of the NeMo framework image used in this blueprint. We are actively working on resolving this issue.
 
----
-
-
-# Model Export Configuration
-
-The audio translation pipeline supports automatic model export to ONNX format through the `ModelExportConfig` class. This configuration enables you to extend the pipeline with additional models and control the export process for different deployment scenarios.
-
-## Supported Model Types
-
-- **NeMo Models**: NLP and speech models from NVIDIA NeMo toolkit (STT, TTS, Translation)
-- **Keras Models**: TensorFlow/Keras models for neural network-based processing
-- **Transformers Task Models**: Hugging Face transformers models with task-specific configurations (translation, text classification, etc.)
-- **Pytorch Models**: Pytorch models that can be exported
-
-## ONNX Export Control
-
-You can control ONNX generation not sending ModelExportConfig list to the log_model method.
-
-For More information about the exportation can be found on the readme inside /src folder on blueprint.
+The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
 
 ---
 
