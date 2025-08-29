@@ -58,6 +58,51 @@ class Logger:
                 else:
                     shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
 
+                # Attempt ONNX export for copied model files (best-effort).
+                # Strategy: for common Keras/TensorFlow models (.keras or SavedModel dirs),
+                # load the model and use onnx_utils ModelExportConfig -> conversion helpers
+                # to generate ONNX and Triton-style directories inside the temp models folder.
+                try:
+                    from onnx_utils import ModelExportConfig, _generate_onnx_from_models, _create_model_directories
+
+                    # Build list of candidate model paths inside models_temp_dir
+                    candidate_paths = [os.path.join(models_temp_dir, p) for p in os.listdir(models_temp_dir)]
+                    model_configs = []
+
+                    for p in candidate_paths:
+                        name = os.path.splitext(os.path.basename(p))[0]
+
+                        # Try loading Keras models (file or directory). If tensorflow not available or load fails,
+                        # skip this path and continue.
+                        try:
+                            import tensorflow as tf
+
+                            # tf.keras.models.load_model supports both files and SavedModel dirs
+                            loaded = tf.keras.models.load_model(p)
+                            cfg = ModelExportConfig(model=loaded, model_name=name, create_triton_structure=True)
+                            model_configs.append(cfg)
+                        except Exception:
+                            # Not a Keras model or failed to load; continue to next candidate
+                            continue
+
+                    if model_configs:
+                        # Run conversion inside the models_temp_dir so generated dirs live there
+                        orig_cwd = os.getcwd()
+                        try:
+                            os.chdir(models_temp_dir)
+                            model_result = _generate_onnx_from_models(model_configs)
+
+                            # Create Triton-style directories for generated model dirs
+                            if model_result:
+                                _create_model_directories(model_dirs=model_result, create_triton_structure=True)
+                                logger.info("ONNX model directories created inside temp models folder")
+                        finally:
+                            os.chdir(orig_cwd)
+
+                except Exception as e:
+                    # ONNX conversion is a best-effort step; log and continue
+                    logger.warning(f"ONNX export step skipped or failed: {e}")
+
             mlflow.pyfunc.log_model(
                 name=artifact_path,
                 loader_module="src.mlflow.loader",
