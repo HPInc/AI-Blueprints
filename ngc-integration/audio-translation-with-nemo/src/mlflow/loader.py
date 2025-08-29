@@ -19,7 +19,9 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration 
-            - model/: NeMo model files (.nemo files)
+            - data/: Document directory with AIStudioDoc.pdf
+            - secrets.yaml: Secrets (optional)
+            - models/: LLM model files (optional, can be remote path)
             - demo/: Demo folder with UI components (optional)
     
     Returns:
@@ -38,20 +40,45 @@ def _load_pyfunc(data_path: str):
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
     
-    # Set up model directory path for NeMo models
-    model_dir = os.path.join(data_path, "model")
-    if not os.path.exists(model_dir):
-        raise FileNotFoundError(f"Model directory not found at: {model_dir}")
+    # Load secrets if available
+    secrets_path = os.path.join(data_path, "secrets.yaml")
+    if os.path.exists(secrets_path):
+        from src.utils import load_secrets_to_env, load_secrets
+        load_secrets_to_env(secrets_path)
+        secrets = load_secrets()
+        logger.info("Secrets loaded into environment and retrieved")
+    else:
+        secrets = None
     
-    # NeMo models dictionary - empty since we'll load from model_dir
-    nemo_models = {}
+    # Set up documents path
+    docs_path = os.path.join(data_path, "data")
+    if not os.path.exists(docs_path):
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+    
+    # Get model path from config and resolve it for MLflow artifacts context
+    model_path = config.get("model_path")
+    if model_path:
+        from src.utils import get_model_path
+        
+        # Set MODEL_ARTIFACTS_PATH for get_model_path function
+        # In the artifacts structure, models are stored in the models/ subdirectory
+        models_artifacts_path = os.path.join(data_path, "models")
+        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
+        
+        # Resolve model path relative to artifacts
+        resolved_model_path = get_model_path(model_path)
+        model_path = resolved_model_path
+        logger.info(f"Resolved model path: {model_path}")
+    else:
+        logger.info("No model_path found in config, Model will use default fallback")
     
     # Initialize Model
     try:
         model = Model(
             config=config,
-            nemo_models=nemo_models,
-            model_dir=model_dir
+            docs_path=docs_path,
+            secrets=secrets,
+            model_path=model_path
         )
         logger.info("Model initialized successfully")
         return model

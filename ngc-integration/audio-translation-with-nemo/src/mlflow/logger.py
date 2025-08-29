@@ -2,16 +2,20 @@
 Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
-- Provides log_model functionality for NeMo audio translation models
+- Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
 - Uses MLflow's models-from-code approach for deployment
-- Manages configuration, NeMo model files, and demo assets
+- Manages configuration, documents, secrets, and demo assets
 """
 import os
-import shutil
+import uuid
+import base64
 import logging
-from typing import Dict, Any, Optional
-import sys
+import shutil
+from typing import Dict, Any, List
+import yaml
+import tempfile
+import pandas as pd
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -19,7 +23,8 @@ logger = logging.getLogger(__name__)
 class Logger:
     """
     Logger Service for MLflow model logging.
-    This class provides the log_model functionality for packaging NeMo audio translation models.
+    This class provides the log_model functionality for packaging RAG-based
+    conversational AI with document retrieval capabilities.
     """
     
     def __init__(self):
@@ -29,85 +34,21 @@ class Logger:
     @classmethod
     def log_model(
         cls,
-        model_name: str,
-        nemo_models: dict,
-        demo_folder: str,
-        config_path: str,
-        pip_requirements: str | list[str] | None = None,
-        signature=None,
-        models_to_convert_onnx=None
+        signature,
+        artifact_path="AIStudio-Model",
+        config_path="configs/config.yaml",
+        docs_path="data/",
+        secrets_dict=None,
+        model_path=None,
+        demo_folder=None
     ):
         """
-        Log NeMo audio translation model using models-from-code approach.
+        Log model using refined models-from-code approach with elegant directory structure.
         
-        Args:
-            model_name: Name under which to register the model
-            nemo_models: Dictionary mapping component names to their local .nemo file paths
-            demo_folder: Path to the demo files folder
-            config_path: Path to configuration file
-            pip_requirements: Path to requirements file or list of requirements
-            signature: MLflow model signature
-            models_to_convert_onnx: List of ModelExportConfig objects for ONNX conversion
-        """
-        import mlflow.pyfunc
-        from mlflow.types.schema import Schema, ColSpec
-        from mlflow.types import ParamSchema, ParamSpec
-        from mlflow.models import ModelSignature
-
-        logger.info(f"Logging model '{model_name}' using models-from-code approach")
+        This implementation uses MLflow's models-from-code approach exclusively with proper
+        temp directory naming to avoid redundant nesting while maintaining full MLflow 3.1.0 compatibility.
         
-        # Create temporary model directory
-        os.makedirs(model_name, exist_ok=True)
-
-        try:
-            # Copy NeMo model artifacts
-            if "enc_dec_CTC" in nemo_models:
-                shutil.copyfile(nemo_models["enc_dec_CTC"], f"{model_name}/enc_dec_CTC.nemo")
-                logger.info("Copied ASR model")
-            if "fast_pitch" in nemo_models:
-                shutil.copyfile(nemo_models["fast_pitch"], f"{model_name}/fast_pitch.nemo")  
-                logger.info("Copied FastPitch model")
-            if "hifi_gan" in nemo_models:
-                shutil.copyfile(nemo_models["hifi_gan"], f"{model_name}/hifi_gan.nemo")
-                logger.info("Copied HiFiGAN model")
-
-            # Handle ONNX conversion if requested
-            if models_to_convert_onnx:
-                sys.path.append("../src")
-                from onnx_utils import log_model as onnx_log_model
-                
-                logger.info("Converting models to ONNX format")
-                
-                # Use existing ONNX logging functionality
-                onnx_log_model(
-                    artifact_path=model_name,
-                    python_model=cls(),
-                    artifacts={"model": model_name, "demo": demo_folder, "config": config_path},
-                    signature=signature,
-                    models_to_convert_onnx=models_to_convert_onnx,
-                    pip_requirements=pip_requirements
-                )
-            else:
-                # Standard MLflow pyfunc logging
-                mlflow.pyfunc.log_model(
-                    artifact_path=model_name,
-                    loader_module="src.mlflow.loader",
-                    code_paths=["../src"],
-                    artifacts={"model": model_name, "demo": demo_folder, "config": config_path},
-                    signature=signature,
-                    pip_requirements=pip_requirements
-                )
-            
-            logger.info(f"Model '{model_name}' logged successfully")
-
-        except Exception as e:
-            logger.error(f"Failed to log model: {str(e)}")
-            raise
-        finally:
-            # Clean up temporary files
-            if os.path.exists(model_name):
-                shutil.rmtree(model_name)
-                logger.info("Cleaned up temporary model directory")
+        Final MLflow structure achieved:
         /artifacts/
           └── data/                    # MLflow automatically created
               ├── config.yaml          # Configuration
