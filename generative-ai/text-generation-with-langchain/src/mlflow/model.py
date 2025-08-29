@@ -1,5 +1,5 @@
 """
-Standalone TextGenerationModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles arXiv paper extraction, analysis, and script generation pipeline
@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Tuple
 import pandas as pd
 
 
-class TextGenerationModel:
+class Model:
     """
     Standalone model class containing all business logic.
     NO MLflow inheritance - pure domain functionality.

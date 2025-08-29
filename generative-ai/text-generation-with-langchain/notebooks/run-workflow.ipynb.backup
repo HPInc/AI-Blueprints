@@ -156,8 +156,7 @@
     "from core.extract_text.arxiv_search import ArxivSearcher\n",
     "from core.generator.script_generator import ScriptGenerator\n",
     "from core.analyzer.scientific_paper_analyzer import ScientificPaperAnalyzer\n",
-    "# Updated import - use new structure
-# from src.mlflow import Logger\n",
+    "from core.deploy.text_generation_service import TextGenerationService\n",
     "\n",
     "#import langchain libraries\n",
     "from langchain_huggingface import HuggingFaceEmbeddings\n",
