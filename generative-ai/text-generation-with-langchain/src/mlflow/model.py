@@ -28,17 +28,28 @@ class Model:
     NO MLflow inheritance - pure domain functionality.
     """
 
-    def __init__(self, llm, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], docs_path: str = None, secrets: Dict[str, Any] = None, model_path: str = None):
         """
-        Direct dependency injection - no MLflow context.
-        Extract all initialization logic from original service.
+        Universal constructor compatible with MLflow models-from-code loader.
+        Initializes LLM internally based on config and model_path.
+        
+        Args:
+            config: Model configuration dictionary
+            docs_path: Path to documents directory (unused in text-generation)
+            secrets: Secrets dictionary (unused in text-generation)
+            model_path: Path to model file (for LLM initialization)
         """
-        self.llm = llm
         self.config = config
+        self.docs_path = docs_path
+        self.secrets = secrets
+        self.model_path = model_path
         self.LOCAL_LOGGING_ACTIVE = False  # Default value
         
         # Initialize logging
         self._setup_logging()
+        
+        # Initialize LLM based on config and model_path
+        self.llm = self._initialize_llm()
 
     def _setup_logging(self):
         """Set up logging configuration."""
@@ -47,6 +58,62 @@ class Model:
             format="%(asctime)s | %(levelname)s | %(message)s",
         )
         self.logger = logging.getLogger(__name__)
+
+    def _initialize_llm(self):
+        """Initialize LLM based on config and model_path."""
+        from src.utils import configure_hf_cache, configure_proxy
+        from langchain.callbacks.manager import CallbackManager
+        from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+        from langchain_community.llms import LlamaCpp
+        import glob
+        import os
+
+        if hasattr(LlamaCpp, "model_rebuild"):
+            LlamaCpp.model_rebuild()
+
+        # Use provided model_path or find *.gguf file
+        if self.model_path and os.path.exists(self.model_path):
+            model_file_path = self.model_path
+        else:
+            # Fallback: look for *.gguf files in various locations
+            search_paths = []
+            if self.model_path:
+                search_paths.append(os.path.dirname(self.model_path))
+            if hasattr(self, 'docs_path') and self.docs_path:
+                models_dir = os.path.join(os.path.dirname(self.docs_path), "models")
+                search_paths.append(models_dir)
+            
+            model_file_path = None
+            for search_path in search_paths:
+                if os.path.exists(search_path):
+                    model_files = glob.glob(os.path.join(search_path, "*.gguf"))
+                    if model_files:
+                        model_file_path = model_files[0]
+                        break
+            
+            if not model_file_path:
+                raise RuntimeError(f"No *.gguf model file found. Searched paths: {search_paths}")
+
+        self.logger.info(f"Using model file: {model_file_path}")
+
+        configure_hf_cache()
+        configure_proxy(self.config)
+
+        start = time.perf_counter()
+        llm = LlamaCpp(
+            model_path=model_file_path,
+            n_gpu_layers=int(self.config.get("n_gpu_layers", 1)),  # 0 → CPU-only
+            n_batch=256,
+            n_ctx=4096,
+            max_tokens=1024,
+            f16_kv=True,
+            temperature=0.2,
+            callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+            verbose=False,
+            streaming=False,
+        )
+        self.logger.info("🔹 LlamaCpp loaded in %.1fs", time.perf_counter() - start)
+        return llm
 
     @staticmethod
     def _create_arxiv_searcher(query: str, max_results: int, download: bool):

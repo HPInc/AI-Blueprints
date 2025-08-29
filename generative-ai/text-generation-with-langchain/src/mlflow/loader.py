@@ -19,8 +19,9 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration 
-            - models/: LLM model files (*.gguf)
+            - data/: Document directory with AIStudioDoc.pdf
             - secrets.yaml: Secrets (optional)
+            - models/: LLM model files (optional, can be remote path)
             - demo/: Demo folder with UI components (optional)
     
     Returns:
@@ -49,55 +50,38 @@ def _load_pyfunc(data_path: str):
     else:
         secrets = None
     
-    # Load LLM from models directory
-    models_path = os.path.join(data_path, "models")
-    llm = _load_llm_from_artifacts(models_path, config)
+    # Set up documents path
+    docs_path = os.path.join(data_path, "data")
+    if not os.path.exists(docs_path):
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
-    # Initialize Model (text-generation specific)
+    # Get model path from config and resolve it for MLflow artifacts context
+    model_path = config.get("model_path")
+    if model_path:
+        from src.utils import get_model_path
+        
+        # Set MODEL_ARTIFACTS_PATH for get_model_path function
+        # In the artifacts structure, models are stored in the models/ subdirectory
+        models_artifacts_path = os.path.join(data_path, "models")
+        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
+        
+        # Resolve model path relative to artifacts
+        resolved_model_path = get_model_path(model_path)
+        model_path = resolved_model_path
+        logger.info(f"Resolved model path: {model_path}")
+    else:
+        logger.info("No model_path found in config, Model will use default fallback")
+    
+    # Initialize Model
     try:
-        model = Model(llm=llm, config=config)
+        model = Model(
+            config=config,
+            docs_path=docs_path,
+            secrets=secrets,
+            model_path=model_path
+        )
         logger.info("Model initialized successfully")
         return model
     except Exception as e:
         logger.error(f"Failed to initialize Model: {str(e)}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e
-
-
-def _load_llm_from_artifacts(models_path: str, config: Dict[str, Any]):
-    """Load the LlamaCpp model from artifacts."""
-    from src.utils import configure_hf_cache, configure_proxy
-    from langchain.callbacks.manager import CallbackManager
-    from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-    from langchain_community.llms import LlamaCpp
-    import time
-    import glob
-
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
-
-    # Find *.gguf model file in models directory
-    model_files = glob.glob(os.path.join(models_path, "*.gguf"))
-    if not model_files:
-        raise RuntimeError(f"No *.gguf model file found in {models_path}")
-    
-    model_path = model_files[0]  # Use first found model
-    logger.info(f"Using model file: {model_path}")
-
-    configure_hf_cache()
-    configure_proxy(config)
-
-    start = time.perf_counter()
-    llm = LlamaCpp(
-        model_path=model_path,
-        n_gpu_layers=int(config.get("n_gpu_layers", 1)),  # 0 → CPU-only
-        n_batch=256,
-        n_ctx=4096,
-        max_tokens=1024,
-        f16_kv=True,
-        temperature=0.2,
-        callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-        verbose=False,
-        streaming=False,
-    )
-    logger.info("🔹 LlamaCpp loaded in %.1fs", time.perf_counter() - start)
-    return llm
