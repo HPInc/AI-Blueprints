@@ -11,6 +11,7 @@ import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
+from langchain_core.language_models.llms import LLM  # For type hints
 
 
 #Default models to be loaded in our examples:
@@ -188,6 +189,96 @@ def get_model_path(model_name: str) -> str:
     return model_path
 
 
+class LlamaCppLangChainCompatible:
+    """
+    Direct wrapper for llama_cpp.Llama that implements the minimal
+    LangChain interface needed for chain compatibility.
+    """
+    def __init__(self, model_path, **kwargs):
+        from llama_cpp import Llama
+        
+        # Extract llama_cpp specific parameters
+        self.llm = Llama(
+            model_path=model_path,
+            n_gpu_layers=kwargs.get('n_gpu_layers', -1),
+            n_batch=kwargs.get('n_batch', 512),
+            n_ctx=kwargs.get('n_ctx', 4096),
+            f16_kv=kwargs.get('f16_kv', True),
+            use_mmap=kwargs.get('use_mmap', False),
+            verbose=kwargs.get('verbose', False),
+            temperature=kwargs.get('temperature', 0.2),
+        )
+        
+        self.model_path = model_path
+        self.n_ctx = kwargs.get('n_ctx', 4096)
+        self._context_window = kwargs.get('n_ctx', 4096)
+        
+    def invoke(self, input_data, config=None):
+        """LangChain-style invoke method for chain compatibility."""
+        # Handle different input formats
+        if isinstance(input_data, dict):
+            if 'text' in input_data:
+                prompt_text = input_data['text']
+            elif 'prompt' in input_data:
+                prompt_text = input_data['prompt']  # Handle more input formats
+            else:
+                # If it's a dict but no known keys, convert to string
+                prompt_text = str(input_data)
+        elif isinstance(input_data, str):
+            prompt_text = input_data
+        else:
+            prompt_text = str(input_data)
+            
+        # Extract config parameters if provided
+        kwargs = {}
+        if config:
+            kwargs.update(config)
+            
+        # Call the llama_cpp model with better error handling
+        try:
+            response = self.llm(
+                prompt_text,
+                max_tokens=kwargs.get('max_tokens', 1024),
+                temperature=kwargs.get('temperature', 0.2),
+                stop=kwargs.get('stop', []),
+            )
+            return response["choices"][0]["text"]
+        except Exception as e:
+            # Add better error handling
+            print(f"Error calling llama_cpp model: {e}")
+            raise
+    
+    def __call__(self, prompt, **kwargs):
+        """Allow direct calling like original llama_cpp interface."""
+        return self.invoke(prompt, config=kwargs)
+
+
+def get_completion(model, prompt, **kwargs):
+    """
+    Unified completion function that works with both LangChain and direct llama_cpp.
+    
+    Args:
+        model: Any model with invoke() or __call__() interface
+        prompt: The prompt text or input dict
+        **kwargs: Additional parameters for the model
+    
+    Returns:
+        Generated text response
+    """
+    if hasattr(model, 'invoke'):
+        return model.invoke(prompt, config=kwargs)
+    elif callable(model):
+        return model(prompt, **kwargs)
+    else:
+        raise ValueError("Model must have invoke() method or be callable")
+
+
+def is_direct_llamacpp(model):
+    """Check if a model is a direct llama_cpp.Llama instance."""
+    from llama_cpp import Llama
+    return isinstance(getattr(model, 'llm', None), Llama)
+
+
 def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
@@ -211,7 +302,7 @@ def initialize_llm(
     """
     # Check dependencies
     missing_deps = []
-    for module in ["langchain_huggingface", "langchain_core.callbacks", "langchain_community.llms"]:
+    for module in ["langchain_core", "llama_cpp"]:
         if not importlib.util.find_spec(module):
             missing_deps.append(module)
     
@@ -220,12 +311,6 @@ def initialize_llm(
     
     # Import required libraries
     from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint
-    from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
-    from langchain_community.llms import LlamaCpp
-
-    # Fix for Pydantic model rebuild issue
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
 
     model = None
     context_window = None
@@ -305,8 +390,7 @@ def initialize_llm(
                 "consider using workspaces based on the NeMo Framework"
             )
     elif model_source == "local":
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        # For LlamaCpp, get the context window from the filename
+        # For direct llama_cpp with LangChain compatibility, get the context window from the filename
         model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
             context_window = MODEL_CONTEXT_WINDOWS[model_filename]
@@ -314,19 +398,15 @@ def initialize_llm(
             # Default context window for LlamaCpp models (explicitly set)
             context_window = 4096
 
-        model = LlamaCpp(
+        model = LlamaCppLangChainCompatible(
             model_path=local_model_path,
             n_gpu_layers=-1,
             n_batch=512,
             n_ctx=context_window,
-            max_tokens=1024,
             f16_kv=True,
-            callback_manager=callback_manager,
-            verbose=False,
-            stop=[],
-            streaming=False,
-            temperature=0.2,
             use_mmap=False,
+            verbose=False,
+            temperature=0.2,
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
