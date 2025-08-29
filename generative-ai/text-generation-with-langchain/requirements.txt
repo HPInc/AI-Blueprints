@@ -15,18 +15,3 @@ sentence-transformers
 PyYAML
 requests
 mlflow==3.1.0 #TODO: remove me when you finishkspace using the Local GenAI image. 
-# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-
-PyMuPDF==1.25.4
-feedparser==6.0.11
-newspaper3k==0.2.8
-listparser==0.20
-langchain==0.3.9
-langchain-community==0.3.9
-langchain-text-splitters
-chromadb
-langchain-huggingface
-llama-cpp-python
-sentence-transformers
-PyYAML
-requests
