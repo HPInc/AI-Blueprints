@@ -100,14 +100,17 @@ class Logger:
             os.makedirs(data_temp_dir, exist_ok=True)
             
             # Copy documents to data subdirectory
-            for item in os.listdir(docs_path):
-                item_path = os.path.join(docs_path, item)
-                if os.path.isfile(item_path):
-                    shutil.copy2(item_path, data_temp_dir)
-                    logger.info(f"Copied document: {item}")
-                elif os.path.isdir(item_path):
-                    shutil.copytree(item_path, os.path.join(data_temp_dir, item))
-                    logger.info(f"Copied document directory: {item}")
+            if docs_path and os.path.exists(docs_path):
+                for item in os.listdir(docs_path):
+                    item_path = os.path.join(docs_path, item)
+                    if os.path.isfile(item_path):
+                        shutil.copy2(item_path, data_temp_dir)
+                        logger.info(f"Copied document: {item}")
+                    elif os.path.isdir(item_path):
+                        shutil.copytree(item_path, os.path.join(data_temp_dir, item))
+                        logger.info(f"Copied document directory: {item}")
+            logger.info("data folder not provided or doesn't exist - skipping")
+            
             
             # ✅ Demo folder -> /artifacts/data/demo/
             if demo_folder and os.path.exists(demo_folder):
@@ -136,7 +139,7 @@ class Logger:
                 logger.info("Model path not provided or doesn't exist - skipping")
             
             mlflow.pyfunc.log_model(
-                artifact_path=artifact_path,                          
+                name=artifact_path,                          
                 loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
                 code_paths=["../src"],                    

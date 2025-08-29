@@ -31,7 +31,7 @@ def _load_pyfunc(data_path: str):
     
     logger.info(f"Loading Model from artifacts at: {data_path}")
     
-    from src.utils import load_config, load_secrets_to_env, load_secrets
+    from src.utils import load_config
     
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -43,6 +43,7 @@ def _load_pyfunc(data_path: str):
     # Load secrets if available
     secrets_path = os.path.join(data_path, "secrets.yaml")
     if os.path.exists(secrets_path):
+        from src.utils import load_secrets_to_env, load_secrets
         load_secrets_to_env(secrets_path)
         secrets = load_secrets()
         logger.info("Secrets loaded into environment and retrieved")
