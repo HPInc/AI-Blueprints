@@ -1,5 +1,5 @@
 """
-Standalone SummarizationModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles text summarization using different LLM options
@@ -27,7 +27,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 logger = logging.getLogger(__name__)
 
 
-class SummarizationModel:
+class Model:
     """
     Standalone model class containing all text summarization business logic.
     NO MLflow inheritance - pure domain functionality.
@@ -53,7 +53,7 @@ class SummarizationModel:
         if prompt_str:
             self.setup_prompt_and_chain(prompt_str)
         
-        logger.info(f"SummarizationModel initialized with {type(self.llm).__name__} model")
+        logger.info(f"Model initialized with {type(self.llm).__name__} model")
 
     def setup_prompt_and_chain(self, prompt_str: str):
         """
