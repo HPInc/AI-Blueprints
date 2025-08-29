@@ -83,3 +83,45 @@ def get_ports_config(config: Dict[str, Any]) -> Dict[str, Any]:
         Ports configuration dictionary.
     """
     return config.get("ports", {})
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Resolve a model file path using the MODEL_ARTIFACTS_PATH environment variable when
+    running inside MLflow artifacts context. If model_name is an absolute path or exists
+    locally, returns it unchanged.
+    """
+    # If it's already an absolute path and exists, return it
+    if os.path.isabs(model_name) and os.path.exists(model_name):
+        return model_name
+
+    # If it exists relative to project, return that
+    if os.path.exists(model_name):
+        return os.path.abspath(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    if artifacts_path:
+        candidate = os.path.join(artifacts_path, os.path.basename(model_name))
+        return candidate
+
+    # Fallback to original name
+    return model_name
+
+
+def load_secrets_to_env(secrets_path: str) -> None:
+    """Load secrets YAML into environment variables."""
+    try:
+        with open(secrets_path, 'r') as f:
+            data = yaml.safe_load(f)
+        if isinstance(data, dict):
+            for k, v in data.items():
+                os.environ[k] = str(v)
+    except Exception:
+        # Don't fail hard on secrets loading
+        pass
+
+
+def load_secrets() -> Dict[str, Any]:
+    """Return a dict of secrets from environment (placeholder)."""
+    # Simple placeholder: return env vars that were just set (no-op)
+    return {}
