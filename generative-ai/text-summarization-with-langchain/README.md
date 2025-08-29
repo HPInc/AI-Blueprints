@@ -25,6 +25,8 @@
 
 This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain** and **Sentence Transformers**. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
 
+The blueprint follows the universal MLflow structure with modular components in `src/mlflow/` for consistent model registration and deployment across AI Studio blueprints.
+
 ---
 
 ## Project Structure
@@ -32,13 +34,6 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ```text
 ├── configs
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-├── core
-│   ├── __init__.py
-│   └── summarization_service/                                          # Text summarization service package
-│       ├── __init__.py
-│       ├── summarization_model.py                                      # Business logic layer - core functionality
-│       ├── summarization_loader.py                                     # MLflow integration layer - model loading
-│       └── summarization_service.py                                    # Registration layer - model packaging
 ├── data
 │   ├── inputs/                                                         # Input data directory
 │   └── outputs/                                                        # Generated summaries directory
@@ -55,6 +50,13 @@ This project demonstrates how to build a semantic chunking and summarization pip
 │   └── run-workflow.ipynb                                             # Main text summarization notebook
 ├── src
 │   ├── __init__.py
+│   ├── mlflow/                                                         # Universal MLflow integration
+│   │   ├── __init__.py                                                 # Exports Model and Logger classes
+│   │   ├── model.py                                                    # Business logic layer - core functionality
+│   │   ├── loader.py                                                   # MLflow integration layer - model loading
+│   │   └── logger.py                                                   # Registration layer - model packaging
+│   ├── prompt_templates.py                                            # LangChain prompt templates
+│   ├── trt_llm_langchain.py                                           # TensorRT LLM integration
 │   └── utils.py                                                        # Utility functions for config loading
 ├── README.md
 └── requirements.txt
