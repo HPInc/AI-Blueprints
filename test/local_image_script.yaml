@@ -1,0 +1,15 @@
+code_folder: "."
+test_folder: "test"
+files: 
+- deeplearning_test.py
+assets:
+  hurricane: "c:\\Users\\borges\\data\\hurricane"
+baseimages:
+  registry: public.ecr.aws/hpphoenixdsp/itg/base-images
+  minimal: "0.14.8"
+  datascience: "0.13.9"
+  deeplearning: "0.13.9"
+  minimalgpu: "0.11.5"
+  datasciencegpu: "0.11.5"
+  deeplearninggpu: "0.11.6"
+  localgenai: "0.4.8"
