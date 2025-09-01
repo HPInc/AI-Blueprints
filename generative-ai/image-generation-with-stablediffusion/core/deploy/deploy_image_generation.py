@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.utils import get_project_root, get_config_dir, get_output_dir
 
 # Import the new service
-from core.image_generation_service import ImageGenerationService
+from src.mlflow import Logger
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
@@ -117,12 +117,28 @@ def deploy_model():
             mlflow.log_artifact(os.environ["ACCELERATE_CONFIG_FILE"],
                                 artifact_path="accelerate_config")
 
+            # Create signature for image generation model
+            from mlflow.models.signature import ModelSignature
+            from mlflow.types.schema import Schema, ColSpec
+
+            input_schema = Schema([
+                ColSpec("string", "prompt"),
+                ColSpec("boolean", "use_finetuning"),
+                ColSpec("integer", "height"),
+                ColSpec("integer", "width"),
+                ColSpec("integer", "num_images"),
+                ColSpec("integer", "num_inference_steps"),
+            ])
+            output_schema = Schema([ColSpec("string", "output_images")])
+            signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
             # Log model using new models-from-code service
-            ImageGenerationService.log_model(
-                finetuned_model_path=finetuned,
-                model_no_finetuning_path=base,
+            Logger.log_model(
+                signature=signature,
                 config_path="../configs/config.yaml",
-                demo_path = "../demo"
+                model_no_finetuning_path=base,
+                model_finetuning_path=finetuned,
+                demo_folder="../demo"
             )
             
             # Post-deployment cleanup
@@ -132,8 +148,8 @@ def deploy_model():
             
             model_uri = f"runs:/{run.info.run_id}/image_generation_model"
             mlflow.register_model(model_uri=model_uri,
-                                  name="ImageGenerationService")
-            logging.info("🏷️ Registered 'ImageGenerationService' (run %s)", run.info.run_id)
+                                  name="ImageGenerationLogger")
+            logging.info("🏷️ Registered 'ImageGenerationLogger' (run %s)", run.info.run_id)
             logging.info("Model deployment completed successfully")
             
     except Exception as e:

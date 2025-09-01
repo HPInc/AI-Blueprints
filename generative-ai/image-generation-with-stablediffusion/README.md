@@ -175,7 +175,7 @@ This will:
 ### Step 2: Deploy the Image Generation Service:
 
 1. After running the entire notebook, go to **Deployments > New Service** in AI Studio.
-2. Create a service named as desired and select the **ImageGenerationService** model.
+2. Create a service named as desired and select the **ImageGenerationLogger** model.
 3. Choose a model version and enable **GPU acceleration**.
 4. Deploy the service.
 5. Once deployed, open the Service URL to access the Swagger API page.

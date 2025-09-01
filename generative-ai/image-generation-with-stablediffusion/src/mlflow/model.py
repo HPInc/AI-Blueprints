@@ -27,7 +27,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class ImageGenerationModel:
+class Model:
     """
     Standalone model class containing all image generation business logic.
     NO MLflow inheritance - pure domain functionality.
