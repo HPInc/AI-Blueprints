@@ -134,6 +134,7 @@ def deploy_model():
             # Log model using new models-from-code service
             Logger.log_model(
                 signature=signature,
+                artifact_path="image_generation_model",
                 config_path="../configs/config.yaml",
                 model_no_finetuning_path=base,
                 model_finetuning_path=finetuned,
