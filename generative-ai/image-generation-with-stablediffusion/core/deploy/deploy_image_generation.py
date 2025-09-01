@@ -10,6 +10,7 @@ import sys
 import time
 from pathlib import Path
 
+# Import MLflow and torch FIRST before modifying sys.path
 import mlflow
 import torch
 
@@ -18,8 +19,8 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.utils import get_project_root, get_config_dir, get_output_dir
 
-# Import the new service
-from src.mlflow import Logger
+# Import the new service using explicit from import to avoid module name conflicts
+from src.mlflow.logger import Logger
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s — %(levelname)s — %(message)s")
