@@ -223,7 +223,7 @@ class SummarizationService:
                 
             # Define model input/output schema
             input_schema = Schema([
-                ColSpec("string", "text")
+                ColSpec("string", "text", "array")
             ])
             output_schema = Schema([
                 ColSpec("string", "summary")

@@ -10,7 +10,7 @@ Business Logic Layer
 
 import os
 import logging
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, List
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -67,30 +67,40 @@ class Model:
         self.chain = self.prompt | self.llm | StrOutputParser()
         logger.info("Prompt and chain initialized successfully")
 
-    def predict(self, model_input: Dict[str, Any], params=None) -> pd.DataFrame:
+    def predict(self, model_input, params=None) -> pd.DataFrame:
         """
         Core business logic extracted from original service predict method.
-        Remove context parameter - use instance variables instead.
-        Must return same pandas.DataFrame structure as original.
+        
+        UI sends: {"inputs": {"text": [content]}, "params": {}}
+        MLflow converts to: DataFrame with 'text' column containing [content] array
         
         Args:
-            model_input: Input data for summarization, expecting a "text" field
-            params: Optional prediction parameters (not used in current implementation)
+            model_input: pandas DataFrame with 'text' column containing array             params: Optional prediction parameters (not used in current implementation
             
         Returns:
             DataFrame with the summary in a "summary" field
         """
         try:
             logger.info("Processing summarization request")
+            logger.info(f"Received model_input type: {type(model_input)}")
             
-            # Extract text from model input
-            if isinstance(model_input, dict) and "text" in model_input:
-                if isinstance(model_input["text"], list):
-                    text = model_input["text"][0]
-                else:
-                    text = model_input["text"]
-            else:
-                raise ValueError("Invalid input format: expected dict with 'text' key")
+            # MLflow signature guarantees DataFrame format with 'text' column
+            if not hasattr(model_input, 'iloc'):
+                raise ValueError(f"Expected pandas DataFrame, got {type(model_input)}")
+            
+            if len(model_input) == 0:
+                raise ValueError("Empty DataFrame received")
+                
+            if 'text' not in model_input.columns:
+                raise ValueError(f"Expected 'text' column, got columns: {list(model_input.columns)}")
+            
+            # Extract text from first row - MLflow signature guarantees 'text' column contains array
+            text_array = model_input.iloc[0]['text']
+            
+            # Extract string from array (signature: ColSpec("string", "text", "array"))
+            text = text_array[0]
+                
+            logger.info(f"Extracted text length: {len(str(text))}")
             
             # Ensure chain is available
             if not self.chain:
