@@ -162,6 +162,7 @@ class Model:
         except Exception as e:
             logger.error(f"Failed to load BERT artifacts: {str(e)}")
             raise
+    def generate_query_embedding(self, query: str) -> np.ndarray:
         """
         Generate BERT embeddings for the input query.
         
