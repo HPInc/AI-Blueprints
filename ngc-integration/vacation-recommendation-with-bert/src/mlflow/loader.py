@@ -1,6 +1,6 @@
 """
-MLflow models-from-code loader module for BERT Tourism Recommendation.
-This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
+MLflow models-from-code loader module for Logger.
+This module provides the _load_pyfunc function required by MLflow's.
 """
 
 import os
@@ -14,79 +14,74 @@ logger = logging.getLogger(__name__)
 def _load_pyfunc(data_path: str):
     """
     MLflow models-from-code loader function.
-    Called by MLflow to load the BERT tourism model from artifacts.
-
+    Called by MLflow to load the model from artifacts.
+    
     Args:
         data_path: Path to model artifacts directory containing:
-            - config.yaml: Model configuration
-            - embeddings.csv: Precomputed embeddings
-            - corpus.csv: Tourism corpus data
-            - tokenizer/: BERT tokenizer directory
-            - models/: BERT model files
-            - demo/: Demo folder (optional)
-
+            - config.yaml: Model configuration 
+            - data/: Document directory with AIStudioDoc.pdf
+            - secrets.yaml: Secrets (optional)
+            - models/: LLM model files (optional, can be remote path)
+            - demo/: Demo folder with UI components (optional)
+    
     Returns:
-        Model: Initialized BERT tourism model ready for vacation recommendations
+        Model: Initialized model instance ready for prediction
     """
     from src.mlflow.model import Model
-
-    logger.info(f"Loading BERT Tourism Model from artifacts at: {data_path}")
-
-    # Load configuration
+    
+    logger.info(f"Loading Model from artifacts at: {data_path}")
+    
+    from src.utils import load_config
+    
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
-
-    # For now, we'll use a simple config loading approach since utils.py doesn't have load_config yet
-    import yaml
-    try:
-        with open(config_path, 'r') as file:
-            config = yaml.safe_load(file)
-        logger.info("Configuration loaded successfully")
-    except Exception as e:
-        logger.error(f"Failed to load configuration: {str(e)}")
-        raise
-
-    # Set MODEL_ARTIFACTS_PATH environment variable for artifact context
-    os.environ["MODEL_ARTIFACTS_PATH"] = data_path
-
-    # Resolve artifact paths
-    embeddings_path = os.path.join(data_path, "embeddings.csv")
-    corpus_path = os.path.join(data_path, "corpus.csv")
-    tokenizer_dir = os.path.join(data_path, "tokenizer")
     
-    # BERT model path - check if it exists in artifacts or use config fallback
-    bert_model_artifact_path = os.path.join(data_path, "bert_model.nemo")
-    if os.path.exists(bert_model_artifact_path):
-        bert_model_path = bert_model_artifact_path
-        logger.info(f"Using BERT model from artifacts: {bert_model_path}")
+    config = load_config(config_path)
+    logger.info("Configuration loaded successfully")
+    
+    # Load secrets if available
+    secrets_path = os.path.join(data_path, "secrets.yaml")
+    if os.path.exists(secrets_path):
+        from src.utils import load_secrets_to_env, load_secrets
+        load_secrets_to_env(secrets_path)
+        secrets = load_secrets()
+        logger.info("Secrets loaded into environment and retrieved")
     else:
-        # Fallback to paths from original configuration
-        bert_model_path = "/home/jovyan/datafabric/Bertlargeuncased/bertlargeuncased.nemo"
-        logger.info(f"Using fallback BERT model path: {bert_model_path}")
-
-    # Validate required artifact files
-    required_files = {
-        "embeddings": embeddings_path,
-        "corpus": corpus_path,
-        "tokenizer": tokenizer_dir,
-    }
+        secrets = None
     
-    for name, path in required_files.items():
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"{name.capitalize()} not found at: {path}")
-
-    # Initialize BERT Tourism Model
+    # Set up documents path
+    docs_path = os.path.join(data_path, "data")
+    if not os.path.exists(docs_path):
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+    
+    # Get model path from config and resolve it for MLflow artifacts context
+    model_path = config.get("model_path")
+    if model_path:
+        from src.utils import get_model_path
+        
+        # Set MODEL_ARTIFACTS_PATH for get_model_path function
+        # In the artifacts structure, models are stored in the models/ subdirectory
+        models_artifacts_path = os.path.join(data_path, "models")
+        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
+        
+        # Resolve model path relative to artifacts
+        resolved_model_path = get_model_path(model_path)
+        model_path = resolved_model_path
+        logger.info(f"Resolved model path: {model_path}")
+    else:
+        logger.info("No model_path found in config, Model will use default fallback")
+    
+    # Initialize Model
     try:
         model = Model(
-            embeddings_path=embeddings_path,
-            corpus_path=corpus_path,
-            tokenizer_dir=tokenizer_dir,
-            bert_model_path=bert_model_path,
-            config=config
+            config=config,
+            docs_path=docs_path,
+            secrets=secrets,
+            model_path=model_path
         )
-        logger.info("BERT Tourism Model initialized successfully")
+        logger.info("Model initialized successfully")
         return model
     except Exception as e:
-        logger.error(f"Failed to initialize BERT Tourism Model: {str(e)}")
-        raise RuntimeError(f"BERT Tourism Model loading failed: {str(e)}") from e
+        logger.error(f"Failed to initialize Model: {str(e)}")
+        raise RuntimeError(f"Model loading failed: {str(e)}") from e

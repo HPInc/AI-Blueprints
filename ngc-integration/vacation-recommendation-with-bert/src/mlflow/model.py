@@ -50,38 +50,118 @@ class Model:
     NO MLflow inheritance - pure domain functionality for vacation recommendation with BERT.
     """
 
-    def __init__(self, embeddings_path: str, corpus_path: str, tokenizer_dir: str, bert_model_path: str, **kwargs):
+    def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
         """
-        Direct dependency injection - no MLflow context.
-        Initialize all components that were in load_context method.
+        Initialize the Model with configuration and artifacts.
+        Adapted to work with generic loader that provides docs_path containing BERT artifacts.
         
         Args:
-            embeddings_path: Path to precomputed embeddings CSV file
-            corpus_path: Path to corpus data CSV file  
-            tokenizer_dir: Path to BERT tokenizer directory
-            bert_model_path: Path to pre-trained BERT model
+            config: Model configuration dictionary
+            docs_path: Path to documents/data directory containing BERT artifacts:
+                      - embeddings.csv: Precomputed embeddings
+                      - corpus.csv: Tourism corpus data  
+                      - tokenizer/: BERT tokenizer directory
+            model_path: Path to BERT model file (optional)
+            secrets: Dictionary containing secrets (optional)
         """
-        # Local import: keeps the module-level namespace clean
-        from nemo.collections.nlp.models import BERTLMModel
+        self.model_config = config
+        self.docs_path = docs_path
+        self.model_path = model_path
+        self.secrets = secrets
         
-        # Load precomputed embeddings and corpus data
-        self.embeddings_df = pd.read_csv(embeddings_path)
-        self.corpus_df = pd.read_csv(corpus_path)
+        # Resolve BERT-specific artifact paths from generic docs_path structure
+        self.embeddings_path = os.path.join(docs_path, "embeddings.csv")
+        self.corpus_path = os.path.join(docs_path, "corpus.csv") 
+        self.tokenizer_dir = os.path.join(docs_path, "tokenizer")
         
-        # Load tokenizer for BERT
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+        # Validate required BERT artifact files
+        required_files = {
+            "embeddings": self.embeddings_path,
+            "corpus": self.corpus_path,
+            "tokenizer": self.tokenizer_dir,
+        }
         
-        # Set device to GPU if available, otherwise use CPU
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        for name, path in required_files.items():
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"{name.capitalize()} not found at: {path}")
         
-        # Load pre-trained BERT model
-        self.bert_model = BERTLMModel.restore_from(bert_model_path, strict=False).to(self.device)
+        # Initialize components
+        self.llm = None
+        self.embeddings = None
+        self.vectordb = None
+        self.retriever = None
+        self.chain = None
+        self.prompt = None
+        self.prompt_str = ""
+        self.memory = []
+        self.callback_manager = None
         
-        logger.info(f"Model initialized with device: {self.device}")
-        logger.info(f"Embeddings shape: {self.embeddings_df.shape}")
-        logger.info(f"Corpus shape: {self.corpus_df.shape}")
+        # Setup environment and load components
+        try:
+            self._setup_environment()
+            self._load_bert_artifacts()
+            
+            logger.info("BERT Tourism Model initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize BERT Tourism Model: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise RuntimeError(f"BERT Tourism Model initialization failed: {str(e)}") from e
 
-    def generate_query_embedding(self, query: str) -> np.ndarray:
+    def _setup_environment(self) -> None:
+        """Configure environment variables based on configuration and secrets."""
+        try:
+            # Load secrets into environment if provided
+            if self.secrets:
+                for key, value in self.secrets.items():
+                    os.environ[key] = str(value)
+                logger.info("Secrets loaded into environment")
+            
+            # Configure proxy if specified in config
+            if "proxy" in self.model_config and self.model_config["proxy"]:
+                logger.info(f"Setting up proxy: {self.model_config['proxy']}")
+                os.environ["HTTPS_PROXY"] = self.model_config["proxy"]
+                os.environ["HTTP_PROXY"] = self.model_config["proxy"]
+            else:
+                logger.info("No proxy configuration found")
+                    
+        except Exception as e:
+            logger.error(f"Error setting up environment: {str(e)}")
+            # Continue without failing to allow the model to still function
+    
+    def _load_bert_artifacts(self) -> None:
+        """Load BERT-specific artifacts: embeddings, corpus, tokenizer, and model."""
+        try:
+            # Local import: keeps the module-level namespace clean
+            from nemo.collections.nlp.models import BERTLMModel
+            
+            # Load precomputed embeddings and corpus data
+            self.embeddings_df = pd.read_csv(self.embeddings_path)
+            self.corpus_df = pd.read_csv(self.corpus_path)
+            logger.info(f"Loaded embeddings: {self.embeddings_df.shape}")
+            logger.info(f"Loaded corpus: {self.corpus_df.shape}")
+            
+            # Load tokenizer for BERT
+            self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_dir)
+            logger.info(f"Loaded BERT tokenizer from: {self.tokenizer_dir}")
+            
+            # Set device to GPU if available, otherwise use CPU
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            logger.info(f"Using device: {self.device}")
+            
+            # Load pre-trained BERT model
+            if self.model_path and os.path.exists(self.model_path):
+                bert_model_path = self.model_path
+            else:
+                # Fallback to default path from config
+                bert_model_path = self.model_config.get("model_path", "/home/jovyan/datafabric/Bertlargeuncased/bertlargeuncased.nemo")
+            
+            self.bert_model = BERTLMModel.restore_from(bert_model_path, strict=False).to(self.device)
+            logger.info(f"Loaded BERT model from: {bert_model_path}")
+            
+        except Exception as e:
+            logger.error(f"Failed to load BERT artifacts: {str(e)}")
+            raise
         """
         Generate BERT embeddings for the input query.
         

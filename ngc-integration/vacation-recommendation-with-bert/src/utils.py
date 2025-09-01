@@ -102,3 +102,46 @@ def get_model_path(model_name: str) -> str:
     model_path = os.path.join(artifacts_path, filename)
 
     return model_path
+
+
+def load_secrets_to_env(secrets_path: str) -> None:
+    """
+    Load secrets from YAML file into environment variables.
+
+    Args:
+        secrets_path: Path to the secrets YAML file.
+    """
+    if os.path.exists(secrets_path):
+        with open(secrets_path, 'r') as file:
+            secrets = yaml.safe_load(file)
+        
+        if secrets:
+            for key, value in secrets.items():
+                os.environ[key] = str(value)
+
+
+def load_secrets(secrets_path: str = None) -> Dict[str, Any]:
+    """
+    Load secrets from environment variables or YAML file.
+
+    Args:
+        secrets_path: Path to the secrets YAML file (optional).
+
+    Returns:
+        Dictionary containing secrets.
+    """
+    secrets = {}
+    
+    # Load from environment variables that might contain secrets
+    for key, value in os.environ.items():
+        if any(secret_key in key.lower() for secret_key in ['key', 'token', 'secret', 'password']):
+            secrets[key] = value
+    
+    # Optionally load from file if provided
+    if secrets_path and os.path.exists(secrets_path):
+        with open(secrets_path, 'r') as file:
+            file_secrets = yaml.safe_load(file)
+        if file_secrets:
+            secrets.update(file_secrets)
+    
+    return secrets
