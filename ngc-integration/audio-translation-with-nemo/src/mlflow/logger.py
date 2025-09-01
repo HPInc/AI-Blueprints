@@ -109,7 +109,8 @@ class Logger:
                     elif os.path.isdir(item_path):
                         shutil.copytree(item_path, os.path.join(data_temp_dir, item))
                         logger.info(f"Copied document directory: {item}")
-            logger.info("data folder not provided or doesn't exist - skipping")
+            else:
+                logger.info("data folder not provided or doesn't exist - skipping")
             
             
             # ✅ Demo folder -> /artifacts/data/demo/

@@ -37,18 +37,27 @@ class Model:
     Handles end-to-end audio translation using NVIDIA NeMo models.
     """
 
-    def __init__(self, config: dict, nemo_models: dict, model_dir: str = None):
+    def __init__(self, config: dict, docs_path: str, secrets: dict = None, model_path: str = None):
         """
-        Initialize the Model with configuration and model artifacts.
+        Initialize the Model with vanilla-rag compatible interface.
+        Internally maps to NeMo-specific requirements.
 
         Args:
-            config: Model configuration dictionary
-            nemo_models: Dictionary mapping component names to their model file paths
-            model_dir: Path to model artifacts directory (for MLflow context)
+            config: Model configuration dictionary (contains nemo_models paths)
+            docs_path: Path to documents directory (unused for NeMo but required for interface)
+            secrets: Secrets dictionary (unused for NeMo but required for interface)
+            model_path: Single model path (unused for NeMo but required for interface)
         """
         self.config = config
-        self.nemo_models = nemo_models
-        self.model_dir = model_dir if model_dir else ""
+        self.docs_path = docs_path
+        self.secrets = secrets
+        self.model_path = model_path
+
+        # Extract NeMo-specific configuration from config
+        # In artifact context, NeMo models are stored directly in data_path
+        # In development context, they're in config["nemo_models"]
+        self.nemo_models = self._resolve_nemo_models()
+        self.model_dir = os.path.dirname(docs_path) if docs_path else ""
 
         # Model components
         self.asr_model = None
@@ -72,6 +81,51 @@ class Model:
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
 
+    def _resolve_nemo_models(self) -> dict:
+        """
+        Resolve NeMo model paths from either artifacts or configuration.
+        
+        Returns:
+            Dictionary mapping NeMo model names to their file paths
+        """
+        # First, check if we're in artifact context 
+        # The vanilla-rag loader places model_path contents in data_path/models/
+        if self.docs_path:
+            artifact_dir = os.path.dirname(self.docs_path)  # This is the data_path
+            
+            # Try models subdirectory first (where vanilla-rag puts model_path contents)
+            models_subdir = os.path.join(artifact_dir, "models")
+            if os.path.exists(models_subdir):
+                models_artifact_models = {
+                    "enc_dec_CTC": os.path.join(models_subdir, "enc_dec_CTC.nemo"),
+                    "fast_pitch": os.path.join(models_subdir, "fast_pitch.nemo"),
+                    "hifi_gan": os.path.join(models_subdir, "hifi_gan.nemo")
+                }
+                
+                if all(os.path.exists(path) for path in models_artifact_models.values()):
+                    logger.info("Using NeMo models from MLflow artifacts/models subdirectory")
+                    return models_artifact_models
+            
+            # Fallback: try direct in artifact_dir (data_path root)
+            direct_artifact_models = {
+                "enc_dec_CTC": os.path.join(artifact_dir, "enc_dec_CTC.nemo"),
+                "fast_pitch": os.path.join(artifact_dir, "fast_pitch.nemo"),
+                "hifi_gan": os.path.join(artifact_dir, "hifi_gan.nemo")
+            }
+            
+            if all(os.path.exists(path) for path in direct_artifact_models.values()):
+                logger.info("Using NeMo models from MLflow artifacts root")
+                return direct_artifact_models
+        
+        # Fallback to config nemo_models
+        config_nemo_models = self.config.get("nemo_models")
+        if config_nemo_models:
+            logger.info("Using NeMo model paths from configuration")
+            return config_nemo_models
+            
+        # Last fallback - raise error
+        raise ValueError("No NeMo model paths found in artifacts or configuration")
+
     def _setup_environment(self) -> None:
         """Configure environment variables and suppress verbose logs."""
         try:
@@ -90,22 +144,16 @@ class Model:
     def _load_models(self) -> None:
         """Load all NeMo and Transformers models."""
         try:
-            # Load ASR model
-            if self.model_dir:
-                # MLflow context - load from artifacts
-                asr_path = f"{self.model_dir}/enc_dec_CTC.nemo"
-                spectrogram_path = f"{self.model_dir}/fast_pitch.nemo" 
-                vocoder_path = f"{self.model_dir}/hifi_gan.nemo"
-            else:
-                # Direct initialization - use provided paths
-                asr_path = self.nemo_models.get("enc_dec_CTC", "")
-                spectrogram_path = self.nemo_models.get("fast_pitch", "")
-                vocoder_path = self.nemo_models.get("hifi_gan", "")
+            # Validate that all required NeMo model files exist
+            for model_name, model_path in self.nemo_models.items():
+                if not os.path.exists(model_path):
+                    raise FileNotFoundError(f"Required NeMo model file not found: {model_path}")
+                logger.info(f"Found {model_name} model at: {model_path}")
 
-            # Load NeMo models
-            self.asr_model = nemo_asr.models.EncDecCTCModel.restore_from(asr_path)
-            self.spectrogram_generator = nemo_tts.models.FastPitchModel.restore_from(spectrogram_path)
-            self.vocoder = nemo_tts.models.HifiGanModel.restore_from(vocoder_path)
+            # Load NeMo models using resolved paths
+            self.asr_model = nemo_asr.models.EncDecCTCModel.restore_from(self.nemo_models["enc_dec_CTC"])
+            self.spectrogram_generator = nemo_tts.models.FastPitchModel.restore_from(self.nemo_models["fast_pitch"])
+            self.vocoder = nemo_tts.models.HifiGanModel.restore_from(self.nemo_models["hifi_gan"])
             
             # Load Transformers models
             self.mt_tokenizer = MarianTokenizer.from_pretrained(self.mt_model_name)
