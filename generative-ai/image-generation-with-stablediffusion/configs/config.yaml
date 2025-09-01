@@ -15,7 +15,7 @@ model_path: "/home/jovyan/datafabric/stable-diffusion-2-1/stable-diffusion-2-1.s
 # UI Configuration
 ui:
   # UI mode: gradio, streamlit, or static
-  mode: "static"
+  mode: "streamlit"
 
 # Port Configuration  
 ports:

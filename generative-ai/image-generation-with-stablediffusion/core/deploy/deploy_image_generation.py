@@ -122,6 +122,7 @@ def deploy_model():
                 finetuned_model_path=finetuned,
                 model_no_finetuning_path=base,
                 config_path="../configs/config.yaml",
+                demo_path = "../demo"
             )
             
             # Post-deployment cleanup
