@@ -27,26 +27,22 @@ class Model:
     """
 
     def __init__(self, config: dict, docs_path: Optional[str] = None, secrets: Optional[dict] = None, 
-                 model_path: Optional[str] = None, data_path: Optional[str] = None):
+                 model_path: Optional[str] = None):
         """
-        Initialize the Model with configuration and load artifacts from data_path.
+        Initialize the Model with configuration and load artifacts from docs_path.
 
         Args:
             config: Model configuration dictionary
-            docs_path: Path to documents directory (optional, for compatibility)
+            docs_path: Path to documents directory containing pickle files
             secrets: Secrets dictionary (optional, for compatibility)
             model_path: Model path (optional, for compatibility)
-            data_path: Path to MLflow artifacts directory containing pickle files
         """
         self.config = config
         
-        if data_path is None:
-            raise ValueError("data_path is required to load VAR model artifacts")
-
-        # The generic logger places docs_path contents in a 'data' subdirectory
-        artifacts_path = os.path.join(data_path, "data") if os.path.exists(os.path.join(data_path, "data")) else data_path
+        if docs_path is None:
+            raise ValueError("docs_path is required to load VAR model artifacts")
         
-        # Load all the model artifacts from data_path
+        # Load all the model artifacts from docs_path
         artifacts = {}
         artifact_files = [
             "ny_model.pkl",
@@ -59,7 +55,7 @@ class Model:
         ]
         
         for artifact_file in artifact_files:
-            artifact_path = os.path.join(artifacts_path, artifact_file)
+            artifact_path = os.path.join(docs_path, artifact_file)
             if not os.path.exists(artifact_path):
                 raise FileNotFoundError(f"Required artifact not found: {artifact_path}")
             

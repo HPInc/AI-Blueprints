@@ -109,8 +109,7 @@ class Logger:
                     elif os.path.isdir(item_path):
                         shutil.copytree(item_path, os.path.join(data_temp_dir, item))
                         logger.info(f"Copied document directory: {item}")
-            else:
-                logger.info("data folder not provided or doesn't exist - skipping")
+            logger.info("data folder not provided or doesn't exist - skipping")
             
             
             # ✅ Demo folder -> /artifacts/data/demo/
@@ -140,7 +139,7 @@ class Logger:
                 logger.info("Model path not provided or doesn't exist - skipping")
             
             mlflow.pyfunc.log_model(
-                artifact_path=artifact_path,                          
+                name=artifact_path,                          
                 loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
                 code_paths=["../src"],                    

@@ -53,8 +53,7 @@ def _load_pyfunc(data_path: str):
     # Set up documents path
     docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        logger.info(f"Documents directory not found at: {docs_path}, will be set to None")
-        docs_path = None
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
     
     # Get model path from config and resolve it for MLflow artifacts context
     model_path = config.get("model_path")
@@ -79,8 +78,7 @@ def _load_pyfunc(data_path: str):
             config=config,
             docs_path=docs_path,
             secrets=secrets,
-            model_path=model_path,
-            data_path=data_path  # Pass data_path for artifact loading
+            model_path=model_path
         )
         logger.info("Model initialized successfully")
         return model
