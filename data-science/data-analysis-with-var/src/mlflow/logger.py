@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 class Logger:
     """
     Logger Service for MLflow model logging.
-    This class provides the log_model functionality for packaging RAG-based
-    conversational AI with document retrieval capabilities.
+    This class provides the log_model functionality for packaging models
+    with their artifacts and dependencies.
     """
     
     def __init__(self):
@@ -109,7 +109,8 @@ class Logger:
                     elif os.path.isdir(item_path):
                         shutil.copytree(item_path, os.path.join(data_temp_dir, item))
                         logger.info(f"Copied document directory: {item}")
-            logger.info("data folder not provided or doesn't exist - skipping")
+            else:
+                logger.info("data folder not provided or doesn't exist - skipping")
             
             
             # ✅ Demo folder -> /artifacts/data/demo/

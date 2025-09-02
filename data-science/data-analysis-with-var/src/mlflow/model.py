@@ -26,15 +26,45 @@ class Model:
     Handles Vector Autoregression forecasting for COVID-19 movement patterns.
     """
 
-    def __init__(self, config: dict, **artifacts):
+    def __init__(self, config: dict, docs_path: Optional[str] = None, secrets: Optional[dict] = None, 
+                 model_path: Optional[str] = None, data_path: Optional[str] = None):
         """
-        Initialize the Model with configuration and artifacts.
+        Initialize the Model with configuration and load artifacts from data_path.
 
         Args:
             config: Model configuration dictionary
-            **artifacts: Model artifacts including trained models and preprocessing data
+            docs_path: Path to documents directory (optional, for compatibility)
+            secrets: Secrets dictionary (optional, for compatibility)
+            model_path: Model path (optional, for compatibility)
+            data_path: Path to MLflow artifacts directory containing pickle files
         """
         self.config = config
+        
+        if data_path is None:
+            raise ValueError("data_path is required to load VAR model artifacts")
+        
+        # Load all the model artifacts from data_path
+        artifacts = {}
+        artifact_files = [
+            "ny_model.pkl",
+            "ldn_model.pkl", 
+            "ny_last_values.pkl",
+            "ldn_last_values.pkl",
+            "ny_last_raw_value.pkl",
+            "ldn_last_raw_value.pkl",
+            "features.pkl"
+        ]
+        
+        for artifact_file in artifact_files:
+            artifact_path = os.path.join(data_path, artifact_file)
+            if not os.path.exists(artifact_path):
+                raise FileNotFoundError(f"Required artifact not found: {artifact_path}")
+            
+            with open(artifact_path, "rb") as f:
+                artifact_name = artifact_file.replace(".pkl", "")
+                artifacts[artifact_name] = pickle.load(f)
+            
+            logger.info(f"Loaded artifact: {artifact_file}")
         
         # Load the trained models from artifacts
         self.ny_model = artifacts['ny_model']

@@ -1,10 +1,9 @@
 """
-MLflow models-from-code loader module for COVID Movement Patterns with VAR.
-This module provides the _load_pyfunc function required by MLflow's models-from-code.
+MLflow models-from-code loader module for Logger.
+This module provides the _load_pyfunc function required by MLflow's.
 """
 
 import os
-import pickle
 import logging
 from typing import Dict, Any, Optional
 
@@ -20,13 +19,9 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration 
-            - ny_model.pkl: New York VAR model
-            - ldn_model.pkl: London VAR model
-            - ny_last_values.pkl: New York last values for forecasting
-            - ldn_last_values.pkl: London last values for forecasting
-            - ny_last_raw_value.pkl: New York last raw values
-            - ldn_last_raw_value.pkl: London last raw values
-            - features.pkl: Feature names
+            - data/: Document directory with AIStudioDoc.pdf
+            - secrets.yaml: Secrets (optional)
+            - models/: LLM model files (optional, can be remote path)
             - demo/: Demo folder with UI components (optional)
     
     Returns:
@@ -45,32 +40,48 @@ def _load_pyfunc(data_path: str):
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
     
-    # Load all the model artifacts
-    artifacts = {}
-    artifact_files = [
-        "ny_model.pkl",
-        "ldn_model.pkl", 
-        "ny_last_values.pkl",
-        "ldn_last_values.pkl",
-        "ny_last_raw_value.pkl",
-        "ldn_last_raw_value.pkl",
-        "features.pkl"
-    ]
+    # Load secrets if available
+    secrets_path = os.path.join(data_path, "secrets.yaml")
+    if os.path.exists(secrets_path):
+        from src.utils import load_secrets_to_env, load_secrets
+        load_secrets_to_env(secrets_path)
+        secrets = load_secrets()
+        logger.info("Secrets loaded into environment and retrieved")
+    else:
+        secrets = None
     
-    for artifact_file in artifact_files:
-        artifact_path = os.path.join(data_path, artifact_file)
-        if not os.path.exists(artifact_path):
-            raise FileNotFoundError(f"Required artifact not found: {artifact_path}")
+    # Set up documents path
+    docs_path = os.path.join(data_path, "data")
+    if not os.path.exists(docs_path):
+        logger.info(f"Documents directory not found at: {docs_path}, will be set to None")
+        docs_path = None
+    
+    # Get model path from config and resolve it for MLflow artifacts context
+    model_path = config.get("model_path")
+    if model_path:
+        from src.utils import get_model_path
         
-        with open(artifact_path, "rb") as f:
-            artifact_name = artifact_file.replace(".pkl", "")
-            artifacts[artifact_name] = pickle.load(f)
+        # Set MODEL_ARTIFACTS_PATH for get_model_path function
+        # In the artifacts structure, models are stored in the models/ subdirectory
+        models_artifacts_path = os.path.join(data_path, "models")
+        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
         
-        logger.info(f"Loaded artifact: {artifact_file}")
+        # Resolve model path relative to artifacts
+        resolved_model_path = get_model_path(model_path)
+        model_path = resolved_model_path
+        logger.info(f"Resolved model path: {model_path}")
+    else:
+        logger.info("No model_path found in config, Model will use default fallback")
     
     # Initialize Model
     try:
-        model = Model(config=config, **artifacts)
+        model = Model(
+            config=config,
+            docs_path=docs_path,
+            secrets=secrets,
+            model_path=model_path,
+            data_path=data_path  # Pass data_path for artifact loading
+        )
         logger.info("Model initialized successfully")
         return model
     except Exception as e:
