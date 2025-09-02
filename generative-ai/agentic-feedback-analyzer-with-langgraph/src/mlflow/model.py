@@ -1,5 +1,5 @@
 """
-Standalone AgenticModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles agentic feedback analysis using LangGraph workflows
@@ -31,20 +31,20 @@ from src.simple_kv_memory import SimpleKVMemory
 logger = logging.getLogger(__name__)
 
 
-class AgenticModelInput(BaseModel):
+class ModelInput(BaseModel):
     """Input model for agentic feedback analysis."""
     topic: str
     question: str
     input_text: str
 
 
-class AgenticModelOutput(BaseModel):
+class ModelOutput(BaseModel):
     """Output model for agentic feedback analysis."""
     answer: str
     messages: str  # Serialized JSON string
 
 
-class AgenticModel:
+class Model:
     """
     Agentic feedback analyzer model using LangGraph.
     Pure domain functionality with zero MLflow dependencies.
@@ -52,7 +52,7 @@ class AgenticModel:
 
     def __init__(self, config, docs_path=None, memory_path=None, model_path=None):
         """
-        Initialize the AgenticModel with configuration and paths.
+        Initialize the Model with configuration and paths.
         
         Args:
             config: Configuration dictionary
@@ -211,11 +211,11 @@ class AgenticModel:
         # Convert DataFrame to list of input objects
         input_list = []
         for _, row in model_input.iterrows():
-            input_list.append(AgenticModelInput(
-                topic=row['topic'],
-                question=row['question'],
-                input_text=row['input_text']
-            ))
+            input_list.append({
+                'topic': row['topic'],
+                'question': row['question'],
+                'input_text': row['input_text']
+            })
         
         # Get predictions
         output_list = self.predict(input_list, params)
@@ -224,8 +224,8 @@ class AgenticModel:
         result_data = []
         for output in output_list:
             result_data.append({
-                'answer': output.answer,
-                'messages': output.messages
+                'answer': output['answer'],
+                'messages': output['messages']
             })
         
         return pd.DataFrame(result_data)
