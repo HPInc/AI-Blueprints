@@ -14,3 +14,4 @@ llama-cpp-python
 sentence-transformers
 PyYAML
 requests
+mlflow==2.21.2

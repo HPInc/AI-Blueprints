@@ -122,6 +122,8 @@ Run the following notebook in the `notebooks/` folder to register the Agentic RA
 
 Currently, deploying this service locally in AI Studio is not possible due to limitations in the version of the NeMo framework image used in this blueprint. We are actively working on resolving this issue.
 
+The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
+
 ---
 
 ## Contact and Support
@@ -133,5 +135,7 @@ Currently, deploying this service locally in AI Studio is not possible due to li
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
+
+
 
 > Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).
