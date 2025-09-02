@@ -140,7 +140,7 @@ class Logger:
                 logger.info("Model path not provided or doesn't exist - skipping")
             
             mlflow.pyfunc.log_model(
-                name=artifact_path,                          
+                artifact_path=artifact_path,                          
                 loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
                 code_paths=["../src"],                    

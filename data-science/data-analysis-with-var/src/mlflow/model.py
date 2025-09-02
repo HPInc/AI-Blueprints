@@ -42,6 +42,9 @@ class Model:
         
         if data_path is None:
             raise ValueError("data_path is required to load VAR model artifacts")
+
+        # The generic logger places docs_path contents in a 'data' subdirectory
+        artifacts_path = os.path.join(data_path, "data") if os.path.exists(os.path.join(data_path, "data")) else data_path
         
         # Load all the model artifacts from data_path
         artifacts = {}
@@ -56,7 +59,7 @@ class Model:
         ]
         
         for artifact_file in artifact_files:
-            artifact_path = os.path.join(data_path, artifact_file)
+            artifact_path = os.path.join(artifacts_path, artifact_file)
             if not os.path.exists(artifact_path):
                 raise FileNotFoundError(f"Required artifact not found: {artifact_path}")
             
