@@ -1,3 +1,13 @@
+"""
+Standalone Model class.
+
+Business Logic Layer
+- Handles agentic GitHub repository analysis workflow using LangGraph
+- Manages LLM initialization, memory, and agentic graph compilation
+- Contains all domain-specific functionality without MLflow dependencies
+- Designed to be framework-agnostic and easily testable
+"""
+
 # ─────── Standard Library Imports ───────
 import json  # JSON parsing and serialization
 import logging  # Logging utilities
@@ -9,14 +19,15 @@ from pathlib import Path  # Object-oriented filesystem paths
 from typing import Any, Dict, List  # Static typing support
 
 # ─────── Third-Party Package Imports ───────
-import mlflow  # ML lifecycle platform
-import mlflow.pyfunc  # MLflow support for custom Python models
 from langchain.docstore.document import Document  # Core document abstraction for LangChain
 from langchain_community.llms import LlamaCpp  # Local LLM interface for Llama.cpp
 from langgraph.graph import StateGraph  # LangGraph for stateful agent workflows
 from pydantic import BaseModel  # Data validation and model parsing
 
 # ─────── Local Application-Specific Imports ───────
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
 from src.agentic_workflow import build_agentic_graph  # Custom LangGraph construction logic
 from src.simple_kv_memory import SimpleKVMemory  # In-memory key-value store for agent state
 from src.utils import logger  # Project-wide configured logger
@@ -32,22 +43,28 @@ class AgenticModelOutput(BaseModel):
     messages: str  # Serialized JSON string
 
 
-
-class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
+class Model:
     """
-    A registered MLflow PyFunc model for running the full agentic feedback analysis workflow.
-    It uses a LangGraph pipeline built on top of LLaMA.cpp with in-memory caching.
+    Standalone model class with no MLflow inheritance.
+    Handles agentic GitHub repository analysis using LangGraph workflow.
     """
-
-    def load_context(self, context: mlflow.pyfunc.PythonModelContext):
+    
+    def __init__(self, model_path: str, memory_path: str):
         """
-        Load and initialize LLM and memory for use across predictions.
+        Initialize the model with direct dependencies - no MLflow context.
+        Extract all initialization logic from original load_context method.
+        
+        Args:
+            model_path: Path to the local LLM model file
+            memory_path: Path to the memory storage directory
         """
-        self.model_path: str = context.artifacts["model_path"]
-        self.memory_path: str = context.artifacts["memory_path"]
-
+        self.model_path = model_path
+        self.memory_path = memory_path
+        
+        # Initialize memory
         self.memory = SimpleKVMemory(Path(self.memory_path))
-
+        
+        # Initialize LLM with same configuration as original service
         self.llm = LlamaCpp(
             model_path=self.model_path,
             n_gpu_layers=-1,
@@ -66,15 +83,23 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
             num_threads=multiprocessing.cpu_count(),
             verbose=False,
         )
-
+        
+        # Build and compile the agentic graph
         self.graph = build_agentic_graph()
         self.compiled_graph = self.graph.compile()
 
-
-    def predict(self, context: mlflow.pyfunc.PythonModelContext, model_input: List[AgenticModelInput]
-) -> List[AgenticModelOutput]:
+    def predict(self, model_input: List[AgenticModelInput], params=None) -> List[AgenticModelOutput]:
         """
-        Run the agentic workflow using user-provided topic, question, and input text.
+        Core business logic extracted from original service predict method.
+        Remove context parameter - use instance variables instead.
+        Must return same data structure as original.
+        
+        Args:
+            model_input: List of AgenticModelInput objects with topic, question, and input_text
+            params: Optional parameters (maintained for API compatibility)
+            
+        Returns:
+            List of AgenticModelOutput objects with answer and messages
         """
         results = []
         
@@ -85,13 +110,14 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
         
             docs = [Document(page_content=input_text)]
         
+            # Run the agentic workflow using compiled graph
             final_state = self.compiled_graph.invoke(
                 input={
                     "topic": topic,
                     "question": question,
                     "docs": docs,
                     "memory": self.memory,
-                    "llm": self.llm,
+                    "llm": self.llm,  # Use self.llm instead of context
                     "messages": [],
                 }
             )
@@ -99,24 +125,6 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
             results.append(AgenticModelOutput(
                 answer=final_state["answer"],
                 messages=json.dumps(final_state["messages"], indent=4)
-                ))
+            ))
         
         return results
-
-    @staticmethod
-    def log_model(
-        model_name: str,
-        model_artifacts: Dict[str, str],
-    ) -> None:
-        """
-        Log and register the model with MLflow.
-        """
-
-        mlflow.pyfunc.log_model(
-            artifact_path=model_name,
-            python_model=AgenticFeedbackModel(),
-            artifacts=model_artifacts,
-            registered_model_name=model_name,
-            pip_requirements="../requirements.txt",
-            code_paths=["../src"],
-        )
