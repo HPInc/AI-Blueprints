@@ -188,11 +188,6 @@ And as response:
 
 2. Navigate to the shown URL and view the handwritten classification.
 
-### Successful UI demo
-
-- Streamlit
-  ![Recommender System Streamlit UI](docs/streamlit-ui-recommender-system.png)
-
 ---
 
 # Contact and Support
