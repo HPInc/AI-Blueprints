@@ -1,37 +1,35 @@
 """
-Utility functions for Iris Classification with SVM.
-This module provides configuration loading utilities.
+Utility functions for the data-analysis-with-var blueprint.
 """
+
 import os
 import yaml
-import logging
-from typing import Dict, Any, Optional
-
-# Set up logger
-logger = logging.getLogger(__name__)
+from typing import Dict, Any
 
 
-def load_config(config_path: str) -> Dict[str, Any]:
+def load_config(
+    config_path: str = "../../configs/config.yaml"
+) -> Dict[str, Any]:
     """
     Load configuration from YAML file.
-    
+
     Args:
-        config_path: Path to the configuration file
-        
+        config_path: Path to the configuration YAML file.
+        secrets_path: Path to the secrets YAML file.
+
     Returns:
-        Dictionary containing the loaded configuration
+        Dictionary containing the project configurations.
+
+    Raises:
+        FileNotFoundError: If the config file is not found.
     """
-    try:
-        with open(config_path, 'r', encoding='utf-8') as file:
-            config = yaml.safe_load(file)
-        logger.info(f"Configuration loaded successfully from: {config_path}")
-        return config
-    except FileNotFoundError:
-        logger.error(f"Configuration file not found: {config_path}")
-        raise
-    except yaml.YAMLError as e:
-        logger.error(f"Error parsing YAML configuration: {str(e)}")
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error loading configuration: {str(e)}")
-        raise
+    # Convert to absolute paths if needed
+    config_path = os.path.abspath(config_path)
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
+
+    with open(config_path) as file:
+        config = yaml.safe_load(file)
+
+    return config
