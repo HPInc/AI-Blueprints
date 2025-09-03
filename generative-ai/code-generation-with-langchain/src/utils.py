@@ -206,45 +206,32 @@ class LlamaCppLangChainCompatible:
             f16_kv=kwargs.get('f16_kv', True),
             use_mmap=kwargs.get('use_mmap', False),
             verbose=kwargs.get('verbose', False),
-            temperature=kwargs.get('temperature', 0.2),
         )
         
         self.model_path = model_path
         self.n_ctx = kwargs.get('n_ctx', 4096)
         self._context_window = kwargs.get('n_ctx', 4096)
+        self.default_temperature = kwargs.get('temperature', 0.2)
         
     def invoke(self, input_data, config=None):
         """LangChain-style invoke method for chain compatibility."""
-        # Handle different input formats
-        if isinstance(input_data, dict):
-            if 'text' in input_data:
-                prompt_text = input_data['text']
-            elif 'prompt' in input_data:
-                prompt_text = input_data['prompt']  # Handle more input formats
-            else:
-                # If it's a dict but no known keys, convert to string
-                prompt_text = str(input_data)
-        elif isinstance(input_data, str):
-            prompt_text = input_data
-        else:
-            prompt_text = str(input_data)
+        prompt_text = input_data.to_string()
             
         # Extract config parameters if provided
         kwargs = {}
         if config:
             kwargs.update(config)
             
-        # Call the llama_cpp model with better error handling
+        # Call the llama_cpp model
         try:
             response = self.llm(
                 prompt_text,
                 max_tokens=kwargs.get('max_tokens', 1024),
-                temperature=kwargs.get('temperature', 0.2),
+                temperature=kwargs.get('temperature', self.default_temperature),
                 stop=kwargs.get('stop', []),
             )
             return response["choices"][0]["text"]
         except Exception as e:
-            # Add better error handling
             print(f"Error calling llama_cpp model: {e}")
             raise
     
