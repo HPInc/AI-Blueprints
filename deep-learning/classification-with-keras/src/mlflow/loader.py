@@ -26,12 +26,9 @@ def _load_pyfunc(data_path: str):
         Model: Initialized MNIST model instance ready for prediction
     """
     from src.mlflow.model import Model
-    from src.utils import load_config, get_model_path
+    from src.utils import load_config
     
     logger.info(f"Loading MNIST Model from artifacts at: {data_path}")
-    
-    # Set MODEL_ARTIFACTS_PATH for model loading
-    os.environ["MODEL_ARTIFACTS_PATH"] = data_path
     
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
@@ -40,14 +37,11 @@ def _load_pyfunc(data_path: str):
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
     
-    # Get model path from artifacts
-    model_path = get_model_path("model_keras_mnist.keras")
+    # The model file is always named "model_keras_mnist.keras" in artifacts
+    model_path = os.path.join(data_path, "model_keras_mnist.keras")
     
     if not os.path.exists(model_path):
-        # Fallback to direct path in artifacts
-        model_path = os.path.join(data_path, "model_keras_mnist.keras")
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found at: {model_path}")
+        raise FileNotFoundError(f"Model file not found at: {model_path}")
     
     logger.info(f"Model path resolved to: {model_path}")
     
