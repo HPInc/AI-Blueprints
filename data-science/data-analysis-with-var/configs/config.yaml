@@ -4,9 +4,6 @@
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
 model_source: "local"
 
-# Path to the local model file (used when model_source is "local") 
-# This is used in other blueprints that have LLMs, keeping for consistency
-model_path: ""
 
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
