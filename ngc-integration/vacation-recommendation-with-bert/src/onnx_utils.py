@@ -81,6 +81,7 @@ from typing import Any, Dict, Optional, Union, Tuple, List
 from pathlib import Path
 import logging
 from dataclasses import dataclass, field
+import sys
 
 # Optional imports
 try:
@@ -139,7 +140,9 @@ class ModelExportConfig:
         
         # Auto-detect model type if not provided
         if self.model_type is None:
-            from onnx_export import identify_model_type
+            
+            sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+            from .onnx_export import identify_model_type
             self.model_type = identify_model_type(self.model)
     
     def get_onnx_filename(self) -> str:

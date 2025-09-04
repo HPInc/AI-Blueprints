@@ -1,7 +1,5 @@
 """
 Logger Service implementation for MLflow model logging.
-"""
-Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
 - Provides log_model functionality for models
@@ -10,39 +8,34 @@ MLflow Registration Layer
 - Manages configuration, documents, secrets, and demo assets
 """
 import os
+import sys
 import uuid
 import base64
 import logging
 import shutil
 from typing import Dict, Any, List
+from pathlib import Path
 import yaml
 import tempfile
 import pandas as pd
-MLflow Registration Layer
-- Provides log_model functionality for models
-- Handles artifact organization and temporary directory management
-- Uses MLflow's models-from-code approach for deployment
-- Manages configuration, documents, secrets, and demo assets
-"""
-import os
-import uuid
-import base64
-import logging
-import shutil
-from typing import Dict, Any, List
-import yaml
-import tempfile
-import pandas as pd
+import torch
 
 # Set up logger
 logger = logging.getLogger(__name__)
 
-        # Add src directory to path to ensure onnx_utils is found
+# Add src directory to path to ensure onnx_utils is found
+src_dir = os.path.abspath(os.path.join(os.getcwd(), ".."))
 src_dir = Path(__file__).resolve().parent
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-from onnx_utils import ModelExportConfig, log_model
+from ..onnx_utils import ModelExportConfig, log_model
+
+# Import NeMo and model classes
+
+from nemo.collections.nlp.models.language_modeling import BERTLMModel
+from model import BERTModelWithHiddenStates
+
 
 class Logger:
     """
@@ -64,7 +57,8 @@ class Logger:
         docs_path="data/",
         secrets_dict=None,
         model_path=None,
-        demo_folder=None
+        demo_folder=None,
+        config_model = None
     ):
         """
         Log model using refined models-from-code approach with elegant directory structure.
@@ -162,52 +156,13 @@ class Logger:
                     logger.info(f"Copied model directory: {model_path}")
             else:
                 logger.info("Model path not provided or doesn't exist - skipping")
-
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            logger.info(f"Loading BERT model from: {bert_model_datafabric_path}")
-        
-            
-            # Load the NeMo BERT model into memory
-            bert_model =  BERTLMModel.restore_from(bert_model_datafabric_path, strict=False).to(device)
-            bert_model.eval() 
-
-            wrapped_model = BERTModelWithHiddenStates(bert_model) #it doesn't have oficial nemo export function so its necessary to recreate the model as torch to use torch conversion
-        
-            batch_size = 1
-            seq_len = 128
-            vocab_size = 30522
-
-            input_ids = torch.randint(0, vocab_size, (batch_size, seq_len), dtype=torch.long)
-            attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long)
-            token_type_ids = torch.zeros((batch_size, seq_len), dtype=torch.long)
-        
-            model_configs = [
-                ModelExportConfig(
-                    model=wrapped_model,                           # 🚀 Pre-loaded model object!
-                    model_name="bert_tourism_onnx",             # ONNX file naming
-                    input_sample=(                             
-                        input_ids.to(device),
-                        attention_mask.to(device),
-                        token_type_ids.to(device)
-                    ),
-                    input_names=["input_ids", "attention_mask", "token_type_ids"],
-                    output_names=["embedding"],
-                    dynamic_axes={
-                        "input_ids": {0: "batch", 1: "sequence"},
-                        "attention_mask": {0: "batch", 1: "sequence"},
-                        "token_type_ids": {0: "batch", 1: "sequence"},
-                        "embedding": {0: "batch_size"}
-                    },
-                )    
-            ]
-            
+                
             log_model(
-                name=artifact_path,                          
+                artifact_path=artifact_path,                          
                 loader_module="src.mlflow.loader",  
                 data_path=temp_dir,                                   
                 code_paths=["../src"],                    
                 signature=signature,
-                models_to_convert_onnx=model_configs,  
                 pip_requirements="../requirements.txt"
             )
         except Exception as e:
