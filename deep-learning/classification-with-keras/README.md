@@ -156,10 +156,6 @@ And as response:
 
 2. Navigate to the shown URL and view the handwritten classification.
 
-### Successful UI demo
-
-- Streamlit
-  ![Handwritten Digit Classification Streamlit UI](docs/streamlit-ui-handwritten-digit-classification.png)
 
 ---
 

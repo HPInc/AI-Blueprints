@@ -171,14 +171,6 @@ And as response:
 
 2. Navigate to the shown URL and view the spam classification.
 
-### Successful UI demo
-
-- Streamlit
-
-  ![Spam Classification Streamlit UI](docs/streamlit-ui-spam-detection-with-npl.png)
-
----
-
 ---
 
 # Contact and Support
