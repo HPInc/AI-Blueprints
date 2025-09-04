@@ -1,6 +1,23 @@
 """
 Logger Service implementation for MLflow model logging.
+"""
+Logger Service implementation for MLflow model logging.
 
+MLflow Registration Layer
+- Provides log_model functionality for models
+- Handles artifact organization and temporary directory management
+- Uses MLflow's models-from-code approach for deployment
+- Manages configuration, documents, secrets, and demo assets
+"""
+import os
+import uuid
+import base64
+import logging
+import shutil
+from typing import Dict, Any, List
+import yaml
+import tempfile
+import pandas as pd
 MLflow Registration Layer
 - Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
