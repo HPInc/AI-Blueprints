@@ -142,7 +142,7 @@ class ModelExportConfig:
         if self.model_type is None:
             
             sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-            from .onnx_export import identify_model_type
+            from src.onnx_export import identify_model_type
             self.model_type = identify_model_type(self.model)
     
     def get_onnx_filename(self) -> str:
@@ -237,7 +237,7 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
         Path to the model directory containing the ONNX model and other files
     """
     try:
-        from onnx_export import export_model_to_onnx
+        from .onnx_export import export_model_to_onnx
         
         # Create model directory
         model_dir = config.model_name
@@ -409,8 +409,10 @@ def _create_model_directories(model_dirs: Union[str, Dict[str, str]],
     return model_paths
 
 
-def log_model(artifact_path: str,
+def log_model(artifact_path="AIStudio-Model",
               python_model: Optional[Any] = None,
+              loader_module = None,
+              data_path = None, 
               artifacts: Optional[Dict[str, str]] = None,
               conda_env: Optional[Union[str, Dict]] = None,
               code_paths: Optional[List[str]] = None,
@@ -526,20 +528,37 @@ def log_model(artifact_path: str,
                 # Note: Model directory artifacts are already added above as fallback
     
     try:
-        # MLflow logging with model directory artifacts included
-        mlflow.pyfunc.log_model(
-            artifact_path=artifact_path,
-            python_model=python_model,
-            artifacts=final_artifacts,
-            conda_env=conda_env,
-            code_paths=code_paths,
-            signature=signature,
-            input_example=input_example,
-            pip_requirements=pip_requirements,
-            extra_pip_requirements=extra_pip_requirements,
-            metadata=metadata,
-            **kwargs
-        )
+        # Choose between models-from-code approach or traditional approach
+        if loader_module and data_path:
+            # Models-from-code approach
+            mlflow.pyfunc.log_model(
+                artifact_path=artifact_path,
+                loader_module=loader_module,
+                data_path=data_path,
+                conda_env=conda_env,
+                code_paths=code_paths,
+                signature=signature,
+                input_example=input_example,
+                pip_requirements=pip_requirements,
+                extra_pip_requirements=extra_pip_requirements,
+                metadata=metadata,
+                **kwargs
+            )
+        else:
+            # Traditional approach
+            mlflow.pyfunc.log_model(
+                artifact_path=artifact_path,
+                python_model=python_model,
+                artifacts=final_artifacts,
+                conda_env=conda_env,
+                code_paths=code_paths,
+                signature=signature,
+                input_example=input_example,
+                pip_requirements=pip_requirements,
+                extra_pip_requirements=extra_pip_requirements,
+                metadata=metadata,
+                **kwargs
+            )
         
         # Log artifacts information
         artifact_list = list(final_artifacts.keys()) if final_artifacts else []
