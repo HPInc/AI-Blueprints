@@ -2,11 +2,14 @@
 MLflow models-from-code loader module for AgenticAudioService.
 This module provides the _load_pyfunc function required by MLflow.
 """
-
 import os
 import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
+
+from core.agentic_audio_rag_service.agentic_audio_rag_model import AgenticAudioModel
+from src.utils import load_config, load_secrets_to_env, load_secrets
+
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -14,27 +17,6 @@ logger = logging.getLogger(__name__)
 class _Context:
         def __init__(self, artifacts: Dict[str, str]):
             self.artifacts = artifacts
-            
-# def _bundle_root(root: Path) -> Path:
-#     if (root / "index").exists():
-#         return root
-#     if (root / "model_artifacts" / "index").exists():
-#         return root / "model_artifacts"
-    
-#     try:
-#         for child in root.iterdir():
-#             if child.is_dir() and (child / "index").exists():
-#                 return child
-#     except Exception:
-#         pass
-    
-#     children =[]
-#     try:
-#         children = [p.name for p in root.iterdir()]
-#     except Exception:
-#         pass
-#     raise FileNotFoundError(f"Could not locate a bundle root under {root}"
-#                             f"Expected 'index/' there. Found children: {children}")
 
 def _load_pyfunc(data_path: str):
     """
@@ -52,15 +34,9 @@ def _load_pyfunc(data_path: str):
     Returns:
         AgenticAudioModel: Initialized model instance ready for prediction
     """
-   # from core.chatbot_service.chatbot_model import ChatbotModel
-    from core.agentic_audio_rag_service.agentic_audio_rag_model import AgenticAudioModel
-    
     logger.info(f"Loading AgenticAudioModel from artifacts at: {data_path}")
-    
-    from src.utils import load_config, load_secrets_to_env, load_secrets
-    
+        
     root = Path(data_path)
-    # bundle_root = _bundle_root(root)
     
     (root / "index").mkdir(parents=True, exist_ok=True)
     (root / "config").mkdir(parents=True, exist_ok=True)

@@ -17,6 +17,10 @@ import yaml
 import tempfile
 import pandas as pd
 
+import mlflow
+from mlflow.models.signature import ModelSignature
+from mlflow.types.schema import Schema, ColSpec
+        
 # Set up logger
 logger = logging.getLogger(__name__)
 
@@ -68,28 +72,15 @@ class AgenticAudioService:
         Returns:
             None
         """
-        import mlflow
-        from mlflow.models.signature import ModelSignature
-        from mlflow.types.schema import Schema, ColSpec
-        import tempfile
-        import shutil
-        import os
-        import yaml
         
         # Define model input/output schema
         input_schema = Schema([
             ColSpec("string", "question"),
             ColSpec("string", "file_id"),
-            # ColSpec("string", "memory")
         ])
         output_schema = Schema([
             ColSpec("string", "answer"),
             ColSpec("boolean", "from_memory"),
-           # ColSpec("Dict", "evidence")
-            # ColSpec("string", "history"), 
-            # ColSpec("string", "prompt"),
-            # ColSpec("string", "output"),
-            # ColSpec("boolean", "success")
         ])
         # Create signature without param_schema for now to avoid compatibility issues
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)

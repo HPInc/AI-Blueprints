@@ -6,7 +6,6 @@ Business Logic Layer
 - Contains all domain-specific functionality without MLflow dependencies
 - Designed to be framework-agnostic and easily testable
 """
-
 # ─────── Standard Library Imports ───────
 from __future__ import annotations # Future-proofing for type annotations
 import json  # JSON parsing and serialization
@@ -53,16 +52,16 @@ logger = logging.getLogger(__name__)
 INDEX_VECS_NPY = "audio_vecs.npy"
 INDEX_META_JSON = "audio_meta.json"
 MEMORY_FILENAME = "kv_memory.json"
-# Build index from MEDIA_DIR and snapshot to artifacts/
 AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".flac", ".m4a"}
 VIDEO_EXTS = {".mp4", ".mov", ".avi", ".mkv", ".m4v", ".webm"}
 MEDIA_EXTS = AUDIO_EXTS | VIDEO_EXTS
+CLAP_REPO = "laion/clap-htsat-unfused"
 
 RELEVANCE_THRESHOLD = 0.18
 FETCH_K = 24     # breadth for stage-1
 TOP_K   = 6      # final segments
 
- # 
+ # Qwen adapter class
 class _QwenAdapter:
     def __init__(self, proc, model):
         self.processor = proc
@@ -80,7 +79,7 @@ class _QwenAdapter:
     def answer(self, question: str, audio_hits: list, return_audio: bool = False) -> dict:
         user_content = [{
             "type": "text",
-            "text": ("Answer ONLY using the provided audio clips. "
+            "text": ("Answer ONLY using the provided audio clips."
                      "If the clips do not contain the answer, reply exactly: NOT_FOUND_IN_AUDIO.\n"
                      f"Question: {question}")
         }]
@@ -175,11 +174,6 @@ def _normalize_vecs(vecs: np.ndarray) -> np.ndarray:
     return (x / n).astype(np.float32)
 
 def _set_embeddings(MEDIA_DIR, index_dir, config_path):
-    # Reuse the CLAP init + embedding utilities from your run-workflow notebook
-    # If you already defined them earlier in this kernel, skip redefining.
-
-    # CLAP init
-    CLAP_REPO = "laion/clap-htsat-unfused"
     clap_device = "cuda" if torch.cuda.is_available() else "cpu"
     clap_processor = ClapProcessor.from_pretrained(CLAP_REPO)
     clap_model = ClapModel.from_pretrained(CLAP_REPO).to(clap_device).eval()
@@ -214,14 +208,6 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
         vec = out.cpu().numpy()[0]
         vec = vec / (np.linalg.norm(vec) + 1e-12)
         return vec.astype(np.float32)
-
-    # @torch.no_grad()
-    # def clap_embed_text(query: str) -> np.ndarray:
-    #     inp = clap_processor(text=[query], return_tensors="pt").to(clap_device)
-    #     out = clap_model.get_text_features(**inp)
-    #     vec = out.cpu().numpy()[0]
-    #     vec = vec / (np.linalg.norm(vec) + 1e-12)
-    #     return vec.astype(np.float32)
 
     # Segmentation
     def segment_audio(wav_path: str, window_s: float = 30.0, hop_s: float = 15.0) -> List[Tuple[int, int, np.ndarray, int]]:
@@ -397,15 +383,10 @@ class AgenticAudioModel:
                 pass
 
             # --- Memory ---
-            # mem_file = os.environ.get("MEMORY_FILENAME", "kv_memory.json")
             self.memory = SimpleKVMemory(memory_dir / MEMORY_FILENAME)
 
             # --- Qwen Omni (audio agent) ---
             audio_llm_id = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
-            # selector = ModelSelector()
-            # local_dir = Path(selector.format_model_path(audio_llm_id))
-            # local_dir.mkdir(parents=True, exist_ok=True)
-
             self.q_processor = Qwen2_5OmniProcessor.from_pretrained(audio_llm_id, trust_remote_code=True)
             self.q_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
                 audio_llm_id,

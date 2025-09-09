@@ -3,11 +3,6 @@
 
 langgraph==0.5.3
 unstructured==0.18.9
-# pypdf==5.8.0
-# python-docx==1.2.0
-# msoffcrypto-tool==5.4.2
-# openpyxl==3.1.5
-# openai-whisper==20231117
 tqdm>=4.66.4
 pydantic<3
 transformers==4.53.2
