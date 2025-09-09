@@ -139,7 +139,7 @@ class ModelExportConfig:
         
         # Auto-detect model type if not provided
         if self.model_type is None:
-            from onnx_export import identify_model_type
+            from .onnx_export import identify_model_type
             self.model_type = identify_model_type(self.model)
     
     def get_onnx_filename(self) -> str:
@@ -160,7 +160,7 @@ class ModelExportConfig:
     def __post_init__(self):
         """Auto-detect model type from loaded model"""
         if self.model_type is None:
-            from onnx_export import identify_model_type
+            from .onnx_export import identify_model_type
             self.model_type = identify_model_type(self.model)
   
 
@@ -234,7 +234,7 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
         Path to the model directory containing the ONNX model and other files
     """
     try:
-        from onnx_export import export_model_to_onnx
+        from .onnx_export import export_model_to_onnx
         
         # Create model directory
         model_dir = config.model_name

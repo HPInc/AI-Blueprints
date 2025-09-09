@@ -8,14 +8,11 @@ MLflow Registration Layer
 - Manages configuration, documents, secrets, and demo assets
 """
 import os
-import uuid
-import base64
 import logging
 import shutil
-from typing import Dict, Any, List
-import yaml
 import tempfile
-import pandas as pd
+from typing import Dict, Any
+import yaml
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -23,8 +20,8 @@ logger = logging.getLogger(__name__)
 class Logger:
     """
     Logger Service for MLflow model logging.
-    This class provides the log_model functionality for packaging RAG-based
-    conversational AI with document retrieval capabilities.
+    This class provides the log_model functionality for packaging BERT-based
+    vacation recommendation with ONNX export capabilities.
     """
     
     def __init__(self):
@@ -44,16 +41,17 @@ class Logger:
         enable_onnx_export=True
     ):
         """
-        Log model using refined models-from-code approach with elegant directory structure.
+        Log model using refined models-from-code approach with ONNX export support.
         
-        This implementation uses MLflow's models-from-code approach exclusively with proper
-        temp directory naming to avoid redundant nesting while maintaining full MLflow 3.1.0 compatibility.
+        This implementation uses MLflow's models-from-code approach with optional ONNX export
+        capabilities for BERT tourism recommendation models. When enable_onnx_export=True,
+        it uses the Model's get_onnx_export_config() method to enable ONNX export.
         
         Final MLflow structure achieved:
         /artifacts/
           └── data/                    # MLflow automatically created
               ├── config.yaml          # Configuration
-              ├── data/                # Documents directory (PDFs, etc.)
+              ├── data/                # Documents directory (embeddings, corpus, tokenizer)
               ├── demo/                # UI components  
               ├── models/              # Model files (optional)
               └── secrets.yaml         # Secrets (optional)
@@ -66,6 +64,7 @@ class Logger:
             secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
+            enable_onnx_export: Whether to enable ONNX export (default: False)
             
         Returns:
             None
@@ -113,7 +112,6 @@ class Logger:
             else:
                 logger.info("data folder not provided or doesn't exist - skipping")
             
-            
             # ✅ Demo folder -> /artifacts/data/demo/
             if demo_folder and os.path.exists(demo_folder):
                 shutil.copytree(demo_folder, os.path.join(temp_dir, "demo"))
@@ -139,7 +137,7 @@ class Logger:
                     logger.info(f"Copied model directory: {model_path}")
             else:
                 logger.info("Model path not provided or doesn't exist - skipping")
-            
+
             # ✅ ONNX Export Integration (when enabled)
             if enable_onnx_export:
                 logger.info("ONNX export enabled - using onnx_utils.log_model")
@@ -150,8 +148,7 @@ class Logger:
                 
                 # Get ONNX export configuration from the model
                 try:
-                    onnx_config = model_instance.get_onnx_export_config()
-                    model_configs = [onnx_config]
+                    model_configs = model_instance.get_onnx_export_config()
                     logger.info("Retrieved ONNX export configuration from model")
                 except Exception as e:
                     logger.warning(f"Failed to get ONNX config from model: {e}")
@@ -180,6 +177,7 @@ class Logger:
                     signature=signature,
                     pip_requirements="../requirements.txt"
                 )
+            
         except Exception as e:
             logger.error(f"Error during model logging: {str(e)}")
             raise
