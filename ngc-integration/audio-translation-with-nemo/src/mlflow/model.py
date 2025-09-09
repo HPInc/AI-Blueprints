@@ -13,7 +13,8 @@ import io
 import uuid
 import base64
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+import shutil
 import numpy as np
 import pandas as pd
 import soundfile
@@ -337,3 +338,86 @@ class Model:
                 "translated_serialized_audio": "",
             }
             return pd.DataFrame([error_result])
+        
+    def get_onnx_export_config(self) -> List:
+        """
+        Get configuration for ONNX export.
+        Returns the configuration needed for ONNX model export.
+        
+        Returns:
+            List of ModelExportConfig objects for ONNX conversion
+        """
+        try:
+            # Import here to avoid circular imports
+            from ..onnx_utils import ModelExportConfig
+            
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            
+            # Use already loaded models from the instance
+            model_configs = [
+                ModelExportConfig(
+                    model=self.mt_model,                    # 🚀 Pre-loaded Transformers model!
+                    model_name="Helsinki-NLP",              # ONNX file naming
+                    task="translation",                     # Model task
+                ),
+                # NeMo ASR model
+                ModelExportConfig(
+                    model=self.asr_model.to(device),        # 🚀 Pre-loaded NeMo ASR model!
+                    model_name="enc_dec_CTC",               # ONNX file naming
+                ),
+                # NeMo FastPitch model
+                ModelExportConfig(
+                    model=self.spectrogram_generator.to(device),  # 🚀 Pre-loaded NeMo TTS model!
+                    model_name="fast_pitch",                # ONNX file naming
+                ),
+                # NeMo HifiGAN model
+                ModelExportConfig(
+                    model=self.vocoder.to(device),          # 🚀 Pre-loaded NeMo Vocoder model!
+                    model_name="hifi_gan",                  # ONNX file naming
+                ),
+            ]
+            
+            logger.info("ONNX export configuration created successfully")
+            return model_configs
+            
+        except Exception as e:
+            logger.error(f"Error creating ONNX export configuration: {str(e)}")
+            raise RuntimeError(f"Failed to create ONNX export configuration: {str(e)}") from e
+
+    def copy_nemo_models_to_directory(self, target_dir: str) -> None:
+        """
+        Copy NeMo model artifacts to a target directory.
+        
+        Args:
+            target_dir: Directory path where to copy the NeMo model files
+        """
+        try:
+            os.makedirs(target_dir, exist_ok=True)
+            
+            # Copy NeMo model artifacts using the resolved paths
+            if "enc_dec_CTC" in self.nemo_models:
+                source_path = self.nemo_models["enc_dec_CTC"]
+                target_path = os.path.join(target_dir, "enc_dec_CTC.nemo")
+                if os.path.exists(source_path):
+                    shutil.copyfile(source_path, target_path)
+                    logger.info(f"Copied ASR model to {target_path}")
+                    
+            if "fast_pitch" in self.nemo_models:
+                source_path = self.nemo_models["fast_pitch"]
+                target_path = os.path.join(target_dir, "fast_pitch.nemo")
+                if os.path.exists(source_path):
+                    shutil.copyfile(source_path, target_path)
+                    logger.info(f"Copied FastPitch model to {target_path}")
+                    
+            if "hifi_gan" in self.nemo_models:
+                source_path = self.nemo_models["hifi_gan"]
+                target_path = os.path.join(target_dir, "hifi_gan.nemo")
+                if os.path.exists(source_path):
+                    shutil.copyfile(source_path, target_path)
+                    logger.info(f"Copied HifiGAN model to {target_path}")
+                    
+            logger.info(f"NeMo models copied to directory: {target_dir}")
+            
+        except Exception as e:
+            logger.error(f"Error copying NeMo models: {str(e)}")
+            raise RuntimeError(f"Failed to copy NeMo models: {str(e)}") from e

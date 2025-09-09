@@ -40,7 +40,8 @@ class Logger:
         docs_path="data/",
         secrets_dict=None,
         model_path=None,
-        demo_folder=None
+        demo_folder=None,
+        enable_onnx_export=True
     ):
         """
         Log model using refined models-from-code approach with elegant directory structure.
@@ -139,14 +140,46 @@ class Logger:
             else:
                 logger.info("Model path not provided or doesn't exist - skipping")
             
-            mlflow.pyfunc.log_model(
-                name=artifact_path,                          
-                loader_module="src.mlflow.loader",  
-                data_path=temp_dir,                                   
-                code_paths=["../src"],                    
-                signature=signature,
-                pip_requirements="../requirements.txt"
-            )
+            # ✅ ONNX Export Integration (when enabled)
+            if enable_onnx_export:
+                logger.info("ONNX export enabled - using onnx_utils.log_model")
+                
+                # Load model temporarily to get ONNX config
+                from src.mlflow.loader import _load_pyfunc
+                model_instance = _load_pyfunc(temp_dir)
+                
+                # Get ONNX export configuration from the model
+                try:
+                    onnx_config = model_instance.get_onnx_export_config()
+                    model_configs = [onnx_config]
+                    logger.info("Retrieved ONNX export configuration from model")
+                except Exception as e:
+                    logger.warning(f"Failed to get ONNX config from model: {e}")
+                    model_configs = None
+                
+                # Use onnx_utils.log_model for ONNX export
+                from src.onnx_utils import log_model
+                log_model(
+                    artifact_path=artifact_path,                          
+                    loader_module="src.mlflow.loader",  
+                    data_path=temp_dir,                                   
+                    code_paths=["../src"],                    
+                    signature=signature,
+                    models_to_convert_onnx=model_configs,
+                    pip_requirements="../requirements.txt"
+                )
+            else:
+                logger.info("Standard MLflow logging (no ONNX export)")
+                # Standard MLflow models-from-code logging
+                import mlflow
+                mlflow.pyfunc.log_model(
+                    name=artifact_path,                          
+                    loader_module="src.mlflow.loader",  
+                    data_path=temp_dir,                                   
+                    code_paths=["../src"],                    
+                    signature=signature,
+                    pip_requirements="../requirements.txt"
+                )
         except Exception as e:
             logger.error(f"Error during model logging: {str(e)}")
             raise
