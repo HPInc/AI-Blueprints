@@ -130,14 +130,20 @@ class Model:
     def _setup_environment(self) -> None:
         """Configure environment variables and suppress verbose logs."""
         try:
-            # Suppress warnings and verbose logs
-            warnings.filterwarnings("ignore")
-            logging.getLogger('nemo_logger').setLevel(logging.ERROR)
+            # Load secrets into environment if provided
+            if self.secrets:
+                for key, value in self.secrets.items():
+                    os.environ[key] = str(value)
+                logger.info("Secrets loaded into environment")
             
-            # Create temporary directory for processing
-            os.makedirs("/phoenix/mlflow/tmp", exist_ok=True)
-            
-            logger.info("Environment setup completed")
+            # Configure proxy if specified in config
+            if "proxy" in self.model_config and self.model_config["proxy"]:
+                logger.info(f"Setting up proxy: {self.model_config['proxy']}")
+                os.environ["HTTPS_PROXY"] = self.model_config["proxy"]
+                os.environ["HTTP_PROXY"] = self.model_config["proxy"]
+            else:
+                logger.info("No proxy configuration found")
+                    
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
             # Continue without failing to allow the model to still function
