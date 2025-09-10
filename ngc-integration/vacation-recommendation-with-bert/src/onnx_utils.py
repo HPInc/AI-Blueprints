@@ -532,24 +532,9 @@ def log_model(artifact_path="AIStudio-Model",
         if loader_module and data_path:
             # Models-from-code approach
             mlflow.pyfunc.log_model(
-                artifact_path=artifact_path,
+                name=artifact_path,
                 loader_module=loader_module,
                 data_path=data_path,
-                conda_env=conda_env,
-                code_paths=code_paths,
-                signature=signature,
-                input_example=input_example,
-                pip_requirements=pip_requirements,
-                extra_pip_requirements=extra_pip_requirements,
-                metadata=metadata,
-                **kwargs
-            )
-        else:
-            # Traditional approach
-            mlflow.pyfunc.log_model(
-                artifact_path=artifact_path,
-                python_model=python_model,
-                artifacts=final_artifacts,
                 conda_env=conda_env,
                 code_paths=code_paths,
                 signature=signature,

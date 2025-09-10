@@ -171,7 +171,7 @@ class Logger:
                 # Standard MLflow models-from-code logging
                 import mlflow
                 mlflow.pyfunc.log_model(
-                    artifact_path=artifact_path,                          
+                    name=artifact_path,                          
                     loader_module="src.mlflow.loader",  
                     data_path=temp_dir,                                   
                     code_paths=["../src"],                    
