@@ -27,6 +27,9 @@ import nemo.collections.tts as nemo_tts
 
 # Transformers imports  
 from transformers import MarianMTModel, MarianTokenizer
+import logging
+logging.getLogger("nemo").setLevel(logging.ERROR)
+
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -49,7 +52,7 @@ class Model:
             secrets: Secrets dictionary (unused for NeMo but required for interface)
             model_path: Single model path (unused for NeMo but required for interface)
         """
-        self.config = config
+        self.model_config = config
         self.docs_path = docs_path
         self.secrets = secrets
         self.model_path = model_path
