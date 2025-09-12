@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Optional
 from src.utils import logger
 from langchain.docstore.document import Document
-from src.generate_test_audio import generate_test_audio, generate_and_convert_formats, ensure_ffmpeg_bin, ffmpeg_ok
+from src.generate_test_audio import ensure_ffmpeg_bin, ffmpeg_ok
 
 
 class AudioIndex:

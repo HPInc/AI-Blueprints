@@ -39,12 +39,8 @@ from qwen_omni_utils import process_mm_info
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.agentic_workflow import build_audio_agentic_graph  # Custom LangGraph construction logic
 from src.simple_kv_memory import SimpleKVMemory, _mem_get, _mem_put  # In-memory key-value store for agent state
-from src.model_selection import ModelSelector # Model selection utility
 from src.utils import setup_model_environment  # Project-wide configured logger
 from src.segment_audio_embeddings import AudioIndex, ensure_wav
-
-# Add the src directory to the path to import utilities
-from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, load_secrets_to_env
 
 # Set up logger
 logger = logging.getLogger(__name__)
