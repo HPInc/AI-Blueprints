@@ -7,7 +7,7 @@ import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from core.agentic_audio_rag_service.agentic_audio_rag_model import AgenticAudioModel
+from src.core.agentic_audio_rag_service.agentic_audio_rag_model import AgenticAudioModel
 from src.utils import load_config, load_secrets_to_env, load_secrets
 
 
