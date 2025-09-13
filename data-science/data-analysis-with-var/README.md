@@ -116,7 +116,7 @@ This will:
 - Evaluate the model
 - Save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder
 
-Execute the register-model notebook second inside the `notebooks` folder:
+Only after running the 'run-workflow' notebook, execute the 'register-model' notebook second inside the `notebooks` folder:
 
 ```bash
 notebooks/register-model.ipynb

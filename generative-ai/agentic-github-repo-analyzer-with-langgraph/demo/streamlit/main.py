@@ -46,21 +46,15 @@ with col3:
 st.markdown('<div class="gradient-header"><h2>🤖 Agentic Github Repo Analyzer 🤖</h2></div>', unsafe_allow_html=True)
 
 # ------------------------- SIDEBAR CONFIG -------------------------
-st.sidebar.title("⚙️ Configuration")
+st.sidebar.title("⚙️ Usage")
 
 st.sidebar.markdown("""
 **Instructions:**
-1. Enter your model's `/invocations` endpoint URL.
-2. Fill out the topic, question, repo url, and folder path.
-3. Click **Run Analysis** to receive an AI-generated answer.
-
-**Example URL:** `https://localhost:5000/invocations`
+1. Fill out the topic, question, repo url, and folder path.
+2. Click **Run Analysis** to receive an AI-generated answer from your analyzed repo.
 """)
 
-endpoint_url = st.sidebar.text_input("MLflow Model Endpoint URL", key="endpoint")
-
-if endpoint_url and not endpoint_url.strip().lower().startswith("https://"):
-    st.sidebar.error("Endpoint must start with https://")
+endpoint_url = "http://localhost:5002/invocations"
 
 # ------------------------- INPUTS -------------------------
 with st.form("inference_form"):
