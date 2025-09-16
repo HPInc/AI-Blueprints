@@ -23,11 +23,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 import yaml
 import tempfile
+import multiprocessing
+
 
 import mlflow
 import pandas as pd
 from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema
+
+
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
@@ -115,8 +119,9 @@ def _load_llm(artifacts: Dict[str, str]):
         f16_kv=True,
         temperature=0.2,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-        verbose=False,
+        verbose=True,
         streaming=False,
+        use_mmap=False,
     )
     logging.info("🔹 LlamaCpp loaded in %.1fs", time.perf_counter() - start)
     return llm
