@@ -154,13 +154,14 @@ class ChatbotService(BaseGenerativeService):
             try:
                 self.llm = LlamaCpp(
                     model_path=model_path,
-                    n_gpu_layers=30,
+                    n_gpu_layers=-1,
                     n_batch=512,
                     n_ctx=context_window,
                     max_tokens=1024,
                     f16_kv=True,
                     callback_manager=self.callback_manager,
                     verbose=True, 
+                    use_mmap=False,
                     stop=[],
                     streaming=False,
                     temperature=0.2,

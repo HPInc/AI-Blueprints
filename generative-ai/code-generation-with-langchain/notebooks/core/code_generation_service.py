@@ -412,12 +412,13 @@ class CodeGenerationService(BaseGenerativeService):
             try:
                 self.llm = LlamaCpp(
                     model_path=model_path,
-                    n_gpu_layers=n_gpu_layers,
+                    n_gpu_layers=-1,
                     n_batch=512,
                     n_ctx=context_window,
                     f16_kv=True,
                     callback_manager=None,
-                    verbose=False,
+                    verbose=True,
+                    use_mmap=False,
                     max_tokens=1024,
                     temperature=0.2
                 )
