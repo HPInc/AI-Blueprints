@@ -305,7 +305,8 @@ def initialize_llm(
             verbose=False,
             stop=[],
             streaming=False,
-            temperature=0.2,
+            temperature=0,
+            use_mmap=False,
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")

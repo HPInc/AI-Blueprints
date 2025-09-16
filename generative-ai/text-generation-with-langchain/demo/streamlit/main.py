@@ -82,12 +82,12 @@ st.markdown(
 )
 
 # ────────────────────────── sidebar (settings) ─────────────────────────
+api_url = "http://localhost:5002/invocations"
+
 with st.sidebar:
     st.header("⚙️ Settings")
 
     # MLflow API Configuration
-    api_url = "http://localhost:5002/invocations"
-
     st.markdown("---")
     st.subheader("Steps")
     col_a, col_b = st.columns(2)
@@ -128,28 +128,38 @@ if st.button("🚀 Run"):
     # Use the default prompt only when the field is empty
     generation_prompt_final = generation_prompt.strip() or DEFAULT_SCRIPT_PROMPT
 
+    
     payload = {
-        "inputs": {
-            "query":             [query],
-            "max_results":       [max_results],
-            "chunk_size":        [chunk_size],
-            "chunk_overlap":     [chunk_overlap],
-            "do_extract":        [do_extract],
-            "do_analyze":        [do_analyze],
-            "do_generate":       [do_generate],
-            "analysis_prompt":   [analysis_prompt],
-            "generation_prompt": [generation_prompt_final],
-        },
-        "params": {},
-    }
+        "inputs": [
+            {
+                "query": str(query),
+                "max_results": int(max_results),
+                "chunk_size": int(chunk_size),
+                "chunk_overlap": int(chunk_overlap),
+                "do_extract": bool(do_extract),
+                "do_analyze": bool(do_analyze),
+                "do_generate": bool(do_generate),
+                "analysis_prompt": str(analysis_prompt),
+                "generation_prompt": str(generation_prompt_final),
+            }
+        ],
+        "params": {}
+}
+
 
     # ─────────────────────── HTTP request ────────────────────────
     try:
         t0 = time.perf_counter()
         with st.spinner("Processing…"):
             response = requests.post(api_url, json=payload, verify=False, timeout=600)
+            
             response.raise_for_status()
-            result = response.json()
+            try:
+                result = response.json()
+            except json.JSONDecodeError as e:
+                st.error(f"❌ Error decoding Json: {e}")
+                st.stop()
+
         elapsed = time.perf_counter() - t0
     except Exception as exc:
         st.error(f"Request failed: {exc}")
