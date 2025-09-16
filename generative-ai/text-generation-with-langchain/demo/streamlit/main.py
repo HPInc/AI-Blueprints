@@ -149,8 +149,6 @@ if st.button("🚀 Run"):
 
     # ─────────────────────── HTTP request ────────────────────────
     try:
-        st.subheader("📦 Payload being sent to MLflow")
-
         t0 = time.perf_counter()
         with st.spinner("Processing…"):
             response = requests.post(api_url, json=payload, verify=False, timeout=600)

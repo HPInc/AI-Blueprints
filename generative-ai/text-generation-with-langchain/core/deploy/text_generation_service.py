@@ -119,7 +119,7 @@ def _load_llm(artifacts: Dict[str, str]):
         f16_kv=True,
         temperature=0.2,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-        verbose=True,
+        verbose=False,
         streaming=False,
         use_mmap=False,
     )
