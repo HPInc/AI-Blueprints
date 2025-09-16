@@ -304,10 +304,10 @@ def initialize_llm(
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,
+            use_mmap=False,
             stop=[],
             streaming=False,
             temperature=0.2,
-            use_mmap=False,
         )
     else:
         raise ValueError(f"Unsupported model source: {model_source}")
