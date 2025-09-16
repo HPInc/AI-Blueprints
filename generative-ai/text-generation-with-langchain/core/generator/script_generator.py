@@ -82,8 +82,4 @@ class ScriptGenerator:
 
             # Interactive approval loop
             print(f"\n>>> [{section['name']}] Result:\n{raw_text}\n")
-            approval = input("Approve the result? (y/n): ").strip().lower()
-            if approval == "y":
-                return raw_text
-
-            print("Result not approved – regenerating…\n")
+            return raw_text

@@ -102,16 +102,17 @@ class TextSummarizationService(BaseGenerativeService):
             try:
                 self.llm = LlamaCpp(
                     model_path=model_path,
-                    n_gpu_layers=30,
+                    n_gpu_layers=-1,
                     n_batch=512,
                     n_ctx=4096,
                     max_tokens=1024,
                     f16_kv=True,
                     callback_manager=self.callback_manager,
-                    verbose=False,
+                    verbose=True,
                     stop=[],
                     streaming=False,
-                    temperature=0.2,
+                    temperature=0,
+                    use_mmap=False,
                 )
                 logger.info("LlamaCpp model initialized successfully.")
             except Exception as model_error:
