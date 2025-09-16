@@ -303,6 +303,7 @@ def initialize_llm(
             f16_kv=True,
             callback_manager=callback_manager,
             verbose=False,
+            use_mmap=False,
             stop=[],
             streaming=False,
             temperature=0.2,
