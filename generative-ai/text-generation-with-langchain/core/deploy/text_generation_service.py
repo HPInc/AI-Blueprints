@@ -112,14 +112,14 @@ def _load_llm(artifacts: Dict[str, str]):
     start = time.perf_counter()
     llm = LlamaCpp(
         model_path=model_path,
-        n_gpu_layers=int(cfg.get("n_gpu_layers", 1)),  # 0 → CPU-only
+        n_gpu_layers=-1,  # 0 → CPU-only
         n_batch=256,
         n_ctx=4096,
         max_tokens=1024,
         f16_kv=True,
-        temperature=0.2,
+        temperature=0,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-        verbose=False,
+        verbose=True,
         streaming=False,
         use_mmap=False,
     )
