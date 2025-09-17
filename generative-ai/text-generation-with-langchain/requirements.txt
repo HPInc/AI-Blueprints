@@ -1,4 +1,4 @@
-# Create the workspace using the Local GenAI image. 
+# Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 torch>=2.0.0,<2.5.0
 PyMuPDF==1.25.4
@@ -15,6 +15,3 @@ llama-cpp-python>=0.2.0
 PyYAML>=6.0
 requests>=2.25.0
 mlflow==2.21.2
-
-
-

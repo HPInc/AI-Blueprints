@@ -21,16 +21,16 @@ function App() {
 	const [fileText, setFileText] = useState("");
 	const [fileName, setFileName] = useState("");
 	const [fileType, setFileType] = useState("");
-	
+
 	// State for API response
 	const [summaryResponse, setSummaryResponse] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
-	
+
 	// State for UI display toggles
 	const [showDetails, setShowDetails] = useState(false);
 	const [expandedSection, setExpandedSection] = useState(null);
-	
+
 	/**
 	 * Toggle expanded view for original text section
 	 */
@@ -41,7 +41,7 @@ function App() {
 			setExpandedSection(null);
 		}
 	}
-	
+
 	/**
 	 * Toggle expanded view for summarization section
 	 */
@@ -52,14 +52,14 @@ function App() {
 			setExpandedSection(null);
 		}
 	}
-	
+
 	/**
 	 * Toggle information about the black box mode
 	 */
 	async function toggleBlackBoxInfo() {
 		setShowDetails(!showDetails);
 	}
-	
+
 	/**
 	 * Handle file selection
 	 * @param {Event} e - The file input change event
@@ -67,12 +67,12 @@ function App() {
 	async function handleFileChange(e) {
 		const selectedFile = e.target.files[0];
 		if (!selectedFile) return;
-		
+
 		setFile(selectedFile);
 		setFileName(selectedFile.name);
 		setFileType(selectedFile.type);
 		setError(null);
-		
+
 		try {
 			const text = await extractTextFromFile(selectedFile);
 			setFileText(text);
@@ -82,7 +82,7 @@ function App() {
 			setFileText("");
 		}
 	}
-	
+
 	/**
 	 * Extract text content from various file formats
 	 * @param {File} file - The file to extract text from
@@ -105,7 +105,7 @@ function App() {
 					extractedText += `Page ${i}:\n${pageText}\n\n`;
 				}
 				return extractedText || "PDF text extraction complete. No text found or PDF contains images.";
-			} else if (file.type === "application/msword" || 
+			} else if (file.type === "application/msword" ||
 					file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
 				const arrayBuffer = await file.arrayBuffer();
 				const result = await mammoth.extractRawText({ arrayBuffer });
@@ -118,7 +118,7 @@ function App() {
 			throw new Error(`Failed to extract text: ${error.message}`);
 		}
 	}
-	
+
 	/**
 	 * Submit the extracted text to the API for summarization
 	 */
@@ -127,10 +127,10 @@ function App() {
 			setError("Please upload a file first.");
 			return;
 		}
-		
+
 		setLoading(true);
 		setError(null);
-		
+
 		try {
 			const requestBody = {
 				inputs: {
@@ -145,7 +145,7 @@ function App() {
 				},
 				body: JSON.stringify(requestBody),
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
@@ -155,13 +155,13 @@ function App() {
 			if (jsonResponse.predictions) {
 				if (Array.isArray(jsonResponse.predictions) && jsonResponse.predictions.length > 0) {
 					const firstPrediction = jsonResponse.predictions[0];
-					
+
 					if (firstPrediction.summary) {
 						setSummaryResponse(firstPrediction.summary);
 					} else {
 						setSummaryResponse("No summary data found in model response.");
 					}
-				} 
+				}
 				// Handle direct object case
 				else if (jsonResponse.predictions.summary) {
 					setSummaryResponse(jsonResponse.predictions.summary);
@@ -179,15 +179,15 @@ function App() {
 			setLoading(false);
 		}
 	}
-	
+
 	const showOriginalTextInfo = expandedSection === "original-text";
 	const showSummaryInfo = expandedSection === "summary-info";
-	
+
 	return (
 		<div>
 			<div className="header">
 				<div className="header-logo">
-					<img src={iconImage} width="150px" height="150px" alt="Text Summarization Logo" /> 
+					<img src={iconImage} width="150px" height="150px" alt="Text Summarization Logo" />
 				</div>
 				<div className='title-info'>
 					<div className="header-title">
@@ -198,7 +198,7 @@ function App() {
 					</div>
 				</div>
 			</div>
-			
+
 			{/* File Upload Card */}
 			<Card className="file-upload-card"
 				border="outlined"
@@ -225,8 +225,8 @@ function App() {
 							<div className='input-toggle'>
 								<Toggle className="detail-toggle" label="Show Original Text" onChange={setShowDetails} />
 							</div>
-							<Button 
-								className="submit-button" 
+							<Button
+								className="submit-button"
 								onClick={submitForSummarization}
 								disabled={!fileText || loading}
 							>
@@ -236,7 +236,7 @@ function App() {
 					</div>
 				}
 			/>
-			
+
 			{/* Main content area with either detailed view or simplified view */}
 			{showDetails ? (
 				<Card className="white-box"
@@ -251,33 +251,33 @@ function App() {
 										<div className='title-with-icon'>
 											<h5>Original Document Text</h5>
 											<div className='title-with-icon-icon'>
-												{showOriginalTextInfo ? 
+												{showOriginalTextInfo ?
 													<IconInfo size={24} onClick={toggleOriginalTextInfo} filled /> :
 													<IconInfo size={24} onClick={toggleOriginalTextInfo} />
 												}
 											</div>
 										</div>
 										<div className="text-info">
-											{showOriginalTextInfo && 
+											{showOriginalTextInfo &&
 												<p>
-													This is the extracted text from your uploaded document. 
+													This is the extracted text from your uploaded document.
 													The quality of extraction depends on the document format and structure.
 												</p>
 											}
-											<TextArea 
-												className="original-text-area" 
+											<TextArea
+												className="original-text-area"
 												id="original-text"
 												label="Extracted text:"
-												value={fileText} 
+												value={fileText}
 												readOnly
 												separateLabel
-												onChange={() => {}} 
+												onChange={() => {}}
 											/>
 										</div>
 									</div>
 								}
 							/>
-							
+
 							{/* Summary Output Card */}
 							<Card className={`text-module-card ${showSummaryInfo ? "card-expanded" : "card-not-expanded"}`}
 								border="outlined"
@@ -286,27 +286,27 @@ function App() {
 										<div className='title-with-icon'>
 											<h5>Summarized Output</h5>
 											<div className='title-with-icon-icon'>
-												{showSummaryInfo ? 
+												{showSummaryInfo ?
 													<IconInfo size={24} onClick={toggleSummaryInfo} filled /> :
 													<IconInfo size={24} onClick={toggleSummaryInfo} />
 												}
 											</div>
 										</div>
 										<div className="summary-info">
-											{showSummaryInfo &&	
+											{showSummaryInfo &&
 												<p>
-													This is the AI-generated summary of your document. The model extracts key information 
+													This is the AI-generated summary of your document. The model extracts key information
 													while preserving the essential meaning and context.
 												</p>
 											}
-											<TextArea 
-												className="summary-text-area" 
+											<TextArea
+												className="summary-text-area"
 												id="summary-text"
 												label="Generated Summary:"
-												value={summaryResponse} 
+												value={summaryResponse}
 												readOnly
 												separateLabel
-												onChange={() => {}} 
+												onChange={() => {}}
 											/>
 										</div>
 									</div>
@@ -324,7 +324,7 @@ function App() {
 								<div className='title-with-icon' style={{display:"flex", justifyContent:"center"}}>
 									<h4>Document Summarization</h4>
 									<div className='title-with-icon-icon'>
-										{showDetails ? 
+										{showDetails ?
 											<IconInfo size={24} onClick={toggleBlackBoxInfo} filled /> :
 											<IconInfo size={24} onClick={toggleBlackBoxInfo} />
 										}
@@ -334,12 +334,12 @@ function App() {
 									{error && <p className="error-message">{error}</p>}
 								</div>
 								<div className='outer-padding'>
-									<TextArea 
-										className="output-external-area" 
+									<TextArea
+										className="output-external-area"
 										id="output-text"
-										value={summaryResponse || "Upload a document and click 'Summarize' to generate a summary."} 
+										value={summaryResponse || "Upload a document and click 'Summarize' to generate a summary."}
 										readOnly
-										onChange={() => {}} 
+										onChange={() => {}}
 									/>
 								</div>
 							</div>

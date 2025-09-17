@@ -21,7 +21,7 @@
 
 # Overview
 
-This project builds a simple **recommender system** for movies using **TensorFlow**.  
+This project builds a simple **recommender system** for movies using **TensorFlow**.
 It trains on user-item interaction data to predict movie preferences with Model-based Collaborative Filtering.
 
 ---

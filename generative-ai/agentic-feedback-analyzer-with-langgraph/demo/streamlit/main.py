@@ -18,16 +18,13 @@ from langchain.docstore.document import Document
 
 # Set page config
 st.set_page_config(
-    page_title="Agentic Feedback Analyzer",
-    page_icon="🔬",
-    layout="wide"
+    page_title="Agentic Feedback Analyzer", page_icon="🔬", layout="wide"
 )
 
 # ------------------------- CSS STYLING -------------------------
 
 st.markdown(
-    "<style>" + open("assets/styles.css").read() + "</style>", 
-    unsafe_allow_html=True
+    "<style>" + open("assets/styles.css").read() + "</style>", unsafe_allow_html=True
 )
 
 # ------------------------- LOGOS -------------------------
@@ -41,16 +38,21 @@ with col3:
 
 
 # ------------------------- HEADER -------------------------
-st.markdown('<div class="gradient-header"><h2>🤖 Agentic Feedback Analyzer 🤖</h2></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="gradient-header"><h2>🤖 Agentic Feedback Analyzer 🤖</h2></div>',
+    unsafe_allow_html=True,
+)
 
 # ------------------------- SIDEBAR CONFIG -------------------------
 st.sidebar.title("⚙️ Usage")
 
-st.sidebar.markdown("""
+st.sidebar.markdown(
+    """
 **Instructions:**
 1. Fill out the topic, question, and uploaded documents.
 2. Click **Run Analysis** to receive an AI-generated answer about your documents.
-""")
+"""
+)
 
 endpoint_url = "http://localhost:5002/invocations"
 
@@ -59,11 +61,13 @@ with st.form("inference_form"):
     topic = st.text_area("📂 Topic", height=80, key="topic")
     question = st.text_area("❓ Question", height=100, key="question")
     uploaded_files = st.file_uploader(
-        "Upload Document Files", accept_multiple_files=True,
-        type=["txt", "csv", "pdf", "docx", "xlsx", "md"]
+        "Upload Document Files",
+        accept_multiple_files=True,
+        type=["txt", "csv", "pdf", "docx", "xlsx", "md"],
     )
 
     submitted = st.form_submit_button("🔢 Run Analysis")
+
 
 # ------------------------- FILE PROCESSING -------------------------
 class SafeTextLoader(TextLoader):
@@ -77,7 +81,7 @@ class SafeTextLoader(TextLoader):
             except Exception:
                 continue
         raise ValueError(f"Failed to decode file: {self.file_path}")
-    
+
 
 # File Type Mapping
 supported_extensions = {
@@ -127,7 +131,8 @@ def process_files(files: List) -> str:
             except Exception as cleanup_err:
                 st.warning(f"⚠️ Failed to clean up temp directory: {cleanup_err}")
 
-    return '\n\n'.join(doc.page_content for doc in all_docs)
+    return "\n\n".join(doc.page_content for doc in all_docs)
+
 
 # ------------------------- API CALL -------------------------
 if submitted:
@@ -146,25 +151,27 @@ if submitted:
                         "input_text": input_text,
                     }
                 ],
-                "params": {}
+                "params": {},
             }
-            
+
             try:
                 response = requests.post(
-                    endpoint_url.strip(),
-                    json=payload,
-                    verify=False,
-                    timeout=600
+                    endpoint_url.strip(), json=payload, verify=False, timeout=600
                 )
                 response.raise_for_status()
-                output = response.json()["predictions"][0]  # Assuming single-record output
+                output = response.json()["predictions"][
+                    0
+                ]  # Assuming single-record output
 
                 st.markdown("### 📈 Final Answer")
-                st.markdown(f"<div class='result-box'>{output['answer']}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div class='result-box'>{output['answer']}</div>",
+                    unsafe_allow_html=True,
+                )
                 st.divider()
 
                 with st.expander("🔍 Full Message Trace"):
-                    st.json(json.loads(output['messages']))
+                    st.json(json.loads(output["messages"]))
 
             except requests.exceptions.RequestException as e:
                 st.error(f"Request failed: {e}")

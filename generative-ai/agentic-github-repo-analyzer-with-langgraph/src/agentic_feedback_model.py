@@ -11,14 +11,20 @@ from typing import Any, Dict, List  # Static typing support
 # ─────── Third-Party Package Imports ───────
 import mlflow  # ML lifecycle platform
 import mlflow.pyfunc  # MLflow support for custom Python models
-from langchain.docstore.document import Document  # Core document abstraction for LangChain
+from langchain.docstore.document import (
+    Document,
+)  # Core document abstraction for LangChain
 from langchain_community.llms import LlamaCpp  # Local LLM interface for Llama.cpp
 from langgraph.graph import StateGraph  # LangGraph for stateful agent workflows
 from pydantic import BaseModel  # Data validation and model parsing
 
 # ─────── Local Application-Specific Imports ───────
-from src.agentic_workflow import build_agentic_graph  # Custom LangGraph construction logic
-from src.simple_kv_memory import SimpleKVMemory  # In-memory key-value store for agent state
+from src.agentic_workflow import (
+    build_agentic_graph,
+)  # Custom LangGraph construction logic
+from src.simple_kv_memory import (
+    SimpleKVMemory,
+)  # In-memory key-value store for agent state
 from src.utils import logger  # Project-wide configured logger
 
 
@@ -27,10 +33,10 @@ class AgenticModelInput(BaseModel):
     question: str
     input_text: str
 
+
 class AgenticModelOutput(BaseModel):
     answer: str
     messages: str  # Serialized JSON string
-
 
 
 class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
@@ -70,21 +76,23 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
         self.graph = build_agentic_graph()
         self.compiled_graph = self.graph.compile()
 
-
-    def predict(self, context: mlflow.pyfunc.PythonModelContext, model_input: List[AgenticModelInput]
-) -> List[AgenticModelOutput]:
+    def predict(
+        self,
+        context: mlflow.pyfunc.PythonModelContext,
+        model_input: List[AgenticModelInput],
+    ) -> List[AgenticModelOutput]:
         """
         Run the agentic workflow using user-provided topic, question, and input text.
         """
         results = []
-        
+
         for row in model_input:
             topic = row.topic
             question = row.question
             input_text = row.input_text
-        
+
             docs = [Document(page_content=input_text)]
-        
+
             final_state = self.compiled_graph.invoke(
                 input={
                     "topic": topic,
@@ -95,12 +103,14 @@ class AgenticFeedbackModel(mlflow.pyfunc.PythonModel):
                     "messages": [],
                 }
             )
-        
-            results.append(AgenticModelOutput(
-                answer=final_state["answer"],
-                messages=json.dumps(final_state["messages"], indent=4)
-                ))
-        
+
+            results.append(
+                AgenticModelOutput(
+                    answer=final_state["answer"],
+                    messages=json.dumps(final_state["messages"], indent=4),
+                )
+            )
+
         return results
 
     @staticmethod

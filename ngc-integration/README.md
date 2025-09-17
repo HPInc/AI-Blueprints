@@ -16,7 +16,7 @@ The repository is organized into the following structure:
 |    ├── docs/
 |    |   ├── architecture-for-agentic-rag.png       # Architecture screenshot of the agentic RAG system
 |    |   └── Build Custom Agentic RAG Systems.pptx  # Walkthrough for building general agentic RAG systems
-|    |   
+|    |
 |    ├── notebooks/
 |    |   ├── register-model.ipynb                 # Notebook for registering trained models to MLflow
 |    │   └── run-workflow.ipynb                   # Notebook for executing the pipeline
@@ -28,13 +28,13 @@ The repository is organized into the following structure:
 |    └── requirements.txt                         # Python dependencies
 |
 ├── audio-translation-with-nemo-models/
-│    ├── data/                                     # Data assets used in the project   
+│    ├── data/                                     # Data assets used in the project
 │    |   ├── ForrestGump.mp3
 │    |   └── June18.mp3
 │    ├── demo                                      # UI-related files
 │    |   └── ...
-│    ├── docs 
-│    |   ├── successful-streamlit-ui-audio-translation-result.pdf  # React UI screenshot 
+│    ├── docs
+│    |   ├── successful-streamlit-ui-audio-translation-result.pdf  # React UI screenshot
 │    |   └── successful-swagger-ui-audio-translation-result.pdf    # Streamlit UI screenshot
 |    ├── notebooks
 |    |   ├── register-model.ipynb                  # Notebook for registering trained models to MLflow
@@ -43,27 +43,27 @@ The repository is organized into the following structure:
 |    └── requirements.txt                          # Python dependencies (used with pip install)
 |
 ├── data-analysis-with-cudf/
-|    ├── docs                                                  
+|    ├── docs
 |    |   ├── Analysis-with-Pandas-5M.png          # Stock analysis using Pandas UI screenshot (5M dataset size)
 |    |   ├── Analysis-with-Pandas-10M.png         # Stock analysis using Pandas UI screenshot (10M dataset size)
 |    |   ├── Analysis-with-Pandas-and-cuDF-5M.png     # Stock analysis using Pandas and cuDF (5M dataset size)
 |    |   └── Analysis-with-Pandas-and-cuDF-10M.png    # Stock analysis using Pandas and cuDF(10M dataset size)
-|    ├── notebooks                                            
+|    ├── notebooks
 |    │   ├── stock-analysis-with-pandas                # Directory of notebooks using Pandas only (CPU)
-|    |   |   └── run-workflow.ipynb                    # Notebook used for executing the pipeline 
+|    |   |   └── run-workflow.ipynb                    # Notebook used for executing the pipeline
 |    │   └── stock-analysis-with-pandas-and-cudf       # Directory of notebooks using cuDF (GPU)
 |    |       └── run-workflow.ipynb                    # Notebook used for executing the pipeline
 |    ├── README.md                                 # Project documentation
 |    └── requirements.txt                          # Python dependencies (used with pip install)
 |
-├── data-visualization-with-cudf/                   
+├── data-visualization-with-cudf/                  
 |    ├── docs
 |    |   ├── ui-opencellid-EU.png                  # opencellid UI screenshot (European Union map)
 |    │   └── ui-opencellid-US.png                  # opencellid UI screenshot (United States map)
 |    ├── notebooks
 |    │   └── run-workflow.ipynb                    # Main notebook for the project
 |    ├── src                                       # Core Python modules
-|    │   └── opencellid_downloader.py               
+|    │   └── opencellid_downloader.py
 |    ├── README.md                                 # Project documentation
 |    └── requirements.txt                          # Python dependencies (used with pip install)
 │
@@ -73,7 +73,7 @@ The repository is organized into the following structure:
 |   │   └── June18.mp3
 |   ├── demo                                       # UI-related files
 |   │   └── ...
-|   ├── docs  
+|   ├── docs
 |   │   ├── successful-streamlit-ui-audio-translation-result.pdf    # Streamlit UI screenshot pdf file
 |   │   └── successful-swagger-ui-audio-translation-result.pdf      # Swagger UI screenshot pdf file
 |   ├── notebooks
@@ -100,9 +100,9 @@ This project contains a single integrated pipeline—**Agentic RAG for AI Studio
 
 This project demonstrates an end-to-end **audio translation pipeline** using **NVIDIA NeMo models**. It takes an English audio sample and performs:
 
-1. **Speech-to-Text (STT)** conversion using Citrinet  
-2. **Text Translation (TT)** from English to Spanish using NMT  
-3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN  
+1. **Speech-to-Text (STT)** conversion using Citrinet
+2. **Text Translation (TT)** from English to Spanish using NMT
+3. **Text-to-Speech (TTS)** synthesis in Spanish using FastPitch and HiFiGAN
 
 All steps are GPU-accelerated, and the full workflow is integrated with **MLflow** for experiment tracking and model registration.
 
@@ -122,9 +122,9 @@ In this project, we provide notebooks to compare the execution time of dataset o
 
 # 🌍 Vacation Recommendation Service
 
-The **Vacation Recommendation Service** is an AI-powered system designed to provide personalized travel recommendations based on user queries. 
+The **Vacation Recommendation Service** is an AI-powered system designed to provide personalized travel recommendations based on user queries.
 
-It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.  
+It utilizes the **NVIDIA NeMo Framework** and **BERT embeddings** to generate relevant suggestions tailored to user preferences.
 
 
 # Contact and Support

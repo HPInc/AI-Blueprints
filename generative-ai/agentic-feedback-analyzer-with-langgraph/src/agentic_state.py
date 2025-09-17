@@ -1,13 +1,24 @@
 # ─────── Standard Library Imports ───────
-from typing import Any, Dict, List, Optional, TypedDict  # Type annotations for structure, collections, and optional values
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    TypedDict,
+)  # Type annotations for structure, collections, and optional values
 
 # ─────── Third-Party Package Imports ───────
-from langchain.docstore.document import Document  # Core document abstraction used across LangChain
-from langchain_community.llms import LlamaCpp  # Interface for running Llama models locally with llama.cpp
+from langchain.docstore.document import (
+    Document,
+)  # Core document abstraction used across LangChain
+from langchain_community.llms import (
+    LlamaCpp,
+)  # Interface for running Llama models locally with llama.cpp
 
 # ─────── Local Application-Specific Imports ───────
-from src.simple_kv_memory import SimpleKVMemory  # In-memory key-value store used for maintaining agent state
-
+from src.simple_kv_memory import (
+    SimpleKVMemory,
+)  # In-memory key-value store used for maintaining agent state
 
 
 class AgenticState(TypedDict, total=False):
@@ -21,8 +32,8 @@ class AgenticState(TypedDict, total=False):
     question: str
 
     # Document & chunking
-    docs: str                      # Raw or combined document content
-    chunks: str                    # Raw or processed chunks
+    docs: str  # Raw or combined document content
+    chunks: str  # Raw or processed chunks
 
     # LLM configuration
     llm: LlamaCpp
