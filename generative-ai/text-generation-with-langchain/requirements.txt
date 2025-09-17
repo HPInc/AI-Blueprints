@@ -1,17 +1,20 @@
 # Create the workspace using the Local GenAI image. 
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-
+torch>=2.0.0,<2.5.0
 PyMuPDF==1.25.4
 feedparser==6.0.11
 newspaper3k==0.2.8
 listparser==0.20
 langchain==0.3.9
 langchain-community==0.3.9
-langchain-text-splitters
-chromadb
-langchain-huggingface
-llama-cpp-python
-sentence-transformers
-PyYAML
-requests
+langchain-text-splitters>=0.3.0
+langchain-huggingface>=0.1.0
+chromadb>=0.4.0
+sentence-transformers>=2.7.0
+llama-cpp-python>=0.2.0
+PyYAML>=6.0
+requests>=2.25.0
 mlflow==2.21.2
+
+
+
