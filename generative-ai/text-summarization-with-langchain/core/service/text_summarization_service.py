@@ -32,20 +32,21 @@ from src.service.base_service import BaseGenerativeService
 # Set up logger
 logger = logging.getLogger(__name__)
 
+
 class TextSummarizationService(BaseGenerativeService):
     """Text Summarization Service that extends the BaseGenerativeService."""
 
     def load_model(self, context) -> None:
         """
         Load the appropriate model based on configuration.
-        
+
         Args:
             context: MLflow model context containing artifacts
         """
         try:
             model_source = self.model_config.get("model_source", "local")
             logger.info(f"Attempting to load model from source: {model_source}")
-            
+
             if model_source == "local":
                 logger.info("Using local LlamaCpp model source")
                 self.load_local_model(context)
@@ -58,47 +59,52 @@ class TextSummarizationService(BaseGenerativeService):
             else:
                 logger.error(f"Unsupported model source: {model_source}")
                 raise ValueError(f"Unsupported model source: {model_source}")
-                
+
             if self.llm is None:
                 logger.error("Model failed to initialize - llm is None after loading")
                 raise RuntimeError("Model initialization failed - llm is None")
-                
+
             logger.info(f"Model of type {type(self.llm).__name__} loaded successfully")
-            
+
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-    
+
     def load_local_model(self, context):
         """
         Load a local LlamaCpp model.
-        
+
         Args:
             context: MLflow model context containing artifacts
         """
         try:
             logger.info("Initializing local LlamaCpp model.")
             model_path = context.artifacts.get("model", None)
-            
+
             logger.info(f"Model path: {model_path}")
-            
+
             if not model_path or not os.path.exists(model_path):
                 logger.error(f"Model file not found at: {model_path}")
-                raise FileNotFoundError(f"The model file was not found at: {model_path}")
-            
-            logger.info(f"Model file exists. Size: {os.path.getsize(model_path) / (1024 * 1024):.2f} MB")
-            
+                raise FileNotFoundError(
+                    f"The model file was not found at: {model_path}"
+                )
+
+            logger.info(
+                f"Model file exists. Size: {os.path.getsize(model_path) / (1024 * 1024):.2f} MB"
+            )
+
             logger.info("Setting up callback manager")
             self.callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-            
+
             logger.info("Initializing LlamaCpp with the following parameters:")
             logger.info(f"  - Model Path: {model_path}")
             logger.info(f"  - n_gpu_layers: 30, n_batch: 512, n_ctx: 4096")
             logger.info(f"  - max_tokens: 1024, f16_kv: True, temperature: 0.2")
-            
+
             try:
                 self.llm = LlamaCpp(
                     model_path=model_path,
@@ -119,53 +125,62 @@ class TextSummarizationService(BaseGenerativeService):
                 logger.error(f"Failed to initialize LlamaCpp model: {str(model_error)}")
                 logger.error(f"Exception type: {type(model_error).__name__}")
                 import traceback
+
                 logger.error(f"Traceback: {traceback.format_exc()}")
                 raise
-                
+
             logger.info("Using local LlamaCpp model for text summarization.")
         except Exception as e:
             logger.error(f"Error in load_local_model: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-    
+
     def load_local_hf_model(self, context):
         """
         Load a local Hugging Face model.
-        
+
         Args:
             context: MLflow model context containing artifacts
         """
         try:
-            if self.model_config["hf_key"] != "" :
+            if self.model_config["hf_key"] != "":
                 os.environ["HF_TOKEN"] = self.model_config["hf_key"]
             logger.info("Loading local Hugging Face model")
             model_id = "meta-llama/Llama-3.2-3B-Instruct"
             logger.info(f"Using model_id: {model_id}")
-            
+
             logger.info("Loading tokenizer...")
             tokenizer = AutoTokenizer.from_pretrained(model_id)
-            
+
             logger.info("Loading model...")
             model = AutoModelForCausalLM.from_pretrained(model_id)
-            
+
             logger.info("Creating pipeline...")
-            pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100, device=0)
-            
+            pipe = pipeline(
+                "text-generation",
+                model=model,
+                tokenizer=tokenizer,
+                max_new_tokens=100,
+                device=0,
+            )
+
             self.llm = HuggingFacePipeline(pipeline=pipe)
             logger.info("Using the local Llama 3b downloaded from HuggingFace.")
         except Exception as e:
             logger.error(f"Error in load_local_hf_model: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     def load_cloud_hf_model(self, context):
         """
         Load a cloud-based Hugging Face model.
-        
+
         Args:
             context: MLflow model context containing artifacts
         """
@@ -174,7 +189,7 @@ class TextSummarizationService(BaseGenerativeService):
             if "hf_key" not in self.model_config:
                 logger.error("Missing HuggingFace API key in model_config")
                 raise ValueError("Missing required configuration: hf_key")
-                
+
             logger.info("Initializing HuggingFaceEndpoint with Mistral-7B model")
             self.llm = HuggingFaceEndpoint(
                 huggingfacehub_api_token=self.model_config["hf_key"],
@@ -185,48 +200,53 @@ class TextSummarizationService(BaseGenerativeService):
             logger.error(f"Error in load_cloud_hf_model: {str(e)}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-    
+
     def load_prompt(self) -> None:
         """Load the prompt template for text summarization."""
         # Import the prompt formatting function
         from src.prompt_templates import format_summarization_prompt
-        
+
         # Get the model source from configuration
         model_source = self.model_config.get("model_source", "local")
-        
+
         # Format the prompt template based on the model source
         self.prompt_str = format_summarization_prompt(model_source)
-        
+
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
 
     def load_chain(self) -> None:
         """Create the summarization chain using the loaded model and prompt."""
         self.chain = self.prompt | self.llm | StrOutputParser()
-    
+
     def predict(self, context, model_input):
         """
         Generate a summary from the input text.
-        
+
         Args:
             context: MLflow model context
             model_input: Input data for summarization, expecting a "text" field
-            
+
         Returns:
             DataFrame with the summary in a "summary" field
         """
         try:
             logger.info("Processing summarization request")
             text = model_input["text"][0]
-            
+
             # Run the input through the summarization chain
             result = self.chain.invoke({"context": text})
-            
+
             logger.info("Successfully processed summarization request")
-            
+
             # Handle different result formats based on what the chain returns
-            if isinstance(result, dict) and "predictions" in result and len(result["predictions"]) > 0:
+            if (
+                isinstance(result, dict)
+                and "predictions" in result
+                and len(result["predictions"]) > 0
+            ):
                 if "summary" in result["predictions"][0]:
                     summary = result["predictions"][0]["summary"]
                     logger.info("Extracted summary from predictions array")
@@ -235,63 +255,58 @@ class TextSummarizationService(BaseGenerativeService):
             else:
                 # Use the result directly if it's a string or other format
                 summary = str(result)
-                
+
             logger.info(f"Summary extraction completed, type: {type(summary)}")
-        
+
         except Exception as e:
             error_message = f"Error processing summarization request: {str(e)}"
             logger.error(error_message)
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             summary = error_message
-        
+
         # Return the result as a DataFrame with a summary column
         return pd.DataFrame([{"summary": summary}])
-        
+
     @classmethod
     def log_model(
-        cls, 
-        artifact_path, 
+        cls,
+        artifact_path,
         config_path,
         secrets_dict=None,
-        model_path=None, 
-        demo_folder=None
+        model_path=None,
+        demo_folder=None,
     ):
         """
         Log the model to MLflow.
-        
+
         Args:
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
             secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
-            
+
         Returns:
             None
         """
         import mlflow
         from mlflow.models.signature import ModelSignature
         from mlflow.types.schema import Schema, ColSpec
-        
+
         # Create demo folder if specified and doesn't exist
         if demo_folder and not os.path.exists(demo_folder):
             os.makedirs(demo_folder, exist_ok=True)
-            
+
         # Define model input/output schema
-        input_schema = Schema([
-            ColSpec("string", "text")
-        ])
-        output_schema = Schema([
-            ColSpec("string", "summary")
-        ])
+        input_schema = Schema([ColSpec("string", "text")])
+        output_schema = Schema([ColSpec("string", "summary")])
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-        
+
         # Prepare artifacts
-        artifacts = {
-            "config": config_path
-        }
+        artifacts = {"config": config_path}
 
         if secrets_dict:
             tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
@@ -299,13 +314,13 @@ class TextSummarizationService(BaseGenerativeService):
             tmp.close()
             artifacts["secrets"] = tmp.name
             logger.info(f"Secrets artifact written to temporary file {tmp.name}")
-        
+
         if demo_folder:
             artifacts["demo"] = demo_folder
-            
+
         if model_path:
             artifacts["model"] = model_path
-        
+
         # Log model to MLflow
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,

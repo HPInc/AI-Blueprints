@@ -20,16 +20,13 @@ from langchain.docstore.document import Document
 
 # Set page config
 st.set_page_config(
-    page_title="Agentic Github Repo Analyzer",
-    page_icon="🔬",
-    layout="wide"
+    page_title="Agentic Github Repo Analyzer", page_icon="🔬", layout="wide"
 )
 
 # ------------------------- CSS STYLING -------------------------
 
 st.markdown(
-    "<style>" + open("assets/styles.css").read() + "</style>", 
-    unsafe_allow_html=True
+    "<style>" + open("assets/styles.css").read() + "</style>", unsafe_allow_html=True
 )
 
 # ------------------------- LOGOS -------------------------
@@ -43,16 +40,21 @@ with col3:
 
 
 # ------------------------- HEADER -------------------------
-st.markdown('<div class="gradient-header"><h2>🤖 Agentic Github Repo Analyzer 🤖</h2></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="gradient-header"><h2>🤖 Agentic Github Repo Analyzer 🤖</h2></div>',
+    unsafe_allow_html=True,
+)
 
 # ------------------------- SIDEBAR CONFIG -------------------------
 st.sidebar.title("⚙️ Usage")
 
-st.sidebar.markdown("""
+st.sidebar.markdown(
+    """
 **Instructions:**
 1. Fill out the topic, question, repo url, and folder path.
 2. Click **Run Analysis** to receive an AI-generated answer from your analyzed repo.
-""")
+"""
+)
 
 endpoint_url = "http://localhost:5002/invocations"
 
@@ -60,15 +62,21 @@ endpoint_url = "http://localhost:5002/invocations"
 with st.form("inference_form"):
     topic = st.text_area("📂 Topic", height=80, key="topic")
     question = st.text_area("❓ Question", height=100, key="question")
-    repo_url = st.text_input("Enter GitHub Repo URL", "https://github.com/HPInc/AI-Blueprints")
-    folder_path = st.text_input("Enter Folder Name in Repo", "data-science/classification-with-svm")
-
+    repo_url = st.text_input(
+        "Enter GitHub Repo URL", "https://github.com/HPInc/AI-Blueprints"
+    )
+    folder_path = st.text_input(
+        "Enter Folder Name in Repo", "data-science/classification-with-svm"
+    )
 
     submitted = st.form_submit_button("🔢 Run Analysis")
 
 # ------------------------- REPO DOWNLOADING -------------------------
 
-def download_github_repo(repo_url: str, output_dir: str = "../data/input/downloaded_repo") -> Path:
+
+def download_github_repo(
+    repo_url: str, output_dir: str = "../data/input/downloaded_repo"
+) -> Path:
     """
     Download and extract a public GitHub repository as a zip file.
 
@@ -120,6 +128,7 @@ class SafeTextLoader(TextLoader):
                 continue
         raise ValueError(f"Failed to decode file: {self.file_path}")
 
+
 class NotebookLoader:
     def __init__(self, file_path: str):
         self.file_path = file_path
@@ -133,7 +142,7 @@ class NotebookLoader:
             return [Document(page_content=source)]
         except Exception as e:
             raise ValueError(f"Failed to load notebook: {self.file_path}: {e}")
-    
+
 
 # File Type Mapping
 supported_extensions = {
@@ -154,9 +163,10 @@ supported_extensions = {
 def process_files(input_path: str) -> str:
     all_docs = []
 
-    
     for file_path in Path(input_path).rglob("*"):
-        if any(part.startswith(".") and part not in {".", ".."} for part in file_path.parts):
+        if any(
+            part.startswith(".") and part not in {".", ".."} for part in file_path.parts
+        ):
             continue
 
         if file_path.is_dir():
@@ -176,7 +186,8 @@ def process_files(input_path: str) -> str:
         else:
             print("⚠️ Unsupported file type: %s", file_path.name)
 
-    return '\n\n'.join(doc.page_content for doc in all_docs)
+    return "\n\n".join(doc.page_content for doc in all_docs)
+
 
 # ------------------------- API CALL -------------------------
 if submitted:
@@ -184,8 +195,10 @@ if submitted:
         st.error("Please fill in all required fields.")
     else:
         with st.spinner("Getting the Files from the Repo..."):
-            repo_name = Path(repo_url.split('/')[-1] + '-main')
-            input_path: Path = Path("../data/input/downloaded_repo") / repo_name /  folder_path
+            repo_name = Path(repo_url.split("/")[-1] + "-main")
+            input_path: Path = (
+                Path("../data/input/downloaded_repo") / repo_name / folder_path
+            )
 
             download_github_repo(repo_url)
             input_text = process_files(input_path)
@@ -198,25 +211,27 @@ if submitted:
                         "input_text": input_text,
                     }
                 ],
-                "params": {}
+                "params": {},
             }
-            
+
             try:
                 response = requests.post(
-                    endpoint_url.strip(),
-                    json=payload,
-                    verify=False,
-                    timeout=600
+                    endpoint_url.strip(), json=payload, verify=False, timeout=600
                 )
                 response.raise_for_status()
-                output = response.json()["predictions"][0]  # Assuming single-record output
+                output = response.json()["predictions"][
+                    0
+                ]  # Assuming single-record output
 
                 st.markdown("### 📈 Final Answer")
-                st.markdown(f"<div class='result-box'>{output['answer']}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div class='result-box'>{output['answer']}</div>",
+                    unsafe_allow_html=True,
+                )
                 st.divider()
 
                 with st.expander("🔍 Full Message Trace"):
-                    st.json(json.loads(output['messages']))
+                    st.json(json.loads(output["messages"]))
 
             except requests.exceptions.RequestException as e:
                 st.error(f"Request failed: {e}")

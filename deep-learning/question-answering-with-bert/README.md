@@ -22,7 +22,7 @@
 ## Overview
 
  The Bidirectional Encoder Representations from Transformers (BERT) is based on a deep learning model in which every output is connected to every input, and the weightings between them are dynamically calculated based upon their connection. BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications.
-  
+
  ---
 
 ## Project Structure
@@ -41,12 +41,12 @@
 │
 ├── notebooks
 │   └── register-model.ipynb                                          # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations                           
+│   └── run-workflow.ipynb                                            # Notebook for executing the pipeline using custom inputs and configurations
 │
 ├── README.md                                                         # Project documentation
-│                                        
+│
 ├── requirements.txt                                                  # Dependency file for installing required packages
-                                    
+
 ```
 
 ## Setup
@@ -55,8 +55,8 @@
 
 Ensure your environment meets the minimum compute requirements for smooth performance:
 
-- **RAM**: 64 GB  
-- **VRAM**: 16 GB  
+- **RAM**: 64 GB
+- **VRAM**: 16 GB
 - **GPU**: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
@@ -92,7 +92,7 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 5. Complete the training evaluation of the model.
 6. Create a question-answering pipeline from transformers and pass the model to it.
 
-**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired.
 
 ### 2 ▪ Run the Notebook
 Run the following notebook `/register-model.ipynb`:
@@ -101,13 +101,13 @@ Run the following notebook `/register-model.ipynb`:
 3. Load the Model and Run Inference
 
 ### 3 ▪ Deploy
-1. Run the following notebook `/register-model.ipynb`: 
-2. Navigate to **Deployments > New Service** in AI Studio.  
-3. Name the service and select the registered model.  
-4. Choose an available model version and configure it with **GPU acceleration**.  
-5. Start the deployment.  
-6. Once deployed, click on the **Service URL** to access the Swagger API page.  
-7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.  
+1. Run the following notebook `/register-model.ipynb`:
+2. Navigate to **Deployments > New Service** in AI Studio.
+3. Name the service and select the registered model.
+4. Choose an available model version and configure it with **GPU acceleration**.
+5. Start the deployment.
+6. Once deployed, click on the **Service URL** to access the Swagger API page.
+7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.
 
 ### 3 ▪ Swagger / raw API
 
@@ -164,7 +164,7 @@ And as response:
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

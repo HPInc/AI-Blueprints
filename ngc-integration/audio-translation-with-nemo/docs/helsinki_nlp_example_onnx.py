@@ -25,35 +25,33 @@ for step in range(max_length):
                 "name": "input_ids",
                 "shape": input_ids.shape,
                 "datatype": "INT64",
-                "data": input_ids.tolist()
+                "data": input_ids.tolist(),
             },
             {
                 "name": "attention_mask",
                 "shape": attention_mask.shape,
                 "datatype": "INT64",
-                "data": attention_mask.tolist()
+                "data": attention_mask.tolist(),
             },
             {
                 "name": "decoder_input_ids",
                 "shape": decoder_input_ids.shape,
                 "datatype": "INT64",
-                "data": decoder_input_ids.tolist()
+                "data": decoder_input_ids.tolist(),
             },
             {
                 "name": "decoder_attention_mask",
                 "shape": decoder_attention_mask.shape,
                 "datatype": "INT64",
-                "data": decoder_attention_mask.tolist()
-            }
+                "data": decoder_attention_mask.tolist(),
+            },
         ],
-        "outputs": [
-            {
-                "name": "logits"
-            }
-        ]
+        "outputs": [{"name": "logits"}],
     }
 
-    response = requests.post("http://localhost:8000/v2/models/Helsinki-NLP/infer", json=payload)
+    response = requests.post(
+        "http://localhost:8000/v2/models/Helsinki-NLP/infer", json=payload
+    )
 
     if response.status_code != 200:
         print("Erro:", response.status_code)
@@ -61,7 +59,9 @@ for step in range(max_length):
         break
 
     result = response.json()
-    logits = np.array(result["outputs"][0]["data"]).reshape(result["outputs"][0]["shape"])
+    logits = np.array(result["outputs"][0]["data"]).reshape(
+        result["outputs"][0]["shape"]
+    )
 
     next_token_id = int(np.argmax(logits[0, -1]))
     output_tokens.append(next_token_id)

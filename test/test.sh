@@ -6,7 +6,7 @@
 # 4. An optional argument to specify if the tests should be run in a virtual environment (venv / novenv)
 echo ""
 echo ""
-echo "*-*-*-*-*-*-*-*-*-*-*-* Started test using the workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+echo "*-*-*-*-*-*-*-*-*-*-*-* Started test using the workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "
 echo ""
 echo ""
 SCRIPT=$(readlink -f $0)
@@ -29,9 +29,9 @@ pip install astor
 python ${SCRIPT_FOLDER}/py_utils/main.py -s $1 -o $TMP_FOLDER -w $2
 
 for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
-    echo "******************************"	
-    echo "Running tests on ${TEST_FILE}"	
-    echo "     ****************"	
+    echo "******************************"
+    echo "Running tests on ${TEST_FILE}"
+    echo "     ****************"
 
     ## Create a virtual environment for each test file with a random name
 
@@ -42,7 +42,7 @@ for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
         python -m venv ${ENV_FOLDER}/venv --system-site-packages
         source ${ENV_FOLDER}/venv/bin/activate
         if [[ -f "${TEST_FILE}_requirements.txt" ]]; then
-            pip install -r ${TEST_FILE}_requirements.txt --quiet 
+            pip install -r ${TEST_FILE}_requirements.txt --quiet
         fi
         # Run the test file using IPython
         ipython $TEST_FILE
@@ -51,12 +51,12 @@ for TEST_FILE in $(find $TMP_FOLDER -type f -name '*test.pyt'); do
         pip install -r ${TEST_FILE}_requirements.txt
         ipython $TEST_FILE
     fi
-    echo "******************************"	
+    echo "******************************"
 
 done
 
 echo ""
 echo ""
-echo "*-*-*-*-*-*-*-*-*-*-*-* Finished test on workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "	
+echo "*-*-*-*-*-*-*-*-*-*-*-* Finished test on workspace: $2 *-*-*-*-*-*-*-*-*-*-*-* "
 echo ""
 echo ""

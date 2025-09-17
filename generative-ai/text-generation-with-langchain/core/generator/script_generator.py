@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import logging
@@ -42,7 +41,9 @@ class ScriptGenerator:
         self.logger = logging.getLogger(__name__)
         self.logging_enabled = logging_enabled
         if logging_enabled:
-            logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+            logging.basicConfig(
+                level=logging.INFO, format="[%(levelname)s] %(message)s"
+            )
 
     def add_section(self, name: str, prompt: str) -> None:
         """Append a named section that will be generated later."""
@@ -72,12 +73,14 @@ class ScriptGenerator:
                 self.logger.info("Generating section '%s'…", section["name"])
             result_batch = self.chain.batch(
                 [{"prompt": section["prompt"]}],
-                config=dict(callbacks=[])  # No callbacks
+                config=dict(callbacks=[]),  # No callbacks
             )
             raw_text: str = result_batch[0] if result_batch else ""
 
             if self.logging_enabled:
-                preview = raw_text[:300].replace("\n", " ") + ("…" if len(raw_text) > 300 else "")
+                preview = raw_text[:300].replace("\n", " ") + (
+                    "…" if len(raw_text) > 300 else ""
+                )
                 self.logger.info("Model output (%s): %s", section["name"], preview)
 
             # Interactive approval loop

@@ -46,12 +46,12 @@ agentic-feedback-analyzer-with-langgraph/
 ├── data/                                # Feedback files (input directory)
 │   └── input/
 ├── demo/                                # UI frontend code (Streamlit)
-│   └── streamlit/                       
+│   └── streamlit/
 ├── docs/                                # Documents for UI Testing
 │   ├── Streamlit UI Page - Agentic Feedback Analyzer.pdf
 │   └── streamlit-ui-ss-agentic-feedback-analyzer.png
 ├── notebooks/                           # Workflow and MLflow notebooks
-│   ├── register-model.ipynb             
+│   ├── register-model.ipynb
 │   └── run-workflow.ipynb
 ├── requirements.txt                     # All required packages
 ├── README.md                            # Project documentation

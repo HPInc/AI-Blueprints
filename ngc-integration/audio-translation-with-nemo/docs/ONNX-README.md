@@ -56,8 +56,8 @@ mt_model = MarianMTModel.from_pretrained(MT_MODEL)
 asr_model = nemo_asr.models.EncDecCTCModel.restore_from(nemo_models["enc_dec_CTC"])
 fast_pitch_model = nemo_tts.models.FastPitchModel.restore_from(nemo_models["fast_pitch"])
 hifi_gan_model = nemo_tts.models.HifiGanModel.restore_from(nemo_models["hifi_gan"])
-      
-model_configs = [ 
+
+model_configs = [
             ModelExportConfig(
                 model=mt_model,                         # 🚀 Pre-loaded Transformers model!
                 model_name="Helsinki-NLP",              # ONNX file naming
@@ -78,7 +78,7 @@ model_configs = [
                 model=hifi_gan_model.to(device),                   # 🚀 Pre-loaded NeMo Vocoder model!
                 model_name="hifi_gan",                  # ONNX file naming
             ),
-        ] 
+        ]
 ```
 
 If your NeMo model does not support export, you should try to wrap it as a PyTorch model and try to use the torch converter, config example:
@@ -96,7 +96,7 @@ config = ModelExportConfig(
     model=bert_model,
     model_name="bert_pytorch",
     input_sample=(input_ids, attention_mask, token_type_ids),
-    opset=14,           
+    opset=14,
     do_constant_folding=True,   # PyTorch-specific
     input_names=['input_ids', 'attention_mask', 'token_type_ids'],
     output_names=['logits'],
@@ -122,7 +122,7 @@ config = ModelExportConfig(
     model=keras_model,
     model_name="keras_classifier",
     input_sample=input_sample,
-    opset=12,                
+    opset=12,
     use_saved_model=False,   # Set True for complex/custom models or Keras 3
     verbose=False
 )
@@ -140,7 +140,7 @@ config = ModelExportConfig(
     model_name="opus_translator",
     input_sample=None,         # Not required for Transformers
     task="translation",       # Required for translation
-    opset=14,                 
+    opset=14,
     feature="seq2seq-lm",     # Transformers-specific
     verbose=False
 )
@@ -167,7 +167,7 @@ Below are the most relevant parameters for each framework:
 
 ## Official Library Support
 
-This project uses the **official export APIs** from each framework (PyTorch, TensorFlow/Keras, Hugging Face Transformers, and NVIDIA NeMo) to ensure maximum compatibility and reliability.  
+This project uses the **official export APIs** from each framework (PyTorch, TensorFlow/Keras, Hugging Face Transformers, and NVIDIA NeMo) to ensure maximum compatibility and reliability.
 All parameters supported by `ModelExportConfig` are passed directly to the respective library's export function. For advanced usage or troubleshooting, you can always refer to the official documentation of each framework for more details:
 
 - [PyTorch ONNX Export](https://pytorch.org/docs/stable/onnx.html)
@@ -181,15 +181,15 @@ All parameters supported by `ModelExportConfig` are passed directly to the respe
 
 Some models—especially PyTorch and Keras—may require additional parameters for correct ONNX export:
 
-- **`input_sample`**:  
-  A sample input (tensor or tuple of tensors) used to trace the model during export.  
+- **`input_sample`**:
+  A sample input (tensor or tuple of tensors) used to trace the model during export.
   - **Required for:** PyTorch, Keras, NeMo (when native export is not supported).
   - **Transformers:** Usually not needed, unless you have a custom model.
 
-- **`dynamic_axes`**:  
-  Allows you to specify variable dimensions (e.g., batch size or sequence length) for inputs and outputs.  
+- **`dynamic_axes`**:
+  Allows you to specify variable dimensions (e.g., batch size or sequence length) for inputs and outputs.
   - **Important for:** Models that accept variable-length inputs, such as NLP or vision models.
-  - **Example:**  
+  - **Example:**
     ```python
     dynamic_axes={
         'input_ids': {0: 'batch_size', 1: 'sequence'},
@@ -197,17 +197,17 @@ Some models—especially PyTorch and Keras—may require additional parameters f
     }
     ```
 
-- **`opset`**:  
-  The ONNX operator set version used for export.  
+- **`opset`**:
+  The ONNX operator set version used for export.
   - **Tip:** Use the version recommended for your stack (e.g., 14 for PyTorch, 12 for Keras).
   - **Compatibility:** If you encounter export errors, try changing the opset version.
 
-- **`input_names` and `output_names`**:  
-  Names for the ONNX model's inputs and outputs.  
+- **`input_names` and `output_names`**:
+  Names for the ONNX model's inputs and outputs.
   - **Required for:** PyTorch (to identify tensors in the ONNX graph).
   - **Tip:** Use clear, descriptive names compatible with your inference pipeline.
 
-**Summary:**  
+**Summary:**
 - For PyTorch and Keras models, always provide a representative `input_sample`.
 - Adjust `dynamic_axes` if your model supports variable input sizes.
 - If you get export errors, try changing the `opset` version.

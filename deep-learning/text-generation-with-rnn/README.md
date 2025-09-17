@@ -27,17 +27,17 @@ The objective of this template is to show how to create a simple text generation
 ## Project Structure
 ```
 ├── code/                                                     # Demo code
-│                                   
+│
 ├── data/                                                     # Data assets used in the project
 │    └── shakespeare.txt                                      # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
 │
 ├── demo/                                                     # Compiled Interface Folder
 ├── docs
-│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot 
+│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot
 │   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot screenshot
-│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot 
-│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot     
-│   ├── swagger-ui-text-generation-with-rnn.pdf               # Swagger UI screenshot 
+│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot
+│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot
+│   ├── swagger-ui-text-generation-with-rnn.pdf               # Swagger UI screenshot
 │   └── swagger-ui-text-generation-with-rnn. pdf              # Swagger UI screenshot
 │
 ├── notebooks
@@ -48,9 +48,9 @@ The objective of this template is to show how to create a simple text generation
 │        └── tf_rnn_model.h5                                  # Trained model for the text_generation_with_RNN_TF.ipynb
 │   ├── run-workflow-TF.ipynb                                 # Notebook for the TensorFlow trained model
 │   ├── run-workflow-Torch.ipynb                              # Notebook for the Torch trained model
-│   ├── register-model.ipynb                                  # Code to deploy        
+│   ├── register-model.ipynb                                  # Code to deploy
 ├── README.md                                                 # Project documentation
-                                    
+
 ```
 ## Setup
 
@@ -58,8 +58,8 @@ The objective of this template is to show how to create a simple text generation
 
 Ensure your environment meets the minimum compute requirements for smooth performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
@@ -86,27 +86,27 @@ https://github.com/HPInc/AI-Blueprints.git
 
 Execute the notebook `/run-workflow-TF.ipynb` to train and test the model. The workflow includes the following steps:
 
-1. **Load the Dataset**  
+1. **Load the Dataset**
    Import the text data from `shakespeare.txt`.
 
-2. **Prepare the Data**  
+2. **Prepare the Data**
    Encode the textual data into a numerical format suitable for training the model.
 
-3. **Create Training Batches**  
+3. **Create Training Batches**
    Split the dataset into smaller, manageable batches to feed into the model during training.
 
-4. **Build the GRU Model**  
+4. **Build the GRU Model**
    Define and compile a GRU-based neural network for text generation.
 
-5. **Train the Model**  
+5. **Train the Model**
    Train the model for the selected number of epochs.
 
-6. **Generate Predictions**  
+6. **Generate Predictions**
    Produce predictions using the seed words *"Confidence"* and *"Love"*. (You can modify these seed words as desired.)
 
 ---
 
-> **Disclaimer**  
+> **Disclaimer**
 > The number of training steps and the size of the training/validation datasets have been intentionally reduced to optimize computational efficiency and minimize runtime. These parameters can be adjusted if additional performance improvements are required.
 
 ### 1.2 ▪ Run the Notebook (Optional):
@@ -120,12 +120,12 @@ Run the following notebook `/run-workflow-Torch.ipynb`:
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### Step 2: Deploy the Service
-1. Execute `/register-model.ipynb ` to register the model in MLflow and create the API logic.  
-2. Navigate to **Deployments > New Service** in AI Studio.  
-3. Name the service and select the registered model.  
-4. Choose an available model version and configure it with **GPU acceleration**.  
-5. Start the deployment.  
-6. Once deployed, click on the **Service URL** to access the Swagger API page.  
+1. Execute `/register-model.ipynb ` to register the model in MLflow and create the API logic.
+2. Navigate to **Deployments > New Service** in AI Studio.
+3. Name the service and select the registered model.
+4. Choose an available model version and configure it with **GPU acceleration**.
+5. Start the deployment.
+6. Once deployed, click on the **Service URL** to access the Swagger API page.
 7. At the top of the Swagger API page, follow the provided link to open the demo UI for interacting with the locally deployed model.
 
 ### 3: Swagger / raw API
@@ -177,7 +177,7 @@ And as response:
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

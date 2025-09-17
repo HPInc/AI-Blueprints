@@ -10,12 +10,13 @@ project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root / "src"))
 from src.utils import get_output_dir
 
+
 class UltraFeedbackVisualizer:
     """
     A class to log human feedback data from the UltraFeedback dataset into TensorBoard,
     enabling visual comparison between preferred (chosen) and rejected model responses.
 
-    This tool highlights `score_chosen` vs. `score_rejected` differences through charts 
+    This tool highlights `score_chosen` vs. `score_rejected` differences through charts
     and markdown summaries, making the results accessible even for non-technical audiences.
 
     Attributes:
@@ -37,13 +38,13 @@ class UltraFeedbackVisualizer:
         """
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
-        
+
         if log_dir is None:
             # Use project-relative path
             self.log_dir = str(get_output_dir() / "tensorboard" / "tensorlogs")
         else:
             self.log_dir = log_dir
-        
+
         self.max_samples = max_samples
 
         os.makedirs(self.log_dir, exist_ok=True)
@@ -70,12 +71,17 @@ class UltraFeedbackVisualizer:
                 return field["text"]
             elif isinstance(field, list):
                 return " ".join(
-                    [f["text"] if isinstance(f, dict) and "text" in f else str(f) for f in field]
+                    [
+                        f["text"] if isinstance(f, dict) and "text" in f else str(f)
+                        for f in field
+                    ]
                 )
             else:
                 return str(field)
         except Exception as e:
-            self.logger.error(f"[Example {idx}] ❌ Error parsing field '{field_name}': {e}")
+            self.logger.error(
+                f"[Example {idx}] ❌ Error parsing field '{field_name}': {e}"
+            )
             return "[ERROR]"
 
     def log_dataset(self, dataset, tag_prefix="train"):
@@ -93,7 +99,9 @@ class UltraFeedbackVisualizer:
         score_rejected_list = []
         score_delta_list = []
 
-        for idx, example in enumerate(dataset.select(range(min(len(dataset), self.max_samples)))):
+        for idx, example in enumerate(
+            dataset.select(range(min(len(dataset), self.max_samples)))
+        ):
             try:
                 prompt = self._extract_text(example["prompt"], "prompt", idx)
                 chosen = self._extract_text(example["chosen"], "chosen", idx)
@@ -107,11 +115,17 @@ class UltraFeedbackVisualizer:
                 score_delta_list.append(delta)
 
                 # Log delta score
-                self.writer.add_scalar(f"{tag_prefix}/ScoreDelta/Example_{idx}", delta, global_step=idx)
+                self.writer.add_scalar(
+                    f"{tag_prefix}/ScoreDelta/Example_{idx}", delta, global_step=idx
+                )
 
                 # Log raw scores
-                self.writer.add_scalar(f"{tag_prefix}/Score/Chosen", score_chosen, global_step=idx)
-                self.writer.add_scalar(f"{tag_prefix}/Score/Rejected", score_rejected, global_step=idx)
+                self.writer.add_scalar(
+                    f"{tag_prefix}/Score/Chosen", score_chosen, global_step=idx
+                )
+                self.writer.add_scalar(
+                    f"{tag_prefix}/Score/Rejected", score_rejected, global_step=idx
+                )
 
                 # Prepare markdown summary
                 preferred_tag = "🟢 Chosen" if delta >= 0 else "🔴 Rejected"
@@ -131,11 +145,13 @@ class UltraFeedbackVisualizer:
 
 ---
 
-🏁 **Human preference:** {preferred_tag}  
+🏁 **Human preference:** {preferred_tag}
 📉 **Score difference:** {delta:.2f} points
 """
 
-                self.writer.add_text(f"{tag_prefix}/Example_{idx}/Visual", markdown_text, global_step=idx)
+                self.writer.add_text(
+                    f"{tag_prefix}/Example_{idx}/Visual", markdown_text, global_step=idx
+                )
                 self.logger.info(f"[Example {idx}] ✅ Logged successfully.")
 
             except Exception as e:
@@ -143,11 +159,20 @@ class UltraFeedbackVisualizer:
 
         # Log average scores
         if score_chosen_list:
-            self.writer.add_scalar(f"summary/{tag_prefix}_mean_chosen", sum(score_chosen_list) / len(score_chosen_list))
+            self.writer.add_scalar(
+                f"summary/{tag_prefix}_mean_chosen",
+                sum(score_chosen_list) / len(score_chosen_list),
+            )
         if score_rejected_list:
-            self.writer.add_scalar(f"summary/{tag_prefix}_mean_rejected", sum(score_rejected_list) / len(score_rejected_list))
+            self.writer.add_scalar(
+                f"summary/{tag_prefix}_mean_rejected",
+                sum(score_rejected_list) / len(score_rejected_list),
+            )
         if score_delta_list:
-            self.writer.add_scalar(f"summary/{tag_prefix}_mean_delta", sum(score_delta_list) / len(score_delta_list))
+            self.writer.add_scalar(
+                f"summary/{tag_prefix}_mean_delta",
+                sum(score_delta_list) / len(score_delta_list),
+            )
 
     def run(self):
         """
@@ -166,6 +191,8 @@ class UltraFeedbackVisualizer:
         self.log_dataset(self.test_dataset, tag_prefix="test")
 
         self.writer.close()
-        self.logger.info(f"✅ Human feedback logging complete!\n"
-                         f"To visualize, run:\n"
-                         f"tensorboard --logdir={self.log_dir} --port 6006")
+        self.logger.info(
+            f"✅ Human feedback logging complete!\n"
+            f"To visualize, run:\n"
+            f"tensorboard --logdir={self.log_dir} --port 6006"
+        )
