@@ -32,10 +32,11 @@ from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema
 
 
-
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOGLEVEL_FILE = Path(__file__).with_suffix(".loglevel")
-DEFAULT_LOG_LEVEL = LOGLEVEL_FILE.read_text().strip() if LOGLEVEL_FILE.exists() else "INFO"
+DEFAULT_LOG_LEVEL = (
+    LOGLEVEL_FILE.read_text().strip() if LOGLEVEL_FILE.exists() else "INFO"
+)
 
 DEFAULT_SCRIPT_PROMPT = (
     "You are an academic writing assistant. Produce a short, well-structured "
@@ -56,6 +57,7 @@ logging.basicConfig(
     level=getattr(logging, DEFAULT_LOG_LEVEL),
     format="%(asctime)s | %(levelname)s | %(message)s",
 )
+
 
 def _add_project_to_syspath() -> Tuple[Path, Path | None]:
     """
@@ -81,11 +83,7 @@ def _load_llm(artifacts: Dict[str, str]):
     """
     Load the LlamaCpp model.
     """
-    from src.utils import (
-        configure_hf_cache,
-        configure_proxy,
-        load_config
-    )
+    from src.utils import configure_hf_cache, configure_proxy, load_config
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
     from langchain_community.llms import LlamaCpp
@@ -94,9 +92,7 @@ def _load_llm(artifacts: Dict[str, str]):
         LlamaCpp.model_rebuild()
 
     cfg_dir = Path(artifacts["config"]).parent
-    cfg = load_config(
-        cfg_dir / "config.yaml"
-    )
+    cfg = load_config(cfg_dir / "config.yaml")
 
     # External logging integration disabled
     global LOCAL_LOGGING_ACTIVE
@@ -139,12 +135,12 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         from core.extract_text.arxiv_search import ArxivSearcher
 
         kwargs: Dict[str, Any] = {"query": query, "max_results": max_results}
-        sig = inspect.signature(ArxivSearcher)  
+        sig = inspect.signature(ArxivSearcher)
         if "cache_only" in sig.parameters:
             kwargs["cache_only"] = not download
         elif "download" in sig.parameters:
             kwargs["download"] = download
-        return ArxivSearcher(**kwargs)  
+        return ArxivSearcher(**kwargs)
 
     def _build_vectordb(self, papers: List[dict], chunk: int, overlap: int):
         from langchain.schema import Document
@@ -159,6 +155,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
 
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
+
             embeddings = HuggingFaceEmbeddings()
         except ImportError:
             raise ImportError(
@@ -166,10 +163,8 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                 "is installed with: pip install sentence-transformers"
             )
 
-        if any(path.iterdir()):  
-            return Chroma(
-                persist_directory=str(path), embedding_function=embeddings
-            )
+        if any(path.iterdir()):
+            return Chroma(persist_directory=str(path), embedding_function=embeddings)
 
         docs = [
             Document(page_content=p["text"], metadata={"title": p["title"]})
@@ -179,9 +174,7 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
             chunk_size=chunk, chunk_overlap=overlap
         )
         chunks = splitter.split_documents(docs)
-        db = Chroma.from_documents(
-            chunks, embeddings, persist_directory=str(path)
-        )
+        db = Chroma.from_documents(chunks, embeddings, persist_directory=str(path))
         db.persist()
         return db
 
@@ -221,7 +214,9 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
             analysis_prompt = row.get(
                 "analysis_prompt", "Summarise the content in ≈150 Portuguese words."
             )
-            generation_prompt = (row.get("generation_prompt") or DEFAULT_SCRIPT_PROMPT).strip()
+            generation_prompt = (
+                row.get("generation_prompt") or DEFAULT_SCRIPT_PROMPT
+            ).strip()
 
             logging.info(
                 "(row %d) extract=%s | analyse=%s | generate=%s — %s",
@@ -232,10 +227,9 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                 query,
             )
 
-            papers = (
-                self._create_arxiv_searcher(query, k, do_extract)
-                .search_and_extract()
-            )
+            papers = self._create_arxiv_searcher(
+                query, k, do_extract
+            ).search_and_extract()
 
             if do_extract and not (do_analyse or do_generate):
                 results.append(
@@ -248,7 +242,9 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
 
             summary, chain = ("", None)
             if do_analyse or do_generate:
-                summary, chain = self._summarise(papers, analysis_prompt, chunk, overlap)
+                summary, chain = self._summarise(
+                    papers, analysis_prompt, chunk, overlap
+                )
 
             if do_analyse and not do_generate:
                 results.append(
@@ -282,24 +278,23 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         config_path: str = "configs/config.yaml",
         secrets_dict: Dict = None,
         demo_folder: str = None,
-
     ):
         """
         Log the model to MLflow.
-        
+
         Args:
             artifact_path: Path to store the model artifacts
             llm_artifact: Path to the llm model
             config_path: Path to the configuration file
             secrets_dict: Dict with secrets to persist as YAML (optional)
             demo_folder: Path to the demo folder (optional)
-            
+
         Returns:
             None
         """
-             
+
         core, src = _add_project_to_syspath()
-        
+
         artifacts = {
             "config": str(Path(config_path).resolve()),
             "llm": llm_artifact,
@@ -311,11 +306,11 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
             tmp.close()
             artifacts["secrets"] = tmp.name
             logging.info(f"Secrets artifact written to temporary file {tmp.name}")
-        
+
         # Add demo folder to artifacts if provided
         if demo_folder:
             artifacts["demo"] = str(Path(demo_folder).resolve())
-        
+
         mlflow.pyfunc.log_model(
             artifact_path=artifact_path,
             python_model=cls(),
@@ -344,5 +339,3 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
             pip_requirements="../requirements.txt",
             code_paths=[str(core)] + ([str(src)] if src else []),
         )
-
-

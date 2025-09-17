@@ -15,7 +15,7 @@ To enable GPU compute, NVIDIA® GPU compatible with driver version 528.89 or new
 
 :::note
 
-AI Studio supports up to 4 compatible NVIDIA GPUs on Windows. 
+AI Studio supports up to 4 compatible NVIDIA GPUs on Windows.
 
 :::
 

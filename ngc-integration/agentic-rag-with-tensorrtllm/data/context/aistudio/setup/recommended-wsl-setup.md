@@ -6,15 +6,15 @@ sidebar_position: 3
 
 Follow these instructions to configure WSL and prepare your Windows machine for AI Studio.
 
-### To configure Windows for WSL:  
+### To configure Windows for WSL:
 
 1. From the Start menu, search for ***Turn Windows features on or off*** and select it.
 
 2. Enable the following features:
-   
+
 	- Virtual Machine Platform
 
-	- Windows Subsystem for Linux 
+	- Windows Subsystem for Linux
 
 3. If prompted, restart your computer to apply changes.
 
@@ -39,7 +39,7 @@ Sometimes a required Windows feature might not be enabled properly. We can turn 
 1. From the Start menu, search for ***Turn Windows features on or off*** and select it.
 
 2. Disable the following features:
-   
+
 	- Virtual Machine Platform
 
 	- Windows Subsystem for Linux
@@ -48,7 +48,7 @@ Sometimes a required Windows feature might not be enabled properly. We can turn 
 4. Open ***Turn Windows features on or off*** again.
 
 5. Re-enable the following features:
-   
+
 	- Virtual Machine Platform
 
 	- Windows Subsystem for Linux
