@@ -95,14 +95,13 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint_bbc)
 **Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired.
 
 ### 2 ▪ Run the Notebook
-Run the following notebook `/register-model.ipynb`:
+Only after running the `/run-workflow.ipynb` notebook, run the following notebook `/register-model.ipynb`:
 1. Log Model to MLflow
 2. Fetch the Latest Model Version from MLflow
 3. Load the Model and Run Inference
 
 ### 3 ▪ Deploy
-1. Run the following notebook `/register-model.ipynb`:
-2. Navigate to **Deployments > New Service** in AI Studio.
+1. Navigate to **Deployments > New Service** in AI Studio.
 3. Name the service and select the registered model.
 4. Choose an available model version and configure it with **GPU acceleration**.
 5. Start the deployment.
