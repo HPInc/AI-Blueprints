@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List
 import zipfile
 import io
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     TextLoader,
     CSVLoader,
     PyPDFLoader,
