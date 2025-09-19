@@ -264,7 +264,7 @@ This section provides solutions for common issues users may encounter when worki
    Even if your hardware meets the specs, limited available RAM or VRAM can cause deployment issues. Close other running workspaces or programs to free up memory.
 
 7. **CUDA OOM on Ubuntu despite free VRAM (VRAM fragmentation on display GPU)**
-   Linux desktop apps/compositor fragment VRAM, so a large contiguous cudaMalloc fails while Windows succeeds. Fix: close running Jupyter kernels, GPU-accelerated apps or use a non-display GPU; for llama.cpp set low_vram=False, n_ubatch=16–32, n_batch=32–64 (keep n_gpu_layers=-1 for faster inference).
+   Linux desktop apps/compositor fragment VRAM, so a large contiguous cudaMalloc fails while Windows succeeds. To fix it, close unnecessarily running Jupyter kernels, GPU-accelerated apps or use a non-display GPU; for llama.cpp set low_vram=False, n_ubatch=16–32, n_batch=32–64 (keep n_gpu_layers=-1 for faster inference).
 
 8. **API Timeout Issues**
    API requests triggered for the local MLflow deployment in the AI Studio have a response timeout limit (approximately 4 minutes). For long-running tasks or large inputs, use the provided notebooks instead of the API to avoid timeout errors.
