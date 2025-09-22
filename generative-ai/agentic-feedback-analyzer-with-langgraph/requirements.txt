@@ -1,6 +1,7 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
+langchain-community==0.3.27
 langgraph==0.5.3
 unstructured==0.18.9
 pypdf==5.8.0
