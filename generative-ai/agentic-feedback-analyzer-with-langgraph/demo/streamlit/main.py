@@ -6,7 +6,7 @@ import os
 import json
 from pathlib import Path
 from typing import List
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     TextLoader,
     CSVLoader,
     PyPDFLoader,
