@@ -13,7 +13,7 @@ function App() {
 	const [modelResponse, setModelResponse] = useState("");
 	// const [loading, setLoading] = useState(false);
 	const [interactionHistory, setInteractionHistory] = useState("");
-	const [promptEngineering, setPromptEngineering] = useState(""); 
+	const [promptEngineering, setPromptEngineering] = useState("");
 	const [vectorChunks, setVectorChunks] = useState("");
 	const [showWhiteBox, setShowWhiteBox] = useState(false);
 	// const [showVectorInfo, setShowVectorInfo] = useState(false);
@@ -22,7 +22,7 @@ function App() {
 	// const [showLlmInfo, setShowLlmInfo] = useState(false);
 	const [expandedSection, setExpandedSection] = useState(null)
 	const [showBlackBoxInfo, setShowBlackBoxInfo] = useState(false);
- 
+
 	async function toggleVectorInfo() {
 		// setShowVectorInfo(!showVectorInfo);
 		// setExpandedSection("vector-info")
@@ -32,7 +32,7 @@ function App() {
 			setExpandedSection(null)
 		}
 	}
-	
+
 	async function toggleHistoryInfo() {
 		// setShowHistoryInfo(!showHistoryInfo);
 		// setExpandedSection("history-info")
@@ -43,7 +43,7 @@ function App() {
 		}
 
 	}
-	
+
 	async function togglePromptInfo() {
 		// setShowPromptInfo(!showPromptInfo);
 		// setExpandedSection("prompt-info")
@@ -53,7 +53,7 @@ function App() {
 			setExpandedSection(null)
 		}
 	}
-	
+
 	async function toggleLlmInfo() {
 		if (expandedSection !== "llm-info") {
 			setExpandedSection("llm-info")
@@ -61,11 +61,11 @@ function App() {
 			setExpandedSection(null)
 		}
 	}
-	
+
 	async function toggleBlackBoxInfo() {
 		setShowBlackBoxInfo(!showBlackBoxInfo);
 	}
-	
+
 	async function submitInput() {
 	  console.log("Send:", inputQuery);
 	  try {
@@ -83,21 +83,21 @@ function App() {
 		  },
 		  body: JSON.stringify(requestBody),
 		});
-  
+
 		if (!response.ok) {
 		  throw new Error(`HTTP error! status: ${response.status}`);
 		};
-  
+
 		const jsonResponse = await response.json();
 		console.log("JSON Response:", jsonResponse);
-  
+
 		const predictions = jsonResponse.predictions;
 		setModelResponse(predictions.output || "No output provided by the model.");
 		setInteractionHistory(predictions.history || "No output History.");
 		setPromptEngineering(predictions.prompt || "No prompt retrieved.");
 		setVectorChunks(predictions.chunks.join('\n') || "No chunks retrieved.");
-  
-		
+
+
 		// setLoading(false);
 	  } catch (error) {
 		console.error("Error when calling the request:", error);
@@ -105,7 +105,7 @@ function App() {
 	  }
 	}
 
-	
+
 	const showVectorInfo = expandedSection === "vector-info"
 	const showHistoryInfo = expandedSection === "history-info"
 	const showPromptInfo = expandedSection === "prompt-info"
@@ -115,7 +115,7 @@ function App() {
     <div>
 		<div className="header">
 			<div className="header-logo">
-				<img src="icon.ico" width="100px" height="100px" /> 
+				<img src="icon.ico" width="100px" height="100px" />
 			</div>
 			<div className='title-info'>
 				<div className="header-title">
@@ -130,7 +130,7 @@ function App() {
 			border="outlined"
 			content={
 				<div className="input-text-area-container outer-padding">
-					<TextArea className="input-text-area" 
+					<TextArea className="input-text-area"
 						id="input-text"
 						label="Input query:"
 						placeholder=""
@@ -146,11 +146,11 @@ function App() {
 							Submit input
 						</Button>
 					</div>
-					
+
 				</div>
 			}
 		/>
-		{ showWhiteBox ? 
+		{ showWhiteBox ?
 			<Card className="white-box"
 				border="outlined"
 				content={
@@ -163,30 +163,30 @@ function App() {
 									<div className='title-with-icon'>
 										<h5> ChromaDB vector database </h5>
 										<div className='title-with-icon-icon'>
-											{ showVectorInfo ? 
+											{ showVectorInfo ?
 												<IconInfo size={24} onClick={toggleVectorInfo} filled />:
 												<IconInfo size={24} onClick={toggleVectorInfo} />
 											}
 										</div>
-										
+
 									</div>
 									<div className="vector-info">
-										{ showVectorInfo && 
+										{ showVectorInfo &&
 											<p>
 												A set of documents is broken into chunks and loaded into the DB. When the user inputs a query, relevant chunks of documents are retrieved, according to the relevance (semantic similarity) to the query.
 											</p>
 										}
-										<div className="input-text-area-container"> 
-											<TextArea className="vector-text-area" 
+										<div className="input-text-area-container">
+											<TextArea className="vector-text-area"
 												id="vector-text"
-												value={vectorChunks || ""} 
+												value={vectorChunks || ""}
 												label="Retrieved chunks:"
 												readOnly
 												separateLabel
-												onChange={() => {}} 
+												onChange={() => {}}
 											/>
 										</div>
-									</div>							
+									</div>
 								</div>
 							}
 						/>
@@ -199,27 +199,27 @@ function App() {
 								<div className='title-with-icon'>
 									<h5> Interaction history </h5>
 									<div className='title-with-icon-icon'>
-										{ showHistoryInfo ? 
+										{ showHistoryInfo ?
 											<IconInfo size={24} onClick={toggleHistoryInfo} filled />:
 											<IconInfo size={24} onClick={toggleHistoryInfo} />
 										}
 									</div>
 								</div>
-								<div className="input-text-area-container">	
-									<TextArea className="input-text-area" 
+								<div className="input-text-area-container">
+									<TextArea className="input-text-area"
 										id="input-text"
 										value={interactionHistory || ""}
 										readOnly
 										onChange={() => {}}
 									/>
-								</div>	
+								</div>
 							</div>
 							<div>
 									<div className='title-with-icon'>
-									
+
 										<h5> Prompt engineering </h5>
 										<div className='title-with-icon-icon'>
-											{ showPromptInfo ? 
+											{ showPromptInfo ?
 												<IconInfo size={24} onClick={togglePromptInfo} filled />:
 												<IconInfo size={24} onClick={togglePromptInfo} />
 											}
@@ -231,13 +231,13 @@ function App() {
 												In this module, the retrieved chunks of documents and the history of previous interactions are used to build a prompt to be presented to the model. This prompt is engineered to give information about the agent and the desired behaviour.
 											</p>
 										}
-										<TextArea className="prompt-text-area" 
+										<TextArea className="prompt-text-area"
 											id="prompt-text"
 											label="Generated prompt:"
-											value={promptEngineering || ""} 
+											value={promptEngineering || ""}
 											readOnly
 											separateLabel
-											onChange={() => {}} 
+											onChange={() => {}}
 										/>
 									</div>
 								</div>
@@ -251,31 +251,31 @@ function App() {
 									<div className='title-with-icon'>
 										<h5>Local LLM (Meta Llama 3.1 model with 8B parameters)</h5>
 										<div className='title-with-icon-icon'>
-											{ showLlmInfo ? 
+											{ showLlmInfo ?
 												<IconInfo size={24} onClick={toggleLlmInfo} filled />:
 												<IconInfo size={24} onClick={toggleLlmInfo} />
 											}
 										</div>
 									</div>
 									<div className="output-info">
-										{ showLlmInfo &&	
+										{ showLlmInfo &&
 											<p>
 												This is where the actual large language model is run. Based on the input prompt, the model is loaded locally, and generates an output one word at a time.
 											</p>
 										}
 										<TextArea className="output-text-area" id="output-text"
-											value={modelResponse || ""} 
-											label="Agent Output:" 
+											value={modelResponse || ""}
+											label="Agent Output:"
 											readOnly
 											separateLabel
-											onChange={() => {}} 
+											onChange={() => {}}
 										/>
 									</div>
 								</div>
 							}
 						/>
 					</div>
-				}				
+				}
 			/> :
 			<div>
 				<Card className="black-box"
@@ -285,7 +285,7 @@ function App() {
 							<div className='title-with-icon' style={{display:"flex", justifyContent:"center"}}>
 								<h4> SabIA: RAG-based agent, running entirely on device </h4>
 								<div className='title-with-icon-icon'>
-									{ showBlackBoxInfo ? 
+									{ showBlackBoxInfo ?
 										<IconInfo size={24} onClick={toggleBlackBoxInfo} filled />:
 										<IconInfo size={24} onClick={toggleBlackBoxInfo} />
 									}
@@ -300,9 +300,9 @@ function App() {
 							</div>
 							<div className='outer-padding'>
 							<TextArea className="output-external-area" id="output-text"
-								value={modelResponse || ""} 
+								value={modelResponse || ""}
 								readOnly
-								onChange={() => {}} 
+								onChange={() => {}}
 							/>
 						</div>
 						</div>
@@ -314,9 +314,9 @@ function App() {
 					content={
 						<div>
 							<TextArea className="output-external-area" id="output-text"
-								value={modelResponse || ""} 
+								value={modelResponse || ""}
 								readOnly
-								onChange={() => {}} 
+								onChange={() => {}}
 							/>
 						</div>
 					}
@@ -328,7 +328,3 @@ function App() {
 }
 
 export default App
-
-
-
-

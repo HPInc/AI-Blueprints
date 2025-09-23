@@ -63,7 +63,7 @@ We incorporate:
 │   └── fine_tuning_service.py                                          # Fine-tuning service implementation
 ├── demo/                                                               # Compiled Interface Folder
 ├── docs
-│   ├── successful-swagger-ui-fine-tuning-result.pdf                    # Swagger screenshot 
+│   ├── successful-swagger-ui-fine-tuning-result.pdf                    # Swagger screenshot
 │   ├── streamlit-fine-tuning-with-orpo.pdf                             # Streamlit screenshot
 │   ├── streamlit-fine-tuning-with-orpo.png                             # Streamlit screenshot
 ├── notebooks
@@ -182,7 +182,7 @@ This notebook will:
 - Generate comparative analysis and metrics
 
 
-**Disclaimer**: The number of training steps and the size of training and validation datasets has been intentionally reduced to optimize computational efficiency and minimize training time. However, these parameters can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps and the size of training and validation datasets has been intentionally reduced to optimize computational efficiency and minimize training time. However, these parameters can be adjusted if further model performance improvements are desired.
 
 ### Step 2: Register the Models for Deployment
 

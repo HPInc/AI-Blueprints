@@ -108,8 +108,8 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-> ⚠️ **GPU Compatibility Notice**  
-> If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.  
+> ⚠️ **GPU Compatibility Notice**
+> If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.
 > To ensure stable execution, uncomment the line below at the beginning of your script or notebook to force synchronous CUDA execution:
 
 ```python
@@ -156,7 +156,7 @@ notebooks/run-workflow.ipynb
 2. In the Training DreamBooth section of the notebook:
   - Train your DreamBooth model.
 
-**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired.
 
 ### Step 2: Run the Register Notebook
 
