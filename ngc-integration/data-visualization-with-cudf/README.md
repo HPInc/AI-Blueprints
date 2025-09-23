@@ -1,4 +1,4 @@
-# 📡 OpenCellID Exploratory Data Analysis with Panel and cuDF
+# 📡 Data Visualization with cuDF
 
 <div align="center">
 
