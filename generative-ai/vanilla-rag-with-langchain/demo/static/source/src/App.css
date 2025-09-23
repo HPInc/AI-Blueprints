@@ -67,12 +67,12 @@
   height:518px;
   /* overflow-y:scroll; */
  }
- 
+
  .prompt-text-area .vn-textarea{
   height:300px;
   /* overflow-y:scroll; */
  }
- 
+
  .output-text-area .vn-textarea{
   height:530px;
   /* overflow-y:scroll; */
@@ -163,7 +163,7 @@
 
 .title-with-icon{
   display:flex;
-  flex-direction: row; 
+  flex-direction: row;
 }
 
 .title-with-icon-icon{

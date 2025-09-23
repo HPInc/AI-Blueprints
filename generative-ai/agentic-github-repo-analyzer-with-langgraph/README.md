@@ -44,13 +44,13 @@ agentic-github-repo-analyzer-with-langgraph/
 ├── data/                                # Github repo files (input directory)
 │   └── input/
 ├── demo/                                # UI frontend code (Streamlit)
-│   └── streamlit/                       
+│   └── streamlit/
 ├── docs/                                # Documents for UI Testing
 │   ├── diagram-for-agentic-github-repo-analyzer-with-langgraph.png
 │   ├── Streamlit UI Page - Agentic Github Repo Analyzer.pdf
 │   └── streamlit-ui-ss-agentic-github-repo-analyzer.png
 ├── notebooks/                           # Workflow and MLflow notebooks
-│   ├── register-model.ipynb             
+│   ├── register-model.ipynb
 │   └── run-workflow.ipynb
 ├── requirements.txt                     # All required packages
 ├── README.md                            # Project documentation

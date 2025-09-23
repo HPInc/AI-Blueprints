@@ -5,7 +5,6 @@ from pathlib import Path  # Object-oriented filesystem paths
 from typing import Dict, Optional  # Type annotations for mappings and optional values
 
 
-
 class SimpleKVMemory:
     """Very small persistent key-value store (JSON on disk)."""
 
@@ -29,7 +28,7 @@ class SimpleKVMemory:
             try:
                 with self.file_path.open("r", encoding="utf-8") as f:
                     return json.load(f)
-            except Exception as exc:  
+            except Exception as exc:
                 logger.warning("Failed to load memory (%s). Starting fresh.", exc)
         return {}
 
