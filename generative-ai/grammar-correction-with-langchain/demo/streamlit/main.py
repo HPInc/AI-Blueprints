@@ -290,7 +290,7 @@ st.set_page_config(
 )
 
 try:
-    image_path = Path(__file__).resolve().parent.parent / "assets" / "background.png"
+    image_path = Path(__file__).resolve().parent / "assets" / "background.png"
     set_bg_hack(str(image_path))
 except Exception:
     # Fallback for environments where path logic might differ
@@ -304,10 +304,7 @@ with mid_col:
         "Enter a public GitHub repository URL or upload files to correct grammar."
     )
 
-    with st.expander("⚙️ API Configuration"):
-        api_url = st.text_input(
-            "MLflow Model /invocations URL", value="https://localhost:55919/invocations"
-        )
+    api_url = "http://localhost:5002/invocations"
 
     st.subheader("Choose Input Method")
     tab1, tab2 = st.tabs(["🔗 GitHub URL", "📁 Upload Files"])
