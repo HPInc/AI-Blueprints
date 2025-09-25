@@ -108,11 +108,11 @@ class Model:
     Standalone model class with no MLflow inheritance.
     Handles image super-resolution using FSRCNN neural network.
     """
-    
+
     def __init__(self, config: dict, model_path: str = None):
         """
         Initialize the Model with configuration and model path.
-        
+
         Args:
             config: Model configuration dictionary
             model_path: Path to the PyTorch model file
@@ -120,7 +120,7 @@ class Model:
         self.config = config
         self.model_path = model_path
         self.model = None
-        
+
         # Initialize components
         try:
             self._load_model()
@@ -128,27 +128,32 @@ class Model:
         except Exception as e:
             logger.error(f"Failed to initialize Model: {str(e)}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
-    
+
     def _load_model(self) -> None:
         """Load the FSRCNN PyTorch model."""
         try:
             # Initialize FSRCNN model with scale factor 4
             self.model = FSRCNN(4)
             self.model.to(device)
-            
+
             # Load model weights if model_path is provided
             if self.model_path and os.path.exists(self.model_path):
-                self.model.load_state_dict(torch.load(self.model_path, map_location=device))
+                self.model.load_state_dict(
+                    torch.load(self.model_path, map_location=device)
+                )
                 logger.info(f"Model weights loaded from: {self.model_path}")
             else:
-                logger.warning(f"Model path not found or not provided: {self.model_path}")
-            
+                logger.warning(
+                    f"Model path not found or not provided: {self.model_path}"
+                )
+
             # Set model to evaluation mode
             self.model.eval()
             logger.info("FSRCNN model loaded and set to evaluation mode")
-            
+
         except Exception as e:
             logger.error(f"Failed to load FSRCNN model: {str(e)}")
             raise
@@ -156,10 +161,10 @@ class Model:
     def preprocess_image(self, base64_str: str) -> torch.Tensor:
         """
         Decode base64 string to image tensor.
-        
+
         Args:
             base64_str: Base64 encoded image string
-            
+
         Returns:
             torch.Tensor: Preprocessed image tensor
         """
@@ -176,10 +181,10 @@ class Model:
     def postprocess_image(self, output_tensor: torch.Tensor) -> str:
         """
         Convert output tensor to base64 string.
-        
+
         Args:
             output_tensor: Model output tensor
-            
+
         Returns:
             str: Base64 encoded output image
         """
@@ -198,33 +203,33 @@ class Model:
         """
         Process input images and generate super-resolution outputs.
         Must return pandas.DataFrame matching original signature.
-        
+
         Args:
             model_input: Input data containing base64 encoded images
             params: Optional parameters (unused in this implementation)
-            
+
         Returns:
             List of base64 encoded super-resolution images
         """
         try:
             if not self.model:
                 raise RuntimeError("Model not initialized")
-            
+
             results = []
-            
+
             # Process each image in the input
             for base64_str in model_input["image"]:
                 # Preprocess the input image
                 input_tensor = self.preprocess_image(base64_str).to(device)
-                
+
                 # Perform super-resolution
                 with torch.no_grad():
                     output_tensor = self.model(input_tensor)
-                
+
                 # Postprocess the output
                 output_base64 = self.postprocess_image(output_tensor)
                 results.append(output_base64)
-            
+
             logger.info(f"Successfully processed {len(results)} images")
             return results
 
