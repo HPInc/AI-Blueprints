@@ -29,14 +29,14 @@ def get_model_path(model_name: str) -> str:
 def load_config(config_path: str) -> dict:
     """
     Load configuration from YAML file.
-    
+
     Args:
         config_path: Path to configuration file
-        
+
     Returns:
         Configuration dictionary
     """
     import yaml
-    
+
     with open(config_path, "r") as f:
         return yaml.safe_load(f)

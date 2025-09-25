@@ -35,36 +35,36 @@ class Model:
     Standalone model class with no MLflow inheritance.
     Handles complex agentic RAG workflow with TensorRT-LLM.
     """
-    
+
     TOPIC: str = "AI Studio"
-    
+
     class SimpleKVMemory:
         """Very small persistent key-value store (JSON on disk)."""
-    
+
         def __init__(self, file_path: Path) -> None:
             self.file_path: Path = file_path
             self._store: Dict[str, str] = self._load()
-    
+
         # ---------- public ----------------------------------------------------
         def get(self, key: str) -> Optional[str]:
             """Return answer if present, else None."""
             return self._store.get(key)
-    
+
         def set(self, key: str, value: str) -> None:
             """Save answer and flush to disk."""
             self._store[key] = value
             self._dump()
-    
+
         # ---------- private ---------------------------------------------------
         def _load(self) -> Dict[str, str]:
             if self.file_path.exists():
                 try:
                     with self.file_path.open("r", encoding="utf-8") as f:
                         return json.load(f)
-                except Exception as exc:  
+                except Exception as exc:
                     logger.warning("Failed to load memory (%s). Starting fresh.", exc)
             return {}
-    
+
         def _dump(self) -> None:
             self.file_path.parent.mkdir(parents=True, exist_ok=True)
             with self.file_path.open("w", encoding="utf-8") as f:
@@ -87,7 +87,7 @@ class Model:
         """
         self.config = config
         self.TOPIC = Model.TOPIC
-        
+
         # Set up logger
         self._logger = logging.getLogger("AgenticRAGModel")
         if not self._logger.handlers:
@@ -109,7 +109,7 @@ class Model:
                 model_name="sentence-transformers/all-mpnet-base-v2",
                 encode_kwargs={"normalize_embeddings": True},
             )
-            
+
         # 2. Load persisted Chroma vectorstore
         chroma_dir_path = Path(chroma_dir)
         self._vectorstore = Chroma(
@@ -126,8 +126,8 @@ class Model:
             stop_token_ids=[128009],
         )
         self._llm = TensorRTLangchain(
-            model_path="nvidia/Llama-3.1-Nemotron-Nano-8B-v1", 
-            sampling_params=sampling_params
+            model_path="nvidia/Llama-3.1-Nemotron-Nano-8B-v1",
+            sampling_params=sampling_params,
         )
 
         # 4. Initialize persistent memory
@@ -146,7 +146,7 @@ class Model:
     # ----------------------------------------
     # Node Functions (each mirrors the notebook)
     # ----------------------------------------
-    def ingest_query(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def ingest_query(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Log the incoming user query and record it in the message history.
         """
@@ -156,7 +156,7 @@ class Model:
         new_messages = previous_messages + [{"role": "user", "content": user_query}]
         return {"messages": new_messages}
 
-    def check_relevance(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def check_relevance(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Ask the LLM whether the query relates to our topic.
         If not relevant, include a default apology answer.
@@ -165,13 +165,13 @@ class Model:
         user_query = state["query"]
 
         system_prompt = (
-            "You are a strict classifier. Only respond with either \"yes\" or \"no\". "
+            'You are a strict classifier. Only respond with either "yes" or "no". '
             "Do not include any additional words, explanations, or punctuation. "
             "Answer based solely on whether the user's query is about the specified topic."
         )
         user_prompt = (
-            f"The topic is: \"{topic}\"\n\n"
-            f"User query: \"{user_query}\"\n\n"
+            f'The topic is: "{topic}"\n\n'
+            f'User query: "{user_query}"\n\n'
             "Is this query related to the topic above? Respond with only 'yes' or 'no'."
             "Answer: "
         )
@@ -189,7 +189,7 @@ class Model:
             result["answer"] = f"Sorry, I can only answer questions related to {topic}."
         return result
 
-    def check_memory(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def check_memory(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Look up the exact user query in memory and return the cached answer if found.
         """
@@ -202,7 +202,7 @@ class Model:
         self._logger.info("Cache miss for query: %s", raw_query)
         return {"from_memory": False}
 
-    def rewrite_query(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def rewrite_query(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Correct any grammar in the question and rewrite it as a clear statement
         without altering its meaning, to improve retrieval.
@@ -217,7 +217,7 @@ class Model:
             "Convert the following question into a grammatically correct statement "
             "that preserves the original meaning exactly:\n\n"
             "Note: Output only the corrected statement—no explanations or extra text.\n"
-            f"Question: \"{original}\"\n\n"
+            f'Question: "{original}"\n\n'
             "Corrected Statement:"
         )
 
@@ -230,7 +230,7 @@ class Model:
         ]
         return {"rewritten_query": resp, "messages": messages}
 
-    def retrieve_chunks(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def retrieve_chunks(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Fetch the top-k most relevant chunks for the rewritten query.
         """
@@ -240,7 +240,7 @@ class Model:
         self._logger.info("Retrieved %d chunks for query.", len(chunks))
         return {"retrieved_chunks": chunks}
 
-    def generate_answer(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def generate_answer(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Use the LLM to generate an answer based solely on retrieved context.
         """
@@ -251,15 +251,15 @@ class Model:
         system_prompt = (
             f"You are a knowledgeable assistant specialized in {topic}. Your task is to answer "
             "the user query using only the information found within the <context> block. "
-            "Ignore any external knowledge. If the context does not contain the answer, reply exactly with: \"I don't know.\" "
+            'Ignore any external knowledge. If the context does not contain the answer, reply exactly with: "I don\'t know." '
             "Do not assume, infer, or add any extra information. "
             "Respond with only the answer—do not include any introductory or explanatory text."
         )
         user_prompt = (
             f"<context>\n{context}\n</context>\n\n"
-            f"User query: \"{user_query}\"\n\n"
+            f'User query: "{user_query}"\n\n'
             "Based only on the context above, provide the exact answer to the query. "
-            "If the context does not contain the answer, respond exactly with: \"I don't know.\" "
+            'If the context does not contain the answer, respond exactly with: "I don\'t know." '
             "Give only the answer—do not include any intro phrases such as 'The answer is' or 'Here it is'."
             "Answer: "
         )
@@ -273,7 +273,7 @@ class Model:
         ]
         return {"answer": resp, "messages": messages}
 
-    def update_memory(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def update_memory(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         Store new query-answer pairs in memory for faster future lookup.
         """
@@ -287,7 +287,7 @@ class Model:
             self._logger.info("Stored query-answer in memory for key: %s", key)
         return {}
 
-    def output_answer(self, state: 'Model.RAGState') -> Dict[str, Any]:
+    def output_answer(self, state: "Model.RAGState") -> Dict[str, Any]:
         """
         The final node. We do not print to STDOUT when serving via MLflow.
         Just return an empty dict as this node does not add new state.
@@ -310,10 +310,10 @@ class Model:
         # TensorRTLangchain returns a raw string; we can wrap into Response if needed
         return raw
 
-    def _route_relevance(self, state: 'Model.RAGState') -> str:
+    def _route_relevance(self, state: "Model.RAGState") -> str:
         return "relevant" if state["is_relevant"] else "irrelevant"
 
-    def _route_memory(self, state: 'Model.RAGState') -> str:
+    def _route_memory(self, state: "Model.RAGState") -> str:
         return "cached" if state.get("from_memory") else "not_cached"
 
     def _build_state_graph(self) -> None:
