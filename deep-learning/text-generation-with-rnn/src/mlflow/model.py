@@ -21,7 +21,16 @@ logger = logging.getLogger(__name__)
 
 
 class CharModel(nn.Module):
-    def __init__(self, decoder, encoder, all_chars, num_hidden=256, num_layers=4, drop_prob=0.5, use_gpu=False):
+    def __init__(
+        self,
+        decoder,
+        encoder,
+        all_chars,
+        num_hidden=256,
+        num_layers=4,
+        drop_prob=0.5,
+        use_gpu=False,
+    ):
         """Initializes CharModel
 
         Args:
@@ -39,20 +48,25 @@ class CharModel(nn.Module):
             self.num_layers = num_layers
             self.num_hidden = num_hidden
             self.use_gpu = use_gpu
-            
+
             self.all_chars = all_chars
             self.decoder = torch.load(decoder)
             self.encoder = torch.load(encoder)
-            
-            self.lstm = nn.LSTM(len(self.all_chars), num_hidden, num_layers, dropout=drop_prob, batch_first=True)
+
+            self.lstm = nn.LSTM(
+                len(self.all_chars),
+                num_hidden,
+                num_layers,
+                dropout=drop_prob,
+                batch_first=True,
+            )
             self.dropout = nn.Dropout(drop_prob)
             self.fc_linear = nn.Linear(num_hidden, len(self.all_chars))
             logger.info("CharModel initialized successfully")
-    
+
         except Exception as e:
             logger.error(f"Error initializing CharModel: {str(e)}")
-      
-    
+
     def forward(self, x, hidden):
         """Implementation of the CharModel logic, in which, the input passes through every step of the arquiteture
 
@@ -65,43 +79,52 @@ class CharModel(nn.Module):
             hidden: Tuple containing the final hidden states of the CharModel.
         """
         try:
-            lstm_output, hidden = self.lstm(x, hidden)       
+            lstm_output, hidden = self.lstm(x, hidden)
             drop_output = self.dropout(lstm_output)
             drop_output = drop_output.contiguous().view(-1, self.num_hidden)
             final_out = self.fc_linear(drop_output)
-            
+
             return final_out, hidden
-        
+
         except Exception as e:
             logger.error(f"Error implementing CharModel logic: {str(e)}")
-    
-    
+
     def hidden_state(self, batch_size):
         """
         Initializes and returns the initial hidden state for a recurrent neural network (e.g., LSTM).
 
-        This method creates zero-filled tensors for the hidden state (h_0) and cell state (c_0), 
+        This method creates zero-filled tensors for the hidden state (h_0) and cell state (c_0),
         supporting GPU execution if `self.use_gpu` is set to True.
 
         Args:
             batch_size: The number of sequences in the input batch, used to determine the tensor dimensions.
 
         Returns:
-            Tuple: A tuple containing the hidden state and cell state tensors 
+            Tuple: A tuple containing the hidden state and cell state tensors
             with shape (num_layers, batch_size, num_hidden). Returns None if an exception occurs, and logs the error.
         """
         try:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             if self.use_gpu:
-                hidden = (torch.zeros(self.num_layers, batch_size, self.num_hidden).to(device),
-                        torch.zeros(self.num_layers, batch_size, self.num_hidden).to(device))
+                hidden = (
+                    torch.zeros(self.num_layers, batch_size, self.num_hidden).to(
+                        device
+                    ),
+                    torch.zeros(self.num_layers, batch_size, self.num_hidden).to(
+                        device
+                    ),
+                )
             else:
-                hidden = (torch.zeros(self.num_layers, batch_size, self.num_hidden),
-                        torch.zeros(self.num_layers, batch_size, self.num_hidden))
-            
+                hidden = (
+                    torch.zeros(self.num_layers, batch_size, self.num_hidden),
+                    torch.zeros(self.num_layers, batch_size, self.num_hidden),
+                )
+
             return hidden
         except Exception as e:
-            logger.error(f"Error Initializing and returning the initial hidden state: {str(e)}")
+            logger.error(
+                f"Error Initializing and returning the initial hidden state: {str(e)}"
+            )
 
 
 class Model:
@@ -109,23 +132,30 @@ class Model:
     Standalone model class with no MLflow inheritance.
     Handles RNN-based text generation with character-level modeling.
     """
-    
-    def __init__(self, config: dict, model_state_dict_path: str, decoder_path: str, encoder_path: str, all_chars: set):
+
+    def __init__(
+        self,
+        config: dict,
+        model_state_dict_path: str,
+        decoder_path: str,
+        encoder_path: str,
+        all_chars: set,
+    ):
         """
         Direct dependency injection - no MLflow context.
         Extract all initialization logic from original RNNModel.
-        
+
         Args:
             config: Configuration dictionary
             model_state_dict_path: Path to the trained model state dictionary
             decoder_path: Path to the character decoder dictionary
-            encoder_path: Path to the character encoder dictionary  
+            encoder_path: Path to the character encoder dictionary
             all_chars: Set of unique characters found in the training text
         """
         try:
             self.config = config
             self.all_chars = all_chars
-            
+
             # Initialize the CharModel with architecture parameters
             self.model = CharModel(
                 all_chars=all_chars,
@@ -134,15 +164,15 @@ class Model:
                 drop_prob=0.5,
                 use_gpu=False,
                 decoder=decoder_path,
-                encoder=encoder_path                    
+                encoder=encoder_path,
             )
 
             # Load the trained model state dictionary
             self.model.load_state_dict(torch.load(model_state_dict_path))
             self.model.eval()
-            
+
             logger.info("Model initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Error initializing Model: {str(e)}")
             raise
@@ -163,9 +193,9 @@ class Model:
             one_hot = one_hot.astype(np.float32)
             one_hot[np.arange(one_hot.shape[0]), encoded_text.flatten()] = 1.0
             one_hot = one_hot.reshape((*encoded_text.shape, num_uni_chars))
-            
+
             return one_hot
-        
+
         except Exception as e:
             logger.error(f"Error converting categorical data: {str(e)}")
             raise
@@ -174,8 +204,8 @@ class Model:
         """
         Predicts the next character given an input character and the current hidden state.
 
-        This method encodes the input character, feeds it through the trained character-level 
-        language model (e.g., LSTM), and samples from the top-k most probable characters 
+        This method encodes the input character, feeds it through the trained character-level
+        language model (e.g., LSTM), and samples from the top-k most probable characters
         to determine the next one. It also returns the updated hidden state for sequential prediction.
 
         Args:
@@ -193,17 +223,16 @@ class Model:
             encoded_text = self.one_hot_encoder(encoded_text, len(self.model.all_chars))
             inputs = torch.from_numpy(encoded_text)
             inputs = inputs.cpu()
-                
+
             hidden = tuple([state.data for state in hidden])
-            lstm_out, hidden = self.model(inputs, hidden)    
+            lstm_out, hidden = self.model(inputs, hidden)
             probs = F.softmax(lstm_out, dim=1).data
             probs = probs.cpu()
 
-            
-            probs, index_positions = probs.topk(k)        
+            probs, index_positions = probs.topk(k)
             index_positions = index_positions.numpy().squeeze()
             probs = probs.numpy().flatten()
-            probs = probs/probs.sum()
+            probs = probs / probs.sum()
             char = np.random.choice(index_positions, p=probs)
 
             return self.model.decoder[char], hidden
@@ -229,57 +258,63 @@ class Model:
         """
         try:
             self.model.cpu()
-                
+
             self.model.eval()
             output_chars = [c for c in seed]
             hidden = self.model.hidden_state(1)
-            
+
             for char in seed:
                 char, hidden = self.predict_next_char(char, hidden, k=k)
-        
+
             output_chars.append(char)
             for i in range(size):
                 char, hidden = self.predict_next_char(output_chars[-1], hidden, k=k)
                 output_chars.append(char)
-                
-            return ''.join(output_chars)
-        
+
+            return "".join(output_chars)
+
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
             raise
-        
+
     def predict(self, model_input, params=None):
         """
         Core business logic extracted from original RNNModel predict method.
         Remove context parameter - use instance variables instead.
         Must return same pandas.DataFrame structure as original.
-        
+
         Args:
             model_input: Input data dictionary containing 'initial_word' and 'size' keys
             params: Optional parameters (not used in this implementation)
-            
+
         Returns:
             pandas.DataFrame containing the generated text result
         """
         try:
             # Extract inputs from model_input dictionary
-            initial_word = model_input['initial_word'][0] if isinstance(model_input['initial_word'], list) else model_input['initial_word']
-            size = model_input['size'][0] if isinstance(model_input['size'], list) else model_input['size']
-            
+            initial_word = (
+                model_input["initial_word"][0]
+                if isinstance(model_input["initial_word"], list)
+                else model_input["initial_word"]
+            )
+            size = (
+                model_input["size"][0]
+                if isinstance(model_input["size"], list)
+                else model_input["size"]
+            )
+
             # Generate text using the RNN model
             generated_text = self.generate_text(seed=initial_word, size=size)
-            
+
             # Return as pandas DataFrame to maintain API compatibility
-            result_df = pd.DataFrame({
-                'generated_text': [generated_text]
-            })
-            
+            result_df = pd.DataFrame({"generated_text": [generated_text]})
+
             return result_df
-            
+
         except Exception as e:
             logger.error(f"Error in predict method: {str(e)}")
             # Return error in DataFrame format for consistency
-            error_df = pd.DataFrame({
-                'generated_text': [f"Error generating text: {str(e)}"]
-            })
+            error_df = pd.DataFrame(
+                {"generated_text": [f"Error generating text: {str(e)}"]}
+            )
             return error_df
