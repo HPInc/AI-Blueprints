@@ -2,8 +2,16 @@ import os
 from pathlib import Path
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import HfHubHTTPError
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoProcessor, ClapModel, Qwen2_5OmniProcessor, Qwen2_5OmniThinkerForConditionalGeneration
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    AutoProcessor,
+    ClapModel,
+    Qwen2_5OmniProcessor,
+    Qwen2_5OmniThinkerForConditionalGeneration,
+)
 from src.utils import get_models_dir, format_model_path, setup_model_environment, logger
+
 
 class ModelAccessException(Exception):
     """
@@ -16,6 +24,7 @@ class ModelAccessException(Exception):
             f"{message} Please request access at: https://huggingface.co/{model_id}"
         )
         super().__init__(self.message)
+
 
 class ModelSelector:
     """
@@ -43,10 +52,10 @@ class ModelSelector:
             "laion/clap-htsat-unfused",
             "MoonshotAI/Kimi-Audio",
         ]
-        
+
         # Set up model environment (HF cache, etc.)
         setup_model_environment()
-        
+
         self.base_local_dir = str(get_models_dir())
         self.model_id: str | None = None
         self.model = None
@@ -88,21 +97,21 @@ class ModelSelector:
         try:
             # Ensure the directory exists
             model_path.mkdir(parents=True, exist_ok=True)
-            
+
             snapshot_download(
                 repo_id=self.model_id,
                 local_dir=str(model_path),
                 resume_download=True,
                 etag_timeout=60,
                 local_dir_use_symlinks=False,
-                token=os.environ.get("AIS_HUGGINGFACE_API_KEY")
+                token=os.environ.get("AIS_HUGGINGFACE_API_KEY"),
             )
 
         except HfHubHTTPError as e:
             if e.response.status_code == 401:
                 raise ModelAccessException(
                     self.model_id,
-                    "You need to be authenticated and have access permission."
+                    "You need to be authenticated and have access permission.",
                 )
             elif e.response.status_code == 403:
                 raise ModelAccessException(self.model_id)
@@ -124,8 +133,10 @@ class ModelSelector:
                 model_path, torch_dtype="auto", device_map="auto"
             )
         except Exception as e:
-            raise RuntimeError(f"Failed to load Qwen model/processor from {model_path}: {e}")
-        
+            raise RuntimeError(
+                f"Failed to load Qwen model/processor from {model_path}: {e}"
+            )
+
     def load_clap_model(self, model_path: str):
         """Loads the CLAP model and processor from disk."""
         self.log(f"Loading CLAP model and processor from: {model_path}")
@@ -133,8 +144,10 @@ class ModelSelector:
             self.processor = AutoProcessor.from_pretrained(model_path)
             self.model = ClapModel.from_pretrained(model_path)
         except Exception as e:
-            raise RuntimeError(f"Failed to load CLAP model/processor from {model_path}: {e}")
-    
+            raise RuntimeError(
+                f"Failed to load CLAP model/processor from {model_path}: {e}"
+            )
+
     def load_model(self, model_path: str):
         """Loads model and tokenizer from disk."""
         self.log(f"Loading model and tokenizer from: {model_path}")
@@ -146,7 +159,7 @@ class ModelSelector:
 
     def get_model(self):
         return self.model
-    
+
     def get_processor(self):
         return self.processor
 

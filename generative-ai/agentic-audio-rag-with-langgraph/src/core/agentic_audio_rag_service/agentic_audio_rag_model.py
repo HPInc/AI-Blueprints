@@ -6,39 +6,58 @@ Business Logic Layer
 - Contains all domain-specific functionality without MLflow dependencies
 - Designed to be framework-agnostic and easily testable
 """
+
 # ─────── Standard Library Imports ───────
-from __future__ import annotations # Future-proofing for type annotations
+from __future__ import annotations  # Future-proofing for type annotations
 import json  # JSON parsing and serialization
-import re # Regular expressions
+import re  # Regular expressions
 import logging  # Logging utilities
 import os  # Operating system interaction
 from pathlib import Path  # Object-oriented filesystem paths
-from typing import Any, Dict, List, Tuple, TypedDict, Annotated, Optional  # Static typing support
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    TypedDict,
+    Annotated,
+    Optional,
+)  # Static typing support
 import numpy as np  # Numerical computing with arrays
-import soundfile as sf # Audio file reading and writing
-from types import SimpleNamespace # Simple object for attribute access
-import operator # Functional programming utilities
+import soundfile as sf  # Audio file reading and writing
+from types import SimpleNamespace  # Simple object for attribute access
+import operator  # Functional programming utilities
 import uuid
 import sys
 import pandas as pd
 
 # ─────── Third-Party Package Imports ───────
-from langchain.docstore.document import Document  # Core document abstraction for LangChain
+from langchain.docstore.document import (
+    Document,
+)  # Core document abstraction for LangChain
 from langgraph.graph import StateGraph, END  # LangGraph for stateful agent workflows
 from pydantic import BaseModel  # Data validation and model parsing
 import torch  # PyTorch for deep learning
 import torchaudio
 import faiss
 from transformers import (
-    ClapProcessor, ClapModel,
-    Qwen2_5OmniProcessor, Qwen2_5OmniThinkerForConditionalGeneration,
+    ClapProcessor,
+    ClapModel,
+    Qwen2_5OmniProcessor,
+    Qwen2_5OmniThinkerForConditionalGeneration,
 )
 from qwen_omni_utils import process_mm_info
 
 # ─────── Local Application-Specific Imports ───────
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from src.agentic_workflow import build_audio_agentic_graph  # Custom LangGraph construction logic
-from src.simple_kv_memory import SimpleKVMemory, _mem_get, _mem_put  # In-memory key-value store for agent state
+from src.agentic_workflow import (
+    build_audio_agentic_graph,
+)  # Custom LangGraph construction logic
+from src.simple_kv_memory import (
+    SimpleKVMemory,
+    _mem_get,
+    _mem_put,
+)  # In-memory key-value store for agent state
 from src.utils import setup_model_environment  # Project-wide configured logger
 from src.segment_audio_embeddings import AudioIndex, ensure_wav
 
@@ -54,10 +73,11 @@ MEDIA_EXTS = AUDIO_EXTS | VIDEO_EXTS
 CLAP_REPO = "laion/clap-htsat-unfused"
 
 RELEVANCE_THRESHOLD = 0.18
-FETCH_K = 24     # breadth for stage-1
-TOP_K   = 6      # final segments
+FETCH_K = 24  # breadth for stage-1
+TOP_K = 6  # final segments
 
- # Qwen adapter class
+
+# Qwen adapter class
 class _QwenAdapter:
     def __init__(self, proc, model):
         self.processor = proc
@@ -68,20 +88,31 @@ class _QwenAdapter:
         )
 
     def _sanitize(self, txt: str) -> str:
-        txt = re.sub(r"^(?:\d+\s*)?(?:Human:|User:|Assistant:|System:)\s*", "", txt, flags=re.IGNORECASE).strip()
+        txt = re.sub(
+            r"^(?:\d+\s*)?(?:Human:|User:|Assistant:|System:)\s*",
+            "",
+            txt,
+            flags=re.IGNORECASE,
+        ).strip()
         txt = re.sub(r"([!?.])\1{2,}", r"\1", txt)
         return txt
 
-    def answer(self, question: str, audio_hits: list, return_audio: bool = False) -> dict:
-        user_content = [{
-            "type": "text",
-            "text": ("Answer ONLY using the provided audio clips."
-                     "If the clips do not contain the answer, reply exactly: NOT_FOUND_IN_AUDIO.\n"
-                     f"Question: {question}")
-        }]
+    def answer(
+        self, question: str, audio_hits: list, return_audio: bool = False
+    ) -> dict:
+        user_content = [
+            {
+                "type": "text",
+                "text": (
+                    "Answer ONLY using the provided audio clips."
+                    "If the clips do not contain the answer, reply exactly: NOT_FOUND_IN_AUDIO.\n"
+                    f"Question: {question}"
+                ),
+            }
+        ]
 
         usable = 0
-        for h in (audio_hits or []):
+        for h in audio_hits or []:
             audio_full, sr = sf.read(h["wav_path"])
             if audio_full.ndim == 2:
                 audio_full = audio_full.mean(axis=1)
@@ -98,11 +129,16 @@ class _QwenAdapter:
             return {"answer": "Not found in audio.", "evidence": []}
 
         conv = [
-            {"role": "system", "content": [{"type": "text", "text": self.qwen_default_system}]},
-            {"role": "user",   "content": user_content},
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": self.qwen_default_system}],
+            },
+            {"role": "user", "content": user_content},
         ]
 
-        text = self.processor.apply_chat_template(conv, add_generation_prompt=True, tokenize=False)
+        text = self.processor.apply_chat_template(
+            conv, add_generation_prompt=True, tokenize=False
+        )
         audios, images, videos = process_mm_info(conv, use_audio_in_video=False)
 
         audios = audios if (audios and len(audios) > 0) else None
@@ -110,14 +146,21 @@ class _QwenAdapter:
         videos = videos if (videos and len(videos) > 0) else None
 
         inputs = self.processor(
-            text=text, audio=audios, images=images, videos=videos,
-            return_tensors="pt", padding=True, use_audio_in_video=False
+            text=text,
+            audio=audios,
+            images=images,
+            videos=videos,
+            return_tensors="pt",
+            padding=True,
+            use_audio_in_video=False,
         ).to(self.model.device)
 
         tok = getattr(self.processor, "tokenizer", None)
         eos_id = getattr(tok, "eos_token_id", None)
         try:
-            chat_eos = tok.convert_tokens_to_ids("<|im_end|>") if tok is not None else None
+            chat_eos = (
+                tok.convert_tokens_to_ids("<|im_end|>") if tok is not None else None
+            )
         except Exception:
             chat_eos = None
         eos_ids = [i for i in (eos_id, chat_eos) if i is not None] or None
@@ -148,26 +191,37 @@ class _QwenAdapter:
                 new_tokens = seqs[:, prompt_len:]
             except Exception:
                 new_tokens = seqs
-            decoded = self.processor.batch_decode(new_tokens, skip_special_tokens=True,
-                                                  clean_up_tokenization_spaces=True)
+            decoded = self.processor.batch_decode(
+                new_tokens, skip_special_tokens=True, clean_up_tokenization_spaces=True
+            )
             answer = (decoded[0].strip() if decoded else "").strip()
 
         answer = self._sanitize(answer)
         if answer.upper().startswith("NOT_FOUND_IN_AUDIO"):
             answer = "Not found in audio."
 
-        evid = [{
-            "file_name": h["file_name"], "file_path": h["file_path"],
-            "start_s": h["start_s"], "end_s": h["end_s"],
-            "score": h.get("score_mmr", h.get("score", 0.0)),
-        } for h in (audio_hits or [])]
+        evid = [
+            {
+                "file_name": h["file_name"],
+                "file_path": h["file_path"],
+                "start_s": h["start_s"],
+                "end_s": h["end_s"],
+                "score": h.get("score_mmr", h.get("score", 0.0)),
+            }
+            for h in (audio_hits or [])
+        ]
 
-        return {"answer": (answer if answer else "Not found in audio."), "evidence": evid}
+        return {
+            "answer": (answer if answer else "Not found in audio."),
+            "evidence": evid,
+        }
+
 
 def _normalize_vecs(vecs: np.ndarray) -> np.ndarray:
     x = vecs.astype(np.float32, copy=False)
     n = np.linalg.norm(x, axis=1, keepdims=True) + 1e-12
     return (x / n).astype(np.float32)
+
 
 def _set_embeddings(MEDIA_DIR, index_dir, config_path):
     clap_device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -183,7 +237,9 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
     except Exception as e:
         print("Skipping CLAP offload:", e)
 
-    def _resample_to_48k(wav: np.ndarray, sr: int, target_sr: int = 48000) -> np.ndarray:
+    def _resample_to_48k(
+        wav: np.ndarray, sr: int, target_sr: int = 48000
+    ) -> np.ndarray:
         if sr == target_sr:
             return wav.astype(np.float32, copy=False)
         try:
@@ -192,33 +248,46 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
             return t48.squeeze(0).cpu().numpy().astype(np.float32)
         except Exception:
             x = np.linspace(0, 1, num=wav.shape[0], dtype=np.float64, endpoint=False)
-            y = np.interp(np.linspace(0, 1, num=int(round(wav.shape[0] * target_sr / sr)), endpoint=False),
-                        x, wav.astype(np.float64, copy=False))
+            y = np.interp(
+                np.linspace(
+                    0, 1, num=int(round(wav.shape[0] * target_sr / sr)), endpoint=False
+                ),
+                x,
+                wav.astype(np.float64, copy=False),
+            )
             return y.astype(np.float32)
 
     @torch.no_grad()
     def clap_embed_audio(wav: np.ndarray, sr: int) -> np.ndarray:
         wav48 = _resample_to_48k(wav, sr, 48000)
-        inp = clap_processor(audios=[wav48], sampling_rate=48000, return_tensors="pt").to(clap_device)
+        inp = clap_processor(
+            audios=[wav48], sampling_rate=48000, return_tensors="pt"
+        ).to(clap_device)
         out = clap_model.get_audio_features(**inp)
         vec = out.cpu().numpy()[0]
         vec = vec / (np.linalg.norm(vec) + 1e-12)
         return vec.astype(np.float32)
 
     # Segmentation
-    def segment_audio(wav_path: str, window_s: float = 30.0, hop_s: float = 15.0) -> List[Tuple[int, int, np.ndarray, int]]:
+    def segment_audio(
+        wav_path: str, window_s: float = 30.0, hop_s: float = 15.0
+    ) -> List[Tuple[int, int, np.ndarray, int]]:
         audio, sr = sf.read(wav_path)
         if audio.ndim == 2:
             audio = audio.mean(axis=1)
         if audio.dtype != np.float32:
             audio = audio.astype(np.float32)
-        n = len(audio); win = int(window_s * sr); hop = int(hop_s * sr)
-        if n == 0: return []
+        n = len(audio)
+        win = int(window_s * sr)
+        hop = int(hop_s * sr)
+        if n == 0:
+            return []
         segs, i = [], 0
         while i < n:
             j = min(i + win, n)
             segs.append((i, j, audio[i:j], sr))
-            if j == n: break
+            if j == n:
+                break
             i += hop
         return segs
 
@@ -227,11 +296,13 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
         def __init__(self, dim: int = 512):
             self.index = faiss.IndexFlatIP(dim)
             self.meta: List[Dict[str, Any]] = []
+
         def add(self, vecs: np.ndarray, metas: List[Dict[str, Any]]):
             # cosine via normalized IP
             vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-12)
             self.index.add(vecs.astype(np.float32))
             self.meta.extend(metas)
+
         def search(self, qvec: np.ndarray, k: int = 6) -> List[Dict[str, Any]]:
             qvec = qvec.astype(np.float32)
             qvec = qvec / (np.linalg.norm(qvec) + 1e-12)
@@ -239,7 +310,8 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
             out = []
             for idx, score in zip(I[0], D[0]):
                 if 0 <= idx < len(self.meta):
-                    m = dict(self.meta[idx]); m["score"] = float(score)
+                    m = dict(self.meta[idx])
+                    m["score"] = float(score)
                     out.append(m)
             return out
 
@@ -258,17 +330,21 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
     for media_path in media_paths:
         wav_path = ensure_wav(AUDIO_EXTS, VIDEO_EXTS, str(media_path))
         segs = segment_audio(wav_path, window_s=30.0, hop_s=15.0)
-        if not segs: continue
+        if not segs:
+            continue
         vecs, metas = [], []
-        for (s0, s1, wav_seg, sr) in segs:
-            v = clap_embed_audio(wav_seg, sr); vecs.append(v)
-            metas.append({
-                "file_path": str(media_path),
-                "file_name": media_path.name,
-                "wav_path": wav_path,
-                "start_s": float(s0 / sr),
-                "end_s": float(s1 / sr),
-            })
+        for s0, s1, wav_seg, sr in segs:
+            v = clap_embed_audio(wav_seg, sr)
+            vecs.append(v)
+            metas.append(
+                {
+                    "file_path": str(media_path),
+                    "file_name": media_path.name,
+                    "wav_path": wav_path,
+                    "start_s": float(s0 / sr),
+                    "end_s": float(s1 / sr),
+                }
+            )
         audio_index.add(np.stack(vecs, axis=0), metas)
 
     # Persist index vectors + metadata as model artifacts
@@ -280,7 +356,8 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
         audio, sr = sf.read(m["wav_path"])
         if audio.ndim == 2:
             audio = audio.mean(axis=1)
-        i0 = int(m["start_s"] * sr); i1 = int(m["end_s"] * sr)
+        i0 = int(m["start_s"] * sr)
+        i1 = int(m["end_s"] * sr)
         wav_seg = audio[i0:i1].astype(np.float32, copy=False)
         vecs.append(clap_embed_audio(wav_seg, sr))
     vecs = np.stack(vecs, axis=0).astype(np.float32)
@@ -302,7 +379,7 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
 
     print("Indexed segments:", len(audio_index.meta))
 
-    
+
 class AgenticAudioModel:
     """
     Standalone agentic audio RAG model class with no MLflow inheritance.
@@ -311,11 +388,18 @@ class AgenticAudioModel:
       - Qwen2.5 Omni Thinker for audio reasoning
       - LangGraph for memory → retrieve → generate → memoize
     """
-    
-    def __init__(self, context, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
+
+    def __init__(
+        self,
+        context,
+        config: dict,
+        docs_path: str,
+        model_path: str = None,
+        secrets: dict = None,
+    ):
         """
         Initialize the AgenticAudioModel with configuration and artifacts.
-        
+
         Args:
             config: Model configuration dictionary
             docs_path: Path to documents directory
@@ -326,7 +410,7 @@ class AgenticAudioModel:
         self.docs_path = docs_path
         self.model_path = model_path
         self.secrets = secrets
-        
+
         # Initialize components
         self.llm = None
         self.embeddings = None
@@ -337,7 +421,7 @@ class AgenticAudioModel:
         self.prompt_str = ""
         self.memory = []
         self.callback_manager = None
-        
+
         # Setup environment and load components
         try:
             self._setup_environment()
@@ -346,20 +430,22 @@ class AgenticAudioModel:
             # self._load_model()
             # self._load_prompt()
             # self._load_chain()
-            
-             # --- Artifacts ---
-            index_dir   = Path(context.artifacts["index_dir"])
+
+            # --- Artifacts ---
+            index_dir = Path(context.artifacts["index_dir"])
             config_path = Path(context.artifacts["config_path"])
-            memory_dir  = Path(context.artifacts["memory_dir"])
+            memory_dir = Path(context.artifacts["memory_dir"])
             memory_dir.mkdir(parents=True, exist_ok=True)
 
             # names (allow env override)
             vecs_name = INDEX_VECS_NPY
             meta_name = INDEX_META_JSON
-            
+
             _set_embeddings(self.docs_path, index_dir, config_path)
 
-            self.vecs = _normalize_vecs(np.load(index_dir / vecs_name).astype(np.float32))
+            self.vecs = _normalize_vecs(
+                np.load(index_dir / vecs_name).astype(np.float32)
+            )
             with open(index_dir / meta_name, "r") as f:
                 self.metas = json.load(f)
             with open(config_path, "r") as f:
@@ -367,7 +453,7 @@ class AgenticAudioModel:
 
             self.relevance_threshold = float(cfg.get("relevance_threshold", 0.18))
             self.fetch_k = int(cfg.get("fetch_k", 24))
-            self.top_k   = int(cfg.get("top_k", 6))
+            self.top_k = int(cfg.get("top_k", 6))
 
             # --- CLAP (CPU to avoid OOM) ---
             # keep CLAP on CPU; embed queries quickly and cheaply
@@ -383,10 +469,14 @@ class AgenticAudioModel:
 
             # --- Qwen Omni (audio agent) ---
             audio_llm_id = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
-            self.q_processor = Qwen2_5OmniProcessor.from_pretrained(audio_llm_id, trust_remote_code=True)
+            self.q_processor = Qwen2_5OmniProcessor.from_pretrained(
+                audio_llm_id, trust_remote_code=True
+            )
             self.q_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
                 audio_llm_id,
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                torch_dtype=(
+                    torch.float16 if torch.cuda.is_available() else torch.float32
+                ),
                 device_map="auto",
                 trust_remote_code=True,
                 low_cpu_mem_usage=True,
@@ -397,23 +487,26 @@ class AgenticAudioModel:
             self.audio_index.add(self.vecs, self.metas)
 
             self.graph = build_audio_agentic_graph(
-                relevance_threshold = self.relevance_threshold,
-                fetch_k = self.fetch_k,
-                top_k = self.top_k,
-                vecs = self.vecs,
-                metas = self.metas,
-                audio_index = self.audio_index,
-                clap_processor = self.clap_processor,
-                clap_model = self.clap_model,
+                relevance_threshold=self.relevance_threshold,
+                fetch_k=self.fetch_k,
+                top_k=self.top_k,
+                vecs=self.vecs,
+                metas=self.metas,
+                audio_index=self.audio_index,
+                clap_processor=self.clap_processor,
+                clap_model=self.clap_model,
             )
-            
+
             logger.info("AgenticAudioModel initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize AgenticAudioModel: {str(e)}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
-            raise RuntimeError(f"AgenticAudioModel initialization failed: {str(e)}") from e
-    
+            raise RuntimeError(
+                f"AgenticAudioModel initialization failed: {str(e)}"
+            ) from e
+
     def _setup_environment(self) -> None:
         """Configure environment variables based on configuration and secrets."""
         setup_model_environment()
@@ -423,7 +516,7 @@ class AgenticAudioModel:
                 for key, value in self.secrets.items():
                     os.environ[key] = str(value)
                 logger.info("Secrets loaded into environment")
-            
+
             # Configure proxy if specified in config
             if "proxy" in self.model_config and self.model_config["proxy"]:
                 logger.info(f"Setting up proxy: {self.model_config['proxy']}")
@@ -431,27 +524,27 @@ class AgenticAudioModel:
                 os.environ["HTTP_PROXY"] = self.model_config["proxy"]
             else:
                 logger.info("No proxy configuration found")
-                    
+
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
             # Continue without failing to allow the model to still function
-            
+
     # def _load_model(self) -> None:
     #     """Load the appropriate model based on configuration."""
     #     try:
     #         model_source = self.model_config.get("model_source", "local")
     #         logger.info(f"Loading model with source: {model_source}")
-            
+
     #         from src.utils import initialize_llm, DEFAULT_MODELS
-            
+
     #         # Extract secrets and model path based on configuration
     #         secrets = self.secrets if self.secrets else {}
     #         # Use model_path from notebook if provided, otherwise fall back to default
     #         local_model_path = self.model_path if self.model_path else DEFAULT_MODELS["local"]
     #         logger.info(f"Using local_model_path: {local_model_path}")
-            
+
     #         hf_repo_id = self.model_config.get("hf_repo_id", "")
-            
+
     #         # Use the shared initialize_llm function
     #         self.llm = initialize_llm(
     #             model_source=model_source,
@@ -459,61 +552,64 @@ class AgenticAudioModel:
     #             local_model_path=local_model_path,
     #             hf_repo_id=hf_repo_id
     #         )
-                
+
     #         if self.llm is None:
     #             logger.error("Model failed to initialize - llm is None after loading")
     #             raise RuntimeError("Model initialization failed - llm is None")
-                
+
     #         logger.info(f"Model of type {type(self.llm).__name__} loaded successfully")
-            
+
     #     except Exception as e:
     #         logger.error(f"Error loading model: {str(e)}")
     #         raise
-    
+
     # Wrapper used by mlflow
     def _invoke(self, question: str, file_id: str = "global") -> dict:
-        return self.graph.invoke({
-            "question": question,
-            "file_id": file_id,
-            "memory": self.memory,
-            "audio_llm": self.audio_llm,
-            "messages": [],
-        })
-        
+        return self.graph.invoke(
+            {
+                "question": question,
+                "file_id": file_id,
+                "memory": self.memory,
+                "audio_llm": self.audio_llm,
+                "messages": [],
+            }
+        )
+
     def predict(self, model_input):
         if isinstance(model_input, pd.DataFrame):
             records = model_input.to_dict(orient="records")
         elif isinstance(model_input, list):
             records = model_input
         else:
-            raise ValueError("Pass a list[dict] or pandas DataFrame with 'question' and optional 'file_id'.")
+            raise ValueError(
+                "Pass a list[dict] or pandas DataFrame with 'question' and optional 'file_id'."
+            )
 
         out = []
         for r in records:
-            q  = (r.get("question") or "").strip()
+            q = (r.get("question") or "").strip()
             fid = (r.get("file_id") or "global").strip() or "global"
             try:
                 s = self._invoke(q, fid)
-                out.append({
-                    "question": q,
-                    "file_id": fid,
-                    "answer": s.get("answer", ""),
-                    "evidence": s.get("evidence", []),
-                    "from_memory": s.get("from_memory", False),
-                })
-                
+                out.append(
+                    {
+                        "question": q,
+                        "file_id": fid,
+                        "answer": s.get("answer", ""),
+                        "evidence": s.get("evidence", []),
+                        "from_memory": s.get("from_memory", False),
+                    }
+                )
+
             except Exception as e:
-                out.append({
-                    "question": q,
-                    "file_id": fid,
-                    "answer": "",
-                    "evidence": [],
-                    "from_memory": False,
-                    "error": f"{type(e).__name__}: {e}",
-                })
+                out.append(
+                    {
+                        "question": q,
+                        "file_id": fid,
+                        "answer": "",
+                        "evidence": [],
+                        "from_memory": False,
+                        "error": f"{type(e).__name__}: {e}",
+                    }
+                )
         return out
-    
-    
-   
-    
-   

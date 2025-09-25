@@ -50,12 +50,12 @@ agentic-audio-rag-with-langgraph/
 ├── data/                                # Sample media files (input directory)
 │   └── inputs/                          #  └─ *.mp3 / *.wav / *.mp4 …
 ├── demo/                                # UI frontend code (Streamlit)
-│   └── streamlit/                       
+│   └── streamlit/
 ├── docs/                                # UI documentation & screenshots
 │   ├── Streamlit UI Page - Agentic Audio RAG.pdf
 │   └── streamlit-ui-ss-agentic-audio-rag.png
 ├── notebooks/                           # Workflow and MLflow notebooks
-│   ├── register-model.ipynb             
+│   ├── register-model.ipynb
 │   └── run-workflow.ipynb
 ├── src/                                 # Core LangGraph modules
 |   ├── __init__.py

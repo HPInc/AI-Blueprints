@@ -17,17 +17,12 @@ from langchain.document_loaders import (
 from langchain.docstore.document import Document
 
 # Set page config
-st.set_page_config(
-    page_title="Agentic Audio RAG",
-    page_icon="🔬",
-    layout="wide"
-)
+st.set_page_config(page_title="Agentic Audio RAG", page_icon="🔬", layout="wide")
 
 # ------------------------- CSS STYLING -------------------------
 
 st.markdown(
-    "<style>" + open("assets/styles.css").read() + "</style>", 
-    unsafe_allow_html=True
+    "<style>" + open("assets/styles.css").read() + "</style>", unsafe_allow_html=True
 )
 
 # ------------------------- LOGOS -------------------------
@@ -41,19 +36,24 @@ with col3:
 
 
 # ------------------------- HEADER -------------------------
-st.markdown('<div class="gradient-header"><h2>🤖 Agentic Audio RAG 🤖</h2></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="gradient-header"><h2>🤖 Agentic Audio RAG 🤖</h2></div>',
+    unsafe_allow_html=True,
+)
 
 # ------------------------- SIDEBAR CONFIG -------------------------
 st.sidebar.title("⚙️ Configuration")
 
-st.sidebar.markdown("""
+st.sidebar.markdown(
+    """
 **Instructions:**
 1. Enter your model's `/invocations` endpoint URL.
 2. Upload an audio/video file to analyze, and fill out the question.
 3. Click **Run Analysis** to receive an AI-generated answer.
 
 **Example URL:** `https://localhost:5000/invocations`
-""")
+"""
+)
 
 endpoint_url = st.sidebar.text_input("MLflow Model Endpoint URL", key="endpoint")
 
@@ -64,11 +64,25 @@ if endpoint_url and not endpoint_url.strip().lower().startswith("https://"):
 with st.form("inference_form"):
     question = st.text_area("❓ Question", height=100, key="question")
     uploaded_files = st.file_uploader(
-        "Upload an Audio or Video File", accept_multiple_files=False,
-        type=[".mp3", ".wav", ".ogg", ".flac", ".m4a", ".mp4", ".mov", ".avi", ".mkv", ".m4v", ".webm"]
+        "Upload an Audio or Video File",
+        accept_multiple_files=False,
+        type=[
+            ".mp3",
+            ".wav",
+            ".ogg",
+            ".flac",
+            ".m4a",
+            ".mp4",
+            ".mov",
+            ".avi",
+            ".mkv",
+            ".m4v",
+            ".webm",
+        ],
     )
 
     submitted = st.form_submit_button("🔢 Run Analysis")
+
 
 # ------------------------- FILE PROCESSING -------------------------
 class SafeTextLoader(TextLoader):
@@ -82,7 +96,7 @@ class SafeTextLoader(TextLoader):
             except Exception:
                 continue
         raise ValueError(f"Failed to decode file: {self.file_path}")
-    
+
 
 # File Type Mapping
 supported_extensions = {
@@ -132,7 +146,8 @@ def process_files(files: List) -> str:
             except Exception as cleanup_err:
                 st.warning(f"⚠️ Failed to clean up temp directory: {cleanup_err}")
 
-    return '\n\n'.join(doc.page_content for doc in all_docs)
+    return "\n\n".join(doc.page_content for doc in all_docs)
+
 
 # ------------------------- API CALL -------------------------
 if submitted:
@@ -150,25 +165,27 @@ if submitted:
                         "input_text": input_text,
                     }
                 ],
-                "params": {}
+                "params": {},
             }
-            
+
             try:
                 response = requests.post(
-                    endpoint_url.strip(),
-                    json=payload,
-                    verify=False,
-                    timeout=600
+                    endpoint_url.strip(), json=payload, verify=False, timeout=600
                 )
                 response.raise_for_status()
-                output = response.json()["predictions"][0]  # Assuming single-record output
+                output = response.json()["predictions"][
+                    0
+                ]  # Assuming single-record output
 
                 st.markdown("### 📈 Final Answer")
-                st.markdown(f"<div class='result-box'>{output['answer']}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div class='result-box'>{output['answer']}</div>",
+                    unsafe_allow_html=True,
+                )
                 st.divider()
 
                 with st.expander("🔍 Full Message Trace"):
-                    st.json(json.loads(output['messages']))
+                    st.json(json.loads(output["messages"]))
 
             except requests.exceptions.RequestException as e:
                 st.error(f"Request failed: {e}")

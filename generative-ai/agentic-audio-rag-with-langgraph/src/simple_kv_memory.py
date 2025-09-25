@@ -2,19 +2,24 @@
 import json  # JSON parsing and serialization
 import logging  # Logging utilities
 from pathlib import Path  # Object-oriented filesystem paths
-from typing import Any, Dict, Optional  # Type annotations for mappings and optional values
+from typing import (
+    Any,
+    Dict,
+    Optional,
+)  # Type annotations for mappings and optional values
 from threading import Lock
+
 
 class SimpleKVMemory:
     """
     Very small persistent key-value store (JSON on disk).
     Thread-safe for the single-process runtime used by LangGraph nodes.
 
-    • Keys   : arbitrary strings – in this project we use  
-               "file_id :: question" (lower-cased, stripped).  
-    • Values : any JSON-serialisable object, typically  
+    • Keys   : arbitrary strings – in this project we use
+               "file_id :: question" (lower-cased, stripped).
+    • Values : any JSON-serialisable object, typically
                {"answer": "...", "evidence": [...]}
-    
+
     """
 
     def __init__(self, file_path: Path) -> None:
@@ -51,11 +56,13 @@ class SimpleKVMemory:
                     data = json.load(f)
                     if isinstance(data, dict):
                         return data
-                    logging.warning("Memory file is not a valid JSON object. Starting fresh.")
-            except Exception as exc:  
+                    logging.warning(
+                        "Memory file is not a valid JSON object. Starting fresh."
+                    )
+            except Exception as exc:
                 logging.warning("Failed to load memory (%s). Starting fresh.", exc)
         return {}
-    
+
     def _dump(self) -> None:
         """Flush the current store to disk."""
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,6 +86,7 @@ def _mem_get(mem: Any, key: str) -> Optional[Any]:
     if callable(get):
         return get(key)
     return None
+
 
 def _mem_put(mem, key, value):
     """
