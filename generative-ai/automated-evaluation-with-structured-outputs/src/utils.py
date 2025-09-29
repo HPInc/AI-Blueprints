@@ -1,18 +1,18 @@
 # -----------------------------
 # Standard library imports
 # -----------------------------
-import base64          # Encoding and decoding binary data
-import logging         # Logging utilities
-import os              # Interacts with the operating system (paths, env vars, files)
-import sys             # System-specific parameters and functions
-import time            # Time-related utilities
+import base64  # Encoding and decoding binary data
+import logging  # Logging utilities
+import os  # Interacts with the operating system (paths, env vars, files)
+import sys  # System-specific parameters and functions
+import time  # Time-related utilities
 from functools import wraps  # Function decorator support
 from typing import Any, Dict, Tuple  # Type hints for annotations
 
 # -----------------------------
 # Third-party imports
 # -----------------------------
-import yaml            # YAML parsing and serialization
+import yaml  # YAML parsing and serialization
 from IPython.display import HTML, display  # Rich HTML display utilities (Jupyter)
 
 
@@ -50,6 +50,7 @@ def configure_proxy(config: Dict[str, Any]) -> None:
     """
     if "proxy" in config and config["proxy"]:
         os.environ["HTTPS_PROXY"] = config["proxy"]
+
 
 # Color and emoji mapping per level
 STYLE_MAP = {
