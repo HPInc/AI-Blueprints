@@ -24,34 +24,38 @@ The objective of this template is to show how to create a simple text generation
 
  ---
 
+
+
 ## Project Structure
-```
-├── code/                                                     # Demo code
-│
-├── data/                                                     # Data assets used in the project
-│    └── shakespeare.txt                                      # Text from Shakespeare's Sonnet 1 that its gonna be used in this template
-│
-├── demo/                                                     # Compiled Interface Folder
-├── docs
-│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot
-│   ├── html-ui-text-generation-with-rnn.png                  # UI screenshot screenshot
-│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot
-│   ├── streamlit-ui-text-generation-with-rnn.png             # Streamlit screenshot
-│   ├── swagger-ui-text-generation-with-rnn.pdf               # Swagger UI screenshot
-│   └── swagger-ui-text-generation-with-rnn. pdf              # Swagger UI screenshot
-│
-├── notebooks
-    └── models/
-│        └── decoder.pt                                       # Reconstructs the input data from this compressed form to make it as similar as possible to the original input.
-│        └── dict_torch_rnn_model.pt                          # Trained model for text_generation_with_RNN__Torch.ipynb
-│        └── encoder.pt                                       # Compresses the input into a compact representation and detain the most relevant features.
-│        └── tf_rnn_model.h5                                  # Trained model for the text_generation_with_RNN_TF.ipynb
-│   ├── run-workflow-TF.ipynb                                 # Notebook for the TensorFlow trained model
-│   ├── run-workflow-Torch.ipynb                              # Notebook for the Torch trained model
-│   ├── register-model.ipynb                                  # Code to deploy
-├── README.md                                                 # Project documentation
 
 ```
+├── configs/
+│   └── config.yaml                  # Deployment configuration
+│
+├── demo/                            # Compiled interface assets
+│
+├── docs/
+│   └── streamlit-ss.png             # Streamlit web app screenshot
+│
+├── models/
+│   ├── decoder.pt                   # Reconstructs compressed input back to its original form
+│   └── encoder.pt                   # Compresses input into a compact, feature-rich representation
+│
+├── notebooks/
+│   ├── other-notebooks/
+│   │   └── run-workflow-with-tensorflow.ipynb   # Workflow using a TensorFlow-trained model
+│   ├── run-workflow.ipynb            # Workflow using a Torch-trained model
+│   └── register-model.ipynb          # Model registration and deployment
+│
+├── src/
+│   └── utils/                        # Utility functions for notebooks
+│
+├── README.md                         # Project documentation
+├── requirements.txt                         # Pip packages needed
+```
+
+
+
 ## Setup
 
 ### 0 ▪ Minimum Hardware Requirements
@@ -82,9 +86,9 @@ https://github.com/HPInc/AI-Blueprints.git
 
 ## Usage
 
-### 1.1 ▪ Run the Notebook (Optional)
+### 1.1 ▪ Run the Notebook with PyTorch
 
-Execute the notebook `/run-workflow-TF.ipynb` to train and test the model. The workflow includes the following steps:
+Execute the notebook `notebooks/run-workflow.ipynb` to train and test the model. The workflow includes the following steps:
 
 1. **Load the Dataset**
    Import the text data from `shakespeare.txt`.
@@ -109,8 +113,8 @@ Execute the notebook `/run-workflow-TF.ipynb` to train and test the model. The w
 > **Disclaimer**
 > The number of training steps and the size of the training/validation datasets have been intentionally reduced to optimize computational efficiency and minimize runtime. These parameters can be adjusted if additional performance improvements are required.
 
-### 1.2 ▪ Run the Notebook (Optional):
-Run the following notebook `/run-workflow-Torch.ipynb`:
+### 1.2 ▪ Run the Notebook with Tensorflow:
+Run the following notebook `notebooks/other-notebooks/run-workflow-with-tensorflow.ipynb`:
 1. Obtain text data from the shakespeare.txt.
 2. Prepare the textual data. It's necessary to decode and encode the data to give the model a proper numerical representation of the text.
 3. One Hot Encoding to convert categorical data into a fixed-size vector of numerical values.
@@ -120,7 +124,7 @@ Run the following notebook `/run-workflow-Torch.ipynb`:
 7. Generate the Predictions with the words 'Confidence' and 'Love'. The words can be changed.
 
 ### Step 2: Deploy the Service
-1. Execute `/register-model.ipynb ` to register the model in MLflow and create the API logic.
+1. Execute `notebooks/register-model.ipynb ` to register the model in MLflow and create the API logic.
 2. Navigate to **Deployments > New Service** in AI Studio.
 3. Name the service and select the registered model.
 4. Choose an available model version and configure it with **GPU acceleration**.
@@ -158,17 +162,15 @@ And as response:
 
 ```
 
-### Step 4: Launch the Streamlit UI
+### Step 4: Launch the Streamlit Web App
 
 1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
 
 2. Navigate to the shown URL and view the code genration.
 
-### Successful UI demo
+### Streamlit Screenshot
 
-- Streamlit
-
-  ![Code Generation Streamlit UI](docs/streamlit-ui-text-generation-with-rnn.png)
+![Code Generation Streamlit UI](docs/streamlit-ss.png)
 
 
 ---
