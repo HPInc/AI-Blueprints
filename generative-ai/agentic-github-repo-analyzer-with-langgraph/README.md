@@ -120,15 +120,14 @@ notebooks/register-model.ipynb
 
 This registers the model so it can be queried over HTTP.
 
-### 🌐 Step 3: Launch Streamlit UI
+### Step 3: Launch the Streamlit Web App
 
-This web UI allows:
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-* Specifying GitHub repo url and folder path to analyze
-* Entering user questions
-* Connecting to a local MLflow model endpoint
-* Viewing markdown-formatted answers
+<!-- ### Streamlit Preview
 
+![Streamlit Screenshot](docs/streamlit-ss.png) -->
 
 ---
 

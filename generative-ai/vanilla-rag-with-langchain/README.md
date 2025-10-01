@@ -157,26 +157,16 @@ This will:
 - Once deployed, access the **Swagger UI** via the Service URL.
 - The service will automatically use the configuration logged as an artifact during model registration.
 
-### Step 4: Access the User Interface
+### Step 4: Launch the Streamlit Web App
 
-Choose from multiple UI options:
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-#### Option A: Static HTML UI
+### Streamlit Preview
 
-- From the Swagger page, click the demo link to interact with the locally deployed vanilla RAG chatbot via a static HTML interface.
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-#### Option B: Streamlit UI
 
-- Navigate to the `demo/streamlit/` folder and follow the instructions in the README to launch the Streamlit webapp.
-- The Streamlit UI provides an interactive and user-friendly interface for the RAG chatbot.
-
-The UI mode is configured in `config.yaml` under `ui.mode` and can be set to `streamlit` or `static`.
-
-### Successful Demonstration of the User Interface
-
-![Vanilla RAG HTML UI](docs/html_ui_for_vanilla_rag.png)
-
-![Vanilla RAG Streamlit UI](docs/streamlit_ui_for_vanilla_rag.png.png)
 
 ---
 
