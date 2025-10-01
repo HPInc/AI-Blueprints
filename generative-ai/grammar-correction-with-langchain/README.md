@@ -149,16 +149,16 @@ This will:
 5. Start the deployment.
 6. Once deployed, open the Service URL to access the Swagger API page.
 
+### Step 4: Launch the Streamlit Web App
 
-### Step 4 ▪ Launch the Streamlit UI
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-1. Follow the instructions in the README file located in the `demo\streamlit-webapp` folder.
-2. Navigate to the shown URL, upload markdown files or enter a GitHub repo URL, preview the corrected files, and download the corrected markdown files.
+### Streamlit Preview
 
-### Successful UI Screenshots
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-- Streamlit
-  ![Grammar Correction Streamlit UI](docs/grammar-streamlit-ss.png)
+
 
 ---
 

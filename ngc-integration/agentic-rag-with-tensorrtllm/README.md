@@ -114,7 +114,7 @@ Execute the following notebook located in the `notebooks/` folder to see the Age
 
 ### Step 2: Register the Agentic RAG Model in MLflow
 
-Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
+After running the first notebook, run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
 
 - **`register-model.ipynb`**
 

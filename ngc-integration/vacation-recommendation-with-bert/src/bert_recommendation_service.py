@@ -1,33 +1,55 @@
-# src/bert_recommendation_service.py
-# -*- coding: utf-8 -*-
+# -----------------------------
+# Standard library imports
+# -----------------------------
+import logging  # Logging utilities
+import os  # Operating system utilities (paths, env vars, etc.)
+import sys  # Python runtime environment manipulation
+import warnings  # Warning control and message handling
+from datetime import datetime  # Date and time handling
+from pathlib import Path  # Object-oriented filesystem paths
+from typing import Any, Dict, List, Tuple  # Type hints for annotations
 
-import sys
-import os
-import logging
-from datetime import datetime
-import warnings
-from pathlib import Path
-
+# -----------------------------
 # Data manipulation libraries
-import pandas as pd
-import numpy as np
-from tabulate import tabulate
-from typing import Any, Dict, List, Tuple
-from sklearn.metrics.pairwise import cosine_similarity
+# -----------------------------
+import numpy as np  # Numerical computations and arrays
+import pandas as pd  # Data manipulation and analysis
+from sklearn.metrics.pairwise import cosine_similarity  # Pairwise similarity metrics
+from tabulate import tabulate  # Pretty-print tabular data
 
-# Deep learning framework
-import torch
+# -----------------------------
+# Deep learning frameworks
+# -----------------------------
+import torch  # PyTorch deep learning framework
 
+# -----------------------------
 # NLP libraries
-import nltk  # Natural Language Toolkit
+# -----------------------------
+import nltk  # Natural Language Toolkit (tokenization, corpora, etc.)
 from transformers import AutoTokenizer  # Tokenizer for transformer-based models
-from transformers import logging as hf_logging
-import mlflow
-from mlflow.models import ModelSignature
-from mlflow.types import ColSpec, Schema, TensorSpec, ParamSchema, ParamSpec
+from transformers import logging as hf_logging  # Hugging Face logging utilities
 
-# Configure loggin
-logger = logging.getLogger("register_model_logger")
+# -----------------------------
+# Experiment tracking (MLflow)
+# -----------------------------
+import mlflow  # ML lifecycle management and experiment tracking
+from mlflow.models import ModelSignature  # Model signature definitions
+from mlflow.types import (  # Schema utilities for inputs/outputs
+    ColSpec,
+    ParamSchema,
+    ParamSpec,
+    Schema,
+    TensorSpec,
+)
+
+# -----------------------------
+# Local imports
+# -----------------------------
+# Extend sys.path to allow importing from parent directory
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
+
+from src.utils import logger  # Project-specific utilities
+
 
 project_root = Path(__file__).resolve().parent.parent
 if str(project_root) not in sys.path:
