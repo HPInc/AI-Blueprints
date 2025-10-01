@@ -49,7 +49,9 @@ class EmojiStyledJupyterHandler(logging.Handler):
 
 
 # 0) Quiet noisy backends early (must happen before importing TF/JAX/etc.)
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")  # 0=all, 1=hide INFO, 2=hide INFO+WARN, 3=hide all
+os.environ.setdefault(
+    "TF_CPP_MIN_LOG_LEVEL", "2"
+)  # 0=all, 1=hide INFO, 2=hide INFO+WARN, 3=hide all
 
 # 1) Reset any pre-installed handlers (IPython adds one to the root logger)
 root = logging.getLogger()
@@ -80,6 +82,7 @@ except Exception:
 # 3) (Optional) Calm down Transformers/HF logging if present
 try:
     from transformers import logging as hf_logging
+
     hf_logging.set_verbosity_error()
 except Exception:
     pass
@@ -89,13 +92,15 @@ logging.captureWarnings(True)
 
 # 5) Application logger with a single handler and no propagation (prevents duplicates)
 logger = logging.getLogger("AIS_logger")
-logger.setLevel(logging.DEBUG)   # adjust app verbosity here
-logger.propagate = False         # critical: do NOT bubble up to root (avoids duplicate lines)
+logger.setLevel(logging.DEBUG)  # adjust app verbosity here
+logger.propagate = False  # critical: do NOT bubble up to root (avoids duplicate lines)
 logger.handlers.clear()
 
 # If you have a custom Jupyter emoji handler, use it; otherwise, fallback to StreamHandler
 try:
-    handler = EmojiStyledJupyterHandler()  # user-defined handler available in your codebase
+    handler = (
+        EmojiStyledJupyterHandler()
+    )  # user-defined handler available in your codebase
 except NameError:
     handler = logging.StreamHandler()
 
