@@ -1,5 +1,14 @@
 <h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for HP AI Studio 🚀 </h1>
 
+### 🚀 Explore 20+ Local AI Blueprint Projects with HP AI Studio Under 5 Minutes
+
+Get started instantly with **HP AI Studio** — run over 20 fully local AI Blueprint projects **with one click** in less than 5 minutes:
+
+* 📥 [Download HP AI Studio](https://zdocs.datascience.hp.com/downloads)
+* ✍️ [Create a free account](https://reinvent.hp.com/AI-Studio-Free-Sign-Up?jumpid=va_us_mu_mk_hc_r12139_aw_x_11824)
+
+
+
 # Content
 
 - [Overview](#overview)

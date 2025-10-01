@@ -117,7 +117,7 @@ Run the following notebook `run-workflow.ipynb`:
 
 ### 2 ▪ Run the Notebook
 
-Run the following notebook `register-model.ipynb`:
+After running the first notebook, run the following notebook `register-model.ipynb`:
 
 - Log Model to MLflow
 - Fetch the Latest Model Version from MLflow

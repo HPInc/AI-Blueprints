@@ -1,4 +1,4 @@
-# 🌍 Vacation Recommendation Service
+# 🌍 Vacation Recommendation with BERT
 
 <div align="center">
 
