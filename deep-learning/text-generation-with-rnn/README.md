@@ -1,4 +1,4 @@
-# 📜💬 Shakespeare text generation with RNN
+# 📜 Text Generation with RNN
 
 <div align="center">
 
