@@ -213,18 +213,15 @@ The deployed service will allow you to:
 - Compare outputs between both models
 - Use the same API endpoint for both model variants
 
+### Step 4: Launch the Streamlit Web App
 
-### Step 4: Launch the Streamlit UI
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+### Streamlit Preview
 
-2. Navigate to the shown URL and view the fine tuning with orpo.
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-### Successful UI demo
-
-- Streamlit
-
-  ![Fine Tuning Streamlit UI](docs/streamlit-fine-tuning-with-orpo.png)
 
 
 ---

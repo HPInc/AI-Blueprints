@@ -1,3 +1,29 @@
+# -----------------------------
+# Standard library imports
+# -----------------------------
+import inspect  # Inspect live objects (functions, classes, frames, etc.)
+import logging  # Logging utilities
+import os  # Operating system utilities (paths, env vars, etc.)
+import sys  # Python runtime environment manipulation
+import tempfile  # Temporary file and directory management
+import warnings  # Warning control and message handling
+from pathlib import Path  # Object-oriented filesystem paths
+from typing import Any, Dict, List, Optional, Tuple, Union  # Type hints for annotations
+
+# -----------------------------
+# Third-party imports
+# -----------------------------
+import torch  # PyTorch deep learning framework
+
+# -----------------------------
+# Local imports
+# -----------------------------
+# Extend sys.path to allow importing from parent directory
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
+
+from src.utils import logger  # Project-specific logging utility
+
+
 """
 ONNX Export Utilities for AI-Blueprints
 
@@ -50,14 +76,6 @@ Legacy Usage (from file paths - maintained for compatibility):
     export_sklearn_to_onnx("model.pkl", input_sample=[[1, 2, 3, 4]], output_path="sklearn_model.onnx")
 """
 
-import os
-import warnings
-from typing import Any, Optional, Tuple, Union, List, Dict
-from pathlib import Path
-import tempfile
-import torch
-import inspect
-import logging
 
 # Optional imports - will be imported when needed
 try:
@@ -69,8 +87,6 @@ except ImportError:
     np = None
     # Fallback type for when numpy is not available
     NDArray = Any
-
-logger = logging.getLogger("register_model_logger")
 
 
 def identify_model_type(model: Any) -> str:

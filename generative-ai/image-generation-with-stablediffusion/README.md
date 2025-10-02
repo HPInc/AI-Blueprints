@@ -191,17 +191,15 @@ This will:
 
 8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
 
-### Step 3: Launch the Streamlit UI
+### Step 3: Launch the Streamlit Web App
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-2. Navigate to the shown URL and view the image generation.
+### Streamlit Preview
 
-### Successful UI demo
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-- Streamlit
-
-  ![Image Generation Streamlit UI](docs/streamlit-ui-image-generation.png)
 
 
 ---

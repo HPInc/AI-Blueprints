@@ -144,17 +144,16 @@ And as response:
   }
 }
 ```
-### Step 4 ▪ Launch the Streamlit UI
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+### Step 4: Launch the Streamlit Web App
 
-2. Navigate to the shown URL and view the Q&A with BERT.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-### Successful UI demo
+### Streamlit Preview
 
-- Streamlit
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-  ![Q&A with BERT Streamlit UI](docs/streamlit-ui-question-answering-with-bert.png)
 
 
 ---
