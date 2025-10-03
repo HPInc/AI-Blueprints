@@ -23,4 +23,4 @@ GitPython==3.1.44
 rank-bm25==0.2.2
 qwen-vl-utils==0.0.11
 vllm==0.9.2
-mlflow==2.21.2
+mlflow==3.1.4
