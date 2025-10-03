@@ -67,11 +67,7 @@ def main():
     # --- Sidebar for Configuration ---
     with st.sidebar:
         st.markdown("## ⚙️ Endpoint Configuration")
-        api_url = st.text_input(
-            "MLflow Endpoint URL",
-            value="https://localhost:5000/invocations",
-            help="The full URL to the MLflow model's `/invocations` endpoint.",
-        )
+        api_url = "http://localhost:5002/invocations"
         st.markdown("---")
 
         with st.form("kb_form"):
