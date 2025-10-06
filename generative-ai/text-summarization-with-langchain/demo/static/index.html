@@ -255,10 +255,19 @@
     const qs = (s, c=document) => c.querySelector(s);
     const qsa = (s, c=document) => Array.from(c.querySelectorAll(s));
 
+    function escapeHtml(str) {
+      if(!str) return "";
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+    }
+
     function setAlert(targetId, kind, msg){
       const host = qs(targetId);
       if(!host) return;
-      host.innerHTML = msg ? `<div class="alert ${kind}">${msg}</div>` : "";
+      host.innerHTML = msg ? `<div class="alert ${kind}">${escapeHtml(msg)}</div>` : "";
     }
 
     function enableSummarizeIfReady(){
