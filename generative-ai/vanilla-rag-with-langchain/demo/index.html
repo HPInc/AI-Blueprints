@@ -1,14 +1,486 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="assets/icon-szr8TDp1.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Demo</title>
-    <script type="module" crossorigin src="assets/index-JB8oVtUU.js"></script>
-    <link rel="stylesheet" crossorigin href="assets/index-Dh_4sslC.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vanilla RAG Chatbot Interface 🤖</title>
+  <meta name="description" content="Interact with your locally deployed MLflow Vanilla RAG Chatbot model." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121835;
+      --panel-2: #0f1530;
+      --text: #e7ecff;
+      --muted: #a7b1d6;
+      --brand: #4B8BBE;   /* Python blue from Streamlit title */
+      --brand-2:#306998;  /* Python blue secondary */
+      --accent:#80deea;
+      --accent-2:#e0f7fa;
+      --success:#1b9e77;
+      --warning:#f39c12;
+      --error:#e74c3c;
+      --border: 1px solid rgba(255,255,255,0.08);
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --focus: 0 0 0 3px rgba(75,139,190,.35);
+    }
+    *, *::before, *::after{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 100% -10%, #19355a33, transparent 60%),
+        radial-gradient(1200px 600px at -10% 110%, #2f559733, transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    .container{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    header{
+      text-align:center;
+      padding: 28px 16px 10px;
+    }
+    .title{
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: clamp(24px, 2.4vw + 10px, 40px);
+      color: var(--brand);
+      margin: 0 0 6px;
+    }
+    .subtitle{
+      margin:0;
+      color: var(--brand-2);
+      font-size: clamp(14px, 1.1vw + 8px, 18px);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, #121835, #0f1530);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 6px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+    .sidebar h2{
+      margin: 8px 0 6px;
+      font-size: 18px;
+    }
+    .instruction-list{
+      margin: 6px 0 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+    .instruction-list li{ margin: 6px 0; }
+
+    /* Card */
+    .card{
+      background: linear-gradient(180deg, #121835, #101736);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    /* Form */
+    form{
+      display: grid;
+      gap: 14px;
+    }
+    .label{
+      display:block;
+      font-weight: 600;
+      margin: 8px 0 6px;
+    }
+    textarea{
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      background: var(--panel-2);
+      border: var(--border);
+      border-radius: 12px;
+      padding: 14px 14px 12px;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    textarea.small{ min-height: 80px; }
+    textarea::placeholder{ color: #93a2cf; }
+    textarea:focus{ box-shadow: var(--focus); }
+
+    .file{
+      border: var(--border);
+      background: var(--panel-2);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+    input[type="file"]{
+      width:100%;
+      color: var(--muted);
+    }
+
+    .row{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn{
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s;
+      background: linear-gradient(90deg, #3aaef2, #4B8BBE);
+      color: white;
+      box-shadow: 0 8px 20px rgba(75,139,190,.35);
+    }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ cursor: not-allowed; opacity: .6; }
+
+    /* Alerts */
+    .alert{
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 4px 0 0;
+      font-weight: 500;
+    }
+    .alert.warn{ background: #c25f0a22; border: 1px solid #f39c1240; color:#ffce83; }
+    .alert.success{ background: #105f4922; border: 1px solid #1b9e7740; color:#54e6b1; }
+    .alert.error{ background: #6d1b1b22; border: 1px solid #e74c3c40; color:#ff9c92; }
+
+    /* Output */
+    .section-title{
+      font-size: 18px;
+      color: #00bfa5;
+      margin: 18px 0 8px;
+      font-weight: 700;
+    }
+    .answer{
+      padding: 18px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+      color: #004d40;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+
+    .divider{
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      margin: 18px 0;
+      border: none;
+    }
+
+    details{
+      background: #0f1530;
+      border-radius: 12px;
+      border: var(--border);
+      padding: 10px 12px;
+    }
+    summary{
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+    }
+    .mono{ font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .muted{ color: var(--muted); }
+
+    .spinner{
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .spinner:before{
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #93c5fd;
+      border-top-color: transparent;
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin{ to { transform: rotate(360deg);} }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .container{ grid-template-columns: 1fr; }
+      .sidebar{ position: static; }
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    /* Tooltip */
+    .tooltip{
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tiptext{
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .2s ease;
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1b1f3a;
+      color: var(--text);
+      border: var(--border);
+      padding: 8px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      z-index: 10;
+      font-size: 12px;
+    }
+    .tooltip:hover .tiptext{ visibility: visible; opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="title">🔮 Vanilla RAG Chatbot Service Interface</h1>
+    <p class="subtitle">Interact with your locally deployed MLflow Vanilla RAG Chatbot model.</p>
+  </header>
+
+  <main class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>📝 Instructions</h2>
+      <ol class="instruction-list">
+        <li>(Optional) Upload a PDF to enrich the knowledge base.</li>
+        <li>Type your query and an optional prompt, then Submit.</li>
+      </ol>
+    </aside>
+
+    <!-- Main Panel -->
+    <section class="card">
+      <form id="chat-form" novalidate>
+        <label class="label" for="query">💬 Your Query</label>
+        <textarea id="query" name="query" placeholder="Type what you’d like to ask the chatbot about Z by HP AI Studio..." aria-label="Your Query"></textarea>
+
+        <label class="label" for="prompt">✏️ Custom Prompt (optional)</label>
+        <textarea id="prompt" name="prompt" class="small" placeholder="E.g., “Answer in bullet points.”" aria-label="Custom Prompt"></textarea>
+
+        <div class="file">
+          <label for="pdf" class="mono">📄 Upload PDF (optional)</label>
+          <input id="pdf" type="file" accept="application/pdf" />
+        </div>
+
+        <div class="row">
+          <button id="submit-btn" class="btn" type="submit">🚀 Submit Query</button>
+
+        <div id="alert" role="status" aria-live="polite"></div>
+      </form>
+
+      <!-- Output sections -->
+      <section id="response-section" style="display:none;">
+        <h3 class="section-title">🤖 Model Response</h3>
+        <div id="answer" class="answer">No output returned.</div>
+
+        <hr class="divider" />
+
+        <details id="chunks-wrap" style="display:none;">
+          <summary>📚 Relevant Chunks</summary>
+          <div id="chunks" class="mono muted"></div>
+        </details>
+
+        <br />
+
+        <details id="history-wrap" style="display:none;">
+          <summary>💬 Conversation History</summary>
+          <div id="history" class="mono muted"></div>
+        </details>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    // === Config ===
+    const API_URL = "/invocations";
+
+    // === State ===
+    const state = {
+      history: [],
+      chunks: []
+    };
+
+    // === Utilities ===
+    const qs = (sel, ctx=document) => ctx.querySelector(sel);
+    const qsa = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    function setAlert(kind, text){
+      const el = qs("#alert");
+      el.className = "alert " + (kind || "");
+      el.textContent = text || "";
+      if(!text) el.className = "";
+    }
+
+    function showSpinner(text){
+      setAlert();
+      const el = qs("#alert");
+      el.innerHTML = `<div class="spinner">${text || "Working..."}</div>`;
+    }
+
+    function toBase64FromFile(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error);
+        reader.onload = () => {
+          const bytes = new Uint8Array(reader.result || []);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+          // btoa expects binary string
+          resolve(btoa(binary));
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function renderList(container, items){
+      container.innerHTML = "";
+      if(!items || !items.length){ return; }
+      const frag = document.createDocumentFragment();
+      items.forEach((item) => {
+        const p = document.createElement("pre");
+        p.textContent = typeof item === "string" ? item : JSON.stringify(item, null, 2);
+        p.style.whiteSpace = "pre-wrap";
+        p.style.margin = "10px 0";
+        frag.appendChild(p);
+        const hr = document.createElement("hr");
+        hr.className = "divider";
+        frag.appendChild(hr);
+      });
+      // remove last divider
+      if(frag.lastChild) frag.removeChild(frag.lastChild);
+      container.appendChild(frag);
+    }
+
+    function firstRecord(payload){
+      if(!payload) return null;
+      const candidates = payload.predictions || payload.dataframe_records || payload.data;
+      if(Array.isArray(candidates) && candidates.length > 0) return candidates[0];
+      return null;
+    }
+
+    // === Handlers ===
+    qs("#chat-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const submitBtn = qs("#submit-btn");
+      submitBtn.disabled = true;
+
+      try{
+        const query = qs("#query").value || "";
+        const prompt = qs("#prompt").value || "";
+        const fileInput = qs("#pdf");
+        const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+        // Basic validation
+        if(!query.trim() && !file){
+          setAlert("warn", "Enter a query or upload a PDF.");
+          submitBtn.disabled = false;
+          return;
+        }
+
+        let documentB64 = "";
+        let params = null;
+
+        if(file){
+          // Limit: optional – mirror streamlit behavior (no explicit size cap)
+          documentB64 = await toBase64FromFile(file);
+          params = { add_pdf: true };
+        }
+
+        const payload = {
+          dataframe_records: [ { query, prompt, document: documentB64 } ]
+        };
+        if(params){ payload.parameters = params; }
+
+        showSpinner("Contacting model...");
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if(!res.ok){
+          const text = await res.text().catch(() => "");
+          throw new Error(text || (`HTTP ${res.status}`));
+        }
+
+        const data = await res.json();
+        const rec = firstRecord(data);
+        if(!rec){
+          throw new Error("No record returned by the model.");
+        }
+
+        // Update state
+        state.history = Array.isArray(rec.history) ? rec.history : [];
+        state.chunks  = Array.isArray(rec.chunks)  ? rec.chunks  : [];
+
+        // Render answer
+        qs("#response-section").style.display = "block";
+        qs("#answer").textContent = rec.output || "No output returned.";
+
+        // Render chunks
+        const chunksWrap = qs("#chunks-wrap");
+        const chunksEl = qs("#chunks");
+        if(state.chunks.length){
+          renderList(chunksEl, state.chunks);
+          chunksWrap.style.display = "block";
+        }else{
+          chunksEl.innerHTML = "";
+          chunksWrap.style.display = "none";
+        }
+
+        // Render history
+        const histWrap = qs("#history-wrap");
+        const histEl = qs("#history");
+        if(state.history.length){
+          renderList(histEl, state.history);
+          histWrap.style.display = "block";
+        }else{
+          histEl.innerHTML = "";
+          histWrap.style.display = "none";
+        }
+
+        setAlert("success", "✅ Response received.");
+      }catch(err){
+        console.error(err);
+        setAlert("error", `❌ Inference error: ${err.message || err}`);
+      }finally{
+        qs("#submit-btn").disabled = false;
+      }
+    });
+  </script>
+</body>
 </html>

@@ -1,14 +1,466 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="./assets/icon-szr8TDp1.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Text Summarization Demo</title>
-    <script type="module" crossorigin src="./assets/index-DNnEhSDQ.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-ChrD2JCp.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📄✨ Text Summarization with AI Studio</title>
+  <meta name="description" content="Upload TXT/PDF/DOCX or paste text to summarize via your local MLflow endpoint." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- PDF.js (text extraction) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js" integrity="sha512-3eOSldb2dH3QxhD8FEy2mCL2m4wB4u+X21S0vG4OaI+R4OHWwp38zC2Qe0/l3zbdv2xDk0Mz1tswrlmJqP/0oQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Mammoth.js (DOCX to text) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" integrity="sha512-BXx1rH8k9+P9O34+RuOZj1n5wQ2t7vZbc9lDgTtL1jYpKsg7P0ZB9Y0a3F2i7uxb6q7BYJ3v7i9HUIk9z6c1+A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121835;
+      --panel2:#0f1530;
+      --text:#e8edff;
+      --muted:#a4afd6;
+      --brand:#4B8BBE;
+      --brand2:#306998;
+      --accent:#80deea;
+      --accent2:#e0f7fa;
+      --ok:#1b9e77;
+      --warn:#f39c12;
+      --err:#e74c3c;
+      --border:1px solid rgba(255,255,255,.08);
+      --radius:14px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --focus:0 0 0 3px rgba(75,139,190,.35);
+    }
+    *,*::before,*::after{ box-sizing: border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 500px at 100% -10%, #19355a33, transparent 60%),
+        radial-gradient(1000px 500px at -10% 110%, #2f559733, transparent 60%),
+        var(--bg);
+      line-height:1.6;
+    }
+    header{ padding: 28px 16px 10px; text-align:center; }
+    .title{ color:var(--brand); font-weight:800; letter-spacing:.2px; margin:0 0 6px; font-size: clamp(24px, 2.4vw + 10px, 40px); }
+    .subtitle{ margin:0; color:var(--brand2); font-size: clamp(14px, 1.1vw + 8px, 18px); }
+
+    .container{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:24px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+    .sidebar h2{ margin:8px 0 10px; font-size:18px; }
+    .check{
+      display:flex; align-items:center; gap:10px;
+      background: #0e1430; padding:10px 12px; border-radius:12px; border: var(--border); margin:10px 0;
+    }
+    .check input{ transform: translateY(1px); }
+    .muted{ color:var(--muted); }
+
+    /* Card / main panels */
+    .card{
+      background: linear-gradient(180deg, var(--panel), #101736);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:10px; margin-bottom:12px; }
+    .tab-btn{
+      padding:10px 14px; border-radius:12px; border: var(--border);
+      background:#0f1530; color: var(--text); cursor:pointer; font-weight:700;
+    }
+    .tab-btn.active{ outline: var(--focus); background:#14204a; }
+    .tab-panel{ display:none; }
+    .tab-panel.active{ display:block; }
+
+    /* Inputs */
+    .label{ display:block; font-weight:700; margin: 8px 0 6px; }
+    textarea{
+      width:100%; min-height:180px; resize:vertical; background: var(--panel2);
+      border:var(--border); border-radius:12px; padding:14px; color: var(--text);
+      font-size:15px; outline:none; transition: box-shadow .15s ease;
+    }
+    textarea.small{ min-height:80px; }
+    textarea:focus{ box-shadow: var(--focus); }
+    textarea[disabled]{ opacity:.9; }
+
+    .file{
+      border: var(--border); background: var(--panel2); border-radius: 12px; padding: 12px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between; color:var(--muted);
+    }
+    input[type="file"]{ width:100%; color: var(--muted); }
+
+    .row{ display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; }
+
+    .btn{
+      border:none; border-radius:12px; padding:12px 16px; font-weight:800; font-size:15px; cursor:pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s;
+      background: linear-gradient(90deg, #3aaef2, var(--brand));
+      color:white; box-shadow: 0 8px 20px rgba(75,139,190,.35);
+    }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ cursor:not-allowed; opacity:.6; }
+
+    .badge{
+      display:inline-block; border-radius:999px; padding:4px 10px; font-size:12px; border:var(--border); background:#0e1430;
+    }
+
+    /* Alerts */
+    .alert{ border-radius:12px; padding:12px 14px; margin: 10px 0 0; font-weight:600; }
+    .alert.success{ background:#105f4922; border:1px solid #1b9e7740; color:#54e6b1;}
+    .alert.warn{ background:#c25f0a22; border:1px solid #f39c1240; color:#ffce83;}
+    .alert.error{ background:#6d1b1b22; border:1px solid #e74c3c40; color:#ff9c92;}
+
+    .section-title{ font-size:18px; color:#00bfa5; margin:18px 0 8px; font-weight:800; }
+    .answer{ padding:14px; border-radius:12px; background: linear-gradient(90deg, var(--accent2), var(--accent)); color:#004d40; white-space: pre-wrap; }
+
+    .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent); margin:18px 0; border:none; }
+
+    details{ background:#0f1530; border-radius:12px; border: var(--border); padding: 10px 12px; }
+    summary{ cursor:pointer; font-weight:700; outline:none; }
+
+    .mono{ font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    footer{ opacity:.85; text-align:center; padding:28px 16px 40px; color:var(--muted); }
+    footer a{ color:#a8d8ff; text-decoration: underline; }
+
+    @media (max-width: 980px){
+      .container{ grid-template-columns: 1fr; }
+      .sidebar{ position: static; }
+      .row{ grid-template-columns: 1fr; }
+      .tabs{ flex-wrap:wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="title">📄✨ Text Summarization with AI Studio</h1>
+    <p class="subtitle">Upload a document (TXT, PDF, DOCX) or paste text directly to generate an AI-powered summary.</p>
+  </header>
+
+  <main class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>📋 Display Options</h2>
+      <label class="check">
+        <input id="opt-show-original" type="checkbox" />
+        <span>Show Original Text</span>
+      </label>
+      <div class="muted" style="margin-top:-6px; font-size: 12px;">Display the extracted text from uploaded documents</div>
+
+      <label class="check">
+        <input id="opt-show-api" type="checkbox" />
+        <span>Show API Response Details</span>
+      </label>
+      <div class="muted" style="margin-top:-6px; font-size: 12px;">Display raw API response for debugging</div>
+    </aside>
+
+    <!-- Main -->
+    <section class="card">
+      <p class="muted">Upload a file or paste text, then press <strong>Summarize</strong>.</p>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="upload">📎 File Upload</button>
+        <button class="tab-btn" data-tab="direct">✏️ Direct Text Input</button>
+      </div>
+
+      <section id="tab-upload" class="tab-panel active">
+        <div class="file" style="margin-bottom:10px;">
+          <label for="file" class="mono">Choose a file (TXT, PDF, DOCX)</label>
+          <input id="file" type="file" accept=".txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+        </div>
+        <div id="file-info" class="muted mono" style="display:none;"></div>
+        <div id="extract-alert"></div>
+      </section>
+
+      <section id="tab-direct" class="tab-panel">
+        <label class="label" for="direct-text">Enter text to summarize</label>
+        <textarea id="direct-text" placeholder="Paste your text here or type directly..."></textarea>
+        <div id="direct-alert"></div>
+      </section>
+
+      <div style="margin-top: 12px;">
+        <label class="label">Original Text (read-only)</label>
+        <textarea id="original-text" class="small" disabled placeholder="Original text will appear here once extracted or entered." style="display:none;"></textarea>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button id="btn-summarize" class="btn" disabled>🚀 Summarize</button>
+      </div>
+
+      <div id="run-alert"></div>
+
+      <!-- Results -->
+      <section id="results" style="display:none;">
+        <!--  <div class="alert success">✅ Summary generated successfully!</div> -->
+        <h3 class="section-title">✨ Generated Summary</h3>
+        <textarea id="summary-text" disabled class="small" style="min-height:250px;"></textarea>
+        <div style="margin-top:10px;">
+          <a id="download-link" class="btn" download="summary.txt">📥 Download Summary</a>
+        </div>
+
+        <hr class="divider" />
+
+        <details id="api-details" style="display:none;">
+          <summary>🔍 Raw JSON Response</summary>
+          <pre id="api-json" class="mono" style="white-space: pre-wrap;"></pre>
+        </details>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <div><em>📄✨ Text Summarization with AI Studio © 2025</em> – Extract, process, and summarize documents with AI technology.</div>
+    <div>Built with ❤️ using <a href="https://hp.com/ai-studio" target="_blank" rel="noopener">HP AI Studio</a>.</div>
+  </footer>
+
+  <script>
+    // === Config ===
+    const API_URL = "/invocations";
+
+    // === State ===
+    const state = {
+      extractedText: "",
+      summaryResult: "",
+      apiResponse: null,
+      showOriginal: false,
+      showApi: false
+    };
+
+    // === Helpers ===
+    const qs = (s, c=document) => c.querySelector(s);
+    const qsa = (s, c=document) => Array.from(c.querySelectorAll(s));
+
+    function setAlert(targetId, kind, msg){
+      const host = qs(targetId);
+      if(!host) return;
+      host.innerHTML = msg ? `<div class="alert ${kind}">${msg}</div>` : "";
+    }
+
+    function enableSummarizeIfReady(){
+      qs("#btn-summarize").disabled = !(state.extractedText && state.extractedText.trim().length);
+    }
+
+    function renderOriginal(){
+      const box = qs("#original-text");
+      if(state.showOriginal && state.extractedText){
+        box.style.display = "block";
+        box.value = state.extractedText;
+      }else{
+        box.style.display = "none";
+      }
+    }
+
+    function renderApiDetails(){
+      const details = qs("#api-details");
+      const pre = qs("#api-json");
+      if(state.showApi && state.apiResponse){
+        details.style.display = "block";
+        pre.textContent = JSON.stringify(state.apiResponse, null, 2);
+      }else{
+        details.style.display = "none";
+        pre.textContent = "";
+      }
+    }
+
+    function activateTab(tab){
+      qsa(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      qsa(".tab-panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + tab));
+    }
+
+    // === File Extraction ===
+    async function extractFromTxt(file){
+      const text = await file.text();
+      return text;
+    }
+
+    async function extractFromPdf(file){
+      const arrayBuf = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuf });
+      const pdf = await loadingTask.promise;
+
+      let all = "";
+      for(let i=1;i<=pdf.numPages;i++){
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const strings = textContent.items.map(it => it.str).join(" ");
+        all += `Page ${i}:\n${strings}\n\n`;
+      }
+      return all.trim() ? all : "PDF text extraction complete. No text found or PDF contains images.";
+    }
+
+    async function extractFromDocx(file){
+      const arrayBuf = await file.arrayBuffer();
+      const result = await window.mammoth.extractRawText({ arrayBuffer: arrayBuf });
+      const text = result && result.value ? result.value : "";
+      return text.trim() ? text : "No text could be extracted from the document.";
+    }
+
+    async function extractTextFromFile(file){
+      const type = file.type || "";
+      if(type === "text/plain") return extractFromTxt(file);
+      if(type === "application/pdf") return extractFromPdf(file);
+      if(type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return extractFromDocx(file);
+      const name = (file.name || "").toLowerCase();
+      if(name.endsWith(".txt")) return extractFromTxt(file);
+      if(name.endsWith(".pdf")) return extractFromPdf(file);
+      if(name.endsWith(".docx")) return extractFromDocx(file);
+      throw new Error(`Unsupported file format: ${type || name}`);
+    }
+
+    // === Wire up UI ===
+    // Tabs
+    qsa(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+    });
+
+    // Options
+    qs("#opt-show-original").addEventListener("change", (e) => {
+      state.showOriginal = !!e.target.checked;
+      renderOriginal();
+    });
+    qs("#opt-show-api").addEventListener("change", (e) => {
+      state.showApi = !!e.target.checked;
+      renderApiDetails();
+    });
+
+    // File upload
+    qs("#file").addEventListener("change", async (e) => {
+      setAlert("#extract-alert");
+      setAlert("#direct-alert");
+      const file = e.target.files && e.target.files[0];
+      const info = qs("#file-info");
+      if(!file){
+        info.style.display = "none";
+        state.extractedText = "";
+        enableSummarizeIfReady();
+        renderOriginal();
+        return;
+      }
+      info.style.display = "block";
+      info.textContent = `File: ${file.name} | Type: ${file.type || "unknown"} | Size: ${(file.size/1024).toFixed(1)} KB`;
+
+      try{
+        setAlert("#extract-alert", "warn", "📖 Extracting text from file...");
+        const text = await extractTextFromFile(file);
+        state.extractedText = text;
+        setAlert("#extract-alert", "success", `✅ Text extracted from ${file.name}`);
+      }catch(err){
+        console.error(err);
+        state.extractedText = "";
+        setAlert("#extract-alert", "error", `❌ Error extracting text: ${err.message || err}`);
+      }finally{
+        enableSummarizeIfReady();
+        renderOriginal();
+      }
+    });
+
+    // Direct text input
+    qs("#direct-text").addEventListener("input", (e) => {
+      setAlert("#direct-alert");
+      setAlert("#extract-alert");
+      const text = e.target.value || "";
+      if(text.trim()){
+        state.extractedText = text;
+        setAlert("#direct-alert", "success", "✅ Text ready for summarization");
+      }else{
+        state.extractedText = "";
+      }
+      enableSummarizeIfReady();
+      renderOriginal();
+    });
+
+    // Summarize
+    qs("#btn-summarize").addEventListener("click", async () => {
+      if(!(state.extractedText && state.extractedText.trim().length)){
+        setAlert("#run-alert", "error", "❌ Please provide text to summarize");
+        return;
+      }
+      setAlert("#run-alert", "warn", "🤖 Generating AI summary...");
+      qs("#btn-summarize").disabled = true;
+
+      try{
+        const payload = { inputs: { text: [state.extractedText] }, params: {} };
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const t = await res.text().catch(() => "");
+          throw new Error(t || (`HTTP ${res.status}`));
+        }
+        const data = await res.json();
+        state.apiResponse = data;
+
+        // Extract summary per Streamlit logic
+        let summary = "Invalid response format from model.";
+        if("predictions" in data){
+          if(Array.isArray(data.predictions) && data.predictions.length > 0){
+            const first = data.predictions[0];
+            if(first && typeof first === "object" && "summary" in first){
+              summary = first.summary;
+            }else{
+              summary = typeof first === "string" ? first : JSON.stringify(first);
+            }
+          }else if(data.predictions && typeof data.predictions === "object" && "summary" in data.predictions){
+            summary = data.predictions.summary;
+          }else{
+            summary = "No summary provided by the model.";
+          }
+        }
+
+        state.summaryResult = summary;
+
+        // Render results
+        qs("#results").style.display = "block";
+        const out = qs("#summary-text");
+        out.value = state.summaryResult;
+
+        // Download link
+        const blob = new Blob([state.summaryResult], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = qs("#download-link");
+        a.href = url;
+        a.download = "summary.txt";
+
+        setAlert("#run-alert", "success", "✅ Summary generated successfully!");
+        renderApiDetails();
+      }catch(err){
+        console.error(err);
+        setAlert("#run-alert", "error", `❌ API Request failed: ${err.message || err}`);
+      }finally{
+        qs("#btn-summarize").disabled = false;
+      }
+    });
+
+    // Initialize
+    qs("#endpoint").textContent = API_URL;
+    enableSummarizeIfReady();
+  </script>
+</body>
 </html>
