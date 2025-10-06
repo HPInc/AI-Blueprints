@@ -10,14 +10,13 @@ from pathlib import Path
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Question Answering with BERT",
-    page_icon = "❓",
-    layout="centered"
+    page_title="Question Answering with BERT", page_icon="❓", layout="centered"
 )
 
 # --- Custom Styling ---
 
-st.markdown("""
+st.markdown(
+    """
     <style>
         .block-container {
             padding-top: 0 !important;
@@ -56,32 +55,45 @@ st.markdown("""
 }
 
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Logo ---
 
+
 def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
 
 assets = Path("assets")
 hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
     <div style="display:flex;justify-content:space-between;
                 align-items:center;margin-bottom:1.5rem">
         <img src="{hp_uri}"  alt="HP Logo" style="width:90px;height:auto;">
         <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
         <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
     </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # ─────────────────────────────────────────────────────────────
-# Header 
+# Header
 # ─────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>❓ Question Answering with BERT</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: #2C3E50;'>❓ Question Answering with BERT</h1>",
+    unsafe_allow_html=True,
+)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
@@ -89,18 +101,13 @@ st.markdown("<h1 style='text-align: center; color: #2C3E50;'>❓ Question Answer
 # Standardized MLflow endpoint for containerized deployment
 api_url = "http://localhost:5002/invocations"
 
-    
+
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
-user_context = st.text_input(
-    "Put a context:"
-)
+user_context = st.text_input("Put a context:")
 
-user_question = st.text_input(
-    "Ask a question:"
-)
-
+user_question = st.text_input("Ask a question:")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -112,10 +119,7 @@ if st.button("Get answer"):
     else:
         with st.spinner("Generating..."):
             payload = {
-                "inputs": {
-                    "context": [user_context],
-                    "question": [user_question]
-                }
+                "inputs": {"context": [user_context], "question": [user_question]}
             }
             try:
                 response = requests.post(api_url, json=payload, verify=False)
@@ -123,16 +127,15 @@ if st.button("Get answer"):
                 data = response.json()
                 answr = data.get("predictions")
 
-                
                 if answr and isinstance(answr, dict):
                     answer_text = answr.get("answer", "N/A")
                     score = answr.get("score", 0.0)
-                    
+
                     formatted = f"answer: {answer_text}<br>score: {score:.2f}"
 
-
                     st.success("✅ Here is your answer!")
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                             <div style="
                                 background-color: #ffffff;
                                 padding: 15px;
@@ -143,7 +146,9 @@ if st.button("Get answer"):
                             ">
                                 <h4 style="color: #2C3E50;">{formatted}</h4>
                             </div>
-                        """, unsafe_allow_html=True)
+                        """,
+                        unsafe_allow_html=True,
+                    )
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
 
@@ -155,8 +160,8 @@ if st.button("Get answer"):
 # 4 ▸ Footer
 # ─────────────────────────────────────────────────────────────
 st.markdown(
-"""
+    """
 > Built with ❤️ using HP AI Studio
 """,
-unsafe_allow_html=True,
+    unsafe_allow_html=True,
 )
