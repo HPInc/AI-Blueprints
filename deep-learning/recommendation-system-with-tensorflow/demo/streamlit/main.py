@@ -284,24 +284,24 @@ def load_movie_titles_from_mlflow():
     """
     import mlflow
     from mlflow import MlflowClient
-    
+
     try:
         # Method 1
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
             model_name = "movie_titles"
-            
+
             # Get the latest version
             model_metadata = client.get_latest_versions(model_name, stages=["None"])
             if model_metadata:
                 latest_version = model_metadata[0].version
                 model_uri = f"models:/{model_name}/{latest_version}"
-                
+
                 # Download the model artifacts
                 local_path = mlflow.artifacts.download_artifacts(model_uri)
                 movie_titles_path = os.path.join(local_path, "movie_titles.csv")
-                
+
                 if os.path.exists(movie_titles_path):
                     df = pd.read_csv(movie_titles_path)
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
@@ -309,14 +309,14 @@ def load_movie_titles_from_mlflow():
                         return df
         except Exception as e:
             st.warning(f"Could not load from MLflow model registry: {str(e)}")
-        
+
         # Method 2
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
             "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv"
         ]
-        
-        
+
+
         for pattern in mlflow_paths:
             matching_paths = glob.glob(pattern)
             for mlflow_path in matching_paths:
@@ -325,10 +325,10 @@ def load_movie_titles_from_mlflow():
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
                         st.info(f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}")
                         return df
-        
+
         st.warning("⚠️ Could not find movie titles file in any expected location")
         return None
-        
+
     except Exception as e:
         st.error(f"❌ Error loading movie titles: {str(e)}")
         return None
@@ -341,12 +341,12 @@ def get_movie_title(movie_id):
     Get movie title for a given movie ID with fallback handling.
     """
     global movie_titles_df
-    
-    # Try primary method first  
+
+    # Try primary method first
     if movie_titles_df is not None:
         title_row = movie_titles_df[movie_titles_df['item_id'] == movie_id]
         if not title_row.empty:
-            return title_row.iloc[0]['title'] 
+            return title_row.iloc[0]['title']
     return f"Movie ID {movie_id}"
 
 # ─────────────────────────────────────────────────────────────
@@ -360,7 +360,6 @@ st.markdown(
 
 # Initialize session state for movie ratings
 if "movie_ratings" not in st.session_state:
-if "movie_ratings" not in st.session_state:
     st.session_state.movie_ratings = []
 
 # Form to add movie ratings
@@ -369,12 +368,7 @@ with st.form("add_rating_form"):
     with col1:
         movie_id = st.number_input("🎬 Movie ID", min_value=1, value=1)
         # Show movie title if available
-        movie_title = get_movie_title(movie_id)
     with col2:
-        rating = st.number_input(
-            "⭐ Your Rating", min_value=0.5, max_value=5.0, step=0.5, value=3.0
-        )
-
         rating = st.number_input(
             "⭐ Your Rating", min_value=0.5, max_value=5.0, step=0.5, value=3.0
         )
@@ -382,7 +376,6 @@ with st.form("add_rating_form"):
     submit_col1, submit_col2, submit_col3 = st.columns([1, 2, 1])
     with submit_col2:
         submitted = st.form_submit_button("➕ Add Rating", use_container_width=True)
-
 
     if submitted:
         if len(st.session_state.movie_ratings) < 10:
@@ -399,7 +392,6 @@ with st.form("add_rating_form"):
         else:
             st.warning("⚠️ Maximum 10 movies allowed!")
 
-st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # Display current ratings
@@ -422,7 +414,6 @@ if st.session_state.movie_ratings:
             if st.button("🗑️", key=f"delete_{i}", help="Remove this rating"):
                 st.session_state.movie_ratings.pop(i)
                 st.rerun()
-
 
         if i < len(st.session_state.movie_ratings) - 1:
             st.markdown(
@@ -452,27 +443,12 @@ if st.button("🍿 Get My Recommendations", type="primary"):
 
             payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
 
-            movie_ids = [
-                rating_data["movie_id"]
-                for rating_data in st.session_state.movie_ratings
-            ]
-            ratings = [
-                rating_data["rating"] for rating_data in st.session_state.movie_ratings
-            ]
-
-            payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
-
             try:
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
 
                 if "predictions" in data:
-                    st.markdown(
-                        '<p class="section-header">🎭 Your Personalized Recommendations</p>',
-                        unsafe_allow_html=True,
-                    )
-
                     st.markdown(
                         '<p class="section-header">🎭 Your Personalized Recommendations</p>',
                         unsafe_allow_html=True,
@@ -491,19 +467,14 @@ if st.button("🍿 Get My Recommendations", type="primary"):
                             unsafe_allow_html=True,
                         )
 
-
                     st.markdown("<br>", unsafe_allow_html=True)
                     col1, col2, col3 = st.columns([1, 2, 1])
                     with col2:
                         if st.button(
                             "🔄 Clear All & Start Over", use_container_width=True
                         ):
-                        if st.button(
-                            "🔄 Clear All & Start Over", use_container_width=True
-                        ):
                             st.session_state.movie_ratings = []
                             st.rerun()
-
 
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
