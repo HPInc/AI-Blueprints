@@ -284,24 +284,24 @@ def load_movie_titles_from_mlflow():
     """
     import mlflow
     from mlflow import MlflowClient
-    
+
     try:
         # Method 1
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
             model_name = "movie_titles"
-            
+
             # Get the latest version
             model_metadata = client.get_latest_versions(model_name, stages=["None"])
             if model_metadata:
                 latest_version = model_metadata[0].version
                 model_uri = f"models:/{model_name}/{latest_version}"
-                
+
                 # Download the model artifacts
                 local_path = mlflow.artifacts.download_artifacts(model_uri)
                 movie_titles_path = os.path.join(local_path, "movie_titles.csv")
-                
+
                 if os.path.exists(movie_titles_path):
                     df = pd.read_csv(movie_titles_path)
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
@@ -309,14 +309,14 @@ def load_movie_titles_from_mlflow():
                         return df
         except Exception as e:
             st.warning(f"Could not load from MLflow model registry: {str(e)}")
-        
+
         # Method 2
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
             "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv"
         ]
-        
-        
+
+
         for pattern in mlflow_paths:
             matching_paths = glob.glob(pattern)
             for mlflow_path in matching_paths:
@@ -325,10 +325,10 @@ def load_movie_titles_from_mlflow():
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
                         st.info(f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}")
                         return df
-        
+
         st.warning("⚠️ Could not find movie titles file in any expected location")
         return None
-        
+
     except Exception as e:
         st.error(f"❌ Error loading movie titles: {str(e)}")
         return None
@@ -341,12 +341,12 @@ def get_movie_title(movie_id):
     Get movie title for a given movie ID with enhanced fallback handling.
     """
     global movie_titles_df
-    
-    # Try primary method first  
+
+    # Try primary method first
     if movie_titles_df is not None:
         title_row = movie_titles_df[movie_titles_df['item_id'] == movie_id]
         if not title_row.empty:
-            return title_row.iloc[0]['title'] 
+            return title_row.iloc[0]['title']
     return f"Movie ID {movie_id}"
 
 # ─────────────────────────────────────────────────────────────
@@ -407,7 +407,7 @@ if st.session_state.movie_ratings:
     st.markdown(
         '<p class="section-header">📝 Your Current Ratings</p>', unsafe_allow_html=True
     )
-   
+
     for i, rating_data in enumerate(st.session_state.movie_ratings):
         movie_id = rating_data["movie_id"]
         rating = rating_data["rating"]
