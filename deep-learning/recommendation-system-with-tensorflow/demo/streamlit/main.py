@@ -366,7 +366,7 @@ with st.form("add_rating_form"):
             else:
                 st.warning("⚠️ You've already rated this movie!")
         else:
-            st.warning("⚠️ Maximum 5 movies allowed!")
+            st.warning("⚠️ Maximum 10 movies allowed!")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
