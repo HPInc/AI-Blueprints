@@ -22,14 +22,17 @@ st.markdown(
             max-width: 900px !important;
         }
 
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
             background: white;
         }
 
+
         .stApp {
             background: white;
         }
+
 
         /* Main Title Styling */
         .main-title {
@@ -42,6 +45,7 @@ st.markdown(
             animation: fadeIn 1s ease-in;
         }
 
+
         .subtitle {
             text-align: center;
             color: #000000;
@@ -49,6 +53,7 @@ st.markdown(
             margin-bottom: 2rem;
             font-weight: 300;
         }
+
 
         /* Card Styling */
         .rating-card {
@@ -59,6 +64,7 @@ st.markdown(
             margin: 20px 0;
             border: 1px solid rgba(255,255,255,0.8);
         }
+
 
         /* Button Styling */
         .stButton>button {
@@ -74,10 +80,12 @@ st.markdown(
             width: 100% !important;
         }
 
+
         .stButton>button:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
         }
+
 
         /* Input Styling */
         .stNumberInput>div>div>input {
@@ -88,10 +96,12 @@ st.markdown(
             transition: all 0.3s ease !important;
         }
 
+
         .stNumberInput>div>div>input:focus {
             border-color: #667eea !important;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
         }
+
 
         /* Rating Display Cards */
         .rating-item {
@@ -105,10 +115,12 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
+
         .rating-item:hover {
             transform: translateX(5px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
+
 
         /* Recommendation Cards */
         .recommendation-card {
@@ -121,17 +133,20 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
+
         .recommendation-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
             border-left-color: #764ba2;
         }
 
+
         .recommendation-card h4 {
             color: #2C3E50;
             margin-bottom: 10px;
             font-weight: 600;
         }
+
 
         .score-badge {
             display: inline-block;
@@ -142,6 +157,7 @@ st.markdown(
             font-weight: 600;
             font-size: 1.1rem;
         }
+
 
         /* Logo Container */
         .logo-container {
@@ -155,6 +171,7 @@ st.markdown(
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
+
         img[alt="HP Logo"],
         img[alt="AI Studio Logo"],
         img[alt="Z by HP Logo"] {
@@ -163,11 +180,13 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
+
         img[alt="HP Logo"]:hover,
         img[alt="AI Studio Logo"]:hover,
         img[alt="Z by HP Logo"]:hover {
             transform: scale(1.1);
         }
+
 
         /* Section Headers */
         .section-header {
@@ -177,6 +196,7 @@ st.markdown(
             margin: 20px 0 15px 0;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
+
 
         /* Footer */
         .footer {
@@ -189,17 +209,20 @@ st.markdown(
             backdrop-filter: blur(10px);
         }
 
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+
         /* Success/Warning Messages */
         .stAlert {
             border-radius: 15px !important;
             border: none !important;
         }
+
 
         hr {
             border-color: rgba(255,255,255,0.3) !important;
@@ -211,12 +234,14 @@ st.markdown(
 )
 
 
+
 # --- Logo Section ---
 def uri_from(path: Path) -> str:
     return (
         f"data:image/{path.suffix[1:].lower()};base64,"
         + base64.b64encode(path.read_bytes()).decode()
     )
+
 
 
 assets = Path("assets")
@@ -335,6 +360,7 @@ st.markdown(
 
 # Initialize session state for movie ratings
 if "movie_ratings" not in st.session_state:
+if "movie_ratings" not in st.session_state:
     st.session_state.movie_ratings = []
 
 # Form to add movie ratings
@@ -349,9 +375,14 @@ with st.form("add_rating_form"):
             "⭐ Your Rating", min_value=0.5, max_value=5.0, step=0.5, value=3.0
         )
 
+        rating = st.number_input(
+            "⭐ Your Rating", min_value=0.5, max_value=5.0, step=0.5, value=3.0
+        )
+
     submit_col1, submit_col2, submit_col3 = st.columns([1, 2, 1])
     with submit_col2:
         submitted = st.form_submit_button("➕ Add Rating", use_container_width=True)
+
 
     if submitted:
         if len(st.session_state.movie_ratings) < 10:
@@ -368,6 +399,7 @@ with st.form("add_rating_form"):
         else:
             st.warning("⚠️ Maximum 10 movies allowed!")
 
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # Display current ratings
@@ -390,6 +422,7 @@ if st.session_state.movie_ratings:
             if st.button("🗑️", key=f"delete_{i}", help="Remove this rating"):
                 st.session_state.movie_ratings.pop(i)
                 st.rerun()
+
 
         if i < len(st.session_state.movie_ratings) - 1:
             st.markdown(
@@ -419,12 +452,27 @@ if st.button("🍿 Get My Recommendations", type="primary"):
 
             payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
 
+            movie_ids = [
+                rating_data["movie_id"]
+                for rating_data in st.session_state.movie_ratings
+            ]
+            ratings = [
+                rating_data["rating"] for rating_data in st.session_state.movie_ratings
+            ]
+
+            payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
+
             try:
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
                 data = response.json()
 
                 if "predictions" in data:
+                    st.markdown(
+                        '<p class="section-header">🎭 Your Personalized Recommendations</p>',
+                        unsafe_allow_html=True,
+                    )
+
                     st.markdown(
                         '<p class="section-header">🎭 Your Personalized Recommendations</p>',
                         unsafe_allow_html=True,
@@ -443,14 +491,19 @@ if st.button("🍿 Get My Recommendations", type="primary"):
                             unsafe_allow_html=True,
                         )
 
+
                     st.markdown("<br>", unsafe_allow_html=True)
                     col1, col2, col3 = st.columns([1, 2, 1])
                     with col2:
                         if st.button(
                             "🔄 Clear All & Start Over", use_container_width=True
                         ):
+                        if st.button(
+                            "🔄 Clear All & Start Over", use_container_width=True
+                        ):
                             st.session_state.movie_ratings = []
                             st.rerun()
+
 
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
