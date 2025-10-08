@@ -13,7 +13,7 @@ st.set_page_config(
     page_title="Movie Recommendation Agent", page_icon="🎬", layout="centered"
 )
 
-# --- Enhanced Custom Styling ---
+# --- Custom Styling ---
 st.markdown(
     """
     <style>
@@ -333,12 +333,12 @@ def load_movie_titles_from_mlflow():
         st.error(f"❌ Error loading movie titles: {str(e)}")
         return None
 
-# Load movie titles using the enhanced method
+# Load movie titles using the method
 movie_titles_df = load_movie_titles_from_mlflow()
 
 def get_movie_title(movie_id):
     """
-    Get movie title for a given movie ID with enhanced fallback handling.
+    Get movie title for a given movie ID with fallback handling.
     """
     global movie_titles_df
     
