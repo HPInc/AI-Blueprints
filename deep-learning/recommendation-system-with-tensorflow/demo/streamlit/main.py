@@ -259,24 +259,24 @@ def load_movie_titles_from_mlflow():
     """
     import mlflow
     from mlflow import MlflowClient
-    
+
     try:
-        # Method 1: Try to load from the registered model 
+        # Method 1: Try to load from the registered model
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
             model_name = "movie_titles"
-            
+
             # Get the latest version
             model_metadata = client.get_latest_versions(model_name, stages=["None"])
             if model_metadata:
                 latest_version = model_metadata[0].version
                 model_uri = f"models:/{model_name}/{latest_version}"
-                
+
                 # Download the model artifacts
                 local_path = mlflow.artifacts.download_artifacts(model_uri)
                 movie_titles_path = os.path.join(local_path, "movie_titles.csv")
-                
+
                 if os.path.exists(movie_titles_path):
                     df = pd.read_csv(movie_titles_path)
                     if (
@@ -288,7 +288,7 @@ def load_movie_titles_from_mlflow():
                         return df
         except Exception as e:
             st.warning(f"Could not load from MLflow model registry: {str(e)}")
-        
+
         # Method 2
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
@@ -309,17 +309,17 @@ def load_movie_titles_from_mlflow():
                             f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}"
                         )
                         return df
-        
+
         st.warning("⚠️ Could not find movie titles file in any expected location")
         return None
-        
+
     except Exception as e:
         st.error(f"❌ Error loading movie titles: {str(e)}")
         return None
 
+
 # Load movie titles using the enhanced method
 movie_titles_df = load_movie_titles_from_mlflow()
-
 
 
 def get_movie_title(movie_id):
@@ -327,8 +327,8 @@ def get_movie_title(movie_id):
     Get movie title for a given movie ID with enhanced fallback handling.
     """
     global movie_titles_df
-    
-    # Try primary method first  
+
+    # Try primary method first
     if movie_titles_df is not None:
         title_row = movie_titles_df[movie_titles_df["item_id"] == movie_id]
         if not title_row.empty:
@@ -355,19 +355,21 @@ with st.form("add_rating_form"):
     with col1:
         # Create movie selection options
         if movie_titles_df is not None and not movie_titles_df.empty:
-            movie_options = movie_titles_df['title'].tolist()
-            movie_options.sort()  # Sort alphabetically 
-            
+            movie_options = movie_titles_df["title"].tolist()
+            movie_options.sort()  # Sort alphabetically
+
             selected_title = st.selectbox(
                 "🎬 Select Movie",
                 options=movie_options,
                 index=None,
                 placeholder="Choose a movie title...",
             )
-            
+
             # Get the movie ID from the selected title
             if selected_title:
-                movie_id = movie_titles_df[movie_titles_df['title'] == selected_title]['item_id'].iloc[0]
+                movie_id = movie_titles_df[movie_titles_df["title"] == selected_title][
+                    "item_id"
+                ].iloc[0]
                 st.caption(f"📽️ Movie ID: {movie_id}")
             else:
                 movie_id = None
@@ -400,8 +402,10 @@ with st.form("add_rating_form"):
                     title_display = selected_title
                 else:
                     movie_title = get_movie_title(movie_id)
-                    title_display = movie_title if movie_title else f"Movie ID {movie_id}"
-                
+                    title_display = (
+                        movie_title if movie_title else f"Movie ID {movie_id}"
+                    )
+
                 st.session_state.movie_ratings.append(
                     {"movie_id": movie_id, "rating": rating, "title": title_display}
                 )
@@ -456,7 +460,8 @@ if st.button("🍿 Get My Recommendations", type="primary"):
                 for rating_data in st.session_state.movie_ratings
             ]
             ratings = [
-                float(rating_data["rating"]) for rating_data in st.session_state.movie_ratings
+                float(rating_data["rating"])
+                for rating_data in st.session_state.movie_ratings
             ]
 
             payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
