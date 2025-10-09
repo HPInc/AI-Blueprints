@@ -279,7 +279,11 @@ def load_movie_titles_from_mlflow():
                 
                 if os.path.exists(movie_titles_path):
                     df = pd.read_csv(movie_titles_path)
-                    if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
+                    if (
+                        not df.empty
+                        and "item_id" in df.columns
+                        and "title" in df.columns
+                    ):
                         st.success("✅ Movie titles loaded from MLflow model registry")
                         return df
         except Exception as e:
@@ -288,17 +292,22 @@ def load_movie_titles_from_mlflow():
         # Method 2
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
-            "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv"
+            "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv",
         ]
-        
-        
+
         for pattern in mlflow_paths:
             matching_paths = glob.glob(pattern)
             for mlflow_path in matching_paths:
                 if os.path.exists(mlflow_path):
                     df = pd.read_csv(mlflow_path)
-                    if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
-                        st.info(f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}")
+                    if (
+                        not df.empty
+                        and "item_id" in df.columns
+                        and "title" in df.columns
+                    ):
+                        st.info(
+                            f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}"
+                        )
                         return df
         
         st.warning("⚠️ Could not find movie titles file in any expected location")
@@ -312,6 +321,7 @@ def load_movie_titles_from_mlflow():
 movie_titles_df = load_movie_titles_from_mlflow()
 
 
+
 def get_movie_title(movie_id):
     """
     Get movie title for a given movie ID with enhanced fallback handling.
@@ -320,11 +330,11 @@ def get_movie_title(movie_id):
     
     # Try primary method first  
     if movie_titles_df is not None:
-        title_row = movie_titles_df[movie_titles_df['item_id'] == movie_id]
+        title_row = movie_titles_df[movie_titles_df["item_id"] == movie_id]
         if not title_row.empty:
-            return title_row.iloc[0]['title']
-    
+            return title_row.iloc[0]["title"]
     return f"Movie ID {movie_id}"
+
 
 # ─────────────────────────────────────────────────────────────
 # Main – Data Input
@@ -408,7 +418,7 @@ if st.session_state.movie_ratings:
     st.markdown(
         '<p class="section-header">📝 Your Current Ratings</p>', unsafe_allow_html=True
     )
-   
+
     for i, rating_data in enumerate(st.session_state.movie_ratings):
         movie_id = rating_data["movie_id"]
         rating = rating_data["rating"]
@@ -429,7 +439,6 @@ if st.session_state.movie_ratings:
                 "<hr style='margin: 10px 0; border-color: #e0e0e0;'>",
                 unsafe_allow_html=True,
             )
-
 
     st.markdown("</div>", unsafe_allow_html=True)
 
