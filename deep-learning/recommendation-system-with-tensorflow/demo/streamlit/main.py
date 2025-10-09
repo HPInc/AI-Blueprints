@@ -13,7 +13,7 @@ st.set_page_config(
     page_title="Movie Recommendation Agent", page_icon="🎬", layout="centered"
 )
 
-# --- Custom Styling ---
+# --- Enhanced Custom Styling ---
 st.markdown(
     """
     <style>
@@ -22,17 +22,14 @@ st.markdown(
             max-width: 900px !important;
         }
 
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
             background: white;
         }
 
-
         .stApp {
             background: white;
         }
-
 
         /* Main Title Styling */
         .main-title {
@@ -45,7 +42,6 @@ st.markdown(
             animation: fadeIn 1s ease-in;
         }
 
-
         .subtitle {
             text-align: center;
             color: #000000;
@@ -53,7 +49,6 @@ st.markdown(
             margin-bottom: 2rem;
             font-weight: 300;
         }
-
 
         /* Card Styling */
         .rating-card {
@@ -64,7 +59,6 @@ st.markdown(
             margin: 20px 0;
             border: 1px solid rgba(255,255,255,0.8);
         }
-
 
         /* Button Styling */
         .stButton>button {
@@ -80,12 +74,10 @@ st.markdown(
             width: 100% !important;
         }
 
-
         .stButton>button:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
         }
-
 
         /* Input Styling */
         .stNumberInput>div>div>input {
@@ -96,12 +88,10 @@ st.markdown(
             transition: all 0.3s ease !important;
         }
 
-
         .stNumberInput>div>div>input:focus {
             border-color: #667eea !important;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
         }
-
 
         /* Rating Display Cards */
         .rating-item {
@@ -115,12 +105,10 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
-
         .rating-item:hover {
             transform: translateX(5px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
-
 
         /* Recommendation Cards */
         .recommendation-card {
@@ -133,20 +121,17 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
-
         .recommendation-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
             border-left-color: #764ba2;
         }
 
-
         .recommendation-card h4 {
             color: #2C3E50;
             margin-bottom: 10px;
             font-weight: 600;
         }
-
 
         .score-badge {
             display: inline-block;
@@ -157,7 +142,6 @@ st.markdown(
             font-weight: 600;
             font-size: 1.1rem;
         }
-
 
         /* Logo Container */
         .logo-container {
@@ -171,7 +155,6 @@ st.markdown(
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
-
         img[alt="HP Logo"],
         img[alt="AI Studio Logo"],
         img[alt="Z by HP Logo"] {
@@ -180,13 +163,11 @@ st.markdown(
             transition: all 0.3s ease;
         }
 
-
         img[alt="HP Logo"]:hover,
         img[alt="AI Studio Logo"]:hover,
         img[alt="Z by HP Logo"]:hover {
             transform: scale(1.1);
         }
-
 
         /* Section Headers */
         .section-header {
@@ -196,7 +177,6 @@ st.markdown(
             margin: 20px 0 15px 0;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
-
 
         /* Footer */
         .footer {
@@ -209,20 +189,17 @@ st.markdown(
             backdrop-filter: blur(10px);
         }
 
-
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-
         /* Success/Warning Messages */
         .stAlert {
             border-radius: 15px !important;
             border: none !important;
         }
-
 
         hr {
             border-color: rgba(255,255,255,0.3) !important;
@@ -234,14 +211,12 @@ st.markdown(
 )
 
 
-
 # --- Logo Section ---
 def uri_from(path: Path) -> str:
     return (
         f"data:image/{path.suffix[1:].lower()};base64,"
         + base64.b64encode(path.read_bytes()).decode()
     )
-
 
 
 assets = Path("assets")
@@ -284,24 +259,24 @@ def load_movie_titles_from_mlflow():
     """
     import mlflow
     from mlflow import MlflowClient
-
+    
     try:
-        # Method 1
+        # Method 1: Try to load from the registered model 
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
             model_name = "movie_titles"
-
+            
             # Get the latest version
             model_metadata = client.get_latest_versions(model_name, stages=["None"])
             if model_metadata:
                 latest_version = model_metadata[0].version
                 model_uri = f"models:/{model_name}/{latest_version}"
-
+                
                 # Download the model artifacts
                 local_path = mlflow.artifacts.download_artifacts(model_uri)
                 movie_titles_path = os.path.join(local_path, "movie_titles.csv")
-
+                
                 if os.path.exists(movie_titles_path):
                     df = pd.read_csv(movie_titles_path)
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
@@ -309,14 +284,14 @@ def load_movie_titles_from_mlflow():
                         return df
         except Exception as e:
             st.warning(f"Could not load from MLflow model registry: {str(e)}")
-
+        
         # Method 2
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
             "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv"
         ]
-
-
+        
+        
         for pattern in mlflow_paths:
             matching_paths = glob.glob(pattern)
             for mlflow_path in matching_paths:
@@ -325,28 +300,30 @@ def load_movie_titles_from_mlflow():
                     if not df.empty and 'item_id' in df.columns and 'title' in df.columns:
                         st.info(f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}")
                         return df
-
+        
         st.warning("⚠️ Could not find movie titles file in any expected location")
         return None
-
+        
     except Exception as e:
         st.error(f"❌ Error loading movie titles: {str(e)}")
         return None
 
-# Load movie titles using the method
+# Load movie titles using the enhanced method
 movie_titles_df = load_movie_titles_from_mlflow()
+
 
 def get_movie_title(movie_id):
     """
-    Get movie title for a given movie ID with fallback handling.
+    Get movie title for a given movie ID with enhanced fallback handling.
     """
     global movie_titles_df
-
-    # Try primary method first
+    
+    # Try primary method first  
     if movie_titles_df is not None:
         title_row = movie_titles_df[movie_titles_df['item_id'] == movie_id]
         if not title_row.empty:
             return title_row.iloc[0]['title']
+    
     return f"Movie ID {movie_id}"
 
 # ─────────────────────────────────────────────────────────────
@@ -366,11 +343,36 @@ if "movie_ratings" not in st.session_state:
 with st.form("add_rating_form"):
     col1, col2 = st.columns(2)
     with col1:
-        movie_id = st.number_input("🎬 Movie ID", min_value=1, value=1)
-        # Show movie title if available
+        # Create movie selection options
+        if movie_titles_df is not None and not movie_titles_df.empty:
+            movie_options = movie_titles_df['title'].tolist()
+            movie_options.sort()  # Sort alphabetically 
+            
+            selected_title = st.selectbox(
+                "🎬 Select Movie",
+                options=movie_options,
+                index=None,
+                placeholder="Choose a movie title...",
+            )
+            
+            # Get the movie ID from the selected title
+            if selected_title:
+                movie_id = movie_titles_df[movie_titles_df['title'] == selected_title]['item_id'].iloc[0]
+                st.caption(f"📽️ Movie ID: {movie_id}")
+            else:
+                movie_id = None
+        else:
+            # Fallback to number input if movie titles aren't loaded
+            st.warning("⚠️ Movie titles not loaded, using ID input instead")
+            movie_id = st.number_input("🎬 Movie ID", min_value=1, value=1)
+            movie_title = get_movie_title(movie_id)
+            if movie_title:
+                st.caption(f"📽️ {movie_title}")
+            else:
+                st.caption("❓ Movie title not found")
     with col2:
         rating = st.number_input(
-            "⭐ Your Rating", min_value=0.5, max_value=5.0, step=0.5, value=3.0
+            "⭐ Your Rating", min_value=0.0, max_value=5.0, step=0.5, value=3.0
         )
 
     submit_col1, submit_col2, submit_col3 = st.columns([1, 2, 1])
@@ -378,11 +380,18 @@ with st.form("add_rating_form"):
         submitted = st.form_submit_button("➕ Add Rating", use_container_width=True)
 
     if submitted:
-        if len(st.session_state.movie_ratings) < 10:
+        if movie_id is None:
+            st.warning("⚠️ Please select a movie first!")
+        elif len(st.session_state.movie_ratings) < 10:
             existing_ids = [r["movie_id"] for r in st.session_state.movie_ratings]
             if movie_id not in existing_ids:
-                movie_title = get_movie_title(movie_id)
-                title_display = movie_title if movie_title else f"Movie ID {movie_id}"
+                # Use the selected title if available, otherwise get it from ID
+                if movie_titles_df is not None and selected_title:
+                    title_display = selected_title
+                else:
+                    movie_title = get_movie_title(movie_id)
+                    title_display = movie_title if movie_title else f"Movie ID {movie_id}"
+                
                 st.session_state.movie_ratings.append(
                     {"movie_id": movie_id, "rating": rating, "title": title_display}
                 )
@@ -407,7 +416,7 @@ if st.session_state.movie_ratings:
 
         col1, col2, col3 = st.columns([4, 3, 1])
         with col1:
-            st.markdown(f"**🎬 {title}** (ID: {movie_id})")
+            st.markdown(f"**🎬 {title}**")
         with col2:
             st.markdown(f"**⭐ Rating:** {rating}")
         with col3:
@@ -434,11 +443,11 @@ if st.button("🍿 Get My Recommendations", type="primary"):
     else:
         with st.spinner("🎯 Analyzing your taste and finding perfect matches..."):
             movie_ids = [
-                rating_data["movie_id"]
+                int(rating_data["movie_id"])
                 for rating_data in st.session_state.movie_ratings
             ]
             ratings = [
-                rating_data["rating"] for rating_data in st.session_state.movie_ratings
+                float(rating_data["rating"]) for rating_data in st.session_state.movie_ratings
             ]
 
             payload = {"inputs": {"movie_id": movie_ids, "rating": ratings}}
