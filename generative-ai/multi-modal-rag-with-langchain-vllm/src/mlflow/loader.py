@@ -1,5 +1,5 @@
 """
-MLflow models-from-code loader module for MultiModal RAG.
+MLflow models-from-code loader module for Logger.
 This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
 """
 
@@ -19,9 +19,10 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration 
-            - local_model_dir/: Local model directory
-            - e5_model_dir/: E5 embedding model
-            - siglip_model_dir/: SigLIP image embedding model
+            - local_model_dir/: Local Qwen-VL model directory
+            - e5_model_dir/: E5 embedding model directory
+            - siglip_model_dir/: SigLIP image embedding model directory
+            - demo/: Demo folder with UI components (optional)
     
     Returns:
         Model: Initialized model instance ready for prediction
@@ -38,9 +39,6 @@ def _load_pyfunc(data_path: str):
     
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
-    
-    # Set MODEL_ARTIFACTS_PATH environment variable for artifact context
-    os.environ["MODEL_ARTIFACTS_PATH"] = data_path
     
     # Load model directories from artifacts
     local_model_dir = os.path.join(data_path, "local_model_dir")

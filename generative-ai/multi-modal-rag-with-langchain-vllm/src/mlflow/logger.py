@@ -2,7 +2,7 @@
 Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
-- Provides log_model functionality for multimodal RAG models
+- Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
 - Uses MLflow's models-from-code approach for deployment
 - Manages configuration, model directories, and demo assets
@@ -34,16 +34,16 @@ class Logger:
     @classmethod
     def log_model(
         cls,
-        signature,
         artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
         local_model_dir=None,
         e5_model_dir=None,
         siglip_model_dir=None,
-        demo_folder=None
+        demo_folder=None,
+        signature=None
     ):
         """
-        Log multimodal RAG model using models-from-code approach.
+        Log model using refined models-from-code approach with elegant directory structure.
         
         This implementation uses MLflow's models-from-code approach exclusively with proper
         temp directory naming to avoid redundant nesting while maintaining full MLflow 3.1.0 compatibility.
@@ -58,13 +58,13 @@ class Logger:
               └── demo/                # UI components (optional)
         
         Args:
-            signature: MLflow ModelSignature defining input/output schema for the model
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
             local_model_dir: Path to the local Qwen-VL model directory
             e5_model_dir: Path to the E5 embedding model directory
             siglip_model_dir: Path to the SigLIP image embedding model directory
             demo_folder: Path to the demo folder (optional)
+            signature: MLflow ModelSignature defining input/output schema for the model
             
         Returns:
             None
@@ -77,7 +77,7 @@ class Logger:
         
         # Create temp directory
         temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "multimodal_rag_artifacts")
+        temp_dir = os.path.join(temp_base, "model_artifacts")
         
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
@@ -136,13 +136,11 @@ class Logger:
             mlflow.pyfunc.log_model(
                 name=artifact_path,                          
                 loader_module="src.mlflow.loader",  
-                data_path=temp_dir,                          
+                data_path=temp_dir,                                   
                 code_paths=["../src"],                    
                 signature=signature,
                 pip_requirements="../requirements.txt"
             )
-            logger.info(f"Successfully logged model '{artifact_path}' using models-from-code approach")
-            
         except Exception as e:
             logger.error(f"Error during model logging: {str(e)}")
             raise
