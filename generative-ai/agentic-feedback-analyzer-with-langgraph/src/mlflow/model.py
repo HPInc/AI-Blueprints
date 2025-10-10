@@ -4,7 +4,7 @@ Standalone Model class.
 Business Logic Layer
 - Handles agentic feedback analysis using LangGraph workflows
 - Manages LLM initialization, memory, and multi-step agent pipeline
-- Contains all domain-specific functionality without MLflow dependencies  
+- Contains all domain-specific functionality without MLflow dependencies
 - Designed to be framework-agnostic and easily testable
 """
 
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class ModelInput(BaseModel):
     """Input model for agentic feedback analysis."""
+
     topic: str
     question: str
     input_text: str
@@ -40,6 +41,7 @@ class ModelInput(BaseModel):
 
 class ModelOutput(BaseModel):
     """Output model for agentic feedback analysis."""
+
     answer: str
     messages: str  # Serialized JSON string
 
@@ -53,7 +55,7 @@ class Model:
     def __init__(self, config, docs_path=None, memory_path=None, model_path=None):
         """
         Initialize the Model with configuration and paths.
-        
+
         Args:
             config: Configuration dictionary
             docs_path: Path to documents directory
@@ -64,10 +66,10 @@ class Model:
         self.docs_path = docs_path
         self.memory_path = memory_path
         self.model_path = model_path
-        
+
         # Initialize components (extracted from original load_context)
         self._initialize_components()
-    
+
     def _initialize_components(self):
         """Initialize LLM and other components."""
         import multiprocessing
@@ -75,13 +77,13 @@ class Model:
         from src.simple_kv_memory import SimpleKVMemory
         from src.agentic_workflow import build_agentic_graph
         from pathlib import Path
-        
+
         # Initialize memory
         if self.memory_path:
             self.memory = SimpleKVMemory(Path(self.memory_path))
         else:
             self.memory = SimpleKVMemory(Path("../data/memory"))
-        
+
         # Initialize LLM
         if self.model_path and os.path.exists(self.model_path):
             self.llm = LlamaCpp(
@@ -103,40 +105,49 @@ class Model:
         else:
             # Fallback initialization or raise error
             raise ValueError(f"Model path not found or invalid: {self.model_path}")
-        
+
         # Build and compile the agentic graph (this was missing!)
         self.graph = build_agentic_graph()
         self.compiled_graph = self.graph.compile()
-        
+
         # Load documents if docs_path is provided
         self.documents = []
         if self.docs_path and os.path.exists(self.docs_path):
             self._load_documents()
-    
+
     def _load_documents(self):
         """Load documents from the documents directory."""
         from langchain_community.document_loaders import (
-            CSVLoader, PyPDFLoader, TextLoader, UnstructuredExcelLoader,
-            UnstructuredMarkdownLoader, UnstructuredWordDocumentLoader
+            CSVLoader,
+            PyPDFLoader,
+            TextLoader,
+            UnstructuredExcelLoader,
+            UnstructuredMarkdownLoader,
+            UnstructuredWordDocumentLoader,
         )
         from pathlib import Path
-        
+
         supported_extensions = {
             ".txt": TextLoader,
-            ".csv": lambda path: CSVLoader(path, encoding="utf-8", csv_args={"delimiter": ","}),
+            ".csv": lambda path: CSVLoader(
+                path, encoding="utf-8", csv_args={"delimiter": ","}
+            ),
             ".xlsx": UnstructuredExcelLoader,
             ".docx": UnstructuredWordDocumentLoader,
             ".pdf": PyPDFLoader,
             ".md": UnstructuredMarkdownLoader,
         }
-        
+
         for file_path in Path(self.docs_path).rglob("*"):
-            if any(part.startswith(".") and part not in {".", ".."} for part in file_path.parts):
+            if any(
+                part.startswith(".") and part not in {".", ".."}
+                for part in file_path.parts
+            ):
                 continue
-            
+
             ext = file_path.suffix.lower()
             loader_class = supported_extensions.get(ext)
-            
+
             if loader_class:
                 try:
                     loader = loader_class(str(file_path))
@@ -148,27 +159,27 @@ class Model:
     def predict(self, model_input, params=None):
         """
         Core business logic for agentic feedback analysis.
-        
+
         Args:
             model_input: List of dictionaries with topic, question, input_text
             params: Optional parameters
-            
+
         Returns:
             List of prediction results
         """
         import pandas as pd
         import json
         from langchain.docstore.document import Document
-        
+
         results = []
         for input_data in model_input:
             topic = input_data.get("topic", "")
             question = input_data.get("question", "")
             input_text = input_data.get("input_text", "")
-            
+
             # Create document from input text
             docs = [Document(page_content=input_text)]
-            
+
             # Run the agentic workflow using compiled graph
             try:
                 final_state = self.compiled_graph.invoke(
@@ -181,51 +192,54 @@ class Model:
                         "messages": [],
                     }
                 )
-                
+
                 # Create output following original format
                 result = {
                     "answer": final_state.get("answer", ""),
-                    "messages": json.dumps(final_state.get("messages", []), indent=4)
+                    "messages": json.dumps(final_state.get("messages", []), indent=4),
                 }
                 results.append(result)
             except Exception as e:
-                results.append({
-                    "answer": f"Error processing request: {str(e)}",
-                    "messages": json.dumps([], indent=4)
-                })
-        
+                results.append(
+                    {
+                        "answer": f"Error processing request: {str(e)}",
+                        "messages": json.dumps([], indent=4),
+                    }
+                )
+
         return results
 
     def predict_pandas(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
         Pandas DataFrame interface for compatibility with MLflow expectations.
         Converts DataFrame to/from list of model input/output objects.
-        
+
         Args:
             model_input: DataFrame with columns: topic, question, input_text
             params: Optional parameters
-            
+
         Returns:
             DataFrame with columns: answer, messages
         """
         # Convert DataFrame to list of input objects
         input_list = []
         for _, row in model_input.iterrows():
-            input_list.append({
-                'topic': row['topic'],
-                'question': row['question'],
-                'input_text': row['input_text']
-            })
-        
+            input_list.append(
+                {
+                    "topic": row["topic"],
+                    "question": row["question"],
+                    "input_text": row["input_text"],
+                }
+            )
+
         # Get predictions
         output_list = self.predict(input_list, params)
-        
+
         # Convert back to DataFrame
         result_data = []
         for output in output_list:
-            result_data.append({
-                'answer': output['answer'],
-                'messages': output['messages']
-            })
-        
+            result_data.append(
+                {"answer": output["answer"], "messages": output["messages"]}
+            )
+
         return pd.DataFrame(result_data)
