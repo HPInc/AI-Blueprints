@@ -134,24 +134,24 @@ def get_model_path(model_name: str) -> str:
 def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
     """
     Load configuration from YAML file with proper error handling.
-    
+
     Args:
         config_path: Path to the configuration YAML file
-        
+
     Returns:
         Dictionary containing the project configurations, empty dict if file not found
-        
+
     Raises:
         FileNotFoundError: If the config file is not found in strict mode
     """
     import yaml
-    
+
     # Convert to absolute path for consistency
     config_path = os.path.abspath(config_path)
-    
+
     if os.path.exists(config_path):
         try:
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 config = yaml.safe_load(f)
             logger.info(f"✅ Configuration loaded from: {config_path}")
             return config if config is not None else {}
