@@ -29,9 +29,9 @@ With your model and workspace configured, import the correct libraries to proper
 
 You can copy and paste the following code to test how to register the Mistral gguf model to MLFlow. The only thing to change is the ‘model_path’. Make sure to copy the model path and model name from your datafabric folder and place it after **‘/home/joyvan/’**. It will look like **‘/home/jovyan/datafabric/mistral-7b-engine/mistral-7b-v0.1.Q5_K_M.gguf’**.
 
-:::note 
+:::note
 
-Ensure your model is in your project workspace **‘Asset’** page. This will happen automatically if you specify the folder location where your Mistral model is stored locally. If you do not see it in the Asset page as downloaded, download it. 
+Ensure your model is in your project workspace **‘Asset’** page. This will happen automatically if you specify the folder location where your Mistral model is stored locally. If you do not see it in the Asset page as downloaded, download it.
 
 :::
 
@@ -57,7 +57,7 @@ class AIStudioChatbotService(PythonModel):
             ColSpec("string", "prompt"),
             ColSpec("string", "document")
         ])
-        
+
         # Define output schema for the model
         output_schema = Schema([
             ColSpec("string", "chunks"),
@@ -66,7 +66,7 @@ class AIStudioChatbotService(PythonModel):
             ColSpec("string", "output"),
             ColSpec("boolean", "success")
         ])
-        
+
         # Define parameters schema for additional settings
         param_schema = ParamSchema([
             ParamSpec("add_pdf", "boolean", False),
@@ -74,7 +74,7 @@ class AIStudioChatbotService(PythonModel):
             ParamSpec("set_prompt", "boolean", False),
             ParamSpec("reset_history", "boolean", False)
         ])
-        
+
         # Combine schemas into a model signature
         signature = ModelSignature(inputs=input_schema, outputs=output_schema, params=param_schema)
 
@@ -103,7 +103,7 @@ mlflow.set_experiment("AIStudioChatbot_Service")
 
 # Define required paths
 model_folder = "/home/jovyan/datafabric/mistral-7b-engine/mistral-7b-v0.1.Q5_K_M.gguf"
-demo_folder = "demo"   
+demo_folder = "demo"
 
 # Ensure required directories exist before proceeding
 if demo_folder and not os.path.exists(demo_folder):
@@ -115,7 +115,7 @@ with mlflow.start_run(run_name="AIStudioChatbot_Service_Run") as run:
         demo_folder=demo_folder,
         model_folder=model_folder
     )
-    
+
     # Register the model in MLflow
     model_uri = f"runs:/{run.info.run_id}/aistudio_chatbot_service"
     mlflow.register_model(
