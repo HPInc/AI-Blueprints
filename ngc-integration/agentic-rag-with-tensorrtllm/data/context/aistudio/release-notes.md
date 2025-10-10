@@ -23,7 +23,7 @@ This release includes:
 
 ### NVDIA's NGC Catalog Comes to AI Studio
 
-HP’s AI Studio and NVIDIA are collaborating to bring you more than 500 new assets designed to maximize the potential of your NVIDIA GPUs. The NGC Catalog is a collection of tools that can help transform AI Studio into the perfect hub for optimized GPU Software solutions, including: 
+HP’s AI Studio and NVIDIA are collaborating to bring you more than 500 new assets designed to maximize the potential of your NVIDIA GPUs. The NGC Catalog is a collection of tools that can help transform AI Studio into the perfect hub for optimized GPU Software solutions, including:
 
 - [Containers / SDKs](https://catalog.ngc.nvidia.com/containers?filters=&orderBy=weightPopularDESC&query=&page=&pageSize=)
 
@@ -32,7 +32,7 @@ HP’s AI Studio and NVIDIA are collaborating to bring you more than 500 new ass
 - [Resources](https://catalog.ngc.nvidia.com/resources?filters=&orderBy=weightPopularDESC&query=&page=&pageSize=)
 
 
-#### See Also: 
+#### See Also:
 
 [NeMo Framework](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nemo)
 
@@ -44,20 +44,20 @@ HP’s AI Studio and NVIDIA are collaborating to bring you more than 500 new ass
 
 ---
 
-### Local Jobs Comes to AI Studio 
+### Local Jobs Comes to AI Studio
 
-With Jobs, AI Studio continues to work for you even after you've punched out for the day. Maximize your productivity by freeing up your on-clock time for tasks that need your active attention. With Jobs, users can: 
+With Jobs, AI Studio continues to work for you even after you've punched out for the day. Maximize your productivity by freeing up your on-clock time for tasks that need your active attention. With Jobs, users can:
 
-- Schedule a job run to begin on a certain date and time. 
+- Schedule a job run to begin on a certain date and time.
 
-- Specify a job's run frequency. 
+- Specify a job's run frequency.
 
-- View a job's status, duration, and logs to determine its health. 
+- View a job's status, duration, and logs to determine its health.
 
-- Allocate hardware and workspace assets to a job. 
+- Allocate hardware and workspace assets to a job.
 
 
-#### See Also: 
+#### See Also:
 
 [Creating a New Job](/docs/aistudio/using-aistudio/jobs/new-job.md)
 
@@ -65,17 +65,17 @@ With Jobs, AI Studio continues to work for you even after you've punched out for
 
 ---
 
-### Enhance Your Projects With the Assets Catalog 
+### Enhance Your Projects With the Assets Catalog
 
-The new assets catalogue makes it easier than ever to add new datasets and model templates to your projects on the fly. The new Assets tab is a one-stop-shop where you can view all the assets available for use on your project. The assets catalog lets users: 
+The new assets catalogue makes it easier than ever to add new datasets and model templates to your projects on the fly. The new Assets tab is a one-stop-shop where you can view all the assets available for use on your project. The assets catalog lets users:
 
-- Filter dataset results by author, source, or the most recent update. 
+- Filter dataset results by author, source, or the most recent update.
 
-- Filter model template results by application, framework, size, and more. 
+- Filter model template results by application, framework, size, and more.
 
-- View assets already added to the project. 
+- View assets already added to the project.
 
-#### See Also: 
+#### See Also:
 
 [Connecting Data To a Project](/docs/aistudio/using-aistudio/projects/connecting-data.md)
 
@@ -83,20 +83,20 @@ The new assets catalogue makes it easier than ever to add new datasets and model
 
 ---
 
-### Azure Storage Connection 
-Now, you can select Azure Blob as an asset connection source when connecting data to a project, expanding AI Studios compatibility with your established workflows. 
+### Azure Storage Connection
+Now, you can select Azure Blob as an asset connection source when connecting data to a project, expanding AI Studios compatibility with your established workflows.
 
-#### See Also: 
+#### See Also:
 
 [Connecting Data to a Project](/docs/aistudio/using-aistudio/projects/connecting-data.md)
 
 ---
 
-### Enhanced Download Insights 
+### Enhanced Download Insights
 
 We’ve added a status bar to provide more detailed insight on the download status of workspace images.
 
-#### See Also: 
+#### See Also:
 
 [AI Studio Workspace Images](/docs/aistudio/using-aistudio/workspaces/base-images.md)
 
@@ -104,23 +104,23 @@ We’ve added a status bar to provide more detailed insight on the download stat
 
 ---
 
-### Updated Support Form 
+### Updated Support Form
 
-We added an option to specify the product you’re requesting support for on the Support tile form to get you the answers you need more efficiently. 
+We added an option to specify the product you’re requesting support for on the Support tile form to get you the answers you need more efficiently.
 
-#### See Also: 
+#### See Also:
 
 [Get Help](/get-help)
 
 ---
 
-### Expired Account Management 
+### Expired Account Management
 
-Improvements to the account management workflow let you renew or remove expired accounts from the application, addressing a bug that prevented some users from switching out of expired accounts. 
+Improvements to the account management workflow let you renew or remove expired accounts from the application, addressing a bug that prevented some users from switching out of expired accounts.
 
-  
 
-#### See Also: 
+
+#### See Also:
 [Account Switching](/docs/aistudio/account/account-switching.md)
 
 ---

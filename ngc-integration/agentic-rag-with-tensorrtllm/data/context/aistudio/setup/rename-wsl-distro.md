@@ -12,7 +12,7 @@ AI Studio requires its own WSL distribution named "*Phoenix*". If our installer 
 
 2. From the Start menu, find and open the ***Registry Editor***.
 
-3. Follow this path: 
+3. Follow this path:
 
     HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Lxss
 

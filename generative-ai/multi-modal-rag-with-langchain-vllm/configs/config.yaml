@@ -1,15 +1,42 @@
-# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
-model_source: "local"
-
-# Path to the local model file (used when model_source is "local")
-model_path: "/home/jovyan/datafabric/Qwen2.5-VL-7B-Instruct-GPTQ-Int4"
-
 # Azure DevOps Wiki Data Source Configuration
 AZURE_DEVOPS_ORG: "hpswapps"
 AZURE_DEVOPS_PROJECT: "Phoenix-DS%20Platform"
 AZURE_DEVOPS_WIKI_IDENTIFIER: "Phoenix-DS-Platform.wiki"
 
-# proxy is used to set the HTTPS_PROXY environment variable when necessary.
-# For example, if you need to access Galileo from a restricted network,
+# Blueprint Configuration
+# This file configures the UI mode and ports for the model service
+
+# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
+model_source: "local"
+
+# Proxy is used to set the HTTPS_PROXY environment variable when necessary.
+# For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
 # proxy: "http://web-proxy.austin.hp.com:8080"
+
+# UI Configuration
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 2000
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 2000
+
+  # Number of health check retries
+  health_check_retries: 8
