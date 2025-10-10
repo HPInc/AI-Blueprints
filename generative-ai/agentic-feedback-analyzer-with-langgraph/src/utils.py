@@ -115,6 +115,29 @@ def json_schema_from_type(input_type: type):
 def get_model_path(model_name: str) -> str:
     """
     Get the full path to the model file using the artifacts path and model name.
+    
+    This function follows the pattern from PR #208 for resolving model paths
+    from the MODEL_ARTIFACTS_PATH environment variable (set in MLflow deployment contexts)
+    or falling back to the datafabric location for local execution.
+
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+
+    Returns:
+        Full path to the model file
+    """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+
+    return model_path
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
 
     Args:
         model_name: Name of the model file or full path (will extract filename)
