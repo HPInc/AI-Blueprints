@@ -15,53 +15,55 @@ def _load_pyfunc(data_path: str):
     """
     MLflow models-from-code loader function.
     Called by MLflow to load the model from artifacts.
-    
+
     Args:
         data_path: Path to model artifacts directory containing:
-            - config.yaml: Model configuration 
+            - config.yaml: Model configuration
             - local_model_dir/: Local Qwen-VL model directory
             - e5_model_dir/: E5 embedding model directory
             - siglip_model_dir/: SigLIP image embedding model directory
             - demo/: Demo folder with UI components (optional)
-    
+
     Returns:
         Model: Initialized model instance ready for prediction
     """
     from src.mlflow.model import Model
-    
+
     logger.info(f"Loading Model from artifacts at: {data_path}")
-    
+
     from src.utils import load_config
-    
+
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
-    
+
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
-    
+
     # Load model directories from artifacts
     local_model_dir = os.path.join(data_path, "local_model_dir")
     e5_model_dir = os.path.join(data_path, "e5_model_dir")
     siglip_model_dir = os.path.join(data_path, "siglip_model_dir")
-    
+
     # Validate required directories exist
     required_dirs = [local_model_dir, e5_model_dir, siglip_model_dir]
     for directory in required_dirs:
         if not os.path.exists(directory):
-            raise FileNotFoundError(f"Required model directory not found at: {directory}")
-    
+            raise FileNotFoundError(
+                f"Required model directory not found at: {directory}"
+            )
+
     logger.info(f"Local model directory: {local_model_dir}")
     logger.info(f"E5 model directory: {e5_model_dir}")
     logger.info(f"SigLIP model directory: {siglip_model_dir}")
-    
+
     # Initialize Model
     try:
         model = Model(
             local_model_dir=local_model_dir,
             e5_model_dir=e5_model_dir,
             siglip_model_dir=siglip_model_dir,
-            config=config
+            config=config,
         )
         logger.info("Model initialized successfully")
         return model
