@@ -4,11 +4,11 @@ sidebar_position: 3
 ---
 # How to Register a Model to MLflow: A Step-by-Step Guide
 
-This guide outlines the steps necessary to register a model to the MLflow Model Registry, which provides an organized structure for model lifecycle management, including versioning, annotations, and staging or production-ready deployment. 
+This guide outlines the steps necessary to register a model to the MLflow Model Registry, which provides an organized structure for model lifecycle management, including versioning, annotations, and staging or production-ready deployment.
 
 By following these steps, you can successfully register, manage, and deploy machine learning models using MLflow’s Model Registry. The Model Registry not only simplifies model management but also ensures traceability and consistency across versions, making it an indispensable tool for machine learning operations (MLOps).
 
-Let’s get started with registering a model. 
+Let’s get started with registering a model.
 
 ## Step 0: Install Required Dependencies
 To use MLflow and its model registry, you first need to install the MLflow library. AI Studio workspace images automatically do this for you. To re-install, start a workspace and open your terminal or command prompt and run the following command:
@@ -175,7 +175,7 @@ This is particularly useful when integrating custom Python models into the MLflo
 
 :::tip
 
-**Once your models are registered to MLFlow, you can publish them for local inference using the deployment tab in your project.** 
+**Once your models are registered to MLFlow, you can publish them for local inference using the deployment tab in your project.**
 
 :::
 
