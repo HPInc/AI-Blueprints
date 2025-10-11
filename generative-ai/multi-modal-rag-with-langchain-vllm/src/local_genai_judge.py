@@ -2,13 +2,15 @@ import pandas as pd
 import re
 from vllm import SamplingParams
 
+
 class LocalGenAIJudge:
     """
     A dual-purpose evaluation judge using a local generative AI model served by vLLM.
-    
+
     1. Can be used standalone with `mlflow.evaluate`.
     2. Can be integrated into a model's `predict` method for real-time scoring.
     """
+
     SYSTEM_PROMPT = (
         "You are a meticulous AI Judge. Your role is to assess an AI's response against "
         "specific criteria based on provided materials. "
@@ -20,7 +22,7 @@ class LocalGenAIJudge:
     def __init__(self, llm: any, tokenizer: any):
         """
         Initializes the judge directly with a vLLM engine and a tokenizer.
-        
+
         Args:
             llm: The initialized vLLM engine instance.
             tokenizer: The corresponding tokenizer.
@@ -49,22 +51,20 @@ class LocalGenAIJudge:
         """Internal method to run batch evaluation using the vLLM engine."""
         user_prompts = [
             prompt_builder(
-                question=row.questions,
-                answer=row.result,
-                context=row.source_documents
+                question=row.questions, answer=row.result, context=row.source_documents
             )
             for row in batch_df.itertuples()
         ]
-        
+
         full_prompts = [self._build_prompt(p) for p in user_prompts]
-        
+
         # vLLM `generate` is optimized for batching prompts
         outputs = self.llm.generate(full_prompts, self.judge_sampling_params)
-        
+
         # Extract text and then the score from each output
         responses_text = [output.outputs[0].text.strip() for output in outputs]
         scores = [self._extract_score(res) for res in responses_text]
-        
+
         return pd.Series(scores, index=batch_df.index, dtype=float)
 
     def evaluate_faithfulness(self, batch_df: pd.DataFrame) -> pd.Series:
@@ -72,6 +72,7 @@ class LocalGenAIJudge:
         Scores how faithful the answer is to the provided context (i.e., groundedness).
         A high score means the answer contains no hallucinations or information unsupported by the context.
         """
+
         def prompt_builder(question, answer, context):
             return (
                 "Evaluate the factual alignment of the 'Answer' strictly based on the provided 'Context'.\n\n"
@@ -83,6 +84,7 @@ class LocalGenAIJudge:
                 "- **0.0 (Not Faithful):** The 'Answer' contradicts the 'Context' or is a complete hallucination with no basis in the 'Context'.\n"
                 "- **Intermediate Score:** The 'Answer' is mostly faithful but contains minor claims not found in the 'Context'. The score should decrease as the number and severity of unsupported claims increase. For example, an answer that is 90% supported by the context but includes one minor unsubstantiated detail might score **0.85**.\n\n"
             )
+
         return self._evaluate(batch_df, prompt_builder)
 
     def evaluate_relevance(self, batch_df: pd.DataFrame) -> pd.Series:
@@ -90,6 +92,7 @@ class LocalGenAIJudge:
         Scores how relevant the answer is to the user's question.
         A high score means the answer directly and completely addresses the user's intent.
         """
+
         def prompt_builder(question, answer, context):
             # Context is ignored for relevance but included for function signature consistency
             return (
@@ -101,6 +104,7 @@ class LocalGenAIJudge:
                 "- **0.0 (Not Relevant):** The 'Answer' is completely off-topic or fails to address the 'Question' in any meaningful way.\n"
                 "- **Intermediate Score:** The 'Answer' is on-topic but only partially addresses the 'Question', misses a key aspect, or includes redundant information. For example, an answer that addresses the main part of a two-part question but ignores the second part might score **0.6**.\n\n"
             )
+
         return self._evaluate(batch_df, prompt_builder)
 
     def evaluate_conciseness(self, batch_df: pd.DataFrame) -> pd.Series:
@@ -108,6 +112,7 @@ class LocalGenAIJudge:
         Scores how concise the answer is.
         A high score means the answer addresses the question without unnecessary verbosity or repetition.
         """
+
         def prompt_builder(question, answer, context):
             # Context is ignored for conciseness
             return (
@@ -119,6 +124,5 @@ class LocalGenAIJudge:
                 "- **0.0 (Not Concise):** The 'Answer' is extremely verbose, repetitive, and contains significant information not relevant to the user's 'Question'.\n"
                 "- **Intermediate Score:** The 'Answer' is mostly direct but contains some minor verbosity or slightly off-topic details. For example, an answer that fully addresses the question but includes a few unnecessary sentences might score **0.7**.\n\n"
             )
+
         return self._evaluate(batch_df, prompt_builder)
-
-

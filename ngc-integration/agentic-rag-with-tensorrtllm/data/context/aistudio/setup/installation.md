@@ -7,7 +7,7 @@ sidebar_position: 2
 ## Installation
 ### To install AI Studio on Windows:
 
-1. Download and run the AI Studio installer <a href="/downloads">here</a>. If you haven't enabled virtualization, an error message will prompt you to do so before continuing. 
+1. Download and run the AI Studio installer <a href="/downloads">here</a>. If you haven't enabled virtualization, an error message will prompt you to do so before continuing.
 
 2. Complete the wizard to finish installing AI Studio.
 
@@ -25,7 +25,7 @@ sidebar_position: 2
 
 :::tip
 
-If git is not already installed on your machine, the app will guide you to do so. Features that depend on git are disabled in the app for users who choose not to install. 
+If git is not already installed on your machine, the app will guide you to do so. Features that depend on git are disabled in the app for users who choose not to install.
 
 :::
 
@@ -49,29 +49,29 @@ You can open AI Studio by searching for it in the applications menu, or by typin
 
 :::note
 
-The first time you start the app on Ubuntu, AI Studio will ask for permission to set up nvidia-container-toolkit if you don't already have it. 
+The first time you start the app on Ubuntu, AI Studio will ask for permission to set up nvidia-container-toolkit if you don't already have it.
 
 :::
 
 ## Uninstallation
 
-### To uninstall AI Studio on Windows: 
+### To uninstall AI Studio on Windows:
 
-Use either of the following methods to uninstall AI Studio on Windows: 
+Use either of the following methods to uninstall AI Studio on Windows:
 
-**Using the Installer**: 
+**Using the Installer**:
 
-1. Run the *AIStudioSetup.msi* file to open the installer. 
+1. Run the *AIStudioSetup.msi* file to open the installer.
 
-2. Click **Next**, then click **Remove** to delete AI Studio from your computer. 
+2. Click **Next**, then click **Remove** to delete AI Studio from your computer.
 
-**Using System Settings**: 
+**Using System Settings**:
 
-1. From System Settings, find and select **Add or Remove Programs**. 
+1. From System Settings, find and select **Add or Remove Programs**.
 
-2. Search for AI Studio in the ***Apps and Features*** section or scroll to locate it manually. 
+2. Search for AI Studio in the ***Apps and Features*** section or scroll to locate it manually.
 
-3. Click the options icon, then select **Uninstall**. 
+3. Click the options icon, then select **Uninstall**.
 
 ### To uninstall AI Studio on Ubuntu:
 

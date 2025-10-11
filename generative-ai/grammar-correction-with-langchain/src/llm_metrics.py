@@ -9,7 +9,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import multiprocessing
 
 # Initialize TF-IDF vertorizer for semantic similarity
-tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=5000) 
+tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+
 
 def semantic_similarity_eval_fn(predictions: List[str], targets: List[str]) -> float:
     """
@@ -23,39 +24,43 @@ def semantic_similarity_eval_fn(predictions: List[str], targets: List[str]) -> f
         float: Mean cosine similarity between matched pairs.
     """
     all_texts = list(targets) + list(predictions)
-    
+
     all_texts = [str(text) if text else "" for text in all_texts]
-    
-    if len(set(all_texts)) < 2:  
+
+    if len(set(all_texts)) < 2:
         return 10.0
-    
+
     tfidf_matrix = tfidf_vectorizer.fit_transform(all_texts)
-    
+
     n_targets = len(targets)
     target_vectors = tfidf_matrix[:n_targets]
     pred_vectors = tfidf_matrix[n_targets:]
-    
+
     similarities = []
     for i in range(len(targets)):
-        similarity = cosine_similarity(target_vectors[i:i+1], pred_vectors[i:i+1])[0][0]
+        similarity = cosine_similarity(
+            target_vectors[i : i + 1], pred_vectors[i : i + 1]
+        )[0][0]
         similarities.append(similarity)
-    
-    return np.mean(similarities)*10
+
+    return np.mean(similarities) * 10
+
 
 def _count_syllables(word: str) -> int:
     """Rudimentary English syllable counter."""
     word = word.lower()
-    groups = re.findall(r'[aeiouy]+', word)
+    groups = re.findall(r"[aeiouy]+", word)
     count = len(groups)
-    if word.endswith('e'):
+    if word.endswith("e"):
         count = max(1, count - 1)
     return max(count, 1)
 
+
 def flesch_reading_ease(text: str) -> float:
     """Calculates Flesch Reading Ease score."""
-    sentences = re.split(r'[.!?]+', text)
+    sentences = re.split(r"[.!?]+", text)
     sentences = [s for s in sentences if s.strip()]
-    words = re.findall(r'\w+', text)
+    words = re.findall(r"\w+", text)
     if not sentences or not words:
         return 0.0
     syllables = sum(_count_syllables(w) for w in words)
@@ -64,7 +69,10 @@ def flesch_reading_ease(text: str) -> float:
     score = 206.835 - 1.015 * (W / S) - 84.6 * (syllables / W)
     return score
 
-def readability_improvement_eval_fn(predictions: List[str], targets: List[str]) -> float:
+
+def readability_improvement_eval_fn(
+    predictions: List[str], targets: List[str]
+) -> float:
     """
     Calculates the average absolute change in Flesch Reading Ease.
     A score of 0.0 means no change in readability on average.
@@ -85,16 +93,17 @@ def readability_improvement_eval_fn(predictions: List[str], targets: List[str]) 
             new_score = 0.0
         else:
             new_score = flesch_reading_ease(pred_text)
-        
+
         # Calculate the simple difference (delta)
         deltas.append(new_score - orig_score)
-        
+
     # If the list is empty for any reason, return 0
     if not deltas:
         return 0.0
 
     # Return the average of all the deltas directly.
     return float(np.mean(deltas))
+
 
 def llm_judge_eval_fn_local(predictions: pd.Series, targets: pd.Series, llm) -> float:
     """

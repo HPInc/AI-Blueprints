@@ -13,11 +13,12 @@ os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 st.set_page_config(
     page_title="Image Generation with StableDifussion",
     page_icon="📷",
-    layout="centered"
+    layout="centered",
 )
 
 # --- Custom Style ---
-st.markdown("""
+st.markdown(
+    """
     <style>
         .block-container {
             padding-top: 0 !important;
@@ -56,29 +57,42 @@ st.markdown("""
 }
 
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Logo ---
 
+
 def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
 
 assets = Path("assets")
 hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
     <div style="display:flex;justify-content:space-between;
                 align-items:center;margin-bottom:1.5rem">
         <img src="{hp_uri}"  alt="HP Logo" style="width:90px;height:auto;">
         <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
         <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
     </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Header ---
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Generation with StableDifussion </h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Generation with StableDifussion </h1>",
+    unsafe_allow_html=True,
+)
 
 # --- MLflow API Configuration ---
 # Standardized MLflow endpoint for containerized deployment
@@ -92,7 +106,9 @@ use_finetuning = st.checkbox("Use fine-tuning")
 height = st.number_input("Image height (px):", min_value=1, value=512)
 width = st.number_input("Image width (px):", min_value=1, value=512)
 num_images = st.number_input("Number of images:", min_value=1, max_value=10, value=1)
-num_inference_steps = st.number_input("Number of inference steps:", min_value=1, value=50)
+num_inference_steps = st.number_input(
+    "Number of inference steps:", min_value=1, value=50
+)
 
 
 # --- Button to Call the Model ---
@@ -107,7 +123,7 @@ if st.button("Get result"):
                 "height": [height],
                 "width": [width],
                 "num_images": [num_images],
-                "num_inference_steps": [num_inference_steps]
+                "num_inference_steps": [num_inference_steps],
             },
         }
 
@@ -143,7 +159,7 @@ if "predictions" in st.session_state:
                     label=f"📥 Download Image {i+1}",
                     data=buffer,
                     file_name=f"image_{i+1}.png",
-                    mime="image/png"
+                    mime="image/png",
                 )
             except Exception as e:
                 st.error(f"❌ Error displaying image {i+1}: {str(e)}")
