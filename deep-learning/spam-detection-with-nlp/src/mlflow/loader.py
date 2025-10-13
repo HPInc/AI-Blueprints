@@ -15,57 +15,60 @@ def _load_pyfunc(data_path: str):
     """
     MLflow models-from-code loader function.
     Called by MLflow to load the spam detection model from artifacts.
-    
+
     Args:
         data_path: Path to model artifacts directory containing:
-            - config.yaml: Model configuration 
+            - config.yaml: Model configuration
             - spam_utf8.csv: Spam dataset
             - nltk_data/: NLTK data directory
             - demo/: Demo folder with UI components (optional)
-    
+
     Returns:
         Model: Initialized spam detection model instance ready for prediction
     """
     from src.mlflow.model import Model
-    
+
     logger.info(f"Loading Spam Detection Model from artifacts at: {data_path}")
-    
+
     from src.utils import load_config
-    
+
     config_path = os.path.join(data_path, "config.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
-    
+
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
-    
+
     # Set up data path for spam dataset
     data_file_path = os.path.join(data_path, "spam_utf8.csv")
     if not os.path.exists(data_file_path):
         raise FileNotFoundError(f"Spam dataset not found at: {data_file_path}")
-    
+
     # Set up NLTK data path
     nltk_data_path = os.path.join(data_path, "nltk_data")
     if not os.path.exists(nltk_data_path):
         # If NLTK data is missing, create minimal structure with fallback
-        logger.warning(f"NLTK data directory not found at: {nltk_data_path}. Creating fallback.")
+        logger.warning(
+            f"NLTK data directory not found at: {nltk_data_path}. Creating fallback."
+        )
         os.makedirs(nltk_data_path, exist_ok=True)
-        
+
         # Import nltk here to avoid circular imports
         import nltk
+
         try:
             # Try to download stopwords to the missing directory
-            nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
+            nltk.download("stopwords", download_dir=nltk_data_path, quiet=True)
             logger.info(f"Downloaded NLTK stopwords to: {nltk_data_path}")
         except Exception as e:
-            logger.warning(f"Failed to download NLTK data: {e}. Model will try to use default NLTK path.")
-    
+            logger.warning(
+                f"Failed to download NLTK data: {e}. Model will try to use default NLTK path."
+            )
+
     # Initialize Model
     try:
         model = Model(
-            data_path=data_file_path,
-            nltk_data_path=nltk_data_path,
-            config=config
+            data_path=data_file_path, nltk_data_path=nltk_data_path, config=config
         )
         logger.info("Spam Detection Model initialized successfully")
         return model
