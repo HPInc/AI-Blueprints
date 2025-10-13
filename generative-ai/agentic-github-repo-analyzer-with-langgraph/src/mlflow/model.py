@@ -57,28 +57,49 @@ class Model:
     Handles agentic GitHub repository analysis using LangGraph workflow.
     """
 
-    def __init__(self, model_path: str, memory_path: str):
+    def __init__(self, config, docs_path=None, model_path=None, secrets=None):
         """
-        Initialize the model with direct dependencies - no MLflow context.
-        Extract all initialization logic from original load_context method.
+        Initialize the Model with configuration and paths.
 
         Args:
-            model_path: Path to the local LLM model file
-            memory_path: Path to the memory storage directory
+            config: Configuration dictionary with model settings
+            docs_path: Path to documents directory (not used for GitHub repo analyzer)
+            model_path: Path to LLM model file
+            secrets: Dictionary containing secrets (optional, not used in this blueprint)
         """
+        self.config = config
+        self.docs_path = docs_path
         self.model_path = model_path
-        self.memory_path = memory_path
+        self.secrets = secrets
 
-        # Initialize memory
-        self.memory = SimpleKVMemory(Path(self.memory_path))
+        # Initialize components
+        self._initialize_components()
 
-        # Initialize LLM with same configuration as original service
+    def _initialize_components(self):
+        """Initialize LLM, memory, and agentic graph."""
+        # Initialize memory - use default path
+        memory_path = Path("../data/memory")
+        self.memory = SimpleKVMemory(memory_path)
+        logger.info(f"Memory initialized at: {memory_path}")
+
+        # Initialize LLM
+        if not self.model_path:
+            raise ValueError(
+                "model_path is required for LLM initialization. Please configure it in config.yaml"
+            )
+
+        logger.info(f"Initializing LLM with model_path: {self.model_path}")
+
+        # Get context window and related configs from config
+        context_window = self.config.get("context_window", 8192)
+        max_tokens = context_window // 8
+
         self.llm = LlamaCpp(
             model_path=self.model_path,
             n_gpu_layers=-1,
             n_batch=512,
-            n_ctx=8192,
-            max_tokens=1024,
+            n_ctx=context_window,
+            max_tokens=max_tokens,
             f16_kv=True,
             use_mmap=False,
             low_vram=False,
@@ -92,51 +113,104 @@ class Model:
             verbose=False,
         )
 
+        if self.llm is None:
+            raise ValueError("Failed to initialize LLM - LlamaCpp returned None")
+
+        logger.info("LlamaCpp model loaded successfully")
+
         # Build and compile the agentic graph
         self.graph = build_agentic_graph()
         self.compiled_graph = self.graph.compile()
+        logger.info("Agentic graph compiled successfully")
 
-    def predict(
-        self, model_input: List[AgenticModelInput], params=None
-    ) -> List[AgenticModelOutput]:
+    def predict(self, model_input, params=None):
         """
-        Core business logic extracted from original service predict method.
-        Remove context parameter - use instance variables instead.
-        Must return same data structure as original.
+        Core business logic for agentic GitHub repository analysis.
+        Supports both DataFrame and List[AgenticModelInput] for compatibility.
 
         Args:
-            model_input: List of AgenticModelInput objects with topic, question, and input_text
-            params: Optional parameters (maintained for API compatibility)
+            model_input: pandas.DataFrame with columns (topic, question, input_text)
+                        OR List[AgenticModelInput]
+            params: Optional parameters
 
         Returns:
-            List of AgenticModelOutput objects with answer and messages
+            pandas.DataFrame with columns (answer, messages) OR List[AgenticModelOutput]
         """
-        results = []
+        import pandas as pd
 
-        for row in model_input:
-            topic = row.topic
-            question = row.question
-            input_text = row.input_text
+        # Handle DataFrame input (MLflow standard)
+        if isinstance(model_input, pd.DataFrame):
+            results = []
 
-            docs = [Document(page_content=input_text)]
+            # Process each row in the DataFrame
+            for _, row in model_input.iterrows():
+                topic = row.get("topic", "")
+                question = row.get("question", "")
+                input_text = row.get("input_text", "")
 
-            # Run the agentic workflow using compiled graph
-            final_state = self.compiled_graph.invoke(
-                input={
-                    "topic": topic,
-                    "question": question,
-                    "docs": docs,
-                    "memory": self.memory,
-                    "llm": self.llm,  # Use self.llm instead of context
-                    "messages": [],
-                }
-            )
+                # Create document from input text
+                docs = [Document(page_content=input_text)]
 
-            results.append(
-                AgenticModelOutput(
-                    answer=final_state["answer"],
-                    messages=json.dumps(final_state["messages"], indent=4),
+                # Run the agentic workflow using compiled graph
+                try:
+                    final_state = self.compiled_graph.invoke(
+                        input={
+                            "topic": topic,
+                            "question": question,
+                            "docs": docs,
+                            "memory": self.memory,
+                            "llm": self.llm,
+                            "messages": [],
+                        }
+                    )
+
+                    result = {
+                        "answer": final_state.get("answer", ""),
+                        "messages": json.dumps(
+                            final_state.get("messages", []), indent=4
+                        ),
+                    }
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing request: {str(e)}")
+                    results.append(
+                        {
+                            "answer": f"Error processing request: {str(e)}",
+                            "messages": json.dumps([], indent=4),
+                        }
+                    )
+
+            # Return results as DataFrame
+            return pd.DataFrame(results)
+
+        # Handle List[AgenticModelInput] (for notebook compatibility)
+        else:
+            results = []
+
+            for row in model_input:
+                topic = row.topic
+                question = row.question
+                input_text = row.input_text
+
+                docs = [Document(page_content=input_text)]
+
+                # Run the agentic workflow using compiled graph
+                final_state = self.compiled_graph.invoke(
+                    input={
+                        "topic": topic,
+                        "question": question,
+                        "docs": docs,
+                        "memory": self.memory,
+                        "llm": self.llm,
+                        "messages": [],
+                    }
                 )
-            )
 
-        return results
+                results.append(
+                    AgenticModelOutput(
+                        answer=final_state["answer"],
+                        messages=json.dumps(final_state["messages"], indent=4),
+                    )
+                )
+
+            return results
