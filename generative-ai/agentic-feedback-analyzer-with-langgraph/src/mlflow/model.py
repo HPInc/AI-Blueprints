@@ -173,7 +173,7 @@ class Model:
     def predict(self, model_input, params=None):
         """
         Core business logic for agentic feedback analysis.
-        
+
         Handles two input formats:
         1. List of dictionaries: [{"topic": "...", "question": "...", "input_text": "..."}]
         2. MLflow signature format: {"topic": ["..."], "question": ["..."], "input_text": ["..."]}
@@ -195,15 +195,17 @@ class Model:
             topics = model_input.get("topic", [])
             questions = model_input.get("question", [])
             input_texts = model_input.get("input_text", [])
-            
+
             # Convert to list of dicts
             input_list = []
             for i in range(len(topics)):
-                input_list.append({
-                    "topic": topics[i] if i < len(topics) else "",
-                    "question": questions[i] if i < len(questions) else "",
-                    "input_text": input_texts[i] if i < len(input_texts) else ""
-                })
+                input_list.append(
+                    {
+                        "topic": topics[i] if i < len(topics) else "",
+                        "question": questions[i] if i < len(questions) else "",
+                        "input_text": input_texts[i] if i < len(input_texts) else "",
+                    }
+                )
         elif isinstance(model_input, list):
             # Already in list format
             input_list = model_input
