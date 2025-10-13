@@ -52,20 +52,21 @@ class Model:
     Pure domain functionality with zero MLflow dependencies.
     """
 
-    def __init__(self, config, docs_path=None, memory_path=None, model_path=None):
+    def __init__(self, config, docs_path=None, model_path=None, secrets=None):
         """
         Initialize the Model with configuration and paths.
+        Constructor signature follows PR #208 pattern.
 
         Args:
             config: Configuration dictionary
             docs_path: Path to documents directory
-            memory_path: Path to memory directory
             model_path: Path to LLM model file
+            secrets: Dictionary containing secrets (optional, not used in this blueprint)
         """
         self.config = config
         self.docs_path = docs_path
-        self.memory_path = memory_path
         self.model_path = model_path
+        self.secrets = secrets
 
         # Initialize components (extracted from original load_context)
         self._initialize_components()
@@ -78,33 +79,44 @@ class Model:
         from src.agentic_workflow import build_agentic_graph
         from pathlib import Path
 
-        # Initialize memory
-        if self.memory_path:
-            self.memory = SimpleKVMemory(Path(self.memory_path))
-        else:
-            self.memory = SimpleKVMemory(Path("../data/memory"))
+        # Initialize memory - use default path since memory_path not in constructor anymore
+        memory_path = Path("../data/memory")
+        self.memory = SimpleKVMemory(memory_path)
+        logger.info(f"Memory initialized at: {memory_path}")
 
-        # Initialize LLM
-        if self.model_path and os.path.exists(self.model_path):
-            self.llm = LlamaCpp(
-                model_path=self.model_path,
-                n_gpu_layers=-1,
-                n_batch=128,
-                n_ctx=8192,
-                max_tokens=1024,
-                f16_kv=True,
-                use_mmap=False,
-                low_vram=True,
-                temperature=0.0,
-                repeat_penalty=1.0,
-                streaming=False,
-                seed=42,
-                num_threads=multiprocessing.cpu_count(),
-                verbose=False,
-            )
-        else:
-            # Fallback initialization or raise error
-            raise ValueError(f"Model path not found or invalid: {self.model_path}")
+        # Initialize LLM - Use LlamaCpp directly as in the notebook
+        if not self.model_path:
+            raise ValueError("model_path is required for LLM initialization. Please configure it in config.yaml")
+        
+        logger.info(f"Initializing LLM with model_path: {self.model_path}")
+        
+        # Get context window and related configs from config
+        context_window = self.config.get("context_window", 8192)
+        max_tokens = context_window // 8
+        
+        self.llm = LlamaCpp(
+            model_path=self.model_path,
+            n_gpu_layers=-1,
+            n_batch=512,
+            n_ctx=context_window,
+            max_tokens=max_tokens,
+            f16_kv=True,
+            use_mmap=False,
+            low_vram=False,
+            rope_scaling=None,
+            temperature=0.0,
+            repeat_penalty=1.0,
+            streaming=False,
+            stop=None,
+            seed=42,
+            num_threads=multiprocessing.cpu_count(),
+            verbose=False
+        )
+        
+        if self.llm is None:
+            raise ValueError("Failed to initialize LLM - LlamaCpp returned None")
+        
+        logger.info(f"LlamaCpp model loaded successfully")
 
         # Build and compile the agentic graph (this was missing!)
         self.graph = build_agentic_graph()
