@@ -1,41 +1,13 @@
 # ─────── Standard Library Imports ───────
-import base64  # Encoding and decoding binary def json_schema_from_type(input_type: type):
-    """
-    Convert a Python type to a basic JSON schema representation.
-    Used for MLflow input/output signatures.
-    """
-    mapping = {
-        str: {"type": "string"},
-        int: {"type": "integer"},
-        float: {"type": "number"},
-        bool: {"type": "boolean"},
-    }
-    return mapping.get(input_type, {"type": "string"})
-
-
-def get_model_path(model_name: str) -> str:
-    """
-    Get the full path to the model file using the artifacts path and model name.
-
-    Args:
-        model_name: Name of the model file or full path (will extract filename)
-
-    Returns:
-        Full path to the model file
-    """
-    # Extract just the filename if model_name contains a path
-    filename = os.path.basename(model_name)
-
-    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
-    model_path = os.path.join(artifacts_path, filename)
-
-    return model_pathlogging  # Logging utilities
+import base64  # Encoding and decoding binary data
+import logging  # Logging utilities
 import os  # Operating system interaction
 import sys  # System-specific parameters and functions
 import time  # Time-related utilities
 from functools import wraps  # Function decorators support
 
 # ─────── Third-Party Package Imports ───────
+import yaml  # YAML file parsing
 from IPython.display import (
     HTML,
     display,
@@ -157,3 +129,17 @@ def get_model_path(model_name: str) -> str:
     model_path = os.path.join(artifacts_path, filename)
 
     return model_path
+
+
+def load_config(config_path: str) -> dict:
+    """
+    Load YAML configuration file.
+
+    Args:
+        config_path: Path to the YAML configuration file
+
+    Returns:
+        Dictionary containing configuration data
+    """
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
