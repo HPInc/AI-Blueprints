@@ -174,12 +174,13 @@ class Model:
         """
         Core business logic for agentic feedback analysis.
         
-        Handles two input formats:
-        1. List of dictionaries: [{"topic": "...", "question": "...", "input_text": "..."}]
-        2. MLflow signature format: {"topic": ["..."], "question": ["..."], "input_text": ["..."]}
+        Handles three input formats:
+        1. pandas DataFrame: DataFrame with columns: topic, question, input_text
+        2. List of dictionaries: [{"topic": "...", "question": "...", "input_text": "..."}]
+        3. MLflow signature format: {"topic": ["..."], "question": ["..."], "input_text": ["..."]}
 
         Args:
-            model_input: Input data in list or dict format
+            model_input: Input data in DataFrame, list, or dict format
             params: Optional parameters
 
         Returns:
@@ -188,6 +189,10 @@ class Model:
         import pandas as pd
         import json
         from langchain.docstore.document import Document
+
+        # Handle pandas DataFrame by delegating to predict_pandas
+        if hasattr(model_input, 'iloc'):  # Check if it's a pandas DataFrame
+            return self.predict_pandas(model_input, params)
 
         # Convert input to list of dictionaries format
         if isinstance(model_input, dict):
