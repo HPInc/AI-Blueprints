@@ -86,14 +86,16 @@ class Model:
 
         # Initialize LLM - Use LlamaCpp directly as in the notebook
         if not self.model_path:
-            raise ValueError("model_path is required for LLM initialization. Please configure it in config.yaml")
-        
+            raise ValueError(
+                "model_path is required for LLM initialization. Please configure it in config.yaml"
+            )
+
         logger.info(f"Initializing LLM with model_path: {self.model_path}")
-        
+
         # Get context window and related configs from config
         context_window = self.config.get("context_window", 8192)
         max_tokens = context_window // 8
-        
+
         self.llm = LlamaCpp(
             model_path=self.model_path,
             n_gpu_layers=-1,
@@ -110,12 +112,12 @@ class Model:
             stop=None,
             seed=42,
             num_threads=multiprocessing.cpu_count(),
-            verbose=False
+            verbose=False,
         )
-        
+
         if self.llm is None:
             raise ValueError("Failed to initialize LLM - LlamaCpp returned None")
-        
+
         logger.info(f"LlamaCpp model loaded successfully")
 
         # Build and compile the agentic graph (this was missing!)
