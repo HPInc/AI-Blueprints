@@ -135,6 +135,15 @@ class Model:
             # Clean the data
             df = df.dropna(subset=['label', 'message'])
 
+            # Balance the dataset by downsampling 'ham' to match 'spam'
+            ham_msg = df[df['label'] == 'ham']
+            spam_msg = df[df['label'] == 'spam']
+            
+            ham_msg_balanced = ham_msg.sample(n=len(spam_msg), random_state=42)
+            
+            # Combine the balanced data
+            df = pd.concat([ham_msg_balanced, spam_msg]).reset_index(drop=True)
+
             # Split the data
             X_tr, X_te, y_tr, y_te = train_test_split(
                 df['message'], df['label'], test_size=0.2, random_state=42
