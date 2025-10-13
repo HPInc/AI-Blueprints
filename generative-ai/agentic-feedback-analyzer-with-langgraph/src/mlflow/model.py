@@ -173,7 +173,7 @@ class Model:
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
         Core business logic for agentic feedback analysis.
-        
+
         Args:
             model_input: DataFrame with columns: topic, question, input_text
             params: Optional parameters
@@ -183,9 +183,9 @@ class Model:
         """
         import json
         from langchain.docstore.document import Document
-        
+
         results = []
-        
+
         # Process each row in the DataFrame
         for _, row in model_input.iterrows():
             topic = row.get("topic", "")
@@ -221,6 +221,6 @@ class Model:
                         "messages": json.dumps([], indent=4),
                     }
                 )
-        
+
         # Return results as DataFrame
         return pd.DataFrame(results)
