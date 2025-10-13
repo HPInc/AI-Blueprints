@@ -129,7 +129,7 @@ class Model:
         Supports both DataFrame and List[AgenticModelInput] for compatibility.
 
         Args:
-            model_input: pandas.DataFrame with columns (topic, question, input_text) 
+            model_input: pandas.DataFrame with columns (topic, question, input_text)
                         OR List[AgenticModelInput]
             params: Optional parameters
 
