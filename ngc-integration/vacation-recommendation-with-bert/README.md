@@ -1,4 +1,4 @@
-# 🌍 Vacation Recommendation Service
+# 🌍 Vacation Recommendation with BERT
 
 <div align="center">
 
@@ -110,14 +110,14 @@ Run the following notebook to generate word embeddings and save the tokenizer:
 
 The model here can also be exported in ONNX format alongside the MLflow pyfunc format. For more details, please refer to the ONNX-README in the docs folder.
 
-### Step 3: Launch the Streamlit UI
+### Step 3: Launch the Streamlit Web App
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the demo/streamlit-webapp folder.
-2. Navigate to the shown URL and view the vacation recommendation.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-### Successful Demonstration of the User Interface
+### Streamlit Preview
 
-![Vacation Recommendation Demo UI](docs/html-ui-vacation-recommendation.png)
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
 ---
 

@@ -10,14 +10,13 @@ from pathlib import Path
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Text Generation with RNN",
-    page_icon = "📝",
-    layout="centered"
+    page_title="Text Generation with RNN", page_icon="📝", layout="centered"
 )
 
 # --- Custom Styling ---
 
-st.markdown("""
+st.markdown(
+    """
     <style>
         .block-container {
             padding-top: 0 !important;
@@ -56,32 +55,45 @@ st.markdown("""
 }
 
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Logo ---
 
+
 def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
 
 assets = Path("assets")
 hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
     <div style="display:flex;justify-content:space-between;
                 align-items:center;margin-bottom:1.5rem">
         <img src="{hp_uri}"  alt="HP Logo" style="width:90px;height:auto;">
         <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
         <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
     </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # ─────────────────────────────────────────────────────────────
-# Header 
+# Header
 # ─────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generation with RNN</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generation with RNN</h1>",
+    unsafe_allow_html=True,
+)
 
 # ─────────────────────────────────────────────────────────────
 # 1 ▸ MLflow API Configuration
@@ -90,22 +102,19 @@ st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🪶 Text Generatio
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 api_url = MLFLOW_ENDPOINT
 
-    
+
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – data input
 # ─────────────────────────────────────────────────────────────
-initial_word = st.text_input(
-    "Choose a initial word:"
-)
+initial_word = st.text_input("Choose a initial word:")
 
 
 text_size = st.number_input(
     "Choose a size:",
     min_value=1,  # Optional: set a minimum value
     step=1,  # Ensures only integers can be selected
-    format="%d"  # Displays the number as an integer
+    format="%d",  # Displays the number as an integer
 )
-
 
 
 # ─────────────────────────────────────────────────────────────
@@ -116,12 +125,7 @@ if st.button("Get generated text"):
         st.warning("⚠️ Please fill all the fields")
     else:
         with st.spinner("Generating text..."):
-            payload = {
-                "inputs": {
-                    "initial_word": [initial_word],
-                    "size": [text_size]
-                }
-            }
+            payload = {"inputs": {"initial_word": [initial_word], "size": [text_size]}}
             try:
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
@@ -130,7 +134,9 @@ if st.button("Get generated text"):
 
                 if gen_text:
                     st.success("✅ Here is your generated text!")
-                    st.text_area("Generated Text", value=gen_text, disabled=True, height=300)
+                    st.text_area(
+                        "Generated Text", value=gen_text, disabled=True, height=300
+                    )
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
             except requests.exceptions.RequestException as e:
@@ -141,8 +147,8 @@ if st.button("Get generated text"):
 # 4 ▸ Footer
 # ─────────────────────────────────────────────────────────────
 st.markdown(
-"""
+    """
 > Built with ❤️ using HP AI Studio
 """,
-unsafe_allow_html=True,
+    unsafe_allow_html=True,
 )

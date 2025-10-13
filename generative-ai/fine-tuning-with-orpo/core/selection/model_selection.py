@@ -46,10 +46,10 @@ class ModelSelector:
             "google/gemma-3-1b-it",
             "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         ]
-        
+
         # Set up model environment (HF cache, etc.)
         setup_model_environment()
-        
+
         self.base_local_dir = str(get_models_dir())
         self.model_id: str | None = None
         self.model = None
@@ -58,16 +58,12 @@ class ModelSelector:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger("ModelSelector")
 
-    
-
     def log(self, message: str):
         self.logger.info(f"[ModelSelector] {message}")
 
     def format_model_path(self, model_id: str) -> str:
         """Converts a repo ID into a local directory name using centralized utility."""
         return str(format_model_path(model_id))
-
-  
 
     def select_model(self, model_id: str):
         """Downloads, carrega e valida o modelo escolhido."""
@@ -91,7 +87,7 @@ class ModelSelector:
         try:
             # Ensure the directory exists
             model_path.mkdir(parents=True, exist_ok=True)
-            
+
             snapshot_download(
                 repo_id=self.model_id,
                 local_dir=str(model_path),
@@ -104,7 +100,7 @@ class ModelSelector:
             if e.response.status_code == 401:
                 raise ModelAccessException(
                     self.model_id,
-                    "You need to be authenticated and have access permission."
+                    "You need to be authenticated and have access permission.",
                 )
             elif e.response.status_code == 403:
                 raise ModelAccessException(self.model_id)
@@ -130,11 +126,8 @@ class ModelSelector:
         """Checks if the model supports ORPO/chat-template usage."""
         self.log("Checking model for ORPO compatibility...")
         if getattr(self.tokenizer, "chat_template", None) is None:
-            raise ValueError(
-                f"The model '{self.model_id}' is missing a chat_template."
-            )
+            raise ValueError(f"The model '{self.model_id}' is missing a chat_template.")
         self.log(f"✅ Model '{self.model_id}' is ORPO-compatible.")
-
 
     def get_model(self):
         return self.model
