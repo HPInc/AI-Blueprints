@@ -76,7 +76,7 @@ def _load_pyfunc(data_path: str):
     # Initialize Model
     try:
         model = Model(
-            config=config, docs_path=docs_path, secrets=secrets, model_path=model_path
+            config=config, docs_path=docs_path, model_path=model_path
         )
         logger.info("Model initialized successfully")
         return model
