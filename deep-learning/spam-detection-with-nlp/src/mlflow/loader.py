@@ -47,7 +47,18 @@ def _load_pyfunc(data_path: str):
     # Set up NLTK data path
     nltk_data_path = os.path.join(data_path, "nltk_data")
     if not os.path.exists(nltk_data_path):
-        raise FileNotFoundError(f"NLTK data directory not found at: {nltk_data_path}")
+        # If NLTK data is missing, create minimal structure with fallback
+        logger.warning(f"NLTK data directory not found at: {nltk_data_path}. Creating fallback.")
+        os.makedirs(nltk_data_path, exist_ok=True)
+        
+        # Import nltk here to avoid circular imports
+        import nltk
+        try:
+            # Try to download stopwords to the missing directory
+            nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
+            logger.info(f"Downloaded NLTK stopwords to: {nltk_data_path}")
+        except Exception as e:
+            logger.warning(f"Failed to download NLTK data: {e}. Model will try to use default NLTK path.")
     
     # Initialize Model
     try:

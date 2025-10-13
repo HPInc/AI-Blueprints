@@ -61,12 +61,22 @@ class Model:
         try:
             # Ensure NLTK data directory exists and is properly configured
             nltk_dir = os.path.abspath(self.nltk_data_path)
-            nltk.data.path = [nltk_dir]
+            
+            # Add our custom path to the beginning of NLTK data paths
+            if nltk_dir not in nltk.data.path:
+                nltk.data.path.insert(0, nltk_dir)
             os.environ['NLTK_DATA'] = nltk_dir
             
             # Ensure stopwords are available
             self._ensure_local_stopwords(nltk_dir)
-            self.stop_words = set(stopwords.words('english'))
+            
+            # Try to load stopwords, with fallback to default NLTK path
+            try:
+                self.stop_words = set(stopwords.words('english'))
+            except LookupError:
+                logger.warning("Stopwords not found in custom path, trying to download to default location")
+                nltk.download('stopwords', quiet=True)
+                self.stop_words = set(stopwords.words('english'))
             
         except Exception as e:
             logger.error(f"Error setting up NLTK: {str(e)}")
@@ -83,7 +93,13 @@ class Model:
         if not sw_file.exists():
             sw_file.parent.mkdir(parents=True, exist_ok=True)
             logger.info("⬇️ Downloading stopwords to %s ...", base_dir)
-            nltk.download('stopwords', download_dir=base_dir, quiet=True, raise_on_error=True)
+            try:
+                nltk.download('stopwords', download_dir=base_dir, quiet=True, raise_on_error=True)
+            except Exception as e:
+                logger.warning(f"Failed to download stopwords to custom path: {e}")
+                # Fallback: try downloading to default NLTK path
+                logger.info("Trying to download stopwords to default NLTK path...")
+                nltk.download('stopwords', quiet=True)
 
     def preprocess(self, text: str) -> List[str]:
         """
