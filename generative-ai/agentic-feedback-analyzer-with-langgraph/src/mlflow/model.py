@@ -171,20 +171,45 @@ class Model:
     def predict(self, model_input, params=None):
         """
         Core business logic for agentic feedback analysis.
+        
+        Handles two input formats:
+        1. List of dictionaries: [{"topic": "...", "question": "...", "input_text": "..."}]
+        2. MLflow signature format: {"topic": ["..."], "question": ["..."], "input_text": ["..."]}
 
         Args:
-            model_input: List of dictionaries with topic, question, input_text
+            model_input: Input data in list or dict format
             params: Optional parameters
 
         Returns:
-            List of prediction results
+            pandas.DataFrame with columns: answer, messages
         """
         import pandas as pd
         import json
         from langchain.docstore.document import Document
 
+        # Convert input to list of dictionaries format
+        if isinstance(model_input, dict):
+            # MLflow signature format: {"column": [values]}
+            topics = model_input.get("topic", [])
+            questions = model_input.get("question", [])
+            input_texts = model_input.get("input_text", [])
+            
+            # Convert to list of dicts
+            input_list = []
+            for i in range(len(topics)):
+                input_list.append({
+                    "topic": topics[i] if i < len(topics) else "",
+                    "question": questions[i] if i < len(questions) else "",
+                    "input_text": input_texts[i] if i < len(input_texts) else ""
+                })
+        elif isinstance(model_input, list):
+            # Already in list format
+            input_list = model_input
+        else:
+            raise ValueError(f"Unsupported input type: {type(model_input)}")
+
         results = []
-        for input_data in model_input:
+        for input_data in input_list:
             topic = input_data.get("topic", "")
             question = input_data.get("question", "")
             input_text = input_data.get("input_text", "")
@@ -219,7 +244,8 @@ class Model:
                     }
                 )
 
-        return results
+        # Convert results to DataFrame for MLflow compatibility
+        return pd.DataFrame(results)
 
     def predict_pandas(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
