@@ -191,7 +191,7 @@ class Model:
         from langchain.docstore.document import Document
 
         # Handle pandas DataFrame by delegating to predict_pandas
-        if hasattr(model_input, 'iloc'):  # Check if it's a pandas DataFrame
+        if hasattr(model_input, "iloc"):  # Check if it's a pandas DataFrame
             return self.predict_pandas(model_input, params)
 
         # Convert input to list of dictionaries format
