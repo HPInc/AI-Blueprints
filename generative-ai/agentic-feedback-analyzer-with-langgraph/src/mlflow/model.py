@@ -170,58 +170,27 @@ class Model:
                 except Exception as e:
                     print(f"Failed to load {file_path.name}: {e}")
 
-    def predict(self, model_input, params=None):
+    def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
         Core business logic for agentic feedback analysis.
-
-        Handles three input formats:
-        1. pandas DataFrame: DataFrame with columns: topic, question, input_text
-        2. List of dictionaries: [{"topic": "...", "question": "...", "input_text": "..."}]
-        3. MLflow signature format: {"topic": ["..."], "question": ["..."], "input_text": ["..."]}
-
+        
         Args:
-            model_input: Input data in DataFrame, list, or dict format
+            model_input: DataFrame with columns: topic, question, input_text
             params: Optional parameters
 
         Returns:
             pandas.DataFrame with columns: answer, messages
         """
-        import pandas as pd
         import json
         from langchain.docstore.document import Document
-
-        # Handle pandas DataFrame by delegating to predict_pandas
-        if hasattr(model_input, 'iloc'):  # Check if it's a pandas DataFrame
-            return self.predict_pandas(model_input, params)
-
-        # Convert input to list of dictionaries format
-        if isinstance(model_input, dict):
-            # MLflow signature format: {"column": [values]}
-            topics = model_input.get("topic", [])
-            questions = model_input.get("question", [])
-            input_texts = model_input.get("input_text", [])
-
-            # Convert to list of dicts
-            input_list = []
-            for i in range(len(topics)):
-                input_list.append(
-                    {
-                        "topic": topics[i] if i < len(topics) else "",
-                        "question": questions[i] if i < len(questions) else "",
-                        "input_text": input_texts[i] if i < len(input_texts) else "",
-                    }
-                )
-        elif isinstance(model_input, list):
-            # Already in list format
-            input_list = model_input
-        else:
-            raise ValueError(f"Unsupported input type: {type(model_input)}")
-
+        
         results = []
-        for input_data in input_list:
-            topic = input_data.get("topic", "")
-            question = input_data.get("question", "")
-            input_text = input_data.get("input_text", "")
+        
+        # Process each row in the DataFrame
+        for _, row in model_input.iterrows():
+            topic = row.get("topic", "")
+            question = row.get("question", "")
+            input_text = row.get("input_text", "")
 
             # Create document from input text
             docs = [Document(page_content=input_text)]
@@ -252,41 +221,6 @@ class Model:
                         "messages": json.dumps([], indent=4),
                     }
                 )
-
-        # Convert results to DataFrame for MLflow compatibility
+        
+        # Return results as DataFrame
         return pd.DataFrame(results)
-
-    def predict_pandas(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
-        """
-        Pandas DataFrame interface for compatibility with MLflow expectations.
-        Converts DataFrame to/from list of model input/output objects.
-
-        Args:
-            model_input: DataFrame with columns: topic, question, input_text
-            params: Optional parameters
-
-        Returns:
-            DataFrame with columns: answer, messages
-        """
-        # Convert DataFrame to list of input objects
-        input_list = []
-        for _, row in model_input.iterrows():
-            input_list.append(
-                {
-                    "topic": row["topic"],
-                    "question": row["question"],
-                    "input_text": row["input_text"],
-                }
-            )
-
-        # Get predictions
-        output_list = self.predict(input_list, params)
-
-        # Convert back to DataFrame
-        result_data = []
-        for output in output_list:
-            result_data.append(
-                {"answer": output["answer"], "messages": output["messages"]}
-            )
-
-        return pd.DataFrame(result_data)
