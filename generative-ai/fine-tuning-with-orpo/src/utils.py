@@ -71,6 +71,7 @@ def format_model_path(model_id: str) -> Path:
     """Convert a HuggingFace model ID to a local path"""
     return get_models_dir() / model_id.replace("/", "__")
 
+
 def get_model_path(model_name: str) -> str:
     """
     Get the full path to the model file using the artifacts path and model name.
@@ -88,6 +89,7 @@ def get_model_path(model_name: str) -> str:
     model_path = os.path.join(artifacts_path, filename)
 
     return model_path
+
 
 def setup_model_environment():
     """Setup model-related environment variables for the project"""

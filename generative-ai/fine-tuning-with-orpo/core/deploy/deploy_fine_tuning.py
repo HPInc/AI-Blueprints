@@ -403,10 +403,10 @@ def register_llm_comparison_model(
 ):
     """
     Register an adaptive LLM comparison model with MLflow.
-    
+
     This model automatically adapts to memory constraints and available hardware,
     providing robust deployment across different environments.
-    
+
     Args:
         model_base_path: Path to base model (can be relative to project)
         model_finetuned_path: Path to fine-tuned model (can be relative to project)
@@ -415,47 +415,48 @@ def register_llm_comparison_model(
         registry_name: Model registry name
         config_path: Path to configuration file (default: ../configs/config.yaml)
     """
+
     # Validate and resolve paths
     def resolve_model_path(path_str: str) -> str:
         """Resolve model path, making it project-relative if needed."""
         path = Path(path_str)
-        
+
         # If absolute path and exists, use as-is
         if path.is_absolute() and path.exists():
             return str(path)
-            
+
         # If relative path, try to resolve relative to project directories
         project_root = get_project_root()
-        
+
         # Try models directory
         models_path = get_models_dir() / path_str
         if models_path.exists():
             return str(models_path)
-            
+
         # Try fine-tuned models directory
         ft_path = get_fine_tuned_models_dir() / path_str
         if ft_path.exists():
             return str(ft_path)
-            
+
         # Try relative to project root
         root_path = project_root / path_str
         if root_path.exists():
             return str(root_path)
-            
+
         # If it's a HuggingFace model ID, return as-is
         if "/" in path_str and not path_str.startswith("../"):
             return path_str
-            
+
         # Return original path and let downstream handle the error
         logging.warning(f"Could not resolve model path: {path_str}")
         return path_str
-    
+
     resolved_base_path = resolve_model_path(model_base_path)
     resolved_ft_path = resolve_model_path(model_finetuned_path)
-    
+
     logging.info(f"Resolved base model path: {resolved_base_path}")
     logging.info(f"Resolved fine-tuned model path: {resolved_ft_path}")
-    
+
     core = Path(__file__).resolve().parent.parent
     src = core.parent / "src"
     (core / "__init__.py").touch(exist_ok=True)
@@ -466,7 +467,7 @@ def register_llm_comparison_model(
         signature = ModelSignature(
             inputs=Schema(
                 [
-                    ColSpec("string",  "prompt"),
+                    ColSpec("string", "prompt"),
                     ColSpec("boolean", "use_finetuning"),
                     ColSpec("integer", "max_tokens"),
                 ]
@@ -479,9 +480,9 @@ def register_llm_comparison_model(
             python_model=LLMComparisonModel(),
             artifacts={
                 "model_no_finetuning": resolved_base_path,
-                "finetuned_model":     resolved_ft_path,
+                "finetuned_model": resolved_ft_path,
                 "config": str(Path(config_path).resolve()),
-                "demo":str(Path(demo_folder))
+                "demo": str(Path(demo_folder)),
             },
             signature=signature,
             code_paths=[str(core), str(src)],
@@ -492,4 +493,8 @@ def register_llm_comparison_model(
             model_uri=f"runs:/{run.info.run_id}/llm_serving_model",
             name=registry_name,
         )
-        logging.info("✅ Adaptive LLM comparison model registered as `%s` (run %s)", registry_name, run.info.run_id)
+        logging.info(
+            "✅ Adaptive LLM comparison model registered as `%s` (run %s)",
+            registry_name,
+            run.info.run_id,
+        )

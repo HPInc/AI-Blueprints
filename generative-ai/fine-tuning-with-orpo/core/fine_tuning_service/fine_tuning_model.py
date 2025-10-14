@@ -40,11 +40,11 @@ class FineTuningModel:
     Standalone fine-tuning comparison model class with no MLflow inheritance.
     Handles adaptive LLM comparison between base and fine-tuned models.
     """
-    
+
     def __init__(self, config: dict, base_model_path: str, finetuned_model_path: str):
         """
         Initialize the FineTuningModel with configuration and model paths.
-        
+
         Args:
             config: Model configuration dictionary
             base_model_path: Path to base model (local path or HF model ID)
@@ -53,19 +53,19 @@ class FineTuningModel:
         self.model_config = config
         self.base_src = base_model_path
         self.ft_src = finetuned_model_path
-        
+
         # Adaptive device selection
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
         # Model state management
         self.current_model = None
         self.current_tokenizer = None
         self.current_model_type = None
-        
+
         # Pre-cache tokenizers (small memory footprint)
         try:
             self.base_tokenizer = self._load_tokenizer(self.base_src)
-            
+
             # Determine fine-tuned model type and tokenizer
             ft_path = self._as_path(self.ft_src)
             if ft_path.exists() and ft_path.is_dir():
@@ -81,18 +81,28 @@ class FineTuningModel:
                     # Fallback: assume it's a complete model if it has config.json
                     config_exists = (ft_path / "config.json").exists()
                     self.ft_is_lora = not config_exists
-                    self.ft_tokenizer = self._load_tokenizer(self.ft_src) if config_exists else self.base_tokenizer
-                    logger.warning(f"🔍 Model type unclear, assuming {'LoRA' if self.ft_is_lora else 'complete'} based on config.json presence")
+                    self.ft_tokenizer = (
+                        self._load_tokenizer(self.ft_src)
+                        if config_exists
+                        else self.base_tokenizer
+                    )
+                    logger.warning(
+                        f"🔍 Model type unclear, assuming {'LoRA' if self.ft_is_lora else 'complete'} based on config.json presence"
+                    )
             else:
                 # Assume it's a HuggingFace model ID
                 self.ft_is_lora = False
                 self.ft_tokenizer = self._load_tokenizer(self.ft_src)
                 logger.info("🔍 Assuming HuggingFace model ID")
-                
-            logger.info("🚀 Adaptive model system initialized. Models will be loaded on-demand.")
+
+            logger.info(
+                "🚀 Adaptive model system initialized. Models will be loaded on-demand."
+            )
             logger.info(f"📊 Using device: {self.device}, LoRA mode: {self.ft_is_lora}")
         except Exception as e:
-            logger.warning(f"⚠️ Model type detection failed: {e}. Will determine type during loading.")
+            logger.warning(
+                f"⚠️ Model type detection failed: {e}. Will determine type during loading."
+            )
             self.base_tokenizer = None
             self.ft_tokenizer = None
             self.ft_is_lora = None
@@ -100,47 +110,49 @@ class FineTuningModel:
     def _dir_has_full_weights(self, path: Path) -> bool:
         """
         Check if a directory contains a complete model (full weights) rather than LoRA adapters.
-        
+
         Returns True if:
         1. Contains pytorch_model*.bin or model*.safetensors files (standard model weights)
         2. Contains config.json but NOT adapter_config.json (indicates complete model)
         3. Has model.safetensors (common single-file format)
-        
+
         Returns False if:
         1. Contains adapter_config.json (indicates LoRA adapters)
         2. No weight files found
         """
         if not path.is_dir():
             return False
-        
+
         files = [p.name for p in path.iterdir() if p.is_file()]
-        
+
         # If adapter_config.json exists, it's definitely LoRA adapters
         if "adapter_config.json" in files:
             return False
-        
+
         # Check for standard model weight files
         has_model_weights = any(_FULL_WT_RGX.match(fname) for fname in files)
         if has_model_weights:
             return True
-        
+
         # Check for single-file model formats
         if "model.safetensors" in files or "pytorch_model.bin" in files:
             return True
-        
+
         # If config.json exists without adapter_config.json, likely a complete model
         if "config.json" in files and "adapter_config.json" not in files:
             # Additional check: look for any .safetensors or .bin files
-            has_weight_files = any(fname.endswith(('.safetensors', '.bin')) for fname in files)
+            has_weight_files = any(
+                fname.endswith((".safetensors", ".bin")) for fname in files
+            )
             return has_weight_files
-        
+
         return False
 
     def _is_lora_adapter_dir(self, path: Path) -> bool:
         """Check if a directory contains LoRA adapters."""
         if not path.is_dir():
             return False
-        
+
         files = [p.name for p in path.iterdir() if p.is_file()]
         return "adapter_config.json" in files
 
@@ -164,43 +176,49 @@ class FineTuningModel:
     ):
         """Load model with adaptive memory optimization."""
         p = self._as_path(src)
-        
+
         # Adaptive memory optimization based on available memory and device
         is_cuda = torch.cuda.is_available() and device in ["cuda", "auto"]
-        
+
         # Memory optimization kwargs
         model_kwargs = {
             "low_cpu_mem_usage": True,
             "trust_remote_code": trust_remote,
         }
-        
+
         # Adaptive torch_dtype
         if dtype == "auto":
             model_kwargs["torch_dtype"] = torch.float16 if is_cuda else torch.float32
         else:
             model_kwargs["torch_dtype"] = dtype
-        
+
         # Adaptive device mapping for memory efficiency
         if device == "auto":
             if is_cuda:
-                model_kwargs["device_map"] = "auto"  # Let transformers handle device placement
+                model_kwargs["device_map"] = (
+                    "auto"  # Let transformers handle device placement
+                )
             else:
                 model_kwargs["device_map"] = None
         elif device == "cuda" and is_cuda:
             model_kwargs["device_map"] = "auto"
-        
+
         if p.exists():
             model = AutoModelForCausalLM.from_pretrained(str(p), **model_kwargs)
         else:
             hub_id = str(src).replace("__", "/")
-            logger.info("🌐 Downloading from Hub with adaptive optimization: %s", hub_id)
+            logger.info(
+                "🌐 Downloading from Hub with adaptive optimization: %s", hub_id
+            )
             model = AutoModelForCausalLM.from_pretrained(hub_id, **model_kwargs)
-        
+
         # Only explicitly move to device if device_map wasn't used
         if "device_map" not in model_kwargs or model_kwargs["device_map"] is None:
-            target_device = device if device != "auto" else ("cuda" if is_cuda else "cpu")
+            target_device = (
+                device if device != "auto" else ("cuda" if is_cuda else "cpu")
+            )
             model = model.to(target_device)
-        
+
         return model
 
     def _clear_model_memory(self):
@@ -209,29 +227,30 @@ class FineTuningModel:
             del self.current_model
             self.current_model = None
             self.current_model_type = None
-            
+
             # Clear PyTorch cache
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.synchronize()
-            
+
             # Force garbage collection for memory-constrained environments
             import gc
+
             gc.collect()
-            
+
             logger.info("🧹 Model memory cleared with adaptive cleanup")
 
     def _load_model_on_demand(self, use_ft: bool):
         """Load the requested model only when needed, with adaptive memory management."""
         target_type = "ft" if use_ft else "base"
-        
+
         # Return early if correct model is already loaded
         if self.current_model_type == target_type and self.current_model is not None:
             return
-        
+
         # Clear current model from memory first
         self._clear_model_memory()
-        
+
         # Load the requested model with adaptive optimization
         try:
             if use_ft:
@@ -241,21 +260,29 @@ class FineTuningModel:
                     if self.ft_is_lora is None:
                         is_lora = self._is_lora_adapter_dir(ft_path)
                         has_full_weights = self._dir_has_full_weights(ft_path)
-                        logger.info(f"🔍 Dynamic detection: LoRA={is_lora}, Full weights={has_full_weights}")
+                        logger.info(
+                            f"🔍 Dynamic detection: LoRA={is_lora}, Full weights={has_full_weights}"
+                        )
                     else:
                         is_lora = self.ft_is_lora
                         has_full_weights = not is_lora
-                    
+
                     if has_full_weights and not is_lora:
                         logger.info("🟢 Loading fine-tuned complete checkpoint")
-                        self.current_tokenizer = self.ft_tokenizer or self._load_tokenizer(ft_path)
-                        self.current_model = self._load_model(ft_path, device="auto").eval()
+                        self.current_tokenizer = (
+                            self.ft_tokenizer or self._load_tokenizer(ft_path)
+                        )
+                        self.current_model = self._load_model(
+                            ft_path, device="auto"
+                        ).eval()
                     elif is_lora:
                         logger.info("🟠 Loading fine-tuned LoRA adapter")
                         # Load base model for LoRA merging
-                        base_tokenizer = self.base_tokenizer or self._load_tokenizer(self.base_src)
+                        base_tokenizer = self.base_tokenizer or self._load_tokenizer(
+                            self.base_src
+                        )
                         base_model = self._load_model(self.base_src, device="auto")
-                        
+
                         # Apply LoRA and merge
                         self.current_model = (
                             PeftModel.from_pretrained(
@@ -265,7 +292,7 @@ class FineTuningModel:
                             .eval()
                         )
                         self.current_tokenizer = base_tokenizer
-                        
+
                         # Clean up base model immediately
                         del base_model
                         if torch.cuda.is_available():
@@ -273,15 +300,28 @@ class FineTuningModel:
                     else:
                         # Fallback: try to load as complete model first, then as LoRA
                         try:
-                            logger.info("🔄 Attempting to load as complete model (fallback)")
-                            self.current_tokenizer = self.ft_tokenizer or self._load_tokenizer(ft_path)
-                            self.current_model = self._load_model(ft_path, device="auto").eval()
+                            logger.info(
+                                "🔄 Attempting to load as complete model (fallback)"
+                            )
+                            self.current_tokenizer = (
+                                self.ft_tokenizer or self._load_tokenizer(ft_path)
+                            )
+                            self.current_model = self._load_model(
+                                ft_path, device="auto"
+                            ).eval()
                         except Exception as complete_error:
-                            logger.warning(f"⚠️ Failed to load as complete model: {complete_error}")
-                            logger.info("🔄 Attempting to load as LoRA adapter (fallback)")
-                            base_tokenizer = self.base_tokenizer or self._load_tokenizer(self.base_src)
+                            logger.warning(
+                                f"⚠️ Failed to load as complete model: {complete_error}"
+                            )
+                            logger.info(
+                                "🔄 Attempting to load as LoRA adapter (fallback)"
+                            )
+                            base_tokenizer = (
+                                self.base_tokenizer
+                                or self._load_tokenizer(self.base_src)
+                            )
                             base_model = self._load_model(self.base_src, device="auto")
-                            
+
                             self.current_model = (
                                 PeftModel.from_pretrained(
                                     base_model, str(ft_path), is_trainable=False
@@ -290,22 +330,30 @@ class FineTuningModel:
                                 .eval()
                             )
                             self.current_tokenizer = base_tokenizer
-                            
+
                             del base_model
                             if torch.cuda.is_available():
                                 torch.cuda.empty_cache()
                 else:
                     logger.info("🌐 Loading fine-tuned model from Hub")
-                    self.current_tokenizer = self.ft_tokenizer or self._load_tokenizer(self.ft_src)
-                    self.current_model = self._load_model(self.ft_src, device="auto").eval()
+                    self.current_tokenizer = self.ft_tokenizer or self._load_tokenizer(
+                        self.ft_src
+                    )
+                    self.current_model = self._load_model(
+                        self.ft_src, device="auto"
+                    ).eval()
             else:
                 logger.info("🔵 Loading base model")
-                self.current_tokenizer = self.base_tokenizer or self._load_tokenizer(self.base_src)
-                self.current_model = self._load_model(self.base_src, device="auto").eval()
-            
+                self.current_tokenizer = self.base_tokenizer or self._load_tokenizer(
+                    self.base_src
+                )
+                self.current_model = self._load_model(
+                    self.base_src, device="auto"
+                ).eval()
+
             self.current_model_type = target_type
             logger.info(f"✅ {target_type.upper()} model loaded successfully")
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to load {target_type} model: {str(e)}")
             self._clear_model_memory()  # Clear memory on error
@@ -315,17 +363,17 @@ class FineTuningModel:
         """
         Adaptive prediction with memory and performance optimization.
         Must return pandas.DataFrame matching original signature.
-        
+
         Args:
             model_input: Input data containing prompt, use_finetuning, max_tokens
             params: Optional parameters (unused in this implementation)
-            
+
         Returns:
             pandas.DataFrame with column: response
         """
         try:
             # Handle both DataFrame and dict inputs for backward compatibility
-            if hasattr(model_input, 'iloc'):  # DataFrame
+            if hasattr(model_input, "iloc"):  # DataFrame
                 prompt = model_input["prompt"].iloc[0]
                 use_ft = model_input["use_finetuning"].iloc[0]
                 max_tok = model_input.get("max_tokens", pd.Series([128])).iloc[0]
@@ -339,7 +387,7 @@ class FineTuningModel:
 
             # Prepare inputs with device handling
             inputs = self.current_tokenizer(prompt, return_tensors="pt")
-            
+
             # Move inputs to model device
             model_device = next(self.current_model.parameters()).device
             inputs = {k: v.to(model_device) for k, v in inputs.items()}
@@ -378,7 +426,7 @@ class FineTuningModel:
             # Decode response
             txt = self.current_tokenizer.decode(ids[0], skip_special_tokens=True)
             return pd.DataFrame({"response": [txt]})
-            
+
         except Exception as e:
             logger.error(f"Error during prediction: {str(e)}")
             self._clear_model_memory()  # Clear memory on error
