@@ -46,12 +46,12 @@ agentic-feedback-analyzer-with-langgraph/
 ├── data/                                # Feedback files (input directory)
 │   └── input/
 ├── demo/                                # UI frontend code (Streamlit)
-│   └── streamlit/                       
+│   └── streamlit/
 ├── docs/                                # Documents for UI Testing
 │   ├── Streamlit UI Page - Agentic Feedback Analyzer.pdf
 │   └── streamlit-ui-ss-agentic-feedback-analyzer.png
 ├── notebooks/                           # Workflow and MLflow notebooks
-│   ├── register-model.ipynb             
+│   ├── register-model.ipynb
 │   └── run-workflow.ipynb
 ├── requirements.txt                     # All required packages
 ├── README.md                            # Project documentation
@@ -123,14 +123,14 @@ notebooks/register-model.ipynb
 
 This registers the model so it can be queried over HTTP.
 
-### 🌐 Step 3: Launch Streamlit UI
+### Step 3: Launch the Streamlit Web App
 
-This web UI allows:
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-* Uploading feedback files
-* Entering user questions
-* Connecting to a local MLflow model endpoint
-* Viewing markdown-formatted answers
+<!-- ### Streamlit Preview
+
+![Streamlit Screenshot](docs/streamlit-ss.png) -->
 
 
 ---

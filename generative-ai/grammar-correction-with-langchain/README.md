@@ -22,7 +22,7 @@
 
 # Overview
 
-This project demonstrates how to perform English grammar correction in GitHub Markdown files using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniques to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories. 
+This project demonstrates how to perform English grammar correction in GitHub Markdown files using a local LLaMA language model and LangChain. The system uses placeholder substitution and reconstruction techniques to ensure Markdown structure is preserved during correction, making it ideal for grammar refinement in documentation and technical repositories.
 
 ---
 
@@ -41,10 +41,10 @@ This project demonstrates how to perform English grammar correction in GitHub Ma
 │   └── eval_metrics.pdf                                              # Evaluation metrics explanations
 ├── notebooks
 │   └── run-workflow.ipynb                                            # Main notebook for the project
-│   └── register-model.ipynb                                          # MLflow registration and evaluation notebook 
+│   └── register-model.ipynb                                          # MLflow registration and evaluation notebook
 ├── src
 │   └── __init__.py                                                   # Marks directory as a package
-│   └── chunker.py                                                    # Markdown chunker 
+│   └── chunker.py                                                    # Markdown chunker
 │   └── github_extractor.py                                           # GitHub markdown file extractor
 │   └── llm_metrics.py                                                # Custom MLflow evaluation metrics
 │   └── markdown_correction_service.py                                # Custom MLflow model class
@@ -62,8 +62,8 @@ This project demonstrates how to perform English grammar correction in GitHub Ma
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 32 GB  
-- **VRAM**: 12 GB  
+- **RAM**: 32 GB
+- **VRAM**: 12 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1 ▪ Create an AI Studio Project
@@ -78,10 +78,10 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### Step 3: Verify Project Files
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
-   ```  
+   ```
 2. Make sure the folder `generative-ai/english-correction-with-langchain` is present inside your workspace.
 
 ### Step 4: Add the Model to the Workspace
@@ -127,7 +127,7 @@ This will:
 - Chunk the placeholder markdown files.
 - Initialize a LLaMa model and pass all markdown chunks through it.
 - Output results into a directory.
-  
+
 ### Step 2 ▪ Run the Registration and Evaluation Notebook
 
 ```bash
@@ -138,7 +138,7 @@ This will:
 
 - Emulate processing workflow from run-workflow.ipynb
 - Register the model with MLflow.
-- Run custom evaluation metrics on the model. 
+- Run custom evaluation metrics on the model.
 
 ### Step 3 ▪ Deploy the Model
 
@@ -149,16 +149,16 @@ This will:
 5. Start the deployment.
 6. Once deployed, open the Service URL to access the Swagger API page.
 
+### Step 4: Launch the Streamlit Web App
 
-### Step 4 ▪ Launch the Streamlit UI
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-1. Follow the instructions in the README file located in the `demo\streamlit-webapp` folder.
-2. Navigate to the shown URL, upload markdown files or enter a GitHub repo URL, preview the corrected files, and download the corrected markdown files. 
+### Streamlit Preview
 
-### Successful UI Screenshots
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-- Streamlit
-  ![Grammar Correction Streamlit UI](docs/grammar-streamlit-ss.png)
+
 
 ---
 
@@ -166,7 +166,7 @@ This will:
 
 - Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting. 
+- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
 
 - Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 

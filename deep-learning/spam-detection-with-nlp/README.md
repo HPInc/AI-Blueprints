@@ -29,7 +29,7 @@ Text classification model capable of accurately distinguishing between spam and 
 
 ```
 ├── configs/
-│   └── config.yaml  
+│   └── config.yaml
 ├── docs/
 │   └── swagger-ui-spam-detection-with-nlp.pdf                    # Swagger screenshot
 │   └── swagger-ui-spam-detection-with-nlp.png                    # Swagger screenshot
@@ -42,7 +42,7 @@ Text classification model capable of accurately distinguishing between spam and 
 │   │   └── ...                                                       # Additional Streamlit files
 ├── notebooks
 │   └── register-model.ipynb                                      # Notebook for registering trained models to MLflow
-│   └── run-workflow.ipynb                                        # Notebook for executing the pipeline using custom inputs and configurations             
+│   └── run-workflow.ipynb                                        # Notebook for executing the pipeline using custom inputs and configurations
 ├── README.md                                                     # Project documentation
 │
 ├── src/
@@ -58,8 +58,8 @@ Text classification model capable of accurately distinguishing between spam and 
 
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
-- **RAM**: 16 GB  
-- **VRAM**: 4 GB  
+- **RAM**: 16 GB
+- **VRAM**: 4 GB
 - **GPU**: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project
@@ -74,7 +74,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 - Download the `tutorial_data dataset`
 
-  - **Asset Name**: `tutorial` 
+  - **Asset Name**: `tutorial`
   - **Source**: `AWS S3`
   - **S3 URI**: `s3://dsp-demo-bucket/tutorial_data/`
   - **Resource Type**: `public`
@@ -84,7 +84,7 @@ Ensure your environment meets the minimum compute requirements for smooth image 
 
 ### 4 ▪ Clone the Repository
 
-1. Clone the GitHub repository:  
+1. Clone the GitHub repository:
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
    ```

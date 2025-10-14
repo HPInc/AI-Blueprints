@@ -1,5 +1,14 @@
 <h1 style="text-align: center; font-size: 45px;"> AI Blueprint Projects for HP AI Studio 🚀 </h1>
 
+### 🚀 Explore 20+ Local AI Blueprint Projects with HP AI Studio Under 5 Minutes
+
+Get started instantly with **HP AI Studio** — run over 20 fully local AI Blueprint projects **with one click** in less than 5 minutes:
+
+* 📥 [Download HP AI Studio](https://zdocs.datascience.hp.com/downloads)
+* ✍️ [Create a free account](https://reinvent.hp.com/AI-Studio-Free-Sign-Up?jumpid=va_us_mu_mk_hc_r12139_aw_x_11824)
+
+
+
 # Content
 
 - [Overview](#overview)
@@ -8,7 +17,7 @@
 - [Deep Learning](#deep-learning)
 - [Generative AI](#generative-ai)
 - [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-integration)
-- [Troubleshooting](#troubleshooting) 
+- [Troubleshooting](#troubleshooting)
 - [Contact and Support](#contact-and-support)
 
 ---
@@ -263,10 +272,13 @@ This section provides solutions for common issues users may encounter when worki
 6. **Deployment Errors Despite Meeting Requirements**
    Even if your hardware meets the specs, limited available RAM or VRAM can cause deployment issues. Close other running workspaces or programs to free up memory.
 
-7. **API Timeout Issues**
+7. **CUDA OOM on Ubuntu despite free VRAM (VRAM fragmentation on display GPU)**
+   Linux desktop apps/compositor fragment VRAM, so a large contiguous cudaMalloc fails while Windows succeeds. To fix it, close unnecessarily running Jupyter kernels, GPU-accelerated apps or use a non-display GPU; for llama.cpp set low_vram=False, n_ubatch=16–32, n_batch=32–64 (keep n_gpu_layers=-1 for faster inference).
+
+8. **API Timeout Issues**
    API requests triggered for the local MLflow deployment in the AI Studio have a response timeout limit (approximately 4 minutes). For long-running tasks or large inputs, use the provided notebooks instead of the API to avoid timeout errors.
 
-8. **Large Datasets**
+9. **Large Datasets**
    If your dataset is too large to fit into RAM, avoid using libraries like **pandas**, which rely on eager loading. Instead, use libraries that support **lazy loading** (processing data in chunks on demand), such as **Polars** or **DuckDB**. These tools are designed to handle large-scale data more efficiently without exhausting system memory.
 
 

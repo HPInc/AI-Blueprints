@@ -78,12 +78,12 @@ st.markdown(
 
     /* ─── TEXT & NUMBER INPUTS ───────────────── */
     div[data-baseweb="input"] > div > input {
-      height: 64px !important;    
-      font-size: 20px !important;  
-     padding: 0 1rem !important;  
+      height: 64px !important;
+      font-size: 20px !important;
+     padding: 0 1rem !important;
     }
-    
-    
+
+
     /* enlarge the actual input element to fill the wrapper */
     div[data-baseweb="input"] > div > input {
       height: 100% !important;
@@ -159,25 +159,33 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
+
 
 # ────────────────  LOGO ROW ─────────────────
 def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
 
 assets = Path(__file__).resolve().parent / "assets"
 hp_uri = uri_from(assets / "HP-Logo.png")
-z_uri  = uri_from(assets / "Z-HP-logo.png")
-ais_uri= uri_from(assets / "AI-Studio.png")
+z_uri = uri_from(assets / "Z-HP-logo.png")
+ais_uri = uri_from(assets / "AI-Studio.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
       <img src="{hp_uri}"  alt="HP Logo">
       <img src="{ais_uri}" alt="AI Studio Logo">
       <img src="{z_uri}"   alt="Z by HP Logo">
     </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ────────────────  MAIN UI & INFERENCE ────────
 st.title("⏳ Two Cities Time Series Forecast")
@@ -186,7 +194,7 @@ st.write("Select a city and forecast horizon to see mobility + case forecasts.")
 # MLflow endpoint configured for deployment
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
-city  = st.selectbox("Select City", ["New York", "London"])
+city = st.selectbox("Select City", ["New York", "London"])
 steps = st.number_input("Forecast horizon (days)", 1, 90, 14, step=1)
 
 if st.button("Run Forecast"):
@@ -195,7 +203,9 @@ if st.button("Run Forecast"):
 
     try:
         with st.spinner("🔄 Calling inference endpoint…"):
-            r = requests.post(MLFLOW_ENDPOINT, json=payload, headers=hdrs, timeout=15, verify=False)
+            r = requests.post(
+                MLFLOW_ENDPOINT, json=payload, headers=hdrs, timeout=15, verify=False
+            )
             r.raise_for_status()
             data = r.json()
 
@@ -205,23 +215,28 @@ if st.button("Run Forecast"):
 
         # Table
         html = df.style.to_html()
-        st.markdown(f'<div class="forecast-table-container">{html}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="forecast-table-container">{html}</div>',
+            unsafe_allow_html=True,
+        )
 
         # Charts (Altair with custom font sizes)
-        df_reset = df.reset_index().rename(columns={"index":"day"})
+        df_reset = df.reset_index().rename(columns={"index": "day"})
         for col in df.columns:
             nice = col.replace("_forecast", "").replace("_", " ").title()
             st.subheader(f"{nice} Forecast")
 
             chart = (
                 alt.Chart(df_reset)
-                   .mark_line()
-                   .encode(
-                     x=alt.X("day:Q", axis=alt.Axis(labelFontSize=20, titleFontSize=20)),
-                     y=alt.Y(f"{col}:Q", axis=alt.Axis(labelFontSize=20, titleFontSize=20))
-                   )
-                   .properties(height=300)
-                   .configure_legend(labelFontSize=20, titleFontSize=20)
+                .mark_line()
+                .encode(
+                    x=alt.X("day:Q", axis=alt.Axis(labelFontSize=20, titleFontSize=20)),
+                    y=alt.Y(
+                        f"{col}:Q", axis=alt.Axis(labelFontSize=20, titleFontSize=20)
+                    ),
+                )
+                .properties(height=300)
+                .configure_legend(labelFontSize=20, titleFontSize=20)
             )
             st.altair_chart(chart, use_container_width=True)
 

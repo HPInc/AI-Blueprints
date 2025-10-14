@@ -4,27 +4,27 @@ import base64
 
 # ─── Page Config & Title ─────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Vanilla RAG Chatbot Interface",
-    page_icon="🤖",
-    layout="wide"
+    page_title="Vanilla RAG Chatbot Interface", page_icon="🤖", layout="wide"
 )
 
 st.markdown(
     "<h1 style='text-align:center; color:#4B8BBE;'>🔮 Vanilla RAG Chatbot Service Interface</h1>",
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 st.markdown(
     "<p style='text-align:center; color:#306998;'>Interact with your locally deployed MLflow Vanilla RAG Chatbot model.</p>",
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # ─── Sidebar with Instructions ────────────────────────────────────────────────
 with st.sidebar:
     st.header("📝 Instructions")
-    st.markdown("""
+    st.markdown(
+        """
     1. (Optional) Upload a PDF to enrich the knowledge base.
     2. Type your query and an optional prompt, then Submit.
-    """)
+    """
+    )
 
 # ─── Session State ────────────────────────────────────────────────────────────
 if "history" not in st.session_state:
@@ -40,23 +40,20 @@ with st.form("chat_form"):
     query = st.text_area(
         "💬 Your Query",
         height=150,
-        placeholder="Type what you’d like to ask the chatbot about Z by HP AI Studio..."
+        placeholder="Type what you’d like to ask the chatbot about Z by HP AI Studio...",
     )
     # custom prompt moved under query
     prompt = st.text_area(
         "✏️ Custom Prompt (optional)",
         height=80,
-        placeholder="E.g., “Answer in bullet points.”"
+        placeholder="E.g., “Answer in bullet points.”",
     )
-    uploaded_file = st.file_uploader(
-        "📄 Upload PDF (optional)",
-        type="pdf"
-    )
+    uploaded_file = st.file_uploader("📄 Upload PDF (optional)", type="pdf")
     # two buttons in separate columns
     col1, col2 = st.columns(2)
     submit = col1.form_submit_button("🚀 Submit Query")
     # there is a problem with reset functionality backend
-    #reset = col2.form_submit_button("🔄 Reset Conversation")
+    # reset = col2.form_submit_button("🔄 Reset Conversation")
     reset = None
 
 # ─── Reset Logic ─────────────────────────────────────────────────────────────
@@ -64,10 +61,8 @@ with st.form("chat_form"):
 if reset:
     try:
         payload = {
-            "dataframe_records": [
-                {"query": "", "prompt": "", "document": ""}
-            ],
-            "parameters": {"reset_history": True}
+            "dataframe_records": [{"query": "", "prompt": "", "document": ""}],
+            "parameters": {"reset_history": True},
         }
         resp = requests.post(api_url, json=payload, verify=False)
         resp.raise_for_status()
@@ -107,7 +102,11 @@ if submit:
                 result = resp.json()
 
             # extract the record
-            rec = (result.get("predictions") or result.get("dataframe_records") or result.get("data"))[0]
+            rec = (
+                result.get("predictions")
+                or result.get("dataframe_records")
+                or result.get("data")
+            )[0]
 
             # update state
             st.session_state.history = rec.get("history", [])
@@ -116,7 +115,7 @@ if submit:
             # ─── Highlighted Answer ─────────────────────────
             st.markdown(
                 "<h3 style='color:#00796B;'>🤖 Model Response</h3>",
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
             st.markdown(
                 f"""
@@ -128,7 +127,7 @@ if submit:
                     font-size:16px;
                 ">{rec.get("output", "No output returned.")}</div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
             st.divider()
