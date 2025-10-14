@@ -78,13 +78,7 @@ class Logger:
         import yaml
 
         # Create temp directory
-        temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "model_artifacts")
-
-        # Clean slate for deterministic results
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-        os.makedirs(temp_dir)
+        temp_dir = tempfile.mkdtemp(prefix="mlflow_artifacts_")
 
         try:
             logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
