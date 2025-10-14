@@ -9,7 +9,7 @@ sidebar_position: 6
 
 ### Known Issue – Pulling Models into your Project
 
-When creating a project in AI Studio, you will need to create a workspace. After creating the workspace, the assets will appear but they don't download automatically. This is because while the workspace is starting up, it does not pull down the assets. 
+When creating a project in AI Studio, you will need to create a workspace. After creating the workspace, the assets will appear but they don't download automatically. This is because while the workspace is starting up, it does not pull down the assets.
 
 ---
 To download the assets, manually click the download icon for each asset. This requires stopping the workspace, downloading the assets, and then restarting the workspace to pull the model into your project.
@@ -25,29 +25,29 @@ Follow these steps as a workaround:
 
 ### Error loading DistroEnablers
 
-#### Issue description: 
+#### Issue description:
 After upgrading, users may see an error titled "Error loading" or "Error loading DistroEnablers" while starting the app. This error occurs on versions below 1.45.5. On version 1.45.5, the error is fixed, but users may encounter the error once on this patched version.
 
 ---
 
 #### Workarounds
-Relaunch the application after upgrading to the fixed version or uninstall and reinstall the patched version is another solution. Both options fix the issue. 
+Relaunch the application after upgrading to the fixed version or uninstall and reinstall the patched version is another solution. Both options fix the issue.
 Take note that uninstalling and reinstalling without upgrading the application to the fixed version is a temporary solution, and the user will encounter the bug again when they perform another upgrade.
 
 
 
 ## 1.35.8
-- Users who can’t update their workspace(s) to bypass future PIP Installs can add the PIP install on their script explicitly as a workaround. This is especially true for Ubuntu packages installed via apt-get. 
+- Users who can’t update their workspace(s) to bypass future PIP Installs can add the PIP install on their script explicitly as a workaround. This is especially true for Ubuntu packages installed via apt-get.
 
     :::warning
     This process still takes time to execute the command each time the script is run.
-    ::: 
+    :::
 
-    Users who are only installing new python packages can alternatively create a new workspace and add all of the python packages when customizing it to alleviate the need to install them at runtime. 
+    Users who are only installing new python packages can alternatively create a new workspace and add all of the python packages when customizing it to alleviate the need to install them at runtime.
 
-- You can’t add models to a running workspace, so add any models you might find useful before you run it. 
+- You can’t add models to a running workspace, so add any models you might find useful before you run it.
 
-- When Cloning a GitHub Repository, your file path should **not** include spaces. If the repo fails to clone, check your local file path to ensure it doesn’t contain any forbidden characters. 
+- When Cloning a GitHub Repository, your file path should **not** include spaces. If the repo fails to clone, check your local file path to ensure it doesn’t contain any forbidden characters.
 
 - When a workstation hibernates, all networking connections are closed (including the one AIS has open to Jupyter Lab). The TCP connection is reestablished automatically, so it's safe for you to simply dismiss the dialog and resume working.
 
@@ -59,7 +59,7 @@ Take note that uninstalling and reinstalling without upgrading the application t
     2. You recieve a toast explaining that AI Studio is unable to fetch content.
 
     3. Experiment Data fails to sync among team members.
- 
+
     If your issue is related to an expired session, restarting AI Studio and logging back in when prompted should fix it.
 
 ## 1.18.23
@@ -71,6 +71,6 @@ Take note that uninstalling and reinstalling without upgrading the application t
 
 
 ## 1.18.21
-- WSL may time out if AI Studio is left open in the background too long, interfering with expected workspace behavior. Log out and close the application, then reopen AI Studio and log back in to reset WSL and restore normal functionality. 
+- WSL may time out if AI Studio is left open in the background too long, interfering with expected workspace behavior. Log out and close the application, then reopen AI Studio and log back in to reset WSL and restore normal functionality.
 
 - For some users, ML flow and Tensorboard take longer than expected to sync across collaborators who are working together in a shared folder. This is, in part, due to a bug with the Syncthing GUI that causes a delay before indicating that the machines are in sync with each other.

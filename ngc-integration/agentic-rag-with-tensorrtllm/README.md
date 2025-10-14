@@ -87,7 +87,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `src/` folder.
 
-- On **Windows**, the file is located at:  
+- On **Windows**, the file is located at:
   `C:\Program Files\HP\AIStudio\util\container-setup\workspace.sh`
 
 - On **Ubuntu**, replace the corresponding `workspace.sh` file in the equivalent directory.
@@ -114,7 +114,7 @@ Execute the following notebook located in the `notebooks/` folder to see the Age
 
 ### Step 2: Register the Agentic RAG Model in MLflow
 
-Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
+After running the first notebook, run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
 
 - **`register-model.ipynb`**
 

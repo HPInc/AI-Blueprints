@@ -61,14 +61,14 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         Returns:
             str: Markdown with front matter replaced by a placeholder.
         """
-        front_matter_pattern = re.compile(r'\A---\s*\n.*?\n---\s*\n?', re.DOTALL)
-        
+        front_matter_pattern = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
+
         match = front_matter_pattern.search(content)
         if match:
             front_matter_block = match.group(0)
             placeholder = get_next_placeholder(front_matter_block)
             return front_matter_pattern.sub(placeholder, content, count=1)
-        
+
         return content
 
     def protect_tables(content: str) -> str:
@@ -142,7 +142,7 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         if len(line) > 0 and (len(prose_content) / len(line)) < threshold:
             return True
         return False
-    
+
     md_content = protect_front_matter(md_content)
     md_content = protect_tables(md_content)
 
@@ -229,28 +229,28 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
         return f"[{text}]({get_next_placeholder(anchor)})"
 
     processed_lines = []
-    for line in lines:        
+    for line in lines:
         # Protect inline code first, as it can contain any character.
         line = re.sub(
             r"`([^`]+)`", lambda m: f"`{get_next_placeholder(m.group(1))}`", line
         )
-        
-        # Protect Markdown images 
+
+        # Protect Markdown images
         line = re.sub(
-            r'!\[([^\]]*)\]\(([^)]+)\)',
+            r"!\[([^\]]*)\]\(([^)]+)\)",
             lambda m: get_next_placeholder(m.group(0)),
-            line
+            line,
         )
 
         # Protect standard Markdown links []() and internal links [](#).
         line = re.sub(r"\[([^\]]+)]\(([^)]+)\)", replace_md_links, line)
         line = re.sub(r"\[([^\]]+)]\(#([^)]+)\)", replace_internal_links, line)
-        
+
         # Protect raw URLs last, as they are the most generic.
         line = re.sub(
             r"https?://[^\s)\]}]+", lambda m: get_next_placeholder(m.group(0)), line
         )
-        
+
         processed_lines.append(line)
 
     def is_title_line(content: str) -> bool:
@@ -335,6 +335,7 @@ def parse_md_for_grammar_correction(md_content: str) -> Tuple[Dict[str, str], st
     placeholder_map["SEP"] = ""
 
     return placeholder_map, processed_content
+
 
 def restore_placeholders(corrected_text: str, placeholder_map: Dict[str, str]) -> str:
     """
