@@ -1,5 +1,5 @@
 """
-Fine-Tuning Service implementation for MLflow model logging.
+Logger implementation for MLflow model logging.
 
 MLflow Registration Layer
 - Provides log_model functionality for packaging fine-tuning comparison models
@@ -19,16 +19,16 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-class FineTuningService:
+class Logger:
     """
-    Fine-Tuning Service for MLflow model logging.
+    Logger for MLflow model logging.
     This class provides the log_model functionality for packaging LLM comparison
     models that can switch between base and fine-tuned versions.
     """
 
     def __init__(self):
-        """Initialize the fine-tuning service for logging purposes."""
-        logger.info("FineTuningService initialized for MLflow model logging")
+        """Initialize the logger for logging purposes."""
+        logger.info("Logger initialized for MLflow model logging")
 
     @classmethod
     def log_model(
@@ -128,9 +128,9 @@ class FineTuningService:
             # Log model using models-from-code approach
             mlflow.pyfunc.log_model(
                 artifact_path=artifact_path,
-                loader_module="core.fine_tuning_service.fine_tuning_loader",
+                loader_module="src.mlflow.loader",
                 data_path=temp_dir,
-                code_paths=["../core", "../src"],
+                code_paths=["../src"],
                 signature=signature,
                 pip_requirements="../requirements.txt",
             )

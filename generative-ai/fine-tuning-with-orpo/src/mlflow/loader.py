@@ -1,5 +1,5 @@
 """
-MLflow models-from-code loader module for FineTuningService.
+MLflow models-from-code loader module.
 This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
 """
 
@@ -26,11 +26,11 @@ def _load_pyfunc(data_path: str):
             - demo/: Demo folder with UI components (optional)
 
     Returns:
-        FineTuningModel: Initialized model instance ready for prediction
+        Model: Initialized model instance ready for prediction
     """
-    from core.fine_tuning_service.fine_tuning_model import FineTuningModel
+    from src.mlflow.model import Model
 
-    logger.info(f"Loading FineTuningModel from artifacts at: {data_path}")
+    logger.info(f"Loading Model from artifacts at: {data_path}")
 
     # Helper function to load config
     def load_config(config_path: str) -> dict:
@@ -100,15 +100,15 @@ def _load_pyfunc(data_path: str):
     logger.info(f"Resolved base model path: {base_model_path}")
     logger.info(f"Resolved fine-tuned model path: {finetuned_model_path}")
 
-    # Initialize FineTuningModel
+    # Initialize Model
     try:
-        fine_tuning_model = FineTuningModel(
+        model = Model(
             config=config,
             base_model_path=base_model_path,
             finetuned_model_path=finetuned_model_path,
         )
-        logger.info("FineTuningModel initialized successfully")
-        return fine_tuning_model
+        logger.info("Model initialized successfully")
+        return model
     except Exception as e:
-        logger.error(f"Failed to initialize FineTuningModel: {str(e)}")
+        logger.error(f"Failed to initialize Model: {str(e)}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e

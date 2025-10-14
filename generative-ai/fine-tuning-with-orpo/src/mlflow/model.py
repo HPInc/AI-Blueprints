@@ -1,5 +1,5 @@
 """
-Standalone FineTuningModel class.
+Standalone Model class.
 
 Business Logic Layer
 - Handles LLM comparison between base and fine-tuned models
@@ -35,7 +35,7 @@ logging.basicConfig(
 _FULL_WT_RGX = re.compile(r"^(pytorch_model|model)(-\d+)?\.(bin|safetensors)$")
 
 
-class FineTuningModel:
+class Model:
     """
     Standalone fine-tuning comparison model class with no MLflow inheritance.
     Handles adaptive LLM comparison between base and fine-tuned models.
@@ -43,7 +43,7 @@ class FineTuningModel:
 
     def __init__(self, config: dict, base_model_path: str, finetuned_model_path: str):
         """
-        Initialize the FineTuningModel with configuration and model paths.
+        Initialize the Model with configuration and model paths.
 
         Args:
             config: Model configuration dictionary
