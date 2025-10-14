@@ -7,4 +7,3 @@ llama-cpp-python
 sentence-transformers
 gitpython
 pyyaml
-

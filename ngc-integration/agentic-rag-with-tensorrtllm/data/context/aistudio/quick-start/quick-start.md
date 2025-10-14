@@ -32,7 +32,7 @@ AI Studio tackles these issues head-on. It’s an enterprise-grade platform desi
 - Win OS requires Windows Subsystem for Linux (WSL). AIS installs WSL if not present.
 
 - Git is required for github cloning, but not a requirement to use the app.
-Git Repository Path - 
+Git Repository Path -
 https://github.com/HPInc/aistudio-samples.git
 
 
@@ -59,9 +59,9 @@ https://github.com/HPInc/aistudio-samples.git
 - **[Create Project](/docs/aistudio/using-aistudio/projects/navigating.md)**: From the Projects page, click on **New Project**.
 
     - Add a description, tags, and decide if the project should be shared or private.
-    
+
     - Point to a Github repo for code management (optional).
-    
+
     - Point to data repositories (optional). You can add data anytime.
 
         :::note
@@ -69,27 +69,27 @@ https://github.com/HPInc/aistudio-samples.git
         :::
 
     - Search for and get NVIDIA NGC GPU optimized pre-trained models (optional).
-    
+
     - Define your workspace:
-        
+
         - Use a base image.
 
             OR
 
         - Search for NVIDIA NGC GPU optimized containers and frameworks.
-        
+
 - **[Create a Custom Workspace](/docs/aistudio/using-aistudio/workspaces/custom-workspace.md)**: Before creating the project, you can add additional pip packages and libraries to the base images. To do this click **Add Custom Libraries** under the workspace name and either type the package name and version or upload a requirements.txt file.
-    
+
 - **[Configure Notebooks](/docs/aistudio/using-aistudio/workspaces/reusing-workspace.md)**: After you create your project the workspace will start, pull in your assets, and let you use them directly in the notebook.
-    
+
 - **[Metrics](/docs/aistudio/using-aistudio/monitoring.md)**: AIS has MLFlow (PyTorch) and Tensorboard (Tensorflow) built-in. Include hooks in your code to collect, track, and visualize model metrics. To view, navigate to the **Monitor** tab.
-    
+
 - **[Register a Model](/docs/aistudio/using-aistudio/model-deployment/register-model-scikit-learn.md)**: AIS uses MLFlow model registry for version control and to store models. To save a model to an MLFlow model registry, include MLFlow hooks in your code.
-    
+
 - **[Deploy](/docs/aistudio/using-aistudio/model-deployment/model-deployment-overview.md)**: AIS can locally deploy models registered to MLFlow using the Swagger API. Make sure you registered your model to MLFlow, then navigate to Published Services and deploy a model following the steps. Once published, click the play button to preview for local inference.
-    
+
 - **[Jobs](/docs/aistudio/using-aistudio/jobs/new-job.md)**: Once your model is complete, you can schedule local jobs to work at specific times and routines. Navigate to the ***Overview*** page in a project and click on **New Job.
-    
+
 Visit the [other guides on zDocs](/docs/aistudio/overview.md) for use cases, step-by-step guides, and additional information on AI Studio.
 
 ### (EAP Users Only) Activate, Download, and Install AI Studio
@@ -160,9 +160,9 @@ Before proceeding with this tutorial, ensure you have sufficient disk space, as 
 
     :::tip
 
-    NeMo™, which stands for "Neural Modules," by NVIDIA is an end-to-end platform used for developing custom generative AI,including large language models (LLMs), vision language models (VLMs), retrieval models, video models, and speech AI—anywhere. 
-    This platform helps developers create AI applications more efficiently, leveraging NVIDIA's GPU acceleration to optimize performance and scalability.     
-    Learn more about NVIDIA NeMo at [Build Custom Generative AI | NVIDIA NeMo](https://www.nvidia.com/en-us/ai-data-science/products/nemo/) 
+    NeMo™, which stands for "Neural Modules," by NVIDIA is an end-to-end platform used for developing custom generative AI,including large language models (LLMs), vision language models (VLMs), retrieval models, video models, and speech AI—anywhere.
+    This platform helps developers create AI applications more efficiently, leveraging NVIDIA's GPU acceleration to optimize performance and scalability.
+    Learn more about NVIDIA NeMo at [Build Custom Generative AI | NVIDIA NeMo](https://www.nvidia.com/en-us/ai-data-science/products/nemo/)
 
     :::
 
@@ -174,7 +174,7 @@ https://github.com/HPInc/aistudio-samples.git
 
 You will also need to select a local folder for the git repo to clone into. This is up to you but generally making an **aistudio** or a **repos** folder inside of your **Documents** folder is a good place to store code repositories. Simply create a new folder and point to it in AI Studio when creating your project.
 
-5. Leave “Configure git for autocrlf” checked if you are on windows. 
+5. Leave “Configure git for autocrlf” checked if you are on windows.
 
 6. Add tags: NGC, NeMo, and Audio.
 
@@ -184,9 +184,9 @@ Adding tags will provide searchability as you build more projects. 
 
 :::
 
-7. Select Continue. 
+7. Select Continue.
 
-8. Connect your data (instead of Add Assets) matches the UI. 
+8. Connect your data (instead of Add Assets) matches the UI.
 
 9. **Add Assets**:
     - You can point to existing connections to remote data, like S3 or Azure Blob storage using the Datasets tab (or add a new connection by clicking **New Asset**). You can add assets to a project anytime.
@@ -231,7 +231,7 @@ To achieve the ability to run code consistently across different machines and di
         OR
 
     - Search for NVIDIA NGC GPU optimized containers and frameworks.
-    
+
     For our demo select the ***NeMo Framework*** image from the NVIDIA NGC
     images. Click the ***download*** button (this is a one time download but since it is a larger image it will take a while so maybe go get yourself a coffee and check back in 20 min depending on your internet speed). Next give your Workspace a name, since this workspace is based off the NeMo Framework and we added no additional libraries you can just name it ***NeMo Framework***.
 
@@ -242,14 +242,14 @@ To achieve the ability to run code consistently across different machines and di
 
 1. **Download Project Assets**:
 
-    In the project setup, we added 3 models from the NGC catalog. You should be able to see them by going to the assets tab and selecting the models sub-tab.**Click the download icon** next to each model. Once the models are downloaded you can move on to start the workspace. 
+    In the project setup, we added 3 models from the NGC catalog. You should be able to see them by going to the assets tab and selecting the models sub-tab.**Click the download icon** next to each model. Once the models are downloaded you can move on to start the workspace.
 
     [Translation Assets](/img/translation_assets.png)
 
 2. **Start the Workspace**:
 
     Now that you have created your project you can spin up the container image. To do this **click the play button** inside of the *Nemo Framework Workspace* card you created and you will be automatically brought into the Workspace tab. To turn off a workspace navigate to the *Overview* tab in a project and click the pause button inside of the workspace. If you accidentally close the workspace notebook tab you can open a new one by clicking on **Open Jupyter**, which looks like a terminal icon.
-    
+
     ![Audio Translation](/img/audio_translation.png)
 
 3. **Navigating the Workspace File structure**:
@@ -285,7 +285,7 @@ To achieve the ability to run code consistently across different machines and di
     - Navigate to the demo notebook (aistudio-samples/ngcintegration/audio_translation/english_to_spanish.ipynb).
 
     - Run the notebook cells one by one (or click the double play button [or fast forward button however you call it] to run all cells).
-    
+
         You will see the notebook loads in the 3 NeMo models, transcribes text from an audio sample, translates it from English to Spanish and creates a Spanish audio clip from the translated text. The last 2 cells have code that creates, logs and registers the model with MLflow.
 
 5. **Reviewing the MLflow experiment tracking**:
@@ -328,9 +328,9 @@ Visit the [other guides on zDocs](/docs/aistudio/overview.md) for use cases, ste
 
 ## BERT Q&A Demo Example
 
-A BERT transformer encoder processes text by understanding context and meaning through attention mechanisms. It generates representations for words based on surrounding words. 
- 
-For this example, we'll use BERT to identify relationships in text, enabling it to match a question with the most relevant part of a given passage to provide you with an accurate answer. No additional data is required. 
+A BERT transformer encoder processes text by understanding context and meaning through attention mechanisms. It generates representations for words based on surrounding words.
+
+For this example, we'll use BERT to identify relationships in text, enabling it to match a question with the most relevant part of a given passage to provide you with an accurate answer. No additional data is required.
 
 Materials provided include code, the model, and a web app for local deployment. Once the model is deployed, you can interrogate the model for inference through the Swagger API interface or click on the web app link at the top of the Swagger page for a web app.
 

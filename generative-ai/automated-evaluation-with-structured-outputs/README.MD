@@ -154,23 +154,14 @@ Paste a payload like:
 }
 ```
 
-### 4 ▪ Use the HTML UI
+### Step 4: Launch the Streamlit Web App
 
-From the Swagger page, click the demo link to interact with the locally deployed model via UI.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-### 5 ▪ Launch the Streamlit UI
+### Streamlit Preview
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
-
-2. Navigate to the shown URL, upload a CSV, tweak parameters, and view scores.
-
-### Successful UI Screenshots
-
-- HTML
-  ![Automated Evaluation HTML UI](docs/sample-html-ss.png)
-
-- Streamlit
-  ![Automated Evaluation Streamlit UI](docs/sample-streamlit-ss.png)
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
 ---
 
