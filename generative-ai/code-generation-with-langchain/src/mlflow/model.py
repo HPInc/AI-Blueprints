@@ -32,6 +32,7 @@ from langchain.schema.runnable import RunnablePassthrough
 # Add project root to path for notebook imports
 import sys
 from pathlib import Path
+
 project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
@@ -51,11 +52,15 @@ from src.utils import (
 )
 
 # Import GitHub extraction and context storage tools
-from notebooks.core.extract_text.github_repository_extractor import GitHubRepositoryExtractor
+from notebooks.core.extract_text.github_repository_extractor import (
+    GitHubRepositoryExtractor,
+)
 from notebooks.core.generate_metadata.llm_context_updater import LLMContextUpdater
 from notebooks.core.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
 from notebooks.core.vector_database.vector_store_writer import VectorStoreWriter
-from notebooks.core.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
+from notebooks.core.generate_metadata.async_repository_processor import (
+    AsyncRepositoryProcessor,
+)
 from notebooks.core.generate_metadata.repository_status_tracker import (
     RepositoryStatusTracker,
     ProcessingStatus,
