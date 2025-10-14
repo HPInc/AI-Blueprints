@@ -3,279 +3,277 @@ title:  'Troubleshooting AI Studio'
 sidebar_position: 6
 ---
 
-# AI Studio Troubleshooting Guide 
+# AI Studio Troubleshooting Guide
 
 Find quick solutions to common issues with possible solutions.
 
 
-## Getting Started Issues 
+## Getting Started Issues
 
-**Issue:** Unable to create an account. 
+**Issue:** Unable to create an account.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Check if you are using a supported email domain. 
+- Check if you are using a supported email domain.
 
-- Clear your browser cache and cookies. 
+- Clear your browser cache and cookies.
 
-- Try a different browser. 
+- Try a different browser.
 
-- Ensure you have a stable internet connection. 
+- Ensure you have a stable internet connection.
 
-- If using corporate email, check with your IT department about firewall restrictions. 
+- If using corporate email, check with your IT department about firewall restrictions.
 
 **Issue:** Can't access dashboard after login.
 
-**Possible solutions:**  
+**Possible solutions:**
 
-- Verify you are using the correct login credentials. 
+- Verify you are using the correct login credentials.
 
-- Check if your account has been properly activated. 
+- Check if your account has been properly activated.
 
-- Clear browser cache and try incognito mode. 
+- Clear browser cache and try incognito mode.
 
 - Disable browser extensions that might interfere.
 
-- Contact support if issue persists. 
+- Contact support if issue persists.
 
 ---
 
-## Connection Problems 
+## Connection Problems
 
-**Issue:** Frequent disconnections during sessions. 
+**Issue:** Frequent disconnections during sessions.
 
-**Possible solutions:**  
+**Possible solutions:**
 
-- Check your internet connection stability. 
+- Check your internet connection stability.
 
-- Close unused browser tabs to free up resources. 
+- Close unused browser tabs to free up resources.
 
-- Try a wired connection instead of Wi-Fi if possible. 
+- Try a wired connection instead of Wi-Fi if possible.
 
-- Clear browser cache and restart. 
+- Clear browser cache and restart.
 
-- Check if your VPN is causing interference. 
+- Check if your VPN is causing interference.
 
 
-**Issue:** API endpoints are unreachable. 
+**Issue:** API endpoints are unreachable.
 
-**Possible solutions:**  
+**Possible solutions:**
 
-- Verify the correct endpoint URLs in your requests. 
+- Verify the correct endpoint URLs in your requests.
 
-- Check API keys for validity and permissions. 
+- Check API keys for validity and permissions.
 
-- Ensure your network allows outbound connections to AI Studio services. 
+- Ensure your network allows outbound connections to AI Studio services.
 
-- Test with a simple curl command to isolate the issue. 
+- Test with a simple curl command to isolate the issue.
 
 - Contact your network administrator if corporate restrictions apply.
 
 ---
 
-## Performance Issues 
+## Performance Issues
 
-**Issue:** Slow model response times. 
+**Issue:** Slow model response times.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Select a faster model variant if available (e.g., Claude 3.5 Haiku). 
+- Select a faster model variant if available (e.g., Claude 3.5 Haiku).
 
-- Reduce input token length for quicker processing. 
+- Reduce input token length for quicker processing.
 
-- Check your network latency with a speed test. 
+- Check your network latency with a speed test.
 
-- Monitor system resource usage during interactions. 
+- Monitor system resource usage during interactions.
 
-- Schedule resource-intensive tasks during off-peak hours. 
+- Schedule resource-intensive tasks during off-peak hours.
 
-**Issue:** High resource consumption. 
+**Issue:** High resource consumption.
 
-**Possible solutions:**  
+**Possible solutions:**
 
-- Close other resource-intensive applications. 
+- Close other resource-intensive applications.
 
-- Monitor browser memory usage and restart if necessary. 
+- Monitor browser memory usage and restart if necessary.
 
-- Consider using the desktop client instead of browser version. 
+- Consider using the desktop client instead of browser version.
 
-- Limit the number of concurrent requests. 
+- Limit the number of concurrent requests.
 
 - Implement request batching for multiple similar queries.
 
 ---
 
-## API Integration Challenges 
+## API Integration Challenges
 
 **Issue:** Authentication errors with API.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Regenerate API keys and retry. 
+- Regenerate API keys and retry.
 
-- Ensure API keys are stored securely and not exposed. 
+- Ensure API keys are stored securely and not exposed.
 
-- Check if you're including the key in the correct header format. 
+- Check if you're including the key in the correct header format.
 
-- Verify your account has API access permissions. 
+- Verify your account has API access permissions.
 
-- Review API request limits for your tier. 
+- Review API request limits for your tier.
 
-**Issue:** Incorrect response formats. 
+**Issue:** Incorrect response formats.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Check your request body formatting. 
+- Check your request body formatting.
 
-- Verify that content types are properly specified in headers. 
+- Verify that content types are properly specified in headers.
 
-- Review the API documentation for correct parameter usage. 
+- Review the API documentation for correct parameter usage.
 
-- Test with example requests from the documentation. 
+- Test with example requests from the documentation.
 
 - Implement proper error handling in your code.
 
 ---
 
-## Model Output Problems 
+## Model Output Problems
 
-**Issue:** Incomplete or truncated responses. 
+**Issue:** Incomplete or truncated responses.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Increase your max_tokens parameter. 
+- Increase your max_tokens parameter.
 
-- Break complex queries into smaller, sequential requests. 
+- Break complex queries into smaller, sequential requests.
 
-- Check if you're hitting token limits for your subscription tier. 
+- Check if you're hitting token limits for your subscription tier.
 
-- Use system prompts to instruct the model to be concise. 
+- Use system prompts to instruct the model to be concise.
 
-- Implement pagination for long outputs. 
+- Implement pagination for long outputs.
 
 
-**Issue:** Irrelevant or off-topic responses. 
+**Issue:** Irrelevant or off-topic responses.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Refine your prompts to be more specific and detailed. 
+- Refine your prompts to be more specific and detailed.
 
-- Add examples of desired outputs in your prompt. 
+- Add examples of desired outputs in your prompt.
 
-- Use system messages to define the context clearly. 
+- Use system messages to define the context clearly.
 
-- Experiment with temperature settings (lower for more deterministic outputs). 
+- Experiment with temperature settings (lower for more deterministic outputs).
 
-- Implement structured output formats when possible. 
+- Implement structured output formats when possible.
 
 ---
 
-## Billing and Account Issues 
+## Billing and Account Issues
 
-**Issue:** Unexpected charges. 
+**Issue:** Unexpected charges.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Review usage analytics in your dashboard. 
+- Review usage analytics in your dashboard.
 
-- Set up usage alerts and limits. 
+- Set up usage alerts and limits.
 
-- Check for unauthorized access to your API keys. 
+- Check for unauthorized access to your API keys.
 
-- Review your application logic for potential infinite loops. 
+- Review your application logic for potential infinite loops.
 
-- Contact billing support with specific transaction IDs. 
+- Contact billing support with specific transaction IDs.
 
 
 **Issue:** Unable to upgrade subscription.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Clear browser cache and cookies. 
+- Clear browser cache and cookies.
 
-- Use a different payment method. 
+- Use a different payment method.
 
-- Check if your card has international transaction permissions. 
+- Check if your card has international transaction permissions.
 
-- Verify billing address matches card information. 
+- Verify billing address matches card information.
 
 - Contact support with specific error messages.
 
 ---
 
-## User Interface Problems 
+## User Interface Problems
 
 **Issue:** UI elements not displaying correctly.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Try different browsers (Chrome, Firefox, Safari). 
+- Try different browsers (Chrome, Firefox, Safari).
 
-- Update your browser to the latest version. 
+- Update your browser to the latest version.
 
-- Disable browser extensions temporarily. 
+- Disable browser extensions temporarily.
 
-- Check for JavaScript errors in the console. 
+- Check for JavaScript errors in the console.
 
-- Adjust zoom level and display settings. 
+- Adjust zoom level and display settings.
 
 **Issue:** File upload failures.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Check file size limits and formats. 
+- Check file size limits and formats.
 
-- Compress files if necessary. 
+- Compress files if necessary.
 
-- Try uploading files individually rather than in batch. 
+- Try uploading files individually rather than in batch.
 
-- Clear browser cache and temporary files. 
+- Clear browser cache and temporary files.
 
-- Check browser console for specific error messages. 
+- Check browser console for specific error messages.
 
 ---
 
-## Advanced Troubleshooting 
+## Advanced Troubleshooting
 
 **Issue:** Custom integration failures.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Enable verbose logging in your application. 
+- Enable verbose logging in your application.
 
-- Implement request/response logging for debugging. 
+- Implement request/response logging for debugging.
 
-- Test API endpoints with Postman or similar tools. 
+- Test API endpoints with Postman or similar tools.
 
-- Create minimal reproducible examples. 
+- Create minimal reproducible examples.
 
-- Document exact steps and error messages when contacting support. 
+- Document exact steps and error messages when contacting support.
 
-**Issue:** Webhook delivery problems. 
+**Issue:** Webhook delivery problems.
 
-**Possible solutions:** 
+**Possible solutions:**
 
-- Ensure your server is publicly accessible. 
+- Ensure your server is publicly accessible.
 
-- Check server logs for incoming requests. 
+- Check server logs for incoming requests.
 
 - Verify correct URL format in webhook configuration.
 
 - Implement proper response codes (200 OK) to acknowledge receipt.
 
-- Set up monitoring for webhook endpoints. 
+- Set up monitoring for webhook endpoints.
 
 
 If you continue to experience issues after trying these solutions, please fill out the **Support** form on the application. Your question will be routed to the appropriate team based on its nature and the type of support you need.
 
-- Detailed description of the issue 
+- Detailed description of the issue
 
-- Steps to reproduce 
+- Steps to reproduce
 
-- Error messages or screenshots 
+- Error messages or screenshots
 
-- Account information 
+- Account information
 
-- Timestamps of when issues occurred 
-
- 
+- Timestamps of when issues occurred

@@ -4,14 +4,15 @@ import tritonclient.grpc as grpcclient
 from tritonclient.grpc import InferInput, InferRequestedOutput
 
 # Initialize the gRPC client
-client = grpcclient.InferenceServerClient(url="localhost:8001")  # default gRPC port 8001
+client = grpcclient.InferenceServerClient(
+    url="localhost:8001"
+)  # default gRPC port 8001
 
 # Tokenizer
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-mpnet-base-v2")
 text = "What is AI Studio?"
 inputs = tokenizer(
-    text, return_tensors="np",
-    padding="max_length", truncation=True, max_length=128
+    text, return_tensors="np", padding="max_length", truncation=True, max_length=128
 )
 
 # Create input tensors for Triton
@@ -27,9 +28,7 @@ output = InferRequestedOutput("last_hidden_state")
 
 # Do the inference
 response = client.infer(
-    model_name="embedding_model",
-    inputs=[input_ids, attention_mask],
-    outputs=[output]
+    model_name="embedding_model", inputs=[input_ids, attention_mask], outputs=[output]
 )
 
 # Get the result
