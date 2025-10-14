@@ -86,8 +86,8 @@ class Logger:
 
         # Create temp directory
         temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "fine_tuning_model_artifacts")
-
+        temp_dir = os.path.join(temp_base, "model_artifacts")
+        
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
@@ -96,7 +96,7 @@ class Logger:
         try:
             logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
 
-            # ✅ Config at root -> /artifacts/data/config.yaml
+            # ✅ Config -> /artifacts/data/config.yaml
             if not os.path.exists(config_path):
                 raise FileNotFoundError(f"Config file not found at: {config_path}")
             shutil.copy2(config_path, os.path.join(temp_dir, "config.yaml"))
