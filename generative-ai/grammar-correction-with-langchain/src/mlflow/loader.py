@@ -62,7 +62,7 @@ def _load_pyfunc(data_path: str):
         # Resolve model path relative to artifacts
         resolved_model_path = get_model_path(model_path)
         model_path = resolved_model_path
-        logger.info(f"Resolved model path: {model_path}")
+        logger.info("Model path resolved successfully")
     else:
         logger.info("No model_path found in config, Model will use default fallback")
 
