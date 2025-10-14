@@ -162,9 +162,12 @@ class ModelExportConfig:
 
         # Auto-detect model type if not provided
         if self.model_type is None:
-            
-            sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+            sys.path.append(
+                os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            )
             from src.onnx_export import identify_model_type
+
             self.model_type = identify_model_type(self.model)
 
     def get_onnx_filename(self) -> str:
@@ -273,7 +276,7 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
     """
     try:
         from .onnx_export import export_model_to_onnx
-        
+
         # Create model directory
         model_dir = config.model_name
         os.makedirs(model_dir, exist_ok=True)
@@ -458,20 +461,22 @@ def _create_model_directories(
     return model_paths
 
 
-def log_model(artifact_path="AIStudio-Model",
-              python_model: Optional[Any] = None,
-              loader_module = None,
-              data_path = None, 
-              artifacts: Optional[Dict[str, str]] = None,
-              conda_env: Optional[Union[str, Dict]] = None,
-              code_paths: Optional[List[str]] = None,
-              signature: Optional[Any] = None,
-              input_example: Optional[Any] = None,
-              pip_requirements: Optional[Union[List[str], str]] = None,
-              extra_pip_requirements: Optional[Union[List[str], str]] = None,
-              metadata: Optional[Dict[str, Any]] = None,
-              models_to_convert_onnx: Optional[List[ModelExportConfig]] = None,
-              **kwargs) -> None:
+def log_model(
+    artifact_path="AIStudio-Model",
+    python_model: Optional[Any] = None,
+    loader_module=None,
+    data_path=None,
+    artifacts: Optional[Dict[str, str]] = None,
+    conda_env: Optional[Union[str, Dict]] = None,
+    code_paths: Optional[List[str]] = None,
+    signature: Optional[Any] = None,
+    input_example: Optional[Any] = None,
+    pip_requirements: Optional[Union[List[str], str]] = None,
+    extra_pip_requirements: Optional[Union[List[str], str]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    models_to_convert_onnx: Optional[List[ModelExportConfig]] = None,
+    **kwargs,
+) -> None:
     """
     Enhanced MLflow log_model with automatic ONNX export and model directory creation.
 
@@ -602,9 +607,9 @@ def log_model(artifact_path="AIStudio-Model",
                 pip_requirements=pip_requirements,
                 extra_pip_requirements=extra_pip_requirements,
                 metadata=metadata,
-                **kwargs
+                **kwargs,
             )
-        
+
         # Log artifacts information
         artifact_list = list(final_artifacts.keys()) if final_artifacts else []
         logger.info(f"Model logged with artifacts: {artifact_list}")
