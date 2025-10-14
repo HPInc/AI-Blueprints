@@ -44,6 +44,7 @@ class Logger:
         config_path="configs/config.yaml",
         data_path=None,
         demo_folder=None,
+        docs_path="data/",
     ):
         """
         Log RNN text generation model using models-from-code approach.
@@ -82,7 +83,7 @@ class Logger:
 
         # Create temp directory
         temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "rnn_model_artifacts")
+        temp_dir = os.path.join(temp_base, "model_artifacts")
 
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
@@ -97,6 +98,20 @@ class Logger:
                 raise FileNotFoundError(f"Config file not found at: {config_path}")
             shutil.copy2(config_path, os.path.join(temp_dir, "config.yaml"))
             logger.info(f"Copied config from {config_path} to temp directory")
+
+            data_temp_dir = os.path.join(temp_dir, "data")
+            os.makedirs(data_temp_dir, exist_ok=True)
+
+            if docs_path and os.path.exists(docs_path):
+                for item in os.listdir(docs_path):
+                    item_path = os.path.join(docs_path, item)
+                    if os.path.isfile(item_path):
+                        shutil.copy2(item_path, data_temp_dir)
+                        logger.info(f"Copied document: {item}")
+                    elif os.path.isdir(item_path):
+                        shutil.copytree(item_path, os.path.join(data_temp_dir, item))
+                        logger.info(f"Copied document directory: {item}")
+            logger.info("data folder not provided or doesn't exist - skipping")
 
             # ✅ Required RNN model artifacts
             if not os.path.exists(model_state_dict_path):

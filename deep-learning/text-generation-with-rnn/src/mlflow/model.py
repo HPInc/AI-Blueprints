@@ -15,6 +15,7 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, Optional
+import traceback
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -236,8 +237,13 @@ class Model:
             char = np.random.choice(index_positions, p=probs)
 
             return self.model.decoder[char], hidden
+        except KeyError as e:
+            logger.error(f"Character not found in encoder: {str(e)}")
+            logger.error(f"Available characters in encoder: {list(self.model.encoder.keys())[:20]}...")  # Show first 20
+            raise KeyError(f"Character '{char}' not found in encoder dictionary") from e
         except Exception as e:
             logger.error(f"Error predicting next char: {str(e)}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
 
     def generate_text(self, seed, size, k=3):
@@ -275,6 +281,7 @@ class Model:
 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
 
     def predict(self, model_input, params=None):
@@ -292,29 +299,18 @@ class Model:
         """
         try:
             # Extract inputs from model_input dictionary
-            initial_word = (
-                model_input["initial_word"][0]
-                if isinstance(model_input["initial_word"], list)
-                else model_input["initial_word"]
-            )
-            size = (
-                model_input["size"][0]
-                if isinstance(model_input["size"], list)
-                else model_input["size"]
-            )
-
-            # Generate text using the RNN model
-            generated_text = self.generate_text(seed=initial_word, size=size)
-
-            # Return as pandas DataFrame to maintain API compatibility
-            result_df = pd.DataFrame({"generated_text": [generated_text]})
-
-            return result_df
+            
+            initial_word = model_input['initial_word'][0]
+            size = model_input['size'][0]
+            output = self.generate_text(seed=initial_word, size=size)
+            
+            return output
 
         except Exception as e:
-            logger.error(f"Error in predict method: {str(e)}")
-            # Return error in DataFrame format for consistency
+            error_details = f"Predict method error: {str(e)}\nFull traceback:\n{traceback.format_exc()}"
+            logger.error(error_details)
+            # Return detailed error in DataFrame format for debugging
             error_df = pd.DataFrame(
-                {"generated_text": [f"Error generating text: {str(e)}"]}
+                {"generated_text": [f"Error generating text: {str(e)} (Check logs for details)"]}
             )
             return error_df
