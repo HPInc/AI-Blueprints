@@ -28,11 +28,16 @@ class Model:
     Standalone model class with no MLflow inheritance.
     Handles grammar and structure correction in Markdown content.
     """
-    
-    def __init__(self, config: Dict[str, Any], secrets: Dict[str, Any] = None, model_path: str = None):
+
+    def __init__(
+        self,
+        config: Dict[str, Any],
+        secrets: Dict[str, Any] = None,
+        model_path: str = None,
+    ):
         """
         Initialize the grammar correction model with configuration and secrets.
-        
+
         Args:
             config: Configuration dictionary containing model settings
             secrets: Secrets dictionary containing API keys if needed
@@ -41,33 +46,35 @@ class Model:
         self.config = config
         self.secrets = secrets or {}
         self.model_path = model_path
-        
+
         # Initialize the prompt template
         self.prompt = get_markdown_correction_prompt()
-        
+
         # Initialize the LLM based on configuration
         self.llm = initialize_llm(
             model_source=config.get("model_source", "local"),
             secrets=secrets,
-            local_model_path=model_path or config.get("model_path")
+            local_model_path=model_path or config.get("model_path"),
         )
-        
+
         # Create the LLM chain
         self.llm_chain = self.prompt | self.llm
-        
+
         logger.info("Grammar correction model initialized successfully.")
 
-    def predict(self, model_input: pd.DataFrame, params: Optional[Dict[str, Any]] = None) -> pd.Series:
+    def predict(
+        self, model_input: pd.DataFrame, params: Optional[Dict[str, Any]] = None
+    ) -> pd.Series:
         """
         Applies the grammar correction pipeline to each row of the input dataframe.
-        
+
         Args:
             model_input: DataFrame containing 'markdown' column with text to correct
             params: Optional parameters (unused but maintained for compatibility)
-            
+
         Returns:
             Series containing corrected markdown text
-            
+
         Raises:
             KeyError: If input DataFrame is missing the required 'markdown' column
         """
@@ -79,5 +86,5 @@ class Model:
         for _, row in model_input.iterrows():
             output = self.llm_chain.invoke({"markdown": row["markdown"]})
             corrected.append(output)
-            
+
         return pd.Series(corrected, name="corrected")
