@@ -186,6 +186,49 @@ def get_ports_config(config: Dict[str, Any]) -> Dict[str, Any]:
     return config.get("ports", {})
 
 
+def download_from_s3_uri(s3_uri: str, local_path: str | Path) -> str:
+    """
+    Download an S3 object (s3://bucket/key) into a local directory or file path.
+
+    Args:
+        s3_uri: Full S3 URI (e.g. s3://bucket/path/to/file.txt)
+        local_path: Either a directory (file will be saved under its basename)
+                    or a full file path (file will be saved exactly there).
+
+    Returns:
+        Absolute path of the downloaded file.
+    """
+    parsed = urlparse(s3_uri)
+    if parsed.scheme != "s3" or not parsed.netloc or not parsed.path:
+        raise ValueError(f"Invalid S3 URI: {s3_uri}")
+
+    bucket = parsed.netloc
+    key = parsed.path.lstrip("/")
+    basename = os.path.basename(key) or "downloaded_file"
+
+    local_path = Path(local_path).expanduser().resolve()
+    if local_path.exists() and local_path.is_dir():
+        target = local_path / basename
+    elif local_path.suffix:  # looks like a file path
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        target = local_path
+    else:
+        local_path.mkdir(parents=True, exist_ok=True)
+        target = local_path / basename
+
+    s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+    with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+    try:
+        s3.download_file(bucket, key, str(tmp_path))
+        shutil.move(str(tmp_path), str(target))
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+
+    return str(target)
+
+
 def get_model_path(model_name: str) -> str:
     """
     Get the full path to the model file using the artifacts path and model name.
@@ -213,9 +256,9 @@ def load_secrets_to_env(secrets_path: str) -> None:
         secrets_path: Path to the secrets YAML file.
     """
     if os.path.exists(secrets_path):
-        with open(secrets_path, "r") as file:
+        with open(secrets_path, 'r') as file:
             secrets = yaml.safe_load(file)
-
+        
         if secrets:
             for key, value in secrets.items():
                 os.environ[key] = str(value)
@@ -232,20 +275,17 @@ def load_secrets(secrets_path: str = None) -> Dict[str, Any]:
         Dictionary containing secrets.
     """
     secrets = {}
-
+    
     # Load from environment variables that might contain secrets
     for key, value in os.environ.items():
-        if any(
-            secret_key in key.lower()
-            for secret_key in ["key", "token", "secret", "password"]
-        ):
+        if any(secret_key in key.lower() for secret_key in ['key', 'token', 'secret', 'password']):
             secrets[key] = value
-
+    
     # Optionally load from file if provided
     if secrets_path and os.path.exists(secrets_path):
-        with open(secrets_path, "r") as file:
+        with open(secrets_path, 'r') as file:
             file_secrets = yaml.safe_load(file)
         if file_secrets:
             secrets.update(file_secrets)
-
+    
     return secrets
