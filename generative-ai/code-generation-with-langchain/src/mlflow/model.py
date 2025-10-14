@@ -28,7 +28,15 @@ if hasattr(LlamaCpp, "model_rebuild"):
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_community.vectorstores import Chroma
 from langchain.schema.runnable import RunnablePassthrough
-from src.chroma_embedding_adapter import ChromaEmbeddingAdapter
+
+# Add project root to path for notebook imports
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from notebooks.core.chroma_embedding_adapter import ChromaEmbeddingAdapter
 import chromadb
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -43,12 +51,12 @@ from src.utils import (
 )
 
 # Import GitHub extraction and context storage tools
-from src.extract_text.github_repository_extractor import GitHubRepositoryExtractor
-from src.generate_metadata.llm_context_updater import LLMContextUpdater
-from src.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
-from src.vector_database.vector_store_writer import VectorStoreWriter
-from src.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
-from src.generate_metadata.repository_status_tracker import (
+from notebooks.core.extract_text.github_repository_extractor import GitHubRepositoryExtractor
+from notebooks.core.generate_metadata.llm_context_updater import LLMContextUpdater
+from notebooks.core.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
+from notebooks.core.vector_database.vector_store_writer import VectorStoreWriter
+from notebooks.core.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
+from notebooks.core.generate_metadata.repository_status_tracker import (
     RepositoryStatusTracker,
     ProcessingStatus,
 )
