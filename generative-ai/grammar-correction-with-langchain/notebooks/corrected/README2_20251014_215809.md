@@ -8,7 +8,7 @@
 - [Deep Learning](#deep-learning)
 - [Generative AI](#generative-ai)
 - [NVIDIA GPU Cloud (NGC) Integration](#nvidia-gpu-cloud-integration)
-- [Troubleshooting](#troubleshooting) 
+- [Troubleshooting](#troubleshooting)
 - [Contact and Support](#contact-and-support)
 
 ---
