@@ -195,47 +195,48 @@ class LlamaCppLangChainCompatible:
     Direct wrapper for llama_cpp.Llama that implements the minimal
     LangChain interface needed for chain compatibility.
     """
+
     def __init__(self, model_path, **kwargs):
         from llama_cpp import Llama
-        
+
         # Extract llama_cpp specific parameters
         self.llm = Llama(
             model_path=model_path,
-            n_gpu_layers=kwargs.get('n_gpu_layers', -1),
-            n_batch=kwargs.get('n_batch', 512),
-            n_ctx=kwargs.get('n_ctx', 4096),
-            f16_kv=kwargs.get('f16_kv', True),
-            use_mmap=kwargs.get('use_mmap', False),
-            verbose=kwargs.get('verbose', False),
+            n_gpu_layers=kwargs.get("n_gpu_layers", -1),
+            n_batch=kwargs.get("n_batch", 512),
+            n_ctx=kwargs.get("n_ctx", 4096),
+            f16_kv=kwargs.get("f16_kv", True),
+            use_mmap=kwargs.get("use_mmap", False),
+            verbose=kwargs.get("verbose", False),
         )
-        
+
         self.model_path = model_path
-        self.n_ctx = kwargs.get('n_ctx', 4096)
-        self._context_window = kwargs.get('n_ctx', 4096)
-        self.default_temperature = kwargs.get('temperature', 0.2)
-        
+        self.n_ctx = kwargs.get("n_ctx", 4096)
+        self._context_window = kwargs.get("n_ctx", 4096)
+        self.default_temperature = kwargs.get("temperature", 0.2)
+
     def invoke(self, input_data, config=None):
         """LangChain-style invoke method for chain compatibility."""
         prompt_text = input_data.to_string()
-            
+
         # Extract config parameters if provided
         kwargs = {}
         if config:
             kwargs.update(config)
-            
+
         # Call the llama_cpp model
         try:
             response = self.llm(
                 prompt_text,
-                max_tokens=kwargs.get('max_tokens', 1024),
-                temperature=kwargs.get('temperature', self.default_temperature),
-                stop=kwargs.get('stop', []),
+                max_tokens=kwargs.get("max_tokens", 1024),
+                temperature=kwargs.get("temperature", self.default_temperature),
+                stop=kwargs.get("stop", []),
             )
             return response["choices"][0]["text"]
         except Exception as e:
             print(f"Error calling llama_cpp model: {e}")
             raise
-    
+
     def __call__(self, prompt, **kwargs):
         """Allow direct calling like original llama_cpp interface."""
         return self.invoke(prompt, config=kwargs)
@@ -244,16 +245,16 @@ class LlamaCppLangChainCompatible:
 def get_completion(model, prompt, **kwargs):
     """
     Unified completion function that works with both LangChain and direct llama_cpp.
-    
+
     Args:
         model: Any model with invoke() or __call__() interface
         prompt: The prompt text or input dict
         **kwargs: Additional parameters for the model
-    
+
     Returns:
         Generated text response
     """
-    if hasattr(model, 'invoke'):
+    if hasattr(model, "invoke"):
         return model.invoke(prompt, config=kwargs)
     elif callable(model):
         return model(prompt, **kwargs)
@@ -264,14 +265,15 @@ def get_completion(model, prompt, **kwargs):
 def is_direct_llamacpp(model):
     """Check if a model is a direct llama_cpp.Llama instance."""
     from llama_cpp import Llama
-    return isinstance(getattr(model, 'llm', None), Llama)
+
+    return isinstance(getattr(model, "llm", None), Llama)
 
 
 def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
     local_model_path: Optional[str] = DEFAULT_MODELS["local"],
-    hf_repo_id: str = ""
+    hf_repo_id: str = "",
 ) -> Any:
     """
     Initialize a language model based on specified source.
@@ -977,19 +979,19 @@ def check_context_fits(
 def get_model_path(model_name: str) -> str:
     """
     Get the full path to the model file using the artifacts path and model name.
-    
+
     Args:
         model_name: Name of the model file or full path (will extract filename)
-        
+
     Returns:
         Full path to the model file
     """
     # Extract just the filename if model_name contains a path
     filename = os.path.basename(model_name)
-    
+
     artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
     model_path = os.path.join(artifacts_path, filename)
-    
+
     return model_path
 
 
@@ -998,20 +1000,19 @@ def load_secrets(secret_keys: Optional[List[str]] = None) -> Dict[str, Any]:
     Load secrets from secrets environment variables.
 
     Args:
-        secret_keys: List of expected secret names.  
+        secret_keys: List of expected secret names.
         If None, every project environment variable with 'AIS' prefix is returned.
-        
+
     Returns:
         Dictionary containing all secrets for the project.
-        
-    ValueError:       
+
+    ValueError:
         Requested secret(s) are missing or none found with AIS- prefix.
     """
     # Build secrets from environment
     if secret_keys is None:
         secrets = {
-            k: v for k, v in os.environ.items()
-            if k.isupper() and k.startswith("AIS_")
+            k: v for k, v in os.environ.items() if k.isupper() and k.startswith("AIS_")
         }
         if not secrets:
             raise ValueError(
@@ -1051,7 +1052,9 @@ def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
 
     for key, value in secrets.items():
         if not isinstance(key, str):
-            raise TypeError(f"Environment variable key must be a string. Got: {type(key)}")
+            raise TypeError(
+                f"Environment variable key must be a string. Got: {type(key)}"
+            )
         # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
         env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
         os.environ[env_key] = str(value)

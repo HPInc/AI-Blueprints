@@ -6,8 +6,10 @@ TEMPLATEPATH = "./.github/"
 TEMPLATEFILE = "README-template.j2"
 TARGETFILE = "./README.md"
 
+
 def new_technology_dict(repo_technology):
     return {"link_id": repo_technology.lower(), "entries": []}
+
 
 technologies = {}
 
@@ -50,6 +52,8 @@ for category in categories:
 
 sponsors = data["sponsors"]
 
-output = template.render(category_groups=category_groups, categories=categories, sponsors=sponsors)
+output = template.render(
+    category_groups=category_groups, categories=categories, sponsors=sponsors
+)
 
 open(TARGETFILE, "w").write(output)

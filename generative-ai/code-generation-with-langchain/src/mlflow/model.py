@@ -2,7 +2,7 @@
 Code Generation Model implementation containing all business logic.
 
 This model provides code generation capabilities using LLM models with vector retrieval
-for enhanced context-aware code generation. It can extract context from GitHub repositories 
+for enhanced context-aware code generation. It can extract context from GitHub repositories
 to provide more relevant and accurate code generation responses.
 
 NO MLflow dependencies - pure domain functionality.
@@ -34,7 +34,13 @@ import chromadb
 from langchain_huggingface import HuggingFaceEmbeddings
 
 # Import utilities
-from src.utils import get_context_window, dynamic_retriever, format_docs_with_adaptive_context, clean_code, get_model_context_window
+from src.utils import (
+    get_context_window,
+    dynamic_retriever,
+    format_docs_with_adaptive_context,
+    clean_code,
+    get_model_context_window,
+)
 
 # Import GitHub extraction and context storage tools
 from src.extract_text.github_repository_extractor import GitHubRepositoryExtractor
@@ -42,10 +48,14 @@ from src.generate_metadata.llm_context_updater import LLMContextUpdater
 from src.dataflow.dataflow import EmbeddingUpdater, DataFrameConverter
 from src.vector_database.vector_store_writer import VectorStoreWriter
 from src.generate_metadata.async_repository_processor import AsyncRepositoryProcessor
-from src.generate_metadata.repository_status_tracker import RepositoryStatusTracker, ProcessingStatus
+from src.generate_metadata.repository_status_tracker import (
+    RepositoryStatusTracker,
+    ProcessingStatus,
+)
 
 # Set up logger
 logger = logging.getLogger(__name__)
+
 
 class Model:
     """
@@ -53,13 +63,15 @@ class Model:
     NO MLflow inheritance - pure domain functionality.
     """
 
-    def __init__(self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None):
+    def __init__(
+        self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None
+    ):
         """
         Initialize the Model with configuration and artifacts following PR #208 pattern.
-        
+
         Args:
             config: Model configuration dictionary
-            docs_path: Path to documents directory  
+            docs_path: Path to documents directory
             model_path: Path to local model file (optional)
             secrets: Dictionary containing secrets (optional)
         """
@@ -67,7 +79,7 @@ class Model:
         self.docs_path = docs_path
         self.model_path = model_path
         self.secrets = secrets
-        
+
         # Initialize model components
         self.llm = None
         self.vector_store = None
@@ -79,22 +91,22 @@ class Model:
 
         # Repository cache to avoid re-processing the same repositories
         self.repository_cache = {}
-        
+
         # Embedding functions - will be initialized in setup
         self.embedding_function = None
         self.chroma_embedding_function = None
-        
+
         # Prompt templates
         self.prompt_str = None
         self.prompt = None
         self.code_description_prompt = None
         self.code_generation_prompt = None
-        
+
         # Chains
         self.chain = None
         self.repository_chain = None
         self.direct_chain = None
-        
+
         # Initialize components
         try:
             self._setup_environment()
@@ -103,14 +115,15 @@ class Model:
             self._initialize_async_components()
             self._load_prompt_templates()
             self._load_chains()
-            
+
             logger.info("Model initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Model: {str(e)}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
-    
+
     def _setup_environment(self) -> None:
         """Configure environment variables based on configuration and secrets."""
         try:
@@ -119,7 +132,7 @@ class Model:
                 for key, value in self.secrets.items():
                     os.environ[key] = str(value)
                 logger.info("Secrets loaded into environment")
-            
+
             # Configure proxy if specified in config
             if "proxy" in self.config and self.config["proxy"]:
                 logger.info(f"Setting up proxy: {self.config['proxy']}")
@@ -127,68 +140,72 @@ class Model:
                 os.environ["HTTP_PROXY"] = self.config["proxy"]
             else:
                 logger.info("No proxy configuration found")
-                    
+
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")
             # Continue without failing to allow the model to still function
-    
+
     def _load_embeddings(self) -> None:
         """Load HuggingFace embeddings model using hardcoded default."""
         try:
             # Use hardcoded default embedding model
             model_name = "sentence-transformers/all-MiniLM-L6-v2"
             logger.info(f"Using default embedding model: {model_name}")
-                
+
             model_kwargs = {"device": "cpu"}
             encode_kwargs = {"normalize_embeddings": False}
-            
+
             self.embedding_function = HuggingFaceEmbeddings(
                 model_name=model_name,
                 model_kwargs=model_kwargs,
                 encode_kwargs=encode_kwargs,
             )
-            
+
             # Create ChromaDB-compatible adapter
-            self.chroma_embedding_function = ChromaEmbeddingAdapter(self.embedding_function)
-            
+            self.chroma_embedding_function = ChromaEmbeddingAdapter(
+                self.embedding_function
+            )
+
             logger.info(f"Embeddings model '{model_name}' loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load embeddings: {str(e)}")
             raise
-    
+
     def _load_model(self) -> None:
         """Load the appropriate model based on configuration."""
         try:
             model_source = self.config.get("model_source", "local")
             logger.info(f"Loading model with source: {model_source}")
-            
+
             from src.utils import initialize_llm, DEFAULT_MODELS
-            
+
             # Extract secrets and model path based on configuration
             secrets = self.secrets if self.secrets else {}
             # Use model_path from constructor if provided, otherwise fall back to default
-            local_model_path = self.model_path if self.model_path else DEFAULT_MODELS["local"]
+            local_model_path = (
+                self.model_path if self.model_path else DEFAULT_MODELS["local"]
+            )
             logger.info(f"Using local_model_path: {local_model_path}")
-            
+
             hf_repo_id = self.config.get("hf_repo_id", "")
-            
+
             # Use the shared initialize_llm function
             self.llm = initialize_llm(
                 model_source=model_source,
                 secrets=secrets,
                 local_model_path=local_model_path,
-                hf_repo_id=hf_repo_id
+                hf_repo_id=hf_repo_id,
             )
-                
+
             if self.llm is None:
                 logger.error("Model failed to initialize - llm is None after loading")
                 raise RuntimeError("Model initialization failed - llm is None")
-                
+
             # Get context window from model
-            self.context_window = getattr(self.llm, '_context_window', None)
-            
+            self.context_window = getattr(self.llm, "_context_window", None)
+
             logger.info(f"Model of type {type(self.llm).__name__} loaded successfully")
-            
+
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
             raise
@@ -204,17 +221,17 @@ class Model:
 
             # Repository processor will be initialized when needed
             self.repository_processor = None
-            
+
             # Configure logging to reduce noise
             logging.getLogger("httpx").setLevel(logging.WARNING)
             logging.getLogger("httpcore").setLevel(logging.WARNING)
-            
+
             # Set logging format for better readability
             for handler in logger.handlers:
                 if isinstance(handler, logging.StreamHandler):
-                    formatter = logging.Formatter('[%(levelname)s] %(message)s')
+                    formatter = logging.Formatter("[%(levelname)s] %(message)s")
                     handler.setFormatter(formatter)
-            
+
             logger.info("Async repository processing components initialized")
         except Exception as e:
             logger.warning(f"Error initializing async components: {str(e)}")
@@ -261,12 +278,18 @@ Context:
 Question: {question}
 """
         self.prompt = ChatPromptTemplate.from_template(self.prompt_str)
-        
-        # Create additional prompt objects
-        self.code_description_prompt = ChatPromptTemplate.from_template(self.code_description_template)
-        self.code_generation_prompt = ChatPromptTemplate.from_template(self.code_generation_template)
 
-    def extract_repository(self, repository_url: str, metadata_only: bool = False) -> Dict[str, Any]:
+        # Create additional prompt objects
+        self.code_description_prompt = ChatPromptTemplate.from_template(
+            self.code_description_template
+        )
+        self.code_generation_prompt = ChatPromptTemplate.from_template(
+            self.code_generation_template
+        )
+
+    def extract_repository(
+        self, repository_url: str, metadata_only: bool = False
+    ) -> Dict[str, Any]:
         """
         Extract code and metadata from a GitHub repository.
         Uses a cache mechanism to avoid re-processing the same repository.
@@ -558,7 +581,7 @@ Question: {question}
         Generate code based on the input parameters.
         Use instance variables instead of context.
         Must return same pandas.DataFrame structure as original.
-        
+
         Args:
             model_input: Input data for code generation, expecting:
                          - A dict with "inputs" containing any of:
@@ -566,7 +589,7 @@ Question: {question}
                            - "repository_url": GitHub repository URL (optional)
                            - "metadata_only": Process only metadata without full LLM analysis (optional, default: False)
             params: Additional parameters (unused)
-            
+
         Returns:
             DataFrame with the generated code in a "result" column
         """
@@ -844,7 +867,13 @@ Question: {question}
             logger.error(error_message)
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-            return pd.DataFrame([{"result": f"# Error during processing\n# {error_message}\n\n# Falling back to basic response\n\n# Your question was: {question}\n\n# Please try again with metadata_only=True or a smaller repository"}])
+            return pd.DataFrame(
+                [
+                    {
+                        "result": f"# Error during processing\n# {error_message}\n\n# Falling back to basic response\n\n# Your question was: {question}\n\n# Please try again with metadata_only=True or a smaller repository"
+                    }
+                ]
+            )
 
     def reset_repository_state(self, repository_url=None):
         """
