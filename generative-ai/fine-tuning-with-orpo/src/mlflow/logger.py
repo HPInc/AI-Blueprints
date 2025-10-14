@@ -87,7 +87,7 @@ class Logger:
         # Create temp directory
         temp_base = tempfile.gettempdir()
         temp_dir = os.path.join(temp_base, "model_artifacts")
-        
+
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
