@@ -110,7 +110,7 @@ def load_config_and_secrets(
     """
     # Convert to absolute paths if needed
     config_path = os.path.abspath(config_path)
-    
+
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
 
