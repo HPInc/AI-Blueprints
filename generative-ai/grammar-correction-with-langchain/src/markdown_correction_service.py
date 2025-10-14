@@ -1,6 +1,4 @@
 # src/markdown_correction_service.py
-
-import logging
 from typing import Any, List
 
 import mlflow
@@ -8,11 +6,10 @@ import pandas as pd
 from mlflow.models import ModelSignature
 from mlflow.types import ColSpec, Schema
 
-from prompt_templates import get_markdown_correction_prompt
-from utils import initialize_llm, load_config_and_secrets
+from src.prompt_templates import get_markdown_correction_prompt
+from src.utils import initialize_llm, load_config_and_secrets
 
-# Configure a logger for this module
-logger = logging.getLogger(__name__)
+from src.utils import logger
 
 
 class MarkdownCorrectionService(mlflow.pyfunc.PythonModel):

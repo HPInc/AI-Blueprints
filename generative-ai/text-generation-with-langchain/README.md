@@ -217,14 +217,16 @@ This will:
 
 Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
 
-### Step 5: Lauch the Streamlit UI
+### Step 5: Launch the Streamlit Web App
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/` folder.
-2. Enter the **fields** and have fun!
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-### Successful UI demo
+### Streamlit Preview
 
-![Automated Evaluation Streamlit UI](docs/streamlit_sucess.png)
+![Streamlit Screenshot](docs/streamlit-ss.png)
+
+
 
 ## Contact and Support
 

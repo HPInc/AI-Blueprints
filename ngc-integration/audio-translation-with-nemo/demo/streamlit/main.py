@@ -9,7 +9,8 @@ st.set_page_config(
 )
 
 # ─── Custom CSS ───────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(
+    """
 <style>
 /* Header styling */
 .header {
@@ -55,7 +56,9 @@ st.markdown("""
     line-height: 1.5;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ─── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
@@ -65,28 +68,28 @@ st.markdown(
         <p>Enter text below and get its translation via our MLflow model</p>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # ─── Sidebar Instructions ────────────────────────────────────────────────────
 with st.sidebar:
     st.header("How to Use")
-    st.markdown("""
+    st.markdown(
+        """
     1. The model endpoint is automatically configured for deployment.
-                
+
     2. Type or paste the text to translate.
-                
+
     3. Click **Translate** to see the result.
-    """)
+    """
+    )
 
 # ─── MLflow Endpoint Configuration ───────────────────────────────────────────
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
 # ─── Text Input ───────────────────────────────────────────────────────────────
 text_to_translate = st.text_area(
-    "✏️ Enter text to translate",
-    height=200,
-    placeholder="Type your source text here..."
+    "✏️ Enter text to translate", height=200, placeholder="Type your source text here..."
 )
 
 # ─── Translate Button ─────────────────────────────────────────────────────────
@@ -100,18 +103,17 @@ if translate:
         # — Build MLflow payload —
         payload = {
             "dataframe_records": [
-                {
-                    "source_text": text_to_translate,
-                    "source_serialized_audio": ""
-                }
+                {"source_text": text_to_translate, "source_serialized_audio": ""}
             ],
-            "parameters": {"use_audio": False}
+            "parameters": {"use_audio": False},
         }
 
         try:
             # — Send request —
             with st.spinner("Translating…"):
-                resp = requests.post(MLFLOW_ENDPOINT, json=payload, verify=False, timeout=30)
+                resp = requests.post(
+                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=30
+                )
                 resp.raise_for_status()
                 result = resp.json()
 
@@ -128,17 +130,23 @@ if translate:
             translated = rec.get("translated_text", "")
 
             # — Display results —
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div class="result-box">
                 <strong>🔍 Original:</strong><br>{original}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div class="result-box">
                 <strong>💡 Translation:</strong><br>{translated}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
         except Exception as e:
             st.error(f"Translation request failed: {e}")

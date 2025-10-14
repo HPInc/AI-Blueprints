@@ -116,7 +116,7 @@ This will:
 - Evaluate the model
 - Save model artifacts as pkl files and training metrics as a JSON file to the artifacts folder
 
-Execute the register-model notebook second inside the `notebooks` folder:
+Only after running the 'run-workflow' notebook, execute the 'register-model' notebook second inside the `notebooks` folder:
 
 ```bash
 notebooks/register-model.ipynb
@@ -186,6 +186,17 @@ And as response:
   ]
 }
 ```
+
+### Step 4: Launch the Streamlit Web App
+
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
+
+### Streamlit Preview
+
+![Streamlit Screenshot](docs/streamlit-ss.png)
+
+
 
 ---
 
