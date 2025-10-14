@@ -3,7 +3,7 @@ Standalone Model class.
 
 Business Logic Layer
 - Handles automated evaluation of texts using LLaMA model with structured outputs
-- Manages LLM initialization, scoring criteria, and prediction logic  
+- Manages LLM initialization, scoring criteria, and prediction logic
 - Contains all domain-specific functionality without MLflow dependencies
 - Designed to be framework-agnostic and easily testable
 """
@@ -25,11 +25,11 @@ class Model:
     Standalone evaluation model class with no MLflow inheritance.
     Handles automated evaluation of texts using LLaMA model with structured outputs.
     """
-    
+
     def __init__(self, llm_model_path: str, config: dict = None):
         """
         Initialize the Model with LLM and configuration.
-        
+
         Args:
             llm_model_path: Path to the LLaMA model file
             config: Model configuration dictionary (optional)
@@ -37,7 +37,7 @@ class Model:
         self.llm_model_path = llm_model_path
         self.config = config or {}
         self.llm = None
-        
+
         # Initialize LLM
         try:
             self._load_llm()
@@ -45,7 +45,7 @@ class Model:
         except Exception as e:
             logger.error(f"Failed to initialize Model: {str(e)}")
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
-    
+
     def _load_llm(self) -> None:
         """Load LLaMA model with optimized configuration."""
         try:
@@ -75,32 +75,35 @@ class Model:
     def predict(self, model_input: pd.DataFrame, params: dict = None) -> pd.DataFrame:
         """
         Evaluate texts using LLaMA model and return scores with total.
-        
+
         Args:
             model_input: DataFrame containing texts to evaluate
             params: Dictionary containing:
                 - key_column: Column name for unique identifiers (default: "title")
-                - eval_column: Column name for text to evaluate (default: "abstract") 
+                - eval_column: Column name for text to evaluate (default: "abstract")
                 - criteria: Dictionary mapping criteria names to max scores
-                
+
         Returns:
             pd.DataFrame: Original data merged with evaluation scores and TotalScore
         """
         if params is None:
             params = {}
-        
+
         # Default parameters
         key_col = params.get("key_column", "title")
         eval_col = params.get("eval_column", "abstract")
-        criteria = params.get("criteria", {
-            "Originality": 3,
-            "ScientificRigor": 4,
-            "Clarity": 2,
-            "Relevance": 1,
-            "Feasibility": 3,
-            "Brevity": 2
-        })
-        
+        criteria = params.get(
+            "criteria",
+            {
+                "Originality": 3,
+                "ScientificRigor": 4,
+                "Clarity": 2,
+                "Relevance": 1,
+                "Feasibility": 3,
+                "Brevity": 2,
+            },
+        )
+
         # Handle criteria as JSON string
         if isinstance(criteria, str):
             criteria = json.loads(criteria)
@@ -136,8 +139,10 @@ class Model:
         # Process each row
         results = []
         for _, row in df.iterrows():
-            scores = {crit: scale_score(eval_criterion(row[eval_col], crit), criteria[crit])
-                      for crit in criteria}
+            scores = {
+                crit: scale_score(eval_criterion(row[eval_col], crit), criteria[crit])
+                for crit in criteria
+            }
             scores[key_col] = row[key_col]
             results.append(scores)
 
@@ -145,5 +150,5 @@ class Model:
         # Merge & compute total
         merged = df.merge(scored_df, on=key_col)
         merged["TotalScore"] = merged[list(criteria)].sum(axis=1)
-        
+
         return merged
