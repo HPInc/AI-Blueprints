@@ -406,7 +406,6 @@ def initialize_llm(
             f16_kv=True,
             use_mmap=False,
             verbose=False,
-            use_mmap=False,
             temperature=0.2,
         )
     else:
