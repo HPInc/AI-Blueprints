@@ -75,7 +75,7 @@ class Model:
         self, config: dict, docs_path: str, model_path: str = None, secrets: dict = None
     ):
         """
-        Initialize the Model with configuration and artifacts following PR #208 pattern.
+        Initialize the Model with configuration and artifacts.
 
         Args:
             config: Model configuration dictionary
