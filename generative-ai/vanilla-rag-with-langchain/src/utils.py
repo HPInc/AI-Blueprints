@@ -21,41 +21,44 @@ DEFAULT_MODELS = {
     "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3",
 }
 
-def get_model_path(model_name: str) -> str:
-    """
-    Get the full path to the model file using the artifacts path and model name.
-    
-    Args:
-        model_name: Name of the model file or full path (will extract filename)
-        
-    Returns:
-        Full path to the model file
-    """
-    # Extract just the filename if model_name contains a path
-    filename = os.path.basename(model_name)
-    
-    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
-    model_path = os.path.join(artifacts_path, filename)
-    
-    return model_path
 
 def get_model_path(model_name: str) -> str:
     """
     Get the full path to the model file using the artifacts path and model name.
-    
+
     Args:
         model_name: Name of the model file or full path (will extract filename)
-        
+
     Returns:
         Full path to the model file
     """
     # Extract just the filename if model_name contains a path
     filename = os.path.basename(model_name)
-    
+
     artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
     model_path = os.path.join(artifacts_path, filename)
-    
+
     return model_path
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+
+    Returns:
+        Full path to the model file
+    """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+
+    return model_path
+
 
 # Context window sizes for various models
 MODEL_CONTEXT_WINDOWS = {
@@ -210,7 +213,7 @@ def initialize_llm(
     model_source: str = "local",
     secrets: Optional[Dict[str, Any]] = None,
     hf_repo_id: str = "",
-    local_model_path: Optional[str] = DEFAULT_MODELS["local"]
+    local_model_path: Optional[str] = DEFAULT_MODELS["local"],
 ) -> Any:
     """
     Initialize a language model based on specified source.
@@ -340,7 +343,7 @@ def initialize_llm(
             )
     elif model_source == "local":
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        
+
         # For LlamaCpp, get the context window from the filename
         model_filename = os.path.basename(local_model_path)
         if model_filename in MODEL_CONTEXT_WINDOWS:
