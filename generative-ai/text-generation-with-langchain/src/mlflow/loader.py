@@ -51,10 +51,11 @@ def _load_pyfunc(data_path: str):
     else:
         secrets = None
 
-    # Set up documents path
+    # Set up documents path (optional for text-generation)
     docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+        logger.info(f"Documents directory not found at: {docs_path} - will use None")
+        docs_path = None
 
     # Get model path from config and resolve it for MLflow artifacts context
     model_path = config.get("model_path")
