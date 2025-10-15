@@ -9,7 +9,7 @@ tensorboard==2.19.0
 Jinja2==3.1.6
 peft==0.7.0
 huggingface-hub==0.25.1
-pydantic==2.10.6
+pydantic>=2.4.0,<3.0.0
 deepspeed==0.15.1
 tensorflow==2.19.0
 pillow>=8.0.0

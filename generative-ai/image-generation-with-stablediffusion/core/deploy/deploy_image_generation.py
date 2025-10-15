@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import gc
@@ -30,13 +28,14 @@ _CONFIG_FILENAMES = {
     "cpu": "default_config-cpu.yaml",
 }
 
+
 def _find_config_dir() -> Path:
     """Find the config directory using simple relative path resolution"""
     # Try the simple approach first
     config_dir = get_config_dir()
     if config_dir.exists():
         return config_dir
-    
+
     # Fallback to searching
     required = set(_CONFIG_FILENAMES.values())
     for base in [Path.cwd(), *Path.cwd().parents]:
@@ -51,9 +50,13 @@ def _find_config_dir() -> Path:
 
 
 def _resolve_accelerate_cfg() -> str:
-    base = Path(os.getenv("CONFIG_DIR", "")).expanduser() if os.getenv("CONFIG_DIR") else _find_config_dir()
+    base = (
+        Path(os.getenv("CONFIG_DIR", "")).expanduser()
+        if os.getenv("CONFIG_DIR")
+        else _find_config_dir()
+    )
     n_gpu = torch.cuda.device_count()
-    key   = "multi" if n_gpu >= 2 else "single" if n_gpu == 1 else "cpu"
+    key = "multi" if n_gpu >= 2 else "single" if n_gpu == 1 else "cpu"
     cfg_path = base / _CONFIG_FILENAMES[key]
     if not cfg_path.exists():
         raise FileNotFoundError(cfg_path)
@@ -75,16 +78,16 @@ def deploy_model():
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         gc.collect()
-        
+
         logging.info("Starting model deployment...")
 
-        mlflow.set_tracking_uri('/phoenix/mlflow')
+        mlflow.set_tracking_uri("/phoenix/mlflow")
         mlflow.set_experiment("ImageGeneration")
 
         # Use project-relative paths with proper output directory
         project_root = get_project_root()
         finetuned = str(get_output_dir() / "dreambooth")
-        
+
         # Try local model first, fallback to HuggingFace
         local_base_model = project_root / "models" / "stable-diffusion-2-1"
         if local_base_model.exists():
@@ -98,7 +101,9 @@ def deploy_model():
         # Check if the DreamBooth model exists before proceeding
         if not Path(finetuned).exists():
             logging.warning(f"DreamBooth model not found at {finetuned}")
-            logging.warning("Please run DreamBooth training first or use a different finetuned model path.")
+            logging.warning(
+                "Please run DreamBooth training first or use a different finetuned model path."
+            )
             logging.info("Available files in output directory:")
             output_dir = get_output_dir()
             if output_dir.exists():
@@ -111,10 +116,11 @@ def deploy_model():
 
         with mlflow.start_run(run_name="image_generation_service") as run:
             logging.info("📦 Logging artifacts and model...")
-            
+
             # Log only accelerate config without loading models
-            mlflow.log_artifact(os.environ["ACCELERATE_CONFIG_FILE"],
-                                artifact_path="accelerate_config")
+            mlflow.log_artifact(
+                os.environ["ACCELERATE_CONFIG_FILE"], artifact_path="accelerate_config"
+            )
 
             # Create signature for image generation model
             from mlflow.models.signature import ModelSignature
@@ -140,18 +146,18 @@ def deploy_model():
                 model_finetuning_path=finetuned,
                 demo_folder="../demo"
             )
-            
+
             # Post-deployment cleanup
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
             gc.collect()
-            
+
             model_uri = f"runs:/{run.info.run_id}/image_generation_model"
             mlflow.register_model(model_uri=model_uri,
                                   name="ImageGenerationLogger")
             logging.info("🏷️ Registered 'ImageGenerationLogger' (run %s)", run.info.run_id)
             logging.info("Model deployment completed successfully")
-            
+
     except Exception as e:
         logging.error(f"❌ Model deployment failed: {str(e)}")
         # Cleanup on failure
