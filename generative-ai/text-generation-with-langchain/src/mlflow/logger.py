@@ -5,18 +5,15 @@ MLflow Registration Layer
 - Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
 - Uses MLflow's models-from-code approach for deployment
-- Manages configuration, documents, secrets, and demo assets
+- Manages configuration, data, secrets, and demo assets
 """
 
 import os
-import uuid
-import base64
 import logging
 import shutil
-from typing import Dict, Any, List
+from typing import Dict, Any, Optional
 import yaml
 import tempfile
-import pandas as pd
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -25,8 +22,8 @@ logger = logging.getLogger(__name__)
 class Logger:
     """
     Logger Service for MLflow model logging.
-    This class provides the log_model functionality for packaging RAG-based
-    conversational AI with document retrieval capabilities.
+    This class provides the log_model functionality for packaging text generation
+    services with document retrieval capabilities.
     """
 
     def __init__(self):
@@ -39,10 +36,10 @@ class Logger:
         signature,
         artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
-        docs_path="data/",
-        secrets_dict=None,
-        model_path=None,
-        demo_folder=None,
+        data_path: Optional[str] = None,
+        secrets_dict: Optional[Dict[str, Any]] = None,
+        model_path: Optional[str] = None,
+        demo_folder: Optional[str] = None,
     ):
         """
         Log model using refined models-from-code approach with elegant directory structure.
@@ -54,8 +51,8 @@ class Logger:
         /artifacts/
           └── data/                    # MLflow automatically created
               ├── config.yaml          # Configuration
-              ├── data/                # Documents directory (PDFs, etc.)
-              ├── demo/                # UI components
+              ├── data/                # Documents directory (PDFs, etc.) - optional
+              ├── demo/                # UI components - optional
               ├── models/              # Model files (optional)
               └── secrets.yaml         # Secrets (optional)
 
@@ -63,7 +60,7 @@ class Logger:
             signature: MLflow ModelSignature defining input/output schema for the model
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
-            docs_path: Path to the documents directory
+            data_path: Path to the data directory (optional)
             secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
@@ -102,16 +99,17 @@ class Logger:
             os.makedirs(data_temp_dir, exist_ok=True)
 
             # Copy documents to data subdirectory
-            if docs_path and os.path.exists(docs_path):
-                for item in os.listdir(docs_path):
-                    item_path = os.path.join(docs_path, item)
+            if data_path and os.path.exists(data_path):
+                for item in os.listdir(data_path):
+                    item_path = os.path.join(data_path, item)
                     if os.path.isfile(item_path):
                         shutil.copy2(item_path, data_temp_dir)
                         logger.info(f"Copied document: {item}")
                     elif os.path.isdir(item_path):
                         shutil.copytree(item_path, os.path.join(data_temp_dir, item))
                         logger.info(f"Copied document directory: {item}")
-            logger.info("data folder not provided or doesn't exist - skipping")
+            else:
+                logger.info("data folder not provided or doesn't exist - skipping")
 
             # ✅ Demo folder -> /artifacts/data/demo/
             if demo_folder and os.path.exists(demo_folder):
