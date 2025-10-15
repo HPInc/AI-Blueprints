@@ -48,16 +48,17 @@ class Logger:
         Log model using refined models-from-code approach with elegant directory structure.
 
         This implementation uses MLflow's models-from-code approach exclusively with proper
-        temp directory naming to avoid redundant nesting while maintaining full MLflow 3.1.0 compatibility.
+        temp directory naming to create the model_artifacts subdirectory required by deployment.
 
         Final MLflow structure achieved:
         /artifacts/
           └── data/                    # MLflow automatically created
-              ├── config.yaml          # Configuration
-              ├── data/                # Documents directory (PDFs, etc.)
-              ├── demo/                # UI components
-              ├── models/              # Model files (optional)
-              └── secrets.yaml         # Secrets (optional)
+              └── model_artifacts/     # Created by temp directory naming
+                  ├── config.yaml          # Configuration
+                  ├── data/                # Documents directory (PDFs, etc.)
+                  ├── demo/                # UI components
+                  ├── models/              # Model files (optional)
+                  └── secrets.yaml         # Secrets (optional)
 
         Args:
             signature: MLflow ModelSignature defining input/output schema for the model
@@ -77,8 +78,14 @@ class Logger:
         import os
         import yaml
 
-        # Create temp directory
-        temp_dir = tempfile.mkdtemp(prefix="mlflow_artifacts_")
+        # Create temp directory with specific name for proper artifact structure
+        temp_base = tempfile.gettempdir()
+        temp_dir = os.path.join(temp_base, "model_artifacts")
+        
+        # Clean slate for deterministic results
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        os.makedirs(temp_dir)
 
         try:
             logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
