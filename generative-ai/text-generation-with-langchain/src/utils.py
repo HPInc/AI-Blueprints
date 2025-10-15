@@ -821,7 +821,7 @@ def get_model_path(model_name: str) -> str:
         Full path to the model file
     """
     import os
-
+    
     # Extract just the filename if model_name contains a path
     filename = os.path.basename(model_name)
 
