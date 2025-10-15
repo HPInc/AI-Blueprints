@@ -28,11 +28,17 @@ class Model:
     NO MLflow inheritance - pure domain functionality.
     """
 
-    def __init__(self, config: Dict[str, Any], docs_path: str = None, secrets: Dict[str, Any] = None, model_path: str = None):
+    def __init__(
+        self,
+        config: Dict[str, Any],
+        docs_path: str = None,
+        secrets: Dict[str, Any] = None,
+        model_path: str = None,
+    ):
         """
         Universal constructor compatible with MLflow models-from-code loader.
         Initializes LLM internally based on config and model_path.
-        
+
         Args:
             config: Model configuration dictionary
             docs_path: Path to documents directory (unused in text-generation)
@@ -44,10 +50,10 @@ class Model:
         self.secrets = secrets
         self.model_path = model_path
         self.LOCAL_LOGGING_ACTIVE = False  # Default value
-        
+
         # Initialize logging
         self._setup_logging()
-        
+
         # Initialize LLM based on config and model_path
         self.llm = self._initialize_llm()
 
@@ -79,10 +85,10 @@ class Model:
             search_paths = []
             if self.model_path:
                 search_paths.append(os.path.dirname(self.model_path))
-            if hasattr(self, 'docs_path') and self.docs_path:
+            if hasattr(self, "docs_path") and self.docs_path:
                 models_dir = os.path.join(os.path.dirname(self.docs_path), "models")
                 search_paths.append(models_dir)
-            
+
             model_file_path = None
             for search_path in search_paths:
                 if os.path.exists(search_path):
@@ -90,9 +96,11 @@ class Model:
                     if model_files:
                         model_file_path = model_files[0]
                         break
-            
+
             if not model_file_path:
-                raise RuntimeError(f"No *.gguf model file found. Searched paths: {search_paths}")
+                raise RuntimeError(
+                    f"No *.gguf model file found. Searched paths: {search_paths}"
+                )
 
         self.logger.info(f"Using model file: {model_file_path}")
 
@@ -122,7 +130,7 @@ class Model:
         from core.extract_text.arxiv_search import ArxivSearcher
 
         kwargs: Dict[str, Any] = {"query": query, "max_results": max_results}
-        sig = inspect.signature(ArxivSearcher)  
+        sig = inspect.signature(ArxivSearcher)
         if "cache_only" in sig.parameters:
             kwargs["cache_only"] = not download
         elif "download" in sig.parameters:
@@ -143,6 +151,7 @@ class Model:
 
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
+
             embeddings = HuggingFaceEmbeddings()
         except ImportError:
             raise ImportError(
@@ -150,10 +159,8 @@ class Model:
                 "is installed with: pip install sentence-transformers"
             )
 
-        if any(path.iterdir()):  
-            return Chroma(
-                persist_directory=str(path), embedding_function=embeddings
-            )
+        if any(path.iterdir()):
+            return Chroma(persist_directory=str(path), embedding_function=embeddings)
 
         docs = [
             Document(page_content=p["text"], metadata={"title": p["title"]})
@@ -163,9 +170,7 @@ class Model:
             chunk_size=chunk, chunk_overlap=overlap
         )
         chunks = splitter.split_documents(docs)
-        db = Chroma.from_documents(
-            chunks, embeddings, persist_directory=str(path)
-        )
+        db = Chroma.from_documents(chunks, embeddings, persist_directory=str(path))
         db.persist()
         return db
 
@@ -181,7 +186,9 @@ class Model:
         """Generate script using script generator."""
         from core.generator.script_generator import ScriptGenerator
 
-        generator = ScriptGenerator(chain=chain, use_local_logging=self.LOCAL_LOGGING_ACTIVE)
+        generator = ScriptGenerator(
+            chain=chain, use_local_logging=self.LOCAL_LOGGING_ACTIVE
+        )
         generator.add_section(name="user_prompt", prompt=prompt)
 
         stdin_backup, builtins.input = builtins.input, lambda *_a, **_kw: "y"
@@ -225,7 +232,9 @@ class Model:
             analysis_prompt = row.get(
                 "analysis_prompt", "Summarise the content in ≈150 Portuguese words."
             )
-            generation_prompt = (row.get("generation_prompt") or DEFAULT_SCRIPT_PROMPT).strip()
+            generation_prompt = (
+                row.get("generation_prompt") or DEFAULT_SCRIPT_PROMPT
+            ).strip()
 
             logging.info(
                 "(row %d) extract=%s | analyse=%s | generate=%s — %s",
@@ -236,10 +245,9 @@ class Model:
                 query,
             )
 
-            papers = (
-                self._create_arxiv_searcher(query, k, do_extract)
-                .search_and_extract()
-            )
+            papers = self._create_arxiv_searcher(
+                query, k, do_extract
+            ).search_and_extract()
 
             if do_extract and not (do_analyse or do_generate):
                 results.append(
@@ -252,7 +260,9 @@ class Model:
 
             summary, chain = ("", None)
             if do_analyse or do_generate:
-                summary, chain = self._summarise(papers, analysis_prompt, chunk, overlap)
+                summary, chain = self._summarise(
+                    papers, analysis_prompt, chunk, overlap
+                )
 
             if do_analyse and not do_generate:
                 results.append(
