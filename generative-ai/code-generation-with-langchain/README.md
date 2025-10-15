@@ -227,17 +227,16 @@ And as response:
 
 ```
 
-### Step 5: Launch the Streamlit UI
+### Step 5: Launch the Streamlit Web App
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-2. Navigate to the shown URL and view the code genration.
+### Streamlit Preview
 
-### Successful UI demo
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-- Streamlit
 
-  ![Code Generation Streamlit UI](docs/streamlit-ui-code-generation.png)
 
 ---
 

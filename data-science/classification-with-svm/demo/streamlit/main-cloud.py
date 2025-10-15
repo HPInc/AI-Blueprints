@@ -3,15 +3,13 @@ import requests, urllib3, base64
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from pathlib import Path
 
-# ────────────────  SET-UP  ─────────────────  
+# ────────────────  SET-UP  ─────────────────
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(
-    page_title="Iris Flower Classifier",
-    page_icon="🌸",
-    layout="centered"
+    page_title="Iris Flower Classifier", page_icon="🌸", layout="centered"
 )
 
-# ────────────────  ALL-STYLES IN ONE BLOCK  ─────────────  
+# ────────────────  ALL-STYLES IN ONE BLOCK  ─────────────
 st.markdown(
     """
     <style>
@@ -87,20 +85,20 @@ st.markdown(
         padding-top: 1rem !important;     /* extra space above */
         padding-bottom: 1.2rem !important; /* extra space below */
     }
-    
+
     .stSlider > div {
         height: 90px !important; /* taller overall container */
     }
-    
+
     .stSlider label {
         font-size: 22px !important; /* make labels bigger */
     }
-    
+
     .stSlider .css-1r6slb0, /* track container */
     .stSlider .css-14xtw13 { /* slider wrapper in newer versions */
         height: 14px !important; /* thicker track */
     }
-    
+
     .stSlider .st-bo { /* slider thumb wrapper */
         height: 24px !important;
         width: 24px !important;
@@ -115,28 +113,36 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
-# ────────────────  LOGO ROW  ─────────────────  
-def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
 
-assets = Path('data-science/classification-with-svm/demo/streamlit') / "assets"
-hp_uri  = uri_from(assets / "HP-Logo.png")
+# ────────────────  LOGO ROW  ─────────────────
+def uri_from(path: Path) -> str:
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
+
+assets = Path("data-science/classification-with-svm/demo/streamlit") / "assets"
+hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
   <div style="display:flex;justify-content:space-between;
               align-items:center;margin-bottom:1.5rem">
     <img src="{hp_uri}"  alt="HP Logo">
     <img src="{ais_uri}" alt="AI Studio Logo">
     <img src="{zhp_uri}" alt="Z by HP Logo">
   </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-# ────────────────  CORE UI ──────────────────  
+# ────────────────  CORE UI ──────────────────
 st.title("🌸 Iris Flower Classifier")
 st.write("Provide flower measurements and get the predicted Iris species.")
 
@@ -146,27 +152,28 @@ MLFLOW_ENDPOINT = "https://ffe8d707c6a1.ngrok.app/invocations"
 # Feature sliders
 st.header("Input Features (cm)")
 sepal_length = st.slider("Sepal length", 4.0, 10.0, 5.4, 0.1)
-sepal_width  = st.slider("Sepal width",  2.0, 10.0, 3.4, 0.1)
+sepal_width = st.slider("Sepal width", 2.0, 10.0, 3.4, 0.1)
 petal_length = st.slider("Petal length", 1.0, 10.0, 1.3, 0.1)
-petal_width  = st.slider("Petal width",  0.1, 10.0, 0.2, 0.1)
+petal_width = st.slider("Petal width", 0.1, 10.0, 0.2, 0.1)
 
-# ────────────  PREDICTION LOGIC  ─────────────  
+# ────────────  PREDICTION LOGIC  ─────────────
 if st.button("Predict Species"):
     payload = {
         "inputs": {
             "sepal-length": [sepal_length],
-            "sepal-width":  [sepal_width],
+            "sepal-width": [sepal_width],
             "petal-length": [petal_length],
-            "petal-width":  [petal_width],
+            "petal-width": [petal_width],
         },
-        "params": {}
+        "params": {},
     }
-    headers = {"Accept":"application/json","Content-Type":"application/json"}
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
     try:
         with st.spinner("🔄 Calling inference endpoint…"):
-            resp = requests.post(MLFLOW_ENDPOINT, json=payload, headers=headers,
-                                  timeout=10, verify=False)
+            resp = requests.post(
+                MLFLOW_ENDPOINT, json=payload, headers=headers, timeout=10, verify=False
+            )
             resp.raise_for_status()
             data = resp.json()
 
@@ -187,6 +194,6 @@ if st.button("Predict Species"):
     except Exception as e:
         st.error(f"❗ An unexpected error occurred: {e}")
 
-# ────────────────  FOOTER  ─────────────────  
+# ────────────────  FOOTER  ─────────────────
 st.write("---")
 st.write("Built with ❤️ using HP AI Studio")
