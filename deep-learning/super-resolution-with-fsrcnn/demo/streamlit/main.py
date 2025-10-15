@@ -11,13 +11,12 @@ os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="Image Super Resolution",
-    page_icon="📷",
-    layout="centered"
+    page_title="Image Super Resolution", page_icon="📷", layout="centered"
 )
 
 # --- Custom Style ---
-st.markdown("""
+st.markdown(
+    """
     <style>
         .block-container {
             padding-top: 0 !important;
@@ -55,19 +54,27 @@ st.markdown("""
         height: auto !important;
 }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Logo ---
 
+
 def uri_from(path: Path) -> str:
-    return f"data:image/{path.suffix[1:].lower()};base64," + base64.b64encode(path.read_bytes()).decode()
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
 
 assets = Path("assets")
 hp_uri = uri_from(assets / "HP-Logo.png")
 ais_uri = uri_from(assets / "AI-Studio.png")
 zhp_uri = uri_from(assets / "Z-HP-logo.png")
 
-st.markdown(f"""
+st.markdown(
+    f"""
 <div style="display:flex;justify-content:space-between;
                 align-items:center;margin-bottom:1.5rem;
                 background-color: transparent;
@@ -76,10 +83,15 @@ st.markdown(f"""
         <img src="{ais_uri}" alt="AI Studio Logo" style="width:90px;height:auto;">
         <img src="{zhp_uri}" alt="Z by HP Logo" style="width:90px;height:auto;">
     </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Header ---
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Super Resolution</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Super Resolution</h1>",
+    unsafe_allow_html=True,
+)
 
 # --- MLflow API Configuration ---
 # Standardized MLflow endpoint for containerized deployment
@@ -129,7 +141,11 @@ if st.button("Get the image with super resolution"):
 
 # --- Display Enhanced Image and Download Button ---
 if "enhanced_image" in st.session_state:
-    st.image(st.session_state["enhanced_image"], caption="Super Resolution Output", use_container_width=True)
+    st.image(
+        st.session_state["enhanced_image"],
+        caption="Super Resolution Output",
+        use_container_width=True,
+    )
 
     buffer = BytesIO()
     st.session_state["enhanced_image"].save(buffer, format="PNG")
@@ -139,7 +155,7 @@ if "enhanced_image" in st.session_state:
         label="📥 Download Image",
         data=buffer,
         file_name="super_resolution_output.png",
-        mime="image/png"
+        mime="image/png",
     )
 
 # --- Footer ---

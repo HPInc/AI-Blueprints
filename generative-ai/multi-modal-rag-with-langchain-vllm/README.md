@@ -151,7 +151,7 @@ Using `secrets.yaml` (Freemium User)
   ```
   AIS_ADO_TOKEN: "YOUR_PAT_TOKEN"
   ```
-    
+
 ---
 
 ## Usage

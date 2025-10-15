@@ -8,7 +8,7 @@ On Ubuntu, AI Studio requires each OS user to be a member of a specific group ca
 
 To add a user to the AI Studio group:
 
-1. Run the following command, entering your password if prompted. 
+1. Run the following command, entering your password if prompted.
     ```bash
     sudo usermod -a -G aistudio $USER
     ```

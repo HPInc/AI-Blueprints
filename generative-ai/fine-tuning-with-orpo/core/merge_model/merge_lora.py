@@ -10,12 +10,13 @@ from trl import setup_chat_format
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 from src.utils import get_fine_tuned_models_dir
 
+
 def merge_lora_and_save(
     base_model_id: str,
     finetuned_lora_path: str,
     base_local_dir: str = None,
     use_bfloat16: bool = False,
-    add_chat_template: bool = True
+    add_chat_template: bool = True,
 ):
     """
     Merges LoRA fine-tuned weights into a base model and saves the resulting model locally.
@@ -28,7 +29,7 @@ def merge_lora_and_save(
     Args:
         base_model_id (str): Hugging Face model ID or local path to the base model.
         finetuned_lora_path (str): Directory path containing LoRA adapter weights.
-        base_local_dir (str, optional): Base directory where the merged model will be saved. 
+        base_local_dir (str, optional): Base directory where the merged model will be saved.
             If None, uses the project's fine-tuned models directory.
         use_bfloat16 (bool, optional): If True, uses bfloat16 precision; otherwise uses float16. Defaults to False.
         add_chat_template (bool, optional): Whether to apply a chat template if the tokenizer lacks one. Defaults to True.
@@ -50,7 +51,7 @@ def merge_lora_and_save(
             low_cpu_mem_usage=True,
             return_dict=True,
             torch_dtype=torch_dtype,
-            device_map="auto"
+            device_map="auto",
         )
     except Exception as e:
         raise RuntimeError(f"Failed to load base model or tokenizer: {e}")
@@ -59,7 +60,9 @@ def merge_lora_and_save(
     vocab_size_tokenizer = len(tokenizer)
     vocab_size_model = model.get_input_embeddings().num_embeddings
     if vocab_size_tokenizer != vocab_size_model:
-        print(f"⚠️ Resizing token embeddings: model ({vocab_size_model}) → tokenizer ({vocab_size_tokenizer})")
+        print(
+            f"⚠️ Resizing token embeddings: model ({vocab_size_model}) → tokenizer ({vocab_size_tokenizer})"
+        )
         model.resize_token_embeddings(vocab_size_tokenizer)
 
     # Optionally apply chat template formatting
@@ -83,12 +86,12 @@ def merge_lora_and_save(
     # Define save path
     base_model_name = base_model_id.split("/")[-1]
     merged_model_name = f"Orpo-{base_model_name}-FT"
-    
+
     if base_local_dir:
         save_path = os.path.join(base_local_dir, merged_model_name)
     else:
         save_path = str(get_fine_tuned_models_dir() / merged_model_name)
-    
+
     os.makedirs(save_path, exist_ok=True)
 
     # Save merged model and tokenizer

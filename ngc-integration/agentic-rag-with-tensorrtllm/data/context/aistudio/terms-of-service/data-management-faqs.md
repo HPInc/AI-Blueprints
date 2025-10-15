@@ -3,7 +3,7 @@ title:  'Data Management FAQs'
 sidebar_position: 1
 ---
 
-# Z by HP AI Studio Data Management FAQs	 
+# Z by HP AI Studio Data Management FAQs
 Last Updated: April 2025
 
 This document answers the commonly asked questions related to AI Studio, data collection, transmission, storage, retention, and disposal of data.
@@ -12,17 +12,17 @@ This document answers the commonly asked questions related to AI Studio, data co
 
 > **What is AI Studio?**
 
-Z by HP AI Studio is an enterprise-grade SaaS platform designed for collaboration in local compute environments. With AI Studio users can create an account, download and install the app on Windows or Linux and invite collaborators to start creating AI projects locally and accelerate AI model development. 
+Z by HP AI Studio is an enterprise-grade SaaS platform designed for collaboration in local compute environments. With AI Studio users can create an account, download and install the app on Windows or Linux and invite collaborators to start creating AI projects locally and accelerate AI model development.
 
 > **How are updates provided to AI Studio?**
 
-Users are made aware of updates to AI Studio by notice provided through the application. Users can then elect to update/install new versions of the software. New features may require that all collaborators update to the latest version to take advantage of features. To update, users will need to visit ‘Account’ > ‘General’ > ‘App Version’ to review release notes and update the software.  Updates are also posted on ZDocs and on the Z by HP Data Science and AI Community. 
+Users are made aware of updates to AI Studio by notice provided through the application. Users can then elect to update/install new versions of the software. New features may require that all collaborators update to the latest version to take advantage of features. To update, users will need to visit ‘Account’ > ‘General’ > ‘App Version’ to review release notes and update the software.  Updates are also posted on ZDocs and on the Z by HP Data Science and AI Community.
 
 ## Cloud Technology/Data Centers
 
 > **What cloud technology and data centers are leveraged by AI Studio?**
 
-AI Studio services are hosted on Amazon Web Services (AWS).  All data associated with a given account is hosted in a single data center. 
+AI Studio services are hosted on Amazon Web Services (AWS).  All data associated with a given account is hosted in a single data center.
 
 To learn more, visit [AWS.](https://aws.amazon.com.)
 
@@ -39,7 +39,7 @@ Account owners follow a link received at their designated owner email address. T
 
 Data created through the use of Z by HP AI Studio (such as notebooks, ML Flow experiments and tensorboard logs) is first stored locally on the device where it originates. Users can share files with other users of the account by placing them in a project’s “shared” folder. AI Studio establishes an end-to-end encrypted peer-to-peer connection between the account users to sync data. If a peer-to-peer connection is not possible due to network restrictions, Z by HP AI Studio will use a relay hosted in the cloud to facilitate the transfer between peers. Cloud relays (and by association HP itself) cannot decrypt the data as it traverses the relay because the associated keys are generated and stored only within the local filesystem of each peer.
 
-AI Studio offers functionality that allows users to integrate data stored in various cloud storage solutions.  Access to that data is controlled by existing mechanisms established within the user’s IT organization.  When AI Studio accesses the data, it is sent directly to or from the device and then to or from the cloud provider using the cloud provider's software libraries. 
+AI Studio offers functionality that allows users to integrate data stored in various cloud storage solutions.  Access to that data is controlled by existing mechanisms established within the user’s IT organization.  When AI Studio accesses the data, it is sent directly to or from the device and then to or from the cloud provider using the cloud provider's software libraries.
 
 > **Can the customer influence in which region/data center their data is processed or sent to?**
 
@@ -129,7 +129,7 @@ The application requires specific data to function and deliver application featu
 |Data Category |	Opt-out |	Additional Comments|
 | :------------- |:-------------|:-------------|
 |Account data|	No	|
-|Application data|	No	
+|Application data|	No
 |Contact data|	No|	A customer's first name, last name, e-mail address, and company/account name, and country information are mandatory information for a customer to provide for log in and entitlement validation.|
 |Device Data; Feature usage Data; Location Data; Entitlement Data| No |Device data is required for AI Studio to deliver its functionalities. To deliver functional requirements and support application regional compliance, device, feature, location, and entitlement data are mandatory information for a customer to provide.|
 |Security Credentials| No |AI Studio stores and uses tokens for authorization to cloud services.|

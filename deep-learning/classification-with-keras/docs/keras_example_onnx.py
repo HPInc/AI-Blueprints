@@ -25,18 +25,19 @@ TRITON_ENDPOINT = "http://localhost:8000/v2/models/keras/infer"
 def image_from_base64(b64_string: str) -> np.ndarray:
     """Decode base64 to array shape (1,28,28,1)"""
     img_bytes = base64.b64decode(b64_string)
-    img = Image.open(io.BytesIO(img_bytes)).convert('L').resize((28, 28))
+    img = Image.open(io.BytesIO(img_bytes)).convert("L").resize((28, 28))
     img_array = np.array(img, dtype=np.float32) / 255.0
     return img_array.reshape(1, 28, 28, 1)
+
 
 def run_triton_inference(endpoint: str, image: np.ndarray):
     """Runs inference on Triton for a single image."""
     print("🚀 MNIST Triton Inference (BASE64)")
     print("=" * 40)
     print(f"🌐 Endpoint: {endpoint}")
-   
+
     try:
-        server_url = endpoint.split('/v2/')[0]
+        server_url = endpoint.split("/v2/")[0]
         health_response = requests.get(f"{server_url}/v2/health/ready", timeout=5)
         if health_response.status_code != 200:
             print(f"❌ Triton server not ready. Status: {health_response.status_code}")
@@ -49,12 +50,14 @@ def run_triton_inference(endpoint: str, image: np.ndarray):
 
     # Prepare Triton inference request
     try:
-        inputs = [{
-            "name": "input",
-            "shape": list(image.shape),
-            "datatype": "FP32",
-            "data": image.flatten().tolist()
-        }]
+        inputs = [
+            {
+                "name": "input",
+                "shape": list(image.shape),
+                "datatype": "FP32",
+                "data": image.flatten().tolist(),
+            }
+        ]
         outputs = [{"name": "output"}]
         request_data = {"inputs": inputs, "outputs": outputs}
 
@@ -62,7 +65,7 @@ def run_triton_inference(endpoint: str, image: np.ndarray):
             endpoint,
             headers={"Content-Type": "application/json"},
             data=json.dumps(request_data),
-            timeout=10
+            timeout=10,
         )
 
         if response.status_code != 200:
@@ -77,7 +80,8 @@ def run_triton_inference(endpoint: str, image: np.ndarray):
     except Exception as e:
         print(f"❌ Inference error: {e}")
 
+
 if __name__ == "__main__":
-    b64_clean = BASE_64.strip().replace('\n', '').replace('\r', '')
+    b64_clean = BASE_64.strip().replace("\n", "").replace("\r", "")
     image = image_from_base64(b64_clean)
     run_triton_inference(TRITON_ENDPOINT, image)

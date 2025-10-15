@@ -1,5 +1,5 @@
 mlflow==2.21.2
-langchain 
+langchain
 chromadb
 langchain_core
 langchain_huggingface
@@ -7,4 +7,3 @@ langchain_community
 sentence-transformers
 gitpython
 pyyaml
-
