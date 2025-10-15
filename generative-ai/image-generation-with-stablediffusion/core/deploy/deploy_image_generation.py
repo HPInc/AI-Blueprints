@@ -18,8 +18,9 @@ from src.utils import get_project_root, get_config_dir, get_output_dir
 # Import the new service
 from src.mlflow.logger import Logger
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s — %(levelname)s — %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s — %(levelname)s — %(message)s"
+)
 
 
 _CONFIG_FILENAMES = {
@@ -126,14 +127,16 @@ def deploy_model():
             from mlflow.models.signature import ModelSignature
             from mlflow.types.schema import Schema, ColSpec
 
-            input_schema = Schema([
-                ColSpec("string", "prompt"),
-                ColSpec("boolean", "use_finetuning"),
-                ColSpec("integer", "height"),
-                ColSpec("integer", "width"),
-                ColSpec("integer", "num_images"),
-                ColSpec("integer", "num_inference_steps"),
-            ])
+            input_schema = Schema(
+                [
+                    ColSpec("string", "prompt"),
+                    ColSpec("boolean", "use_finetuning"),
+                    ColSpec("integer", "height"),
+                    ColSpec("integer", "width"),
+                    ColSpec("integer", "num_images"),
+                    ColSpec("integer", "num_inference_steps"),
+                ]
+            )
             output_schema = Schema([ColSpec("string", "output_images")])
             signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
@@ -144,7 +147,7 @@ def deploy_model():
                 config_path="../configs/config.yaml",
                 model_no_finetuning_path=base,
                 model_finetuning_path=finetuned,
-                demo_folder="../demo"
+                demo_folder="../demo",
             )
 
             # Post-deployment cleanup
@@ -153,9 +156,10 @@ def deploy_model():
             gc.collect()
 
             model_uri = f"runs:/{run.info.run_id}/image_generation_model"
-            mlflow.register_model(model_uri=model_uri,
-                                  name="ImageGenerationLogger")
-            logging.info("🏷️ Registered 'ImageGenerationLogger' (run %s)", run.info.run_id)
+            mlflow.register_model(model_uri=model_uri, name="ImageGenerationLogger")
+            logging.info(
+                "🏷️ Registered 'ImageGenerationLogger' (run %s)", run.info.run_id
+            )
             logging.info("Model deployment completed successfully")
 
     except Exception as e:

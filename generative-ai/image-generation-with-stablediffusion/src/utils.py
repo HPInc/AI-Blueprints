@@ -232,10 +232,11 @@ def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
 
     print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
 
+
 def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any]:
     """
     Alias for load_configuration for backward compatibility.
-    
+
     Args:
         config_path: Path to the configuration YAML file.
 
@@ -243,6 +244,7 @@ def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any
         Dictionary containing the project configurations.
     """
     return load_configuration(config_path)
+
 
 def load_configuration(
     config_path: str = "../../configs/config.yaml",
