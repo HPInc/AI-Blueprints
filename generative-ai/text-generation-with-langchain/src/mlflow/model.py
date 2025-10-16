@@ -110,7 +110,7 @@ class Model:
         start = time.perf_counter()
         llm = LlamaCpp(
             model_path=model_file_path,
-            n_gpu_layers=int(self.config.get("n_gpu_layers", 1)),  # 0 → CPU-only
+            n_gpu_layers=-1,  # 0 → CPU-only
             n_batch=256,
             n_ctx=4096,
             max_tokens=1024,
