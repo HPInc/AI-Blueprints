@@ -117,8 +117,9 @@ class Model:
             f16_kv=True,
             temperature=0.2,
             callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
-            verbose=False,
+            verbose=True,
             streaming=False,
+            use_mmap=False,
         )
         self.logger.info("🔹 LlamaCpp loaded in %.1fs", time.perf_counter() - start)
         return llm
