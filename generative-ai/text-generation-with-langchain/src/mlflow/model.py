@@ -115,7 +115,7 @@ class Model:
             n_ctx=4096,
             max_tokens=1024,
             f16_kv=True,
-            temperature=0.2,
+            temperature=0,
             callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
             verbose=True,
             streaming=False,
