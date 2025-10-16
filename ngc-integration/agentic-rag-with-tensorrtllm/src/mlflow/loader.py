@@ -1,6 +1,6 @@
 """
-MLflow models-from-code loader module for Logger.
-This module provides the _load_pyfunc function required by MLflow's.
+MLflow models-from-code loader module for Agentic RAG with TensorRT-LLM.
+This module provides the _load_pyfunc function required by MLflow's models-from-code approach.
 """
 
 import os
@@ -19,17 +19,17 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration
-            - data/: Document directory with AIStudioDoc.pdf
+            - data/: Document directory with PDFs and chroma database
             - secrets.yaml: Secrets (optional)
-            - models/: LLM model files (optional, can be remote path)
+            - models/: TensorRT-LLM model files (optional, can be remote path)
             - demo/: Demo folder with UI components (optional)
 
     Returns:
-        Model: Initialized model instance ready for prediction
+        Model: Initialized agentic RAG model instance ready for prediction
     """
     from src.mlflow.model import Model
 
-    logger.info(f"Loading Model from artifacts at: {data_path}")
+    logger.info(f"Loading Agentic RAG Model from artifacts at: {data_path}")
 
     from src.utils import load_config
 
@@ -54,32 +54,43 @@ def _load_pyfunc(data_path: str):
     # Set up documents path
     docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+        # Create docs_path if it doesn't exist for agentic RAG with memory storage
+        os.makedirs(docs_path, exist_ok=True)
+        logger.info(f"Created documents directory at: {docs_path}")
 
-    # Get model path from config and resolve it for MLflow artifacts context
+    # Get model path from config - handle HF repo IDs vs local paths
     model_path = config.get("model_path")
     if model_path:
-        from src.utils import get_model_path
+        # Check if it looks like a HuggingFace repo ID (contains '/' but not absolute path)
+        if "/" in model_path and not os.path.isabs(model_path):
+            # This is likely a HF repo ID, pass it through directly
+            logger.info(f"Using HuggingFace model repo: {model_path}")
+        else:
+            # This might be a local path, try to resolve it from artifacts
+            from src.utils import get_model_path
 
-        # Set MODEL_ARTIFACTS_PATH for get_model_path function
-        # In the artifacts structure, models are stored in the models/ subdirectory
-        models_artifacts_path = os.path.join(data_path, "models")
-        os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
+            # Set MODEL_ARTIFACTS_PATH for get_model_path function
+            # In the artifacts structure, models are stored in the models/ subdirectory
+            models_artifacts_path = os.path.join(data_path, "models")
+            os.environ["MODEL_ARTIFACTS_PATH"] = models_artifacts_path
 
-        # Resolve model path relative to artifacts
-        resolved_model_path = get_model_path(model_path)
-        model_path = resolved_model_path
-        logger.info(f"Resolved model path: {model_path}")
+            # Resolve model path relative to artifacts
+            resolved_model_path = get_model_path(model_path)
+            if os.path.exists(resolved_model_path):
+                model_path = resolved_model_path
+                logger.info(f"Resolved local model path: {model_path}")
+            else:
+                logger.info(f"Local model path not found in artifacts, using original: {model_path}")
     else:
-        logger.info("No model_path found in config, Model will use default fallback")
+        logger.info("No model_path found in config, Model will use default TensorRT-LLM fallback")
 
     # Initialize Model
     try:
         model = Model(
             config=config, docs_path=docs_path, secrets=secrets, model_path=model_path
         )
-        logger.info("Model initialized successfully")
+        logger.info("Agentic RAG Model initialized successfully")
         return model
     except Exception as e:
-        logger.error(f"Failed to initialize Model: {str(e)}")
+        logger.error(f"Failed to initialize Agentic RAG Model: {str(e)}")
         raise RuntimeError(f"Model loading failed: {str(e)}") from e

@@ -18,13 +18,13 @@ from typing import Any, Dict, List, Optional, TypedDict
 
 import pandas as pd
 import tensorrt_llm
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import StateGraph, START, END
 
 # Add the src directory to the path to import utilities
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from trt_llm_langchain import TensorRTLangchain
+from src.trt_llm_langchain import TensorRTLangchain
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class Model:
         from_memory: Optional[bool]
         messages: List[Dict[str, Any]]  # full conversation with LLM
 
-    def __init__(self, config: dict, chroma_dir: str, memory_path: str):
+    def __init__(self, config: dict, docs_path: str, secrets=None, model_path=None):
         """
         Direct dependency injection - no MLflow context.
         Extract all initialization logic from original service.
@@ -110,27 +110,48 @@ class Model:
                 encode_kwargs={"normalize_embeddings": True},
             )
 
-        # 2. Load persisted Chroma vectorstore
+        # 2. Set up Chroma vectorstore directory based on docs_path
+        chroma_dir = os.path.join(docs_path, "chroma_db") if docs_path else "data/chroma_db"
         chroma_dir_path = Path(chroma_dir)
+        chroma_dir_path.mkdir(parents=True, exist_ok=True)
+        
         self._vectorstore = Chroma(
             collection_name="-".join(self.TOPIC.split()),
             persist_directory=str(chroma_dir_path),
             embedding_function=self._embed_model,
         )
 
-        # 3. Load LLM via TensorRTLangchain
+        # 3. Load LLM via TensorRTLangchain using model_path if provided
         sampling_params = tensorrt_llm.SamplingParams(
             temperature=0.0,
             top_k=1,
             repetition_penalty=1.2,
             stop_token_ids=[128009],
         )
+        
+        # Determine model path - use config model_path or default HF repo
+        # If model_path looks like a HF repo ID (contains '/'), use it directly
+        # Otherwise, check if it's a local path that exists
+        original_model_path = self.config.get("model_path", "nvidia/Llama-3.1-Nemotron-Nano-8B-v1")
+        
+        if model_path and os.path.exists(model_path):
+            # MLflow artifacts provided a local path that exists
+            llm_model_path = model_path
+        elif "/" in original_model_path and not os.path.isabs(original_model_path):
+            # Looks like a HF repo ID (e.g., "nvidia/Llama-3.1-Nemotron-Nano-8B-v1")
+            llm_model_path = original_model_path
+        else:
+            # Fallback to default HF repo
+            llm_model_path = "nvidia/Llama-3.1-Nemotron-Nano-8B-v1"
+        
+        self._logger.info(f"Initializing TensorRT LLM with model path: {llm_model_path}")
         self._llm = TensorRTLangchain(
-            model_path="nvidia/Llama-3.1-Nemotron-Nano-8B-v1",
+            model_path=llm_model_path,
             sampling_params=sampling_params,
         )
 
         # 4. Initialize persistent memory
+        memory_path = os.path.join(docs_path, "memory.json") if docs_path else "data/memory.json"
         memory_path_obj = Path(memory_path)
         memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
         if not memory_path_obj.exists():
@@ -407,3 +428,29 @@ class Model:
             "retrieved_chunks": retrieved_chunks,
             "messages": messages,
         }
+
+    def get_onnx_export_config(self):
+        """
+        Get ONNX export configuration for the model.
+        
+        Returns:
+            ONNX export configuration object for this model
+        """
+        try:
+            from src.onnx_utils import ModelExportConfig
+            
+            # Create a sample input for ONNX export
+            sample_input = pd.DataFrame({"query": ["What is AI Studio?"]})
+            
+            return ModelExportConfig(
+                model=self,
+                model_name="agentic_rag_tensorrt_llm",
+                input_sample=sample_input,
+                create_triton_structure=True
+            )
+        except ImportError:
+            logger.warning("ONNX utilities not available - ONNX export disabled")
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to create ONNX export config: {e}")
+            return None

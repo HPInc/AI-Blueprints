@@ -1,5 +1,5 @@
 """
-MLflow models-from-code implementation for Vanilla RAG with LangChain.
+MLflow models-from-code implementation for Agentic RAG with TensorRT-LLM.
 
 This module provides the standardized universal structure for MLflow model logging
 and loading using the models-from-code approach.
