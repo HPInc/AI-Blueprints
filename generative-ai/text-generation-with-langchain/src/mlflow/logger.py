@@ -144,7 +144,7 @@ class Logger:
                 name=artifact_path,
                 loader_module="src.mlflow.loader",
                 data_path=temp_dir,
-                code_paths=["../src"],
+                code_paths=["../src", "../core"],
                 signature=signature,
                 pip_requirements="../requirements.txt",
             )
