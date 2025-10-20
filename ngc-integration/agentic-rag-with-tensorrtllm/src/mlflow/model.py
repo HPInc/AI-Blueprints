@@ -585,7 +585,7 @@ class Model(mlflow.pyfunc.PythonModel):
             model_configs = [
                 ModelExportConfig(
                     model=embedding_model,  # Pre-loaded embedding model!
-                    model_name="sentence_transformers_model",  # ONNX file naming
+                    model_name="embedding_model",  # ONNX file naming
                     input_sample=embedding_input_sample, 
                     task="feature-extraction", 
                     opset=17,
@@ -598,78 +598,100 @@ class Model(mlflow.pyfunc.PythonModel):
                     }
                 )
             ]
+            logger.info("Added embedding model to ONNX export configuration with model_name: embedding_model")
 
-            # Try to add TensorRT-LLM model for ONNX export if available
+            # Try to add TensorRT-LLM model for ONNX export
+            logger.info("Attempting to add TensorRT-LLM model for ONNX export...")
             try:
-                if hasattr(self._llm, 'model') and hasattr(self._llm.model, 'cuda'):
-                    # If TensorRT model has a PyTorch-compatible interface
-                    from transformers import AutoTokenizer, AutoModelForCausalLM
+                from transformers import AutoTokenizer, AutoModelForCausalLM
+                
+                class TorchWrapper(torch.nn.Module):
+                    """Wrapper to make TensorRT model ONNX-compatible."""
+                    def __init__(self, model):
+                        super().__init__()
+                        self.model = model
+
+                    def forward(self, input_ids, attention_mask):
+                        # Remove use_cache for ONNX compatibility
+                        outputs = self.model(
+                            input_ids=input_ids,
+                            attention_mask=attention_mask,
+                            use_cache=False
+                        )
+                        return outputs.logits if hasattr(outputs, 'logits') else outputs
+
+                # Create sample inputs for LLM model
+                tokenizer = AutoTokenizer.from_pretrained(self.default_llm_model)
+                tokenizer.pad_token = tokenizer.eos_token
+                llm_inputs = tokenizer(
+                    "Hello", 
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=8 
+                )
+
+                llm_input_sample = (
+                    llm_inputs["input_ids"].to(device), 
+                    llm_inputs["attention_mask"].to(device)
+                )
+
+                # Try to load a PyTorch version for ONNX export
+                logger.info(f"Attempting to load PyTorch model from: {self.resolved_model_path}")
+                try:
+                    # Use the resolved model path (could be HF cache or local path)
+                    model_path_for_loading = self.resolved_model_path
                     
-                    class TorchWrapper(torch.nn.Module):
-                        """Wrapper to make TensorRT model ONNX-compatible."""
-                        def __init__(self, model):
-                            super().__init__()
-                            self.model = model
-
-                        def forward(self, input_ids, attention_mask):
-                            # Remove use_cache for ONNX compatibility
-                            outputs = self.model(
-                                input_ids=input_ids,
-                                attention_mask=attention_mask,
-                                use_cache=False
-                            )
-                            return outputs.logits if hasattr(outputs, 'logits') else outputs
-
-                    # Create sample inputs for LLM model
-                    tokenizer = AutoTokenizer.from_pretrained(self.default_llm_model)
-                    tokenizer.pad_token = tokenizer.eos_token
-                    llm_inputs = tokenizer(
-                        "Hello", 
-                        return_tensors="pt",
-                        padding=True,
-                        truncation=True,
-                        max_length=8 
-                    )
-
-                    llm_input_sample = (
-                        llm_inputs["input_ids"].to(device), 
-                        llm_inputs["attention_mask"].to(device)
-                    )
-
-                    # Try to load a PyTorch version for ONNX export
-                    try:
+                    # If it's a local directory path from HF cache, use it directly
+                    # Otherwise fall back to the HF model ID
+                    if os.path.exists(model_path_for_loading) and os.path.isdir(model_path_for_loading):
+                        logger.info(f"Loading PyTorch model from local cache: {model_path_for_loading}")
+                        pytorch_model = AutoModelForCausalLM.from_pretrained(
+                            model_path_for_loading, 
+                            torch_dtype=dtype,
+                            local_files_only=True
+                        ).to(device)
+                    else:
+                        logger.info(f"Loading PyTorch model from HF hub: {self.default_llm_model}")
                         pytorch_model = AutoModelForCausalLM.from_pretrained(
                             self.default_llm_model, 
                             torch_dtype=dtype
                         ).to(device)
-                        pytorch_model.eval()
-                        
-                        wrapped_model = TorchWrapper(pytorch_model)
-                        
-                        model_configs.append(
-                            ModelExportConfig(
-                                model=wrapped_model,
-                                model_name="tensorrt_llm_model",
-                                input_sample=llm_input_sample,
-                                task="text-generation",
-                                input_names=['input_ids', 'attention_mask'],
-                                output_names=['logits'],
-                                opset=17,
-                                dynamic_axes={
-                                    'input_ids': {0: 'batch_size', 1: 'sequence_length'},
-                                    'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
-                                    'logits': {0: 'batch_size', 1: 'sequence_length'}
-                                }
-                            )
+                    
+                    pytorch_model.eval()
+                    wrapped_model = TorchWrapper(pytorch_model)
+                    
+                    model_configs.append(
+                        ModelExportConfig(
+                            model=wrapped_model,
+                            model_name="nemotron_model",  # Changed to match expected name
+                            input_sample=llm_input_sample,
+                            task="text-generation",
+                            input_names=['input_ids', 'attention_mask'],
+                            output_names=['logits'],
+                            opset=17,
+                            dynamic_axes={
+                                'input_ids': {0: 'batch_size', 1: 'sequence_length'},
+                                'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
+                                'logits': {0: 'batch_size', 1: 'sequence_length'}
+                            }
                         )
-                        logger.info("Added TensorRT-LLM model to ONNX export configuration")
-                    except Exception as model_load_error:
-                        logger.warning(f"Could not load PyTorch version of LLM for ONNX export: {model_load_error}")
+                    )
+                    logger.info("✅ Successfully added TensorRT-LLM model to ONNX export configuration with model_name: nemotron_model")
+                except Exception as model_load_error:
+                    logger.error(f"❌ Could not load PyTorch version of LLM for ONNX export: {model_load_error}")
+                    import traceback
+                    logger.error(f"Full traceback: {traceback.format_exc()}")
 
             except Exception as llm_export_error:
-                logger.warning(f"Could not add TensorRT-LLM model to ONNX export: {llm_export_error}")
+                logger.error(f"❌ Could not add TensorRT-LLM model to ONNX export: {llm_export_error}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
 
             logger.info("ONNX export configuration created successfully")
+            logger.info(f"Total models configured for ONNX export: {len(model_configs)}")
+            for i, config in enumerate(model_configs):
+                logger.info(f"Model {i+1}: {config.model_name}")
             return model_configs
 
         except Exception as e:
