@@ -98,7 +98,7 @@ class Model:
 
             # Extract text from DataFrame
             text = model_input["text"][0]
-            
+
             logger.info(f"Extracted text length: {len(text)}")
             logger.info(f"Text preview: {text[:100]}...")
 
