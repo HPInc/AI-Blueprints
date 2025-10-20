@@ -50,13 +50,13 @@ def load_secrets_to_env(secrets_path: str) -> None:
         secrets_path: Path to secrets YAML file
     """
     import yaml
-    
+
     if not os.path.exists(secrets_path):
         return
-        
+
     with open(secrets_path, "r") as f:
         secrets = yaml.safe_load(f)
-        
+
     if secrets:
         for key, value in secrets.items():
             os.environ[key] = str(value)
@@ -65,7 +65,7 @@ def load_secrets_to_env(secrets_path: str) -> None:
 def load_secrets() -> Dict[str, Any]:
     """
     Load secrets from environment variables.
-    
+
     Returns:
         Dictionary of secrets loaded from environment
     """
@@ -73,6 +73,9 @@ def load_secrets() -> Dict[str, Any]:
     # For now, return all environment variables that might be secrets
     secrets = {}
     for key, value in os.environ.items():
-        if any(secret_key in key.upper() for secret_key in ['API_KEY', 'TOKEN', 'SECRET', 'PASSWORD']):
+        if any(
+            secret_key in key.upper()
+            for secret_key in ["API_KEY", "TOKEN", "SECRET", "PASSWORD"]
+        ):
             secrets[key] = value
     return secrets

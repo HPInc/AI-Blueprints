@@ -78,9 +78,13 @@ def _load_pyfunc(data_path: str):
                 model_path = resolved_model_path
                 logger.info(f"Resolved local model path: {model_path}")
             else:
-                logger.info(f"Local model path not found in artifacts, using original: {model_path}")
+                logger.info(
+                    f"Local model path not found in artifacts, using original: {model_path}"
+                )
     else:
-        logger.info("No model_path found in config, Model will use default TensorRT-LLM fallback")
+        logger.info(
+            "No model_path found in config, Model will use default TensorRT-LLM fallback"
+        )
 
     # Initialize Model
     try:
