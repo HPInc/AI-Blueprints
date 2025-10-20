@@ -128,12 +128,12 @@ class Model:
     def _create_arxiv_searcher(query: str, max_results: int, download: bool):
         """Create ArxivSearcher instance."""
         from core.extract_text.arxiv_search import ArxivSearcher
-        
+
         # The download parameter is ignored since ArxivSearcher doesn't use it
         return ArxivSearcher(
             query=query,
             max_results=max_results,
-            logging_enabled=True  # Enable logging for better debugging
+            logging_enabled=True,  # Enable logging for better debugging
         )
 
     def _build_vectordb(self, papers: List[dict], chunk: int, overlap: int):
