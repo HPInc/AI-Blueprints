@@ -32,8 +32,8 @@ class Model:
         self,
         config: Dict[str, Any],
         docs_path: str = None,
-        secrets: Dict[str, Any] = None,
         model_path: str = None,
+        secrets: Dict[str, Any] = None,
     ):
         """
         Universal constructor compatible with MLflow models-from-code loader.
@@ -42,13 +42,13 @@ class Model:
         Args:
             config: Model configuration dictionary
             docs_path: Path to documents directory (unused in text-generation)
-            secrets: Secrets dictionary (unused in text-generation)
             model_path: Path to model file (for LLM initialization)
+            secrets: Secrets dictionary (unused in text-generation)
         """
         self.config = config
         self.docs_path = docs_path
-        self.secrets = secrets
         self.model_path = model_path
+        self.secrets = secrets
         self.LOCAL_LOGGING_ACTIVE = False  # Default value
 
         # Initialize logging
