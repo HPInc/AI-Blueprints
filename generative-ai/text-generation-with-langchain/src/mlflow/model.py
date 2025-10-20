@@ -126,23 +126,40 @@ class Model:
 
     @staticmethod
     def _create_arxiv_searcher(query: str, max_results: int, download: bool):
-        """Create ArxivSearcher instance."""
-        import inspect
+        """Create ArxivSearcher instance.
+        
+        Note: download parameter is ignored as ArxivSearcher does not support it.
+        """
         from core.extract_text.arxiv_search import ArxivSearcher
-
-        kwargs: Dict[str, Any] = {"query": query, "max_results": max_results}
-        sig = inspect.signature(ArxivSearcher)
-        if "cache_only" in sig.parameters:
-            kwargs["cache_only"] = not download
-        elif "download" in sig.parameters:
-            kwargs["download"] = download
-        return ArxivSearcher(**kwargs)
+        
+        return ArxivSearcher(
+            query=query,
+            max_results=max_results,
+            logging_enabled=True
+        )
 
     def _build_vectordb(self, papers: List[dict], chunk: int, overlap: int):
         """Build vector database from papers."""
-        from langchain.schema import Document
-        from langchain_text_splitters import RecursiveCharacterTextSplitter
-        from langchain_community.vectorstores import Chroma
+        # Import Document from langchain_core.documents
+        try:
+            from langchain_core.documents import Document
+        except ImportError:
+            # Fallback for older LangChain versions
+            from langchain.schema import Document
+            
+        # Import text splitter
+        try:
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+        except ImportError:
+            # Fallback for older LangChain versions
+            from langchain.text_splitter import RecursiveCharacterTextSplitter
+            
+        # Import vectorstores
+        try:
+            from langchain_community.vectorstores import Chroma
+        except ImportError:
+            # Fallback for older LangChain versions
+            from langchain.vectorstores import Chroma
 
         uid = hashlib.md5(
             ("|".join(sorted(p["title"] for p in papers)) + str(chunk)).encode()
@@ -151,8 +168,13 @@ class Model:
         path.mkdir(parents=True, exist_ok=True)
 
         try:
-            from langchain_huggingface import HuggingFaceEmbeddings
-
+            # Try newer LangChain structure first
+            try:
+                from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+            except ImportError:
+                # Fallback for older LangChain versions
+                from langchain.embeddings import HuggingFaceEmbeddings
+                
             embeddings = HuggingFaceEmbeddings()
         except ImportError:
             raise ImportError(
