@@ -126,40 +126,21 @@ class Model:
 
     @staticmethod
     def _create_arxiv_searcher(query: str, max_results: int, download: bool):
-        """Create ArxivSearcher instance.
-        
-        Note: download parameter is ignored as ArxivSearcher does not support it.
-        """
+        """Create ArxivSearcher instance."""
         from core.extract_text.arxiv_search import ArxivSearcher
         
+        # The download parameter is ignored since ArxivSearcher doesn't use it
         return ArxivSearcher(
             query=query,
             max_results=max_results,
-            logging_enabled=True
+            logging_enabled=True  # Enable logging for better debugging
         )
 
     def _build_vectordb(self, papers: List[dict], chunk: int, overlap: int):
         """Build vector database from papers."""
-        # Import Document from langchain_core.documents
-        try:
-            from langchain_core.documents import Document
-        except ImportError:
-            # Fallback for older LangChain versions
-            from langchain.schema import Document
-            
-        # Import text splitter
-        try:
-            from langchain_text_splitters import RecursiveCharacterTextSplitter
-        except ImportError:
-            # Fallback for older LangChain versions
-            from langchain.text_splitter import RecursiveCharacterTextSplitter
-            
-        # Import vectorstores
-        try:
-            from langchain_community.vectorstores import Chroma
-        except ImportError:
-            # Fallback for older LangChain versions
-            from langchain.vectorstores import Chroma
+        from langchain_core.documents import Document
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        from langchain_community.vectorstores import Chroma
 
         uid = hashlib.md5(
             ("|".join(sorted(p["title"] for p in papers)) + str(chunk)).encode()
@@ -168,13 +149,8 @@ class Model:
         path.mkdir(parents=True, exist_ok=True)
 
         try:
-            # Try newer LangChain structure first
-            try:
-                from langchain_huggingface.embeddings import HuggingFaceEmbeddings
-            except ImportError:
-                # Fallback for older LangChain versions
-                from langchain.embeddings import HuggingFaceEmbeddings
-                
+            from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+
             embeddings = HuggingFaceEmbeddings()
         except ImportError:
             raise ImportError(
