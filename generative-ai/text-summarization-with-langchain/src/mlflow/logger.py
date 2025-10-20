@@ -247,7 +247,7 @@ class SummarizationService:
                     secrets_dest = os.path.join(data_path, "secrets.yaml")
                     with open(secrets_dest, "w") as f:
                         yaml.safe_dump(secrets_dict, f)
-                    logger.info(f"Secrets written to: {secrets_dest}")
+                    logger.info("Secrets persisted to disk.")
 
                 # Handle model files if provided (for local models)
                 if model_path and os.path.exists(model_path):
