@@ -96,13 +96,11 @@ class Model:
                     f"Expected 'text' column, got columns: {list(model_input.columns)}"
                 )
 
-            # Extract text from first row - MLflow signature guarantees 'text' column contains array
-            text_array = model_input.iloc[0]["text"]
-
-            # Extract string from array (signature: ColSpec("string", "text", "array"))
-            text = text_array[0]
-
-            logger.info(f"Extracted text length: {len(str(text))}")
+            # Extract text from DataFrame
+            text = model_input["text"][0][0]
+            
+            logger.info(f"Extracted text length: {len(text)}")
+            logger.info(f"Text preview: {text[:100]}...")
 
             # Ensure chain is available
             if not self.chain:
