@@ -12,12 +12,15 @@ import json
 import logging
 import os
 import sys
+import shutil
+import warnings
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict
 
 import pandas as pd
 import tensorrt_llm
+import torch
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import StateGraph, START, END
@@ -26,14 +29,27 @@ from langgraph.graph import StateGraph, START, END
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.trt_llm_langchain import TensorRTLangchain
 
+# Import MLflow for PythonModel base class
+try:
+    import mlflow.pyfunc
+except ImportError:
+    # Fallback if MLflow is not available during development
+    class PythonModel:
+        pass
+    mlflow = type('mlflow', (), {'pyfunc': type('pyfunc', (), {'PythonModel': PythonModel})()})()
+
+# Suppress verbose warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
 # Set up logger
 logger = logging.getLogger(__name__)
 
 
-class Model:
+class Model(mlflow.pyfunc.PythonModel):
     """
-    Standalone model class with no MLflow inheritance.
-    Handles complex agentic RAG workflow with TensorRT-LLM.
+    Standalone model class for Agentic RAG with TensorRT-LLM.
+    Handles complex agentic RAG workflow using LangGraph state machine.
     """
 
     TOPIC: str = "AI Studio"
@@ -80,89 +96,170 @@ class Model:
         from_memory: Optional[bool]
         messages: List[Dict[str, Any]]  # full conversation with LLM
 
-    def __init__(self, config: dict, docs_path: str, secrets=None, model_path=None):
+    def __init__(
+        self, config: dict, docs_path: str, secrets: dict = None, model_path: str = None
+    ):
         """
-        Direct dependency injection - no MLflow context.
-        Extract all initialization logic from original service.
+        Initialize the Model with vanilla-rag compatible interface.
+        Internally maps to TensorRT-LLM and RAG-specific requirements.
+
+        Args:
+            config: Model configuration dictionary containing model paths and settings
+            docs_path: Path to documents directory for vector database and memory storage
+            secrets: Secrets dictionary for environment variables (optional)
+            model_path: Single model path (fallback for model resolution)
         """
-        self.config = config
+
+        self.embedding_model_name = "sentence-transformers/all-mpnet-base-v2"
+        self.default_llm_model = "nvidia/Llama-3.1-Nemotron-Nano-8B-v1"
+        self.model_config = config
+        self.docs_path = docs_path
+        self.secrets = secrets
+        self.model_path = model_path
         self.TOPIC = Model.TOPIC
 
-        # Set up logger
-        self._logger = logging.getLogger("AgenticRAGModel")
-        if not self._logger.handlers:
-            handler = logging.StreamHandler()
-            handler.setFormatter(
-                logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-            )
-            self._logger.addHandler(handler)
-            self._logger.setLevel(logging.INFO)
+        # Resolve model paths from artifacts or configuration
+        self.resolved_model_path = self._resolve_model_path()
+        self.model_dir = os.path.dirname(docs_path) if docs_path else ""
 
-        # 1. Load embedding model
+        # Model components
+        self._embed_model = None
+        self._vectorstore = None
+        self._llm = None
+        self._memory = None
+        self._compiled_graph = None
+
+        # Configuration
+        
+
+        # Setup environment and load components
         try:
+            self._setup_environment()
+            self._load_models()
+            self._setup_memory()
+            self._build_state_graph()
+            logger.info("Agentic RAG Model initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize Agentic RAG Model: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise RuntimeError(f"Model initialization failed: {str(e)}") from e
+
+    def _resolve_model_path(self) -> str:
+        """
+        Resolve model path from either artifacts or configuration.
+        
+        Returns:
+            Resolved model path for TensorRT-LLM
+        """
+        # First, check if we're in artifact context
+        if self.docs_path:
+            artifact_dir = os.path.dirname(self.docs_path)  # This is the data_path
+
+            # Try models subdirectory first (where vanilla-rag puts model_path contents)
+            models_subdir = os.path.join(artifact_dir, "models")
+            if os.path.exists(models_subdir):
+                # Look for TensorRT-LLM model files or directories
+                for item in os.listdir(models_subdir):
+                    item_path = os.path.join(models_subdir, item)
+                    if os.path.isdir(item_path) or item.endswith(('.engine', '.plan')):
+                        logger.info(f"Using TensorRT-LLM model from artifacts: {item_path}")
+                        return item_path
+
+        # Check if model_path was provided and exists
+        if self.model_path and os.path.exists(self.model_path):
+            logger.info(f"Using provided model path: {self.model_path}")
+            return self.model_path
+
+        # Get model path from config
+        config_model_path = self.model_config.get("model_path")
+        if config_model_path:
+            # Check if it looks like a HuggingFace repo ID (contains '/' but not absolute path)
+            if "/" in config_model_path and not os.path.isabs(config_model_path):
+                logger.info(f"Using HuggingFace model repo from config: {config_model_path}")
+                return config_model_path
+            elif os.path.exists(config_model_path):
+                logger.info(f"Using local model path from config: {config_model_path}")
+                return config_model_path
+
+        # Last fallback - default HF repo
+        logger.info(f"Using default HuggingFace model: {self.default_llm_model}")
+        return self.default_llm_model
+
+    def _setup_environment(self) -> None:
+        """Configure environment variables and suppress verbose logs."""
+        try:
+            # Load secrets into environment if provided
+            if self.secrets:
+                for key, value in self.secrets.items():
+                    os.environ[key] = str(value)
+                logger.info("Secrets loaded into environment")
+
+            # Configure proxy if specified in config
+            if "proxy" in self.model_config and self.model_config["proxy"]:
+                logger.info(f"Setting up proxy: {self.model_config['proxy']}")
+                os.environ["HTTPS_PROXY"] = self.model_config["proxy"]
+                os.environ["HTTP_PROXY"] = self.model_config["proxy"]
+            else:
+                logger.info("No proxy configuration found")
+
+        except Exception as e:
+            logger.error(f"Error setting up environment: {str(e)}")
+            # Continue without failing to allow the model to still function
+
+    def _load_models(self) -> None:
+        """Load all required models for the RAG pipeline."""
+        try:
+            # 1. Load embedding model
+            logger.info(f"Loading embedding model: {self.embedding_model_name}")
             self._embed_model = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/all-mpnet-base-v2",
+                model_name=self.embedding_model_name,
                 encode_kwargs={"normalize_embeddings": True},
             )
-        except:
-            self._embed_model = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/all-mpnet-base-v2",
-                encode_kwargs={"normalize_embeddings": True},
+
+            # 2. Set up Chroma vectorstore directory based on docs_path
+            chroma_dir = os.path.join(self.docs_path, "chroma_db") if self.docs_path else "data/chroma_db"
+            chroma_dir_path = Path(chroma_dir)
+            chroma_dir_path.mkdir(parents=True, exist_ok=True)
+            
+            self._vectorstore = Chroma(
+                collection_name="-".join(self.TOPIC.split()),
+                persist_directory=str(chroma_dir_path),
+                embedding_function=self._embed_model,
             )
 
-        # 2. Set up Chroma vectorstore directory based on docs_path
-        chroma_dir = os.path.join(docs_path, "chroma_db") if docs_path else "data/chroma_db"
-        chroma_dir_path = Path(chroma_dir)
-        chroma_dir_path.mkdir(parents=True, exist_ok=True)
-        
-        self._vectorstore = Chroma(
-            collection_name="-".join(self.TOPIC.split()),
-            persist_directory=str(chroma_dir_path),
-            embedding_function=self._embed_model,
-        )
+            # 3. Load LLM via TensorRTLangchain
+            sampling_params = tensorrt_llm.SamplingParams(
+                temperature=0.0,
+                top_k=1,
+                repetition_penalty=1.2,
+                stop_token_ids=[128009],
+            )
+            
+            logger.info(f"Initializing TensorRT LLM with model path: {self.resolved_model_path}")
+            self._llm = TensorRTLangchain(
+                model_path=self.resolved_model_path,
+                sampling_params=sampling_params,
+            )
 
-        # 3. Load LLM via TensorRTLangchain using model_path if provided
-        sampling_params = tensorrt_llm.SamplingParams(
-            temperature=0.0,
-            top_k=1,
-            repetition_penalty=1.2,
-            stop_token_ids=[128009],
-        )
-        
-        # Determine model path - use config model_path or default HF repo
-        # If model_path looks like a HF repo ID (contains '/'), use it directly
-        # Otherwise, check if it's a local path that exists
-        original_model_path = self.config.get("model_path", "nvidia/Llama-3.1-Nemotron-Nano-8B-v1")
-        
-        if model_path and os.path.exists(model_path):
-            # MLflow artifacts provided a local path that exists
-            llm_model_path = model_path
-        elif "/" in original_model_path and not os.path.isabs(original_model_path):
-            # Looks like a HF repo ID (e.g., "nvidia/Llama-3.1-Nemotron-Nano-8B-v1")
-            llm_model_path = original_model_path
-        else:
-            # Fallback to default HF repo
-            llm_model_path = "nvidia/Llama-3.1-Nemotron-Nano-8B-v1"
-        
-        self._logger.info(f"Initializing TensorRT LLM with model path: {llm_model_path}")
-        self._llm = TensorRTLangchain(
-            model_path=llm_model_path,
-            sampling_params=sampling_params,
-        )
+            logger.info("All models loaded successfully")
+        except Exception as e:
+            logger.error(f"Error loading models: {str(e)}")
+            raise
 
-        # 4. Initialize persistent memory
-        memory_path = os.path.join(docs_path, "memory.json") if docs_path else "data/memory.json"
-        memory_path_obj = Path(memory_path)
-        memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
-        if not memory_path_obj.exists():
-            memory_path_obj.write_text("{}", encoding="utf-8")
-        self._memory = Model.SimpleKVMemory(memory_path_obj)
-
-        # 5. Define a simple Response namedtuple
-        self._LLMResponse = namedtuple("Response", ["content"])
-
-        # 6. Build and compile the LangGraph state graph
-        self._build_state_graph()
+    def _setup_memory(self) -> None:
+        """Initialize persistent memory system."""
+        try:
+            memory_path = os.path.join(self.docs_path, "memory.json") if self.docs_path else "data/memory.json"
+            memory_path_obj = Path(memory_path)
+            memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
+            if not memory_path_obj.exists():
+                memory_path_obj.write_text("{}", encoding="utf-8")
+            self._memory = Model.SimpleKVMemory(memory_path_obj)
+            logger.info(f"Memory system initialized at: {memory_path}")
+        except Exception as e:
+            logger.error(f"Error setting up memory: {str(e)}")
+            raise
 
     # ----------------------------------------
     # Node Functions (each mirrors the notebook)
@@ -172,7 +269,7 @@ class Model:
         Log the incoming user query and record it in the message history.
         """
         user_query = state["query"]
-        self._logger.info("Received user query: %s", user_query)
+        logger.info("Received user query: %s", user_query)
         previous_messages = state.get("messages", [])
         new_messages = previous_messages + [{"role": "user", "content": user_query}]
         return {"messages": new_messages}
@@ -199,7 +296,7 @@ class Model:
 
         resp = self._get_response_from_llm(system_prompt, user_prompt)
         is_relevant = "yes" in resp.strip().lower()
-        self._logger.info("Relevance check result: %s", is_relevant)
+        logger.info("Relevance check result: %s", is_relevant)
 
         messages = state.get("messages", []) + [
             {"role": "developer", "content": "Relevance check result:"},
@@ -218,9 +315,9 @@ class Model:
         key = raw_query.strip().lower()
         cached_answer = self._memory.get(key)
         if cached_answer is not None:
-            self._logger.info("Cache hit for query: %s", raw_query)
+            logger.info("Cache hit for query: %s", raw_query)
             return {"answer": cached_answer, "from_memory": True}
-        self._logger.info("Cache miss for query: %s", raw_query)
+        logger.info("Cache miss for query: %s", raw_query)
         return {"from_memory": False}
 
     def rewrite_query(self, state: "Model.RAGState") -> Dict[str, Any]:
@@ -243,7 +340,7 @@ class Model:
         )
 
         resp = self._get_response_from_llm(system_prompt, user_prompt).strip()
-        self._logger.info("Rewritten query: %s", resp)
+        logger.info("Rewritten query: %s", resp)
 
         messages = state.get("messages", []) + [
             {"role": "developer", "content": "Rewritten query:"},
@@ -258,7 +355,7 @@ class Model:
         statement = state["rewritten_query"]
         docs = self._vectorstore.similarity_search(statement, k=5)
         chunks = [doc.page_content for doc in docs]
-        self._logger.info("Retrieved %d chunks for query.", len(chunks))
+        logger.info("Retrieved %d chunks for query.", len(chunks))
         return {"retrieved_chunks": chunks}
 
     def generate_answer(self, state: "Model.RAGState") -> Dict[str, Any]:
@@ -286,7 +383,7 @@ class Model:
         )
 
         resp = self._get_response_from_llm(system_prompt, user_prompt).strip()
-        self._logger.info("Generated answer (%d chars)", len(resp))
+        logger.info("Generated answer (%d chars)", len(resp))
 
         messages = state.get("messages", []) + [
             {"role": "developer", "content": "Generated answer:"},
@@ -305,7 +402,7 @@ class Model:
         answer = state["answer"]
         if answer is not None:
             self._memory.set(key, answer)
-            self._logger.info("Stored query-answer in memory for key: %s", key)
+            logger.info("Stored query-answer in memory for key: %s", key)
         return {}
 
     def output_answer(self, state: "Model.RAGState") -> Dict[str, Any]:
@@ -386,71 +483,240 @@ class Model:
 
     def predict(self, model_input, params=None):
         """
-        Core business logic extracted from original service predict method.
-        Remove context parameter - use instance variables instead.
-        Must return same pandas.DataFrame structure as original.
-        """
-        # Handle pandas DataFrame input
-        if isinstance(model_input, pd.DataFrame):
-            if "query" not in model_input.columns:
-                raise Exception("DataFrame must contain a 'query' column.")
-            # Take the first record in that column
-            raw_query = model_input["query"].iloc[0]
-        else:
-            # Could be a plain dict or something else
-            if not isinstance(model_input, dict):
-                raise Exception(
-                    f"Unexpected input type: {type(model_input)}. "
-                    "Expected pandas.DataFrame or dict with 'query'."
-                )
-            # If it's a dict, accept either string or single-element list
-            if "query" not in model_input:
-                raise Exception("Input dict must contain key 'query'.")
-            raw_query = model_input["query"]
+        Process inputs and generate responses.
+        Performs end-to-end agentic RAG pipeline.
 
-        # Initialize state with topic, query, and empty messages
-        initial_state: Model.RAGState = {
-            "topic": self.TOPIC,
-            "query": raw_query.strip(),
-            "messages": [],
-        }
+        Args:
+            model_input: Input data containing query (pandas.DataFrame or dict)
+            params: Optional parameters for model prediction
 
-        # Invoke the compiled LangGraph
-        final_state = self._compiled_graph.invoke(input=initial_state)
-
-        # Extract elements to return
-        answer = final_state.get("answer", "")
-        retrieved_chunks = final_state.get("retrieved_chunks", [])
-        messages = final_state.get("messages", [])
-
-        return {
-            "answer": answer,
-            "retrieved_chunks": retrieved_chunks,
-            "messages": messages,
-        }
-
-    def get_onnx_export_config(self):
-        """
-        Get ONNX export configuration for the model.
-        
         Returns:
-            ONNX export configuration object for this model
+            Dict with answer, retrieved_chunks, and conversation messages
         """
         try:
-            from src.onnx_utils import ModelExportConfig
-            
-            # Create a sample input for ONNX export
-            sample_input = pd.DataFrame({"query": ["What is AI Studio?"]})
-            
-            return ModelExportConfig(
-                model=self,
-                model_name="agentic_rag_tensorrt_llm",
-                input_sample=sample_input,
-                create_triton_structure=True
-            )
-        except ImportError:
-            logger.warning("ONNX utilities not available - ONNX export disabled")
-            return None
+            # Handle pandas DataFrame input
+            if isinstance(model_input, pd.DataFrame):
+                if "query" not in model_input.columns:
+                    raise Exception("DataFrame must contain a 'query' column.")
+                # Take the first record in that column
+                raw_query = model_input["query"].iloc[0]
+            else:
+                # Could be a plain dict or something else
+                if not isinstance(model_input, dict):
+                    raise Exception(
+                        f"Unexpected input type: {type(model_input)}. "
+                        "Expected pandas.DataFrame or dict with 'query'."
+                    )
+                # If it's a dict, accept either string or single-element list
+                if "query" not in model_input:
+                    raise Exception("Input dict must contain key 'query'.")
+                raw_query = model_input["query"]
+
+            # Initialize state with topic, query, and empty messages
+            initial_state: Model.RAGState = {
+                "topic": self.TOPIC,
+                "query": raw_query.strip(),
+                "messages": [],
+            }
+
+            # Invoke the compiled LangGraph
+            final_state = self._compiled_graph.invoke(input=initial_state)
+
+            # Extract elements to return
+            answer = final_state.get("answer", "")
+            retrieved_chunks = final_state.get("retrieved_chunks", [])
+            messages = final_state.get("messages", [])
+
+            return {
+                "answer": answer,
+                "retrieved_chunks": retrieved_chunks,
+                "messages": messages,
+            }
+
         except Exception as e:
-            logger.warning(f"Failed to create ONNX export config: {e}")
-            return None
+            import traceback
+            logger.error(f"Error in predict: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+
+            # Return error result in expected format
+            error_result = {
+                "answer": f"Error processing query: {str(e)}",
+                "retrieved_chunks": [],
+                "messages": [],
+            }
+            return error_result
+
+    def get_onnx_export_config(self) -> List:
+        """
+        Get configuration for ONNX export.
+        Returns the configuration needed for ONNX model export.
+
+        Returns:
+            List of ModelExportConfig objects for ONNX conversion
+        """
+        try:
+            # Import here to avoid circular imports
+            from src.onnx_utils import ModelExportConfig
+            from transformers import AutoTokenizer, AutoModel
+
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            dtype = torch.float16 if device.type == "cuda" else torch.float32
+            
+            # Create sample inputs for ONNX export - Embedding model
+            embedding_model = AutoModel.from_pretrained(
+                self.embedding_model_name, 
+                torch_dtype=dtype
+            ).to(device)
+            embedding_model.eval()
+
+            embedding_tokenizer = AutoTokenizer.from_pretrained(self.embedding_model_name)
+            embedding_inputs = embedding_tokenizer(
+                "What is AI Studio?", 
+                return_tensors="pt", 
+                padding=True, 
+                truncation=True, 
+                max_length=128
+            )
+            embedding_input_sample = (
+                embedding_inputs["input_ids"].to(device),
+                embedding_inputs["attention_mask"].to(device)
+            )
+
+            model_configs = [
+                ModelExportConfig(
+                    model=embedding_model,  # Pre-loaded embedding model!
+                    model_name="sentence_transformers_model",  # ONNX file naming
+                    input_sample=embedding_input_sample, 
+                    task="feature-extraction", 
+                    opset=17,
+                    input_names=['input_ids', 'attention_mask'],
+                    output_names=['last_hidden_state'], 
+                    dynamic_axes={
+                        'input_ids': {0: 'batch_size', 1: 'sequence_length'},
+                        'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
+                        'last_hidden_state': {0: 'batch_size', 1: 'sequence_length'}
+                    }
+                )
+            ]
+
+            # Try to add TensorRT-LLM model for ONNX export if available
+            try:
+                if hasattr(self._llm, 'model') and hasattr(self._llm.model, 'cuda'):
+                    # If TensorRT model has a PyTorch-compatible interface
+                    from transformers import AutoTokenizer, AutoModelForCausalLM
+                    
+                    class TorchWrapper(torch.nn.Module):
+                        """Wrapper to make TensorRT model ONNX-compatible."""
+                        def __init__(self, model):
+                            super().__init__()
+                            self.model = model
+
+                        def forward(self, input_ids, attention_mask):
+                            # Remove use_cache for ONNX compatibility
+                            outputs = self.model(
+                                input_ids=input_ids,
+                                attention_mask=attention_mask,
+                                use_cache=False
+                            )
+                            return outputs.logits if hasattr(outputs, 'logits') else outputs
+
+                    # Create sample inputs for LLM model
+                    tokenizer = AutoTokenizer.from_pretrained(self.default_llm_model)
+                    tokenizer.pad_token = tokenizer.eos_token
+                    llm_inputs = tokenizer(
+                        "Hello", 
+                        return_tensors="pt",
+                        padding=True,
+                        truncation=True,
+                        max_length=8 
+                    )
+
+                    llm_input_sample = (
+                        llm_inputs["input_ids"].to(device), 
+                        llm_inputs["attention_mask"].to(device)
+                    )
+
+                    # Try to load a PyTorch version for ONNX export
+                    try:
+                        pytorch_model = AutoModelForCausalLM.from_pretrained(
+                            self.default_llm_model, 
+                            torch_dtype=dtype
+                        ).to(device)
+                        pytorch_model.eval()
+                        
+                        wrapped_model = TorchWrapper(pytorch_model)
+                        
+                        model_configs.append(
+                            ModelExportConfig(
+                                model=wrapped_model,
+                                model_name="tensorrt_llm_model",
+                                input_sample=llm_input_sample,
+                                task="text-generation",
+                                input_names=['input_ids', 'attention_mask'],
+                                output_names=['logits'],
+                                opset=17,
+                                dynamic_axes={
+                                    'input_ids': {0: 'batch_size', 1: 'sequence_length'},
+                                    'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
+                                    'logits': {0: 'batch_size', 1: 'sequence_length'}
+                                }
+                            )
+                        )
+                        logger.info("Added TensorRT-LLM model to ONNX export configuration")
+                    except Exception as model_load_error:
+                        logger.warning(f"Could not load PyTorch version of LLM for ONNX export: {model_load_error}")
+
+            except Exception as llm_export_error:
+                logger.warning(f"Could not add TensorRT-LLM model to ONNX export: {llm_export_error}")
+
+            logger.info("ONNX export configuration created successfully")
+            return model_configs
+
+        except Exception as e:
+            logger.error(f"Error creating ONNX export configuration: {str(e)}")
+            raise RuntimeError(
+                f"Failed to create ONNX export configuration: {str(e)}"
+            ) from e
+
+    def copy_model_artifacts_to_directory(self, target_dir: str) -> None:
+        """
+        Copy model artifacts to a target directory.
+        
+        Args:
+            target_dir: Directory path where to copy the model files
+        """
+        try:
+            os.makedirs(target_dir, exist_ok=True)
+
+            # Copy TensorRT-LLM model artifacts if they exist locally
+            if os.path.exists(self.resolved_model_path) and os.path.isdir(self.resolved_model_path):
+                target_model_dir = os.path.join(target_dir, "tensorrt_llm")
+                shutil.copytree(self.resolved_model_path, target_model_dir, dirs_exist_ok=True)
+                logger.info(f"Copied TensorRT-LLM model to {target_model_dir}")
+            elif os.path.exists(self.resolved_model_path) and os.path.isfile(self.resolved_model_path):
+                target_model_file = os.path.join(target_dir, os.path.basename(self.resolved_model_path))
+                shutil.copyfile(self.resolved_model_path, target_model_file)
+                logger.info(f"Copied TensorRT-LLM model file to {target_model_file}")
+            else:
+                logger.info(f"Model path {self.resolved_model_path} is not a local file/directory - skipping copy")
+
+            # Copy vector database if it exists
+            if self.docs_path:
+                chroma_dir = os.path.join(self.docs_path, "chroma_db")
+                if os.path.exists(chroma_dir):
+                    target_chroma_dir = os.path.join(target_dir, "chroma_db")
+                    shutil.copytree(chroma_dir, target_chroma_dir, dirs_exist_ok=True)
+                    logger.info(f"Copied Chroma database to {target_chroma_dir}")
+
+                # Copy memory file if it exists
+                memory_file = os.path.join(self.docs_path, "memory.json")
+                if os.path.exists(memory_file):
+                    target_memory_file = os.path.join(target_dir, "memory.json")
+                    shutil.copyfile(memory_file, target_memory_file)
+                    logger.info(f"Copied memory file to {target_memory_file}")
+
+            logger.info(f"Model artifacts copied to directory: {target_dir}")
+
+        except Exception as e:
+            logger.error(f"Error copying model artifacts: {str(e)}")
+            raise RuntimeError(f"Failed to copy model artifacts: {str(e)}") from e
