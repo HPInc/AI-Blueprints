@@ -54,9 +54,7 @@ def _load_pyfunc(data_path: str):
     # Set up documents path
     docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        # Create docs_path if it doesn't exist for agentic RAG with memory storage
-        os.makedirs(docs_path, exist_ok=True)
-        logger.info(f"Created documents directory at: {docs_path}")
+        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
 
     # Get model path from config - handle HF repo IDs vs local paths
     model_path = config.get("model_path")

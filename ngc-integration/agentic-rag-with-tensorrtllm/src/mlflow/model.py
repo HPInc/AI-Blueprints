@@ -194,6 +194,7 @@ class Model(mlflow.pyfunc.PythonModel):
                 for key, value in self.secrets.items():
                     os.environ[key] = str(value)
                 logger.info("Secrets loaded into environment")
+        
 
             # Configure proxy if specified in config
             if "proxy" in self.model_config and self.model_config["proxy"]:
@@ -256,6 +257,9 @@ class Model(mlflow.pyfunc.PythonModel):
             if not memory_path_obj.exists():
                 memory_path_obj.write_text("{}", encoding="utf-8")
             self._memory = Model.SimpleKVMemory(memory_path_obj)
+            self._LLMResponse = namedtuple("Response", ["content"])
+
+            self._build_state_graph()
             logger.info(f"Memory system initialized at: {memory_path}")
         except Exception as e:
             logger.error(f"Error setting up memory: {str(e)}")
