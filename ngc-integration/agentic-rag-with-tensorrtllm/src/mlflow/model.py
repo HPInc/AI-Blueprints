@@ -53,6 +53,10 @@ class Model(mlflow.pyfunc.PythonModel):
     """
 
     TOPIC: str = "AI Studio"
+    CONTEXT_DIR: Path = Path("../data/context")             
+    CHROMA_DIR: Path = Path("../data/chroma_store")     
+    MEMORY_PATH: Path = Path("../data/memory/memory.json")     
+    MANIFEST_PATH: Path = CHROMA_DIR / "manifest.json"
 
     class SimpleKVMemory:
         """Very small persistent key-value store (JSON on disk)."""
@@ -136,7 +140,7 @@ class Model(mlflow.pyfunc.PythonModel):
         try:
             self._setup_environment()
             self._load_models()
-            self._setup_memory()
+            # self._setup_memory()
             self._build_state_graph()
             logger.info("Agentic RAG Model initialized successfully")
         except Exception as e:
@@ -211,6 +215,9 @@ class Model(mlflow.pyfunc.PythonModel):
     def _load_models(self) -> None:
         """Load all required models for the RAG pipeline."""
         try:
+            self.TOPIC = Model.TOPIC
+            self._logger = logging.getLogger("Model")
+
             # 1. Load embedding model
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
             self._embed_model = HuggingFaceEmbeddings(
@@ -219,9 +226,12 @@ class Model(mlflow.pyfunc.PythonModel):
             )
 
             # 2. Set up Chroma vectorstore directory based on docs_path
-            chroma_dir = os.path.join(self.docs_path, "chroma_db") if self.docs_path else "data/chroma_db"
+            # Use chroma_store to match existing artifacts and class constants
+            # if self.docs_path:
+            #     chroma_dir = os.path.join(os.path.dirname(self.docs_path), "chroma_store")
+            # else:
+            chroma_dir = "../data/chroma_store"
             chroma_dir_path = Path(chroma_dir)
-            chroma_dir_path.mkdir(parents=True, exist_ok=True)
             
             self._vectorstore = Chroma(
                 collection_name="-".join(self.TOPIC.split()),
@@ -243,15 +253,11 @@ class Model(mlflow.pyfunc.PythonModel):
                 sampling_params=sampling_params,
             )
 
-            logger.info("All models loaded successfully")
-        except Exception as e:
-            logger.error(f"Error loading models: {str(e)}")
-            raise
-
-    def _setup_memory(self) -> None:
-        """Initialize persistent memory system."""
-        try:
-            memory_path = os.path.join(self.docs_path, "memory.json") if self.docs_path else "data/memory.json"
+            # 3. Initialize memory - use memory subdirectory to match class constants
+            # if self.docs_path:
+            #     memory_path = os.path.join(os.path.dirname(self.docs_path), "memory", "memory.json")
+            # else:
+            memory_path = "../data/memory/memory.json"
             memory_path_obj = Path(memory_path)
             memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
             if not memory_path_obj.exists():
@@ -260,10 +266,28 @@ class Model(mlflow.pyfunc.PythonModel):
             self._LLMResponse = namedtuple("Response", ["content"])
 
             self._build_state_graph()
-            logger.info(f"Memory system initialized at: {memory_path}")
+
+            logger.info("All models loaded successfully")
         except Exception as e:
-            logger.error(f"Error setting up memory: {str(e)}")
+            logger.error(f"Error loading models: {str(e)}")
             raise
+
+    # def _setup_memory(self) -> None:
+    #     """Initialize persistent memory system."""
+    #     try:
+    #         memory_path = os.path.join(self.docs_path, "memory.json") if self.docs_path else "data/memory.json"
+    #         memory_path_obj = Path(memory_path)
+    #         memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
+    #         if not memory_path_obj.exists():
+    #             memory_path_obj.write_text("{}", encoding="utf-8")
+    #         self._memory = Model.SimpleKVMemory(memory_path_obj)
+    #         self._LLMResponse = namedtuple("Response", ["content"])
+
+    #         self._build_state_graph()
+    #         logger.info(f"Memory system initialized at: {memory_path}")
+    #     except Exception as e:
+    #         logger.error(f"Error setting up memory: {str(e)}")
+    #         raise
 
     # ----------------------------------------
     # Node Functions (each mirrors the notebook)
@@ -498,6 +522,8 @@ class Model(mlflow.pyfunc.PythonModel):
             Dict with answer, retrieved_chunks, and conversation messages
         """
         try:
+            if params is None:
+                params = {}
             # Handle pandas DataFrame input
             if isinstance(model_input, pd.DataFrame):
                 if "query" not in model_input.columns:
@@ -541,14 +567,6 @@ class Model(mlflow.pyfunc.PythonModel):
             import traceback
             logger.error(f"Error in predict: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-
-            # Return error result in expected format
-            error_result = {
-                "answer": f"Error processing query: {str(e)}",
-                "retrieved_chunks": [],
-                "messages": [],
-            }
-            return error_result
 
     def get_onnx_export_config(self) -> List:
         """

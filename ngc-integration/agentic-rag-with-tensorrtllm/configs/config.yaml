@@ -15,7 +15,7 @@ model_path: "/root/.cache/huggingface/hub/models--nvidia--Llama-3.1-Nemotron-Nan
 # UI Configuration
 ui:
   # UI mode: gradio, streamlit, or static
-  mode: "streamlit"
+  mode: "static"
 
 # Port Configuration
 ports:
