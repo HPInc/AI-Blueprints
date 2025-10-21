@@ -56,9 +56,9 @@ class Model(mlflow.pyfunc.PythonModel):
     """
 
     TOPIC: str = "AI Studio"
-    CONTEXT_DIR: Path = Path("../data/context")             
-    CHROMA_DIR: Path = Path("../data/chroma_store")     
-    MEMORY_PATH: Path = Path("../data/memory/memory.json")     
+    CONTEXT_DIR: Path = Path("../data/context")
+    CHROMA_DIR: Path = Path("../data/chroma_store")
+    MEMORY_PATH: Path = Path("../data/memory/memory.json")
     MANIFEST_PATH: Path = CHROMA_DIR / "manifest.json"
 
     class SimpleKVMemory:
@@ -238,7 +238,7 @@ class Model(mlflow.pyfunc.PythonModel):
             # else:
             chroma_dir = "../data/chroma_store"
             chroma_dir_path = Path(chroma_dir)
-            
+
             self._vectorstore = Chroma(
                 collection_name="-".join(self.TOPIC.split()),
                 persist_directory=str(chroma_dir_path),
