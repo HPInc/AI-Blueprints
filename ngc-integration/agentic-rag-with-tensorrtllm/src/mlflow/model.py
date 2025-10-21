@@ -36,7 +36,10 @@ except ImportError:
     # Fallback if MLflow is not available during development
     class PythonModel:
         pass
-    mlflow = type('mlflow', (), {'pyfunc': type('pyfunc', (), {'PythonModel': PythonModel})()})()
+
+    mlflow = type(
+        "mlflow", (), {"pyfunc": type("pyfunc", (), {"PythonModel": PythonModel})()}
+    )()
 
 # Suppress verbose warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -134,7 +137,6 @@ class Model(mlflow.pyfunc.PythonModel):
         self._compiled_graph = None
 
         # Configuration
-        
 
         # Setup environment and load components
         try:
@@ -146,13 +148,14 @@ class Model(mlflow.pyfunc.PythonModel):
         except Exception as e:
             logger.error(f"Failed to initialize Agentic RAG Model: {str(e)}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
 
     def _resolve_model_path(self) -> str:
         """
         Resolve model path from either artifacts or configuration.
-        
+
         Returns:
             Resolved model path for TensorRT-LLM
         """
@@ -166,8 +169,10 @@ class Model(mlflow.pyfunc.PythonModel):
                 # Look for TensorRT-LLM model files or directories
                 for item in os.listdir(models_subdir):
                     item_path = os.path.join(models_subdir, item)
-                    if os.path.isdir(item_path) or item.endswith(('.engine', '.plan')):
-                        logger.info(f"Using TensorRT-LLM model from artifacts: {item_path}")
+                    if os.path.isdir(item_path) or item.endswith((".engine", ".plan")):
+                        logger.info(
+                            f"Using TensorRT-LLM model from artifacts: {item_path}"
+                        )
                         return item_path
 
         # Check if model_path was provided and exists
@@ -180,7 +185,9 @@ class Model(mlflow.pyfunc.PythonModel):
         if config_model_path:
             # Check if it looks like a HuggingFace repo ID (contains '/' but not absolute path)
             if "/" in config_model_path and not os.path.isabs(config_model_path):
-                logger.info(f"Using HuggingFace model repo from config: {config_model_path}")
+                logger.info(
+                    f"Using HuggingFace model repo from config: {config_model_path}"
+                )
                 return config_model_path
             elif os.path.exists(config_model_path):
                 logger.info(f"Using local model path from config: {config_model_path}")
@@ -198,7 +205,6 @@ class Model(mlflow.pyfunc.PythonModel):
                 for key, value in self.secrets.items():
                     os.environ[key] = str(value)
                 logger.info("Secrets loaded into environment")
-        
 
             # Configure proxy if specified in config
             if "proxy" in self.model_config and self.model_config["proxy"]:
@@ -246,8 +252,10 @@ class Model(mlflow.pyfunc.PythonModel):
                 repetition_penalty=1.2,
                 stop_token_ids=[128009],
             )
-            
-            logger.info(f"Initializing TensorRT LLM with model path: {self.resolved_model_path}")
+
+            logger.info(
+                f"Initializing TensorRT LLM with model path: {self.resolved_model_path}"
+            )
             self._llm = TensorRTLangchain(
                 model_path=self.resolved_model_path,
                 sampling_params=sampling_params,
@@ -565,6 +573,7 @@ class Model(mlflow.pyfunc.PythonModel):
 
         except Exception as e:
             import traceback
+
             logger.error(f"Error in predict: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
 
@@ -583,52 +592,56 @@ class Model(mlflow.pyfunc.PythonModel):
 
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             dtype = torch.float16 if device.type == "cuda" else torch.float32
-            
+
             # Create sample inputs for ONNX export - Embedding model
             embedding_model = AutoModel.from_pretrained(
-                self.embedding_model_name, 
-                torch_dtype=dtype
+                self.embedding_model_name, torch_dtype=dtype
             ).to(device)
             embedding_model.eval()
 
-            embedding_tokenizer = AutoTokenizer.from_pretrained(self.embedding_model_name)
+            embedding_tokenizer = AutoTokenizer.from_pretrained(
+                self.embedding_model_name
+            )
             embedding_inputs = embedding_tokenizer(
-                "What is AI Studio?", 
-                return_tensors="pt", 
-                padding=True, 
-                truncation=True, 
-                max_length=128
+                "What is AI Studio?",
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=128,
             )
             embedding_input_sample = (
                 embedding_inputs["input_ids"].to(device),
-                embedding_inputs["attention_mask"].to(device)
+                embedding_inputs["attention_mask"].to(device),
             )
 
             model_configs = [
                 ModelExportConfig(
                     model=embedding_model,  # Pre-loaded embedding model!
                     model_name="embedding_model",  # ONNX file naming
-                    input_sample=embedding_input_sample, 
-                    task="feature-extraction", 
+                    input_sample=embedding_input_sample,
+                    task="feature-extraction",
                     opset=17,
-                    input_names=['input_ids', 'attention_mask'],
-                    output_names=['last_hidden_state'], 
+                    input_names=["input_ids", "attention_mask"],
+                    output_names=["last_hidden_state"],
                     dynamic_axes={
-                        'input_ids': {0: 'batch_size', 1: 'sequence_length'},
-                        'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
-                        'last_hidden_state': {0: 'batch_size', 1: 'sequence_length'}
-                    }
+                        "input_ids": {0: "batch_size", 1: "sequence_length"},
+                        "attention_mask": {0: "batch_size", 1: "sequence_length"},
+                        "last_hidden_state": {0: "batch_size", 1: "sequence_length"},
+                    },
                 )
             ]
-            logger.info("Added embedding model to ONNX export configuration with model_name: embedding_model")
+            logger.info(
+                "Added embedding model to ONNX export configuration with model_name: embedding_model"
+            )
 
             # Try to add TensorRT-LLM model for ONNX export
             logger.info("Attempting to add TensorRT-LLM model for ONNX export...")
             try:
                 from transformers import AutoTokenizer, AutoModelForCausalLM
-                
+
                 class TorchWrapper(torch.nn.Module):
                     """Wrapper to make TensorRT model ONNX-compatible."""
+
                     def __init__(self, model):
                         super().__init__()
                         self.model = model
@@ -638,80 +651,100 @@ class Model(mlflow.pyfunc.PythonModel):
                         outputs = self.model(
                             input_ids=input_ids,
                             attention_mask=attention_mask,
-                            use_cache=False
+                            use_cache=False,
                         )
-                        return outputs.logits if hasattr(outputs, 'logits') else outputs
+                        return outputs.logits if hasattr(outputs, "logits") else outputs
 
                 # Create sample inputs for LLM model
                 tokenizer = AutoTokenizer.from_pretrained(self.default_llm_model)
                 tokenizer.pad_token = tokenizer.eos_token
                 llm_inputs = tokenizer(
-                    "Hello", 
+                    "Hello",
                     return_tensors="pt",
                     padding=True,
                     truncation=True,
-                    max_length=8 
+                    max_length=8,
                 )
 
                 llm_input_sample = (
-                    llm_inputs["input_ids"].to(device), 
-                    llm_inputs["attention_mask"].to(device)
+                    llm_inputs["input_ids"].to(device),
+                    llm_inputs["attention_mask"].to(device),
                 )
 
                 # Try to load a PyTorch version for ONNX export
-                logger.info(f"Attempting to load PyTorch model from: {self.resolved_model_path}")
+                logger.info(
+                    f"Attempting to load PyTorch model from: {self.resolved_model_path}"
+                )
                 try:
                     # Use the resolved model path (could be HF cache or local path)
                     model_path_for_loading = self.resolved_model_path
-                    
+
                     # If it's a local directory path from HF cache, use it directly
                     # Otherwise fall back to the HF model ID
-                    if os.path.exists(model_path_for_loading) and os.path.isdir(model_path_for_loading):
-                        logger.info(f"Loading PyTorch model from local cache: {model_path_for_loading}")
+                    if os.path.exists(model_path_for_loading) and os.path.isdir(
+                        model_path_for_loading
+                    ):
+                        logger.info(
+                            f"Loading PyTorch model from local cache: {model_path_for_loading}"
+                        )
                         pytorch_model = AutoModelForCausalLM.from_pretrained(
-                            model_path_for_loading, 
+                            model_path_for_loading,
                             torch_dtype=dtype,
-                            local_files_only=True
+                            local_files_only=True,
                         ).to(device)
                     else:
-                        logger.info(f"Loading PyTorch model from HF hub: {self.default_llm_model}")
+                        logger.info(
+                            f"Loading PyTorch model from HF hub: {self.default_llm_model}"
+                        )
                         pytorch_model = AutoModelForCausalLM.from_pretrained(
-                            self.default_llm_model, 
-                            torch_dtype=dtype
+                            self.default_llm_model, torch_dtype=dtype
                         ).to(device)
-                    
+
                     pytorch_model.eval()
                     wrapped_model = TorchWrapper(pytorch_model)
-                    
+
                     model_configs.append(
                         ModelExportConfig(
                             model=wrapped_model,
                             model_name="nemotron_model",  # Changed to match expected name
                             input_sample=llm_input_sample,
                             task="text-generation",
-                            input_names=['input_ids', 'attention_mask'],
-                            output_names=['logits'],
+                            input_names=["input_ids", "attention_mask"],
+                            output_names=["logits"],
                             opset=17,
                             dynamic_axes={
-                                'input_ids': {0: 'batch_size', 1: 'sequence_length'},
-                                'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
-                                'logits': {0: 'batch_size', 1: 'sequence_length'}
-                            }
+                                "input_ids": {0: "batch_size", 1: "sequence_length"},
+                                "attention_mask": {
+                                    0: "batch_size",
+                                    1: "sequence_length",
+                                },
+                                "logits": {0: "batch_size", 1: "sequence_length"},
+                            },
                         )
                     )
-                    logger.info("✅ Successfully added TensorRT-LLM model to ONNX export configuration with model_name: nemotron_model")
+                    logger.info(
+                        "✅ Successfully added TensorRT-LLM model to ONNX export configuration with model_name: nemotron_model"
+                    )
                 except Exception as model_load_error:
-                    logger.error(f"❌ Could not load PyTorch version of LLM for ONNX export: {model_load_error}")
+                    logger.error(
+                        f"❌ Could not load PyTorch version of LLM for ONNX export: {model_load_error}"
+                    )
                     import traceback
+
                     logger.error(f"Full traceback: {traceback.format_exc()}")
 
             except Exception as llm_export_error:
-                logger.error(f"❌ Could not add TensorRT-LLM model to ONNX export: {llm_export_error}")
+                logger.error(
+                    f"❌ Could not add TensorRT-LLM model to ONNX export: {llm_export_error}"
+                )
                 import traceback
+
                 logger.error(f"Full traceback: {traceback.format_exc()}")
 
             logger.info("ONNX export configuration created successfully")
-            logger.info(f"Total models configured for ONNX export: {len(model_configs)}")
+            logger.info(
+                f"Total models configured for ONNX export: {len(model_configs)}"
+            )
             for i, config in enumerate(model_configs):
                 logger.info(f"Model {i+1}: {config.model_name}")
             return model_configs
@@ -725,7 +758,7 @@ class Model(mlflow.pyfunc.PythonModel):
     def copy_model_artifacts_to_directory(self, target_dir: str) -> None:
         """
         Copy model artifacts to a target directory.
-        
+
         Args:
             target_dir: Directory path where to copy the model files
         """
@@ -733,16 +766,26 @@ class Model(mlflow.pyfunc.PythonModel):
             os.makedirs(target_dir, exist_ok=True)
 
             # Copy TensorRT-LLM model artifacts if they exist locally
-            if os.path.exists(self.resolved_model_path) and os.path.isdir(self.resolved_model_path):
+            if os.path.exists(self.resolved_model_path) and os.path.isdir(
+                self.resolved_model_path
+            ):
                 target_model_dir = os.path.join(target_dir, "tensorrt_llm")
-                shutil.copytree(self.resolved_model_path, target_model_dir, dirs_exist_ok=True)
+                shutil.copytree(
+                    self.resolved_model_path, target_model_dir, dirs_exist_ok=True
+                )
                 logger.info(f"Copied TensorRT-LLM model to {target_model_dir}")
-            elif os.path.exists(self.resolved_model_path) and os.path.isfile(self.resolved_model_path):
-                target_model_file = os.path.join(target_dir, os.path.basename(self.resolved_model_path))
+            elif os.path.exists(self.resolved_model_path) and os.path.isfile(
+                self.resolved_model_path
+            ):
+                target_model_file = os.path.join(
+                    target_dir, os.path.basename(self.resolved_model_path)
+                )
                 shutil.copyfile(self.resolved_model_path, target_model_file)
                 logger.info(f"Copied TensorRT-LLM model file to {target_model_file}")
             else:
-                logger.info(f"Model path {self.resolved_model_path} is not a local file/directory - skipping copy")
+                logger.info(
+                    f"Model path {self.resolved_model_path} is not a local file/directory - skipping copy"
+                )
 
             # Copy vector database if it exists
             if self.docs_path:
