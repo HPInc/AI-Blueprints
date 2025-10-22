@@ -105,6 +105,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### Step 1: Create an AIStudio Project
 
 1. Create a **New Project** in AI Studio.
+
 - (Optional) Add a description and relevant tags.
 
 ### Step 2: Create a Workspace
@@ -112,6 +113,7 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 1. Choose **Local GenAI** as the base image when creating the workspace.
 
 ### Step 3: Clone the Repository and Verify Project Files
+
 1. In the Project Setup tab, under Setup, clone the project repository:
    ```
    git clone https://github.com/HPInc/AI-Blueprints.git
@@ -127,10 +129,12 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
+
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 
 - **Configure Secrets in Secrets Manager (Premium users):**
+
   - Add your API keys to the project's Secrets Manager vault, located in the `Project Setup` tab -> `Setup` -> `Project Secrets`:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
   - In `Secrets Name` field add: `HUGGINGFACE_API_KEY`
@@ -143,11 +147,12 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 ### Step 6: Setup Configuration
 
 1. Edit `config.yaml` with relevant configuration details:
-  - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
-  - `ui.mode`: Set UI mode to `streamlit` or `static`
-  - `ports`: Configure external and internal port mappings
-  - `service`: Adjust MLflow timeout and health check settings
-  - `proxy`: Set proxy settings if needed for restricted networks
+
+- `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
+- `ui.mode`: Set UI mode to `streamlit` or `static`
+- `ports`: Configure external and internal port mappings
+- `service`: Adjust MLflow timeout and health check settings
+- `proxy`: Set proxy settings if needed for restricted networks
 
 ---
 
@@ -165,7 +170,7 @@ Execute the notebook inside the `notebooks` folder:
 notebooks/run-workflow.ipynb
 ```
 
- - In the **Run and Approve section**, you can customize prompts, add presentation sections, and view results directly in the notebook interface.
+- In the **Run and Approve section**, you can customize prompts, add presentation sections, and view results directly in the notebook interface.
 
 ```python
 generator.add_section(
@@ -183,39 +188,89 @@ notebooks/register-model.ipynb
 ```
 
 This will:
+
 - Register the model in MLflow
 
-### Step 3:  Deploy the Text Generation Service
+### Step 3: Deploy the Text Generation Service
 
 1. In AI Studio, navigate to **Deployments > New Service**.
 2. Give your service a name (e.g.“Text Generation Service”), then select the registered Script Generation Service.
 3. Pick the desired model version and enable **GPU acceleration** for best performance.
 4. Click **Deploy** to launch the service.
 
-### Step 4:  Swagger / Raw API
+### Step 4: Swagger / Raw API
 
-#### Example payload for text-only translation:
+#### Example payload for text generation:
 
 ```jsonc
 {
-  "inputs": {
-    "query": ["graph neural networks"],
-    "max_results": [1],
-    "chunk_size": [1200],
-    "chunk_overlap": [400],
-    "do_extract": [true],
-    "do_analyze": [true],
-    "do_generate": [true],
-    "analysis_prompt": ["Summarize the content in English (≈150 words)."],
-    "generation_prompt": [
-      "Create a concise 5-point presentation script based on the summary."
+  "dataframe_split": {
+    "columns": [
+      "query",
+      "max_results",
+      "chunk_size",
+      "chunk_overlap",
+      "do_extract",
+      "do_analyze",
+      "do_generate",
+      "analysis_prompt",
+      "generation_prompt"
+    ],
+    "data": [
+      [
+        "graph neural networks",
+        1,
+        1200,
+        400,
+        true,
+        true,
+        true,
+        "Summarize the content in English (≈150 words).",
+        "Create a concise 5-point presentation script based on the summary."
+      ]
     ]
-  },
-  "params": {}
+  }
 }
 ```
 
-Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
+#### Example curl command:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:5002/invocations' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "dataframe_split": {
+    "columns": [
+      "query",
+      "max_results",
+      "chunk_size",
+      "chunk_overlap",
+      "do_extract",
+      "do_analyze",
+      "do_generate",
+      "analysis_prompt",
+      "generation_prompt"
+    ],
+    "data": [
+      [
+        "graph neural networks",
+        1,
+        1200,
+        400,
+        true,
+        true,
+        true,
+        "Summarize the content in English (≈150 words).",
+        "Create a concise 5-point presentation script based on the summary."
+      ]
+    ]
+  }
+}'
+```
+
+Paste the JSON payload into the Swagger "/invocations" endpoint and click **Try it out** to see the raw JSON response.
 
 ### Step 5: Launch the Streamlit Web App
 
@@ -225,8 +280,6 @@ Paste that into the Swagger “/invocations” endpoint and click **Try it out**
 ### Streamlit Preview
 
 ![Streamlit Screenshot](docs/streamlit-ss.png)
-
-
 
 ## Contact and Support
 
