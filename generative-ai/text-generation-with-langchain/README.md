@@ -202,33 +202,18 @@ This will:
 
 #### Example payload for text generation:
 
-```jsonc
+```json
 {
-  "dataframe_split": {
-    "columns": [
-      "query",
-      "max_results",
-      "chunk_size",
-      "chunk_overlap",
-      "do_extract",
-      "do_analyze",
-      "do_generate",
-      "analysis_prompt",
-      "generation_prompt"
-    ],
-    "data": [
-      [
-        "graph neural networks",
-        1,
-        1200,
-        400,
-        true,
-        true,
-        true,
-        "Summarize the content in English (≈150 words).",
-        "Create a concise 5-point presentation script based on the summary."
-      ]
-    ]
+  "inputs": {
+    "query": "graph neural networks",
+    "max_results": 1,
+    "chunk_size": 1200,
+    "chunk_overlap": 400,
+    "do_extract": true,
+    "do_analyze": true,
+    "do_generate": true,
+    "analysis_prompt": "Summarize the content in English (≈150 words).",
+    "generation_prompt": "Create a concise 5-point presentation script based on the summary."
   }
 }
 ```
@@ -241,31 +226,16 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "dataframe_split": {
-    "columns": [
-      "query",
-      "max_results",
-      "chunk_size",
-      "chunk_overlap",
-      "do_extract",
-      "do_analyze",
-      "do_generate",
-      "analysis_prompt",
-      "generation_prompt"
-    ],
-    "data": [
-      [
-        "graph neural networks",
-        1,
-        1200,
-        400,
-        true,
-        true,
-        true,
-        "Summarize the content in English (≈150 words).",
-        "Create a concise 5-point presentation script based on the summary."
-      ]
-    ]
+  "inputs": {
+    "query": "graph neural networks",
+    "max_results": 1,
+    "chunk_size": 1200,
+    "chunk_overlap": 400,
+    "do_extract": true,
+    "do_analyze": true,
+    "do_generate": true,
+    "analysis_prompt": "Summarize the content in English (≈150 words).",
+    "generation_prompt": "Create a concise 5-point presentation script based on the summary."
   }
 }'
 ```

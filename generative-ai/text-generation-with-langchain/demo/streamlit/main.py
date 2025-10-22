@@ -129,31 +129,16 @@ if st.button("🚀 Run"):
     generation_prompt_final = generation_prompt.strip() or DEFAULT_SCRIPT_PROMPT
 
     payload = {
-        "dataframe_split": {
-            "columns": [
-                "query",
-                "max_results",
-                "chunk_size",
-                "chunk_overlap",
-                "do_extract",
-                "do_analyze",
-                "do_generate",
-                "analysis_prompt",
-                "generation_prompt",
-            ],
-            "data": [
-                [
-                    str(query),
-                    int(max_results),
-                    int(chunk_size),
-                    int(chunk_overlap),
-                    bool(do_extract),
-                    bool(do_analyze),
-                    bool(do_generate),
-                    str(analysis_prompt),
-                    str(generation_prompt_final),
-                ]
-            ],
+        "inputs": {
+            "query": str(query),
+            "max_results": int(max_results),
+            "chunk_size": int(chunk_size),
+            "chunk_overlap": int(chunk_overlap),
+            "do_extract": bool(do_extract),
+            "do_analyze": bool(do_analyze),
+            "do_generate": bool(do_generate),
+            "analysis_prompt": str(analysis_prompt),
+            "generation_prompt": str(generation_prompt_final),
         }
     }
 
