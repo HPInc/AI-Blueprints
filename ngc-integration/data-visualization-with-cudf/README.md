@@ -1,4 +1,4 @@
-# 📡 OpenCellID Exploratory Data Analysis with Panel and cuDF
+# 📡 Data Visualization with cuDF
 
 <div align="center">
 
@@ -40,7 +40,9 @@ You can explore cell tower distributions by radio type, operator, country, and t
 │   └── opencellid_downloader.py
 ├── README.md                                                  # Project documentation
 └── requirements.txt                                           # Python dependencies (used with pip install)
-```---
+````
+
+---
 
 ## Setup
 

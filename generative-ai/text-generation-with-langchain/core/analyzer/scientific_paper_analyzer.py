@@ -18,7 +18,7 @@ class ScientificPaperAnalyzer:
         llm: BaseChatModel,
         model_source: str = "local",
         prompt_template: Optional[PromptTemplate] = None,
-        logging_enabled: bool = False
+        logging_enabled: bool = False,
     ):
         self.retriever = retriever
         self.llm = llm
@@ -28,7 +28,9 @@ class ScientificPaperAnalyzer:
         self.logging_enabled = logging_enabled
 
         if logging_enabled:
-            logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+            logging.basicConfig(
+                level=logging.INFO, format="[%(levelname)s] %(message)s"
+            )
         else:
             logging.disable(logging.CRITICAL)
 
@@ -38,6 +40,7 @@ class ScientificPaperAnalyzer:
         """Create a default prompt template with model-specific formatting."""
         # Import here to avoid circular imports
         from src.prompt_templates import format_scientific_paper_analysis_prompt
+
         return format_scientific_paper_analysis_prompt(self.model_source)
 
     def _format_docs(self, docs: List[Document]) -> str:
@@ -57,10 +60,17 @@ class ScientificPaperAnalyzer:
         if self.logging_enabled:
             self.logger.info("Building the LangChain chain...")
 
-        return {
-            "context": lambda inputs: self._format_docs(self._query_retriever(inputs["prompt"])),
-            "prompt": RunnablePassthrough()
-        } | self.prompt_template | self.llm | StrOutputParser()
+        return (
+            {
+                "context": lambda inputs: self._format_docs(
+                    self._query_retriever(inputs["prompt"])
+                ),
+                "prompt": RunnablePassthrough(),
+            }
+            | self.prompt_template
+            | self.llm
+            | StrOutputParser()
+        )
 
     def analyze(self, prompt: str) -> str:
         if self.logging_enabled:
@@ -71,7 +81,11 @@ class ScientificPaperAnalyzer:
         if self.logging_enabled:
             self.logger.info(f"Raw model output: {str(result)[:300]}...")
 
-        result = result["text"] if isinstance(result, dict) and "text" in result else str(result)
+        result = (
+            result["text"]
+            if isinstance(result, dict) and "text" in result
+            else str(result)
+        )
         return result.strip()
 
     def get_chain(self) -> Runnable:

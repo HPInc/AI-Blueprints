@@ -163,22 +163,17 @@ Once your service is running, open the **Swagger UI** from its Service URL.
 
 Paste that into the Swagger “/invocations” endpoint and click **Try it out** to see the raw JSON response.
 
-### 5 ▪ Use the HTML Demo
+### Step 5: Launch the Streamlit Web App
 
-From the Swagger page, click the **“Demo”** link to interact via a simple web form:
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-- Enter your source text.
-- Click **Translate**.
-- View the translated text right in the browser.
+### Streamlit Preview
 
-### 6 ▪ Launch the Streamlit UI
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit-webapp` folder.
-2. Enter text to translate, hit **Translate**, and enjoy the live results!
 
-### Successful UI demo
 
-![Streamlit UI](docs/StreamlitUI.png)
 ---
 
 # Contact and Support

@@ -1,6 +1,6 @@
 code_folder: "."
 test_folder: "test"
-files: 
+files:
 - deeplearning_test.py
 assets:
   hurricane: "c:\\Users\\borges\\data\\hurricane"

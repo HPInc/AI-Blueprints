@@ -1,11 +1,12 @@
 import os
 from datetime import datetime
 
-class FilenameUtils():
+
+class FilenameUtils:
     def __init__(self):
         self.chars_to_replace = [" ", "[", "]", "{", "}", "-"]
 
-    #This function identify the type of the file being preprocessed
+    # This function identify the type of the file being preprocessed
     def filetype(self, filename):
         _, extension = os.path.splitext(filename)
         if extension.lower() == ".py":
@@ -15,24 +16,26 @@ class FilenameUtils():
         else:
             return "other"
 
-    #This fixes the name of the file, removing undesirable chars and passing to lower case
-    def fix_filename(self, filename, extension = ".py"):
+    # This fixes the name of the file, removing undesirable chars and passing to lower case
+    def fix_filename(self, filename, extension=".py"):
         filename = f"{os.path.splitext(filename)[0]}{extension}"
         for char in self.chars_to_replace:
             filename = filename.replace(char, "_")
-        return filename.lower()  
-    
-    #This method creates a name for a temporary python file
+        return filename.lower()
+
+    # This method creates a name for a temporary python file
     def temp_python_name(self, filename):
         basename = os.path.basename(filename)
-        basename, _= os.path.splitext(basename)
+        basename, _ = os.path.splitext(basename)
         return f"tmp_{basename}.py"
-    
-    #This method will return the module name from the filename
+
+    # This method will return the module name from the filename
     def get_module(self, filename):
         folder_list = os.path.dirname(filename).split(os.sep)
         folder_list.append(os.path.splitext(os.path.basename(filename))[0])
-        fixed_folders = [self.fix_filename(folder, extension = "") for folder in folder_list]
+        fixed_folders = [
+            self.fix_filename(folder, extension="") for folder in folder_list
+        ]
         fixed_folders = [folder for folder in fixed_folders if folder != ""]
         return ".".join(fixed_folders)
 
@@ -42,5 +45,3 @@ class FilenameUtils():
         if os.path.exists(dirname):
             os.rename(dirname, f"{dirname}_{backup_suffix}")
         os.mkdir(dirname)
-        
-            
