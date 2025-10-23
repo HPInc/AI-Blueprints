@@ -84,7 +84,7 @@ class Model:
                         logger.info(f"Found model file: {model_file_path}")
                         break
 
-                # Also check in parent directory of docs_path (artifacts root)
+                # Check in parent directory of docs_path (artifacts root)
                 if not model_file_path:
                     artifacts_root = os.path.dirname(self.docs_path)
                     for filename in possible_filenames:
@@ -96,9 +96,46 @@ class Model:
                             )
                             break
 
+                # Check in models subdirectory of artifacts root
+                if not model_file_path:
+                    artifacts_root = os.path.dirname(self.docs_path)
+                    models_dir = os.path.join(artifacts_root, "models")
+                    if os.path.exists(models_dir):
+                        for filename in possible_filenames:
+                            potential_path = os.path.join(models_dir, filename)
+                            if os.path.exists(potential_path):
+                                model_file_path = potential_path
+                                logger.info(
+                                    f"Found model file in models directory: {model_file_path}"
+                                )
+                                break
+
+                # Check if MODEL_ARTIFACTS_PATH environment variable is set
+                if not model_file_path:
+                    model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
+                    if model_artifacts_path and os.path.exists(model_artifacts_path):
+                        for filename in possible_filenames:
+                            potential_path = os.path.join(model_artifacts_path, filename)
+                            if os.path.exists(potential_path):
+                                model_file_path = potential_path
+                                logger.info(
+                                    f"Found model file via MODEL_ARTIFACTS_PATH: {model_file_path}"
+                                )
+                                break
+
             if not model_file_path:
+                # Provide more detailed error message with all searched paths
+                searched_paths = [
+                    self.docs_path,
+                    os.path.dirname(self.docs_path),
+                    os.path.join(os.path.dirname(self.docs_path), "models"),
+                ]
+                model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
+                if model_artifacts_path:
+                    searched_paths.append(model_artifacts_path)
+                
                 raise FileNotFoundError(
-                    f"No Keras model file found. Searched in {self.docs_path} and parent directory for: {possible_filenames}"
+                    f"No Keras model file found. Searched in {searched_paths} for: {possible_filenames}"
                 )
 
             # Load the Keras model
