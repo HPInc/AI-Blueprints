@@ -15,6 +15,7 @@ from langchain_community.vectorstores import Chroma
 # Transformer imports for SigLIP
 from transformers import SiglipModel, SiglipProcessor
 import logging
+
 logger = logging.getLogger("multimodal_rag_register_notebook")
 
 
@@ -22,12 +23,18 @@ class SemanticCache:
     """
     A semantic cache using a Chroma vector store to find similar queries.
     """
-    def __init__(self, persist_directory: Path, embedding_function: Embeddings, collection_name: str = "multimodal_cache"):
+
+    def __init__(
+        self,
+        persist_directory: Path,
+        embedding_function: Embeddings,
+        collection_name: str = "multimodal_cache",
+    ):
         self.embedding_function = embedding_function
         self._vectorstore = Chroma(
             collection_name=collection_name,
             persist_directory=str(persist_directory),
-            embedding_function=self.embedding_function
+            embedding_function=self.embedding_function,
         )
 
     def get(self, query: str, threshold: float = 0.90) -> Optional[Dict[str, Any]]:
@@ -35,7 +42,7 @@ class SemanticCache:
         Searches for a semantically similar query in the cache.
         """
         if self._vectorstore._collection.count() == 0:
-            return None # Cache is empty
+            return None  # Cache is empty
 
         results = self._vectorstore.similarity_search_with_score(query, k=1)
         if not results:
@@ -45,12 +52,16 @@ class SemanticCache:
         # Chroma's 'score' is a distance metric (L2), so we convert it to similarity
         similarity = 1.0 - score
 
-        logger.info(f"Most similar cached query: '{most_similar_doc.page_content}' (Similarity: {similarity:.4f})")
+        logger.info(
+            f"Most similar cached query: '{most_similar_doc.page_content}' (Similarity: {similarity:.4f})"
+        )
 
         if similarity >= threshold:
             cached_result = most_similar_doc.metadata
             # Deserialize the JSON string for used_images
-            cached_result['used_images'] = json.loads(cached_result.get('used_images', '[]'))
+            cached_result["used_images"] = json.loads(
+                cached_result.get("used_images", "[]")
+            )
             return cached_result
 
         return None
@@ -61,8 +72,8 @@ class SemanticCache:
         """
         # Ensure used_images is stored as a JSON string
         metadata_to_store = {
-            'reply': result_dict.get('reply', ''),
-            'used_images': json.dumps(result_dict.get('used_images', []))
+            "reply": result_dict.get("reply", ""),
+            "used_images": json.dumps(result_dict.get("used_images", [])),
         }
 
         doc = Document(page_content=query, metadata=metadata_to_store)
@@ -76,21 +87,24 @@ class SemanticCache:
         # Note: ChromaDB's `get` with `where` is the intended way to find documents by content.
         # This operation might be slow on large collections without proper indexing on metadata.
         results = self._vectorstore.get(where={"page_content": query})
-        if results and 'ids' in results and results['ids']:
-            doc_id_to_delete = results['ids'][0]
+        if results and "ids" in results and results["ids"]:
+            doc_id_to_delete = results["ids"][0]
             self._vectorstore._collection.delete(ids=[doc_id_to_delete])
             logger.info(f"Cleared old cache for query: '{query}'")
 
 
 class SiglipEmbeddings(Embeddings):
     """LangChain compatible wrapper for SigLIP image/text embeddings."""
+
     def __init__(self, model_id: str, device: str):
         self.device = device
         self.model = SiglipModel.from_pretrained(model_id).to(self.device)
         self.processor = SiglipProcessor.from_pretrained(model_id)
 
     def _embed_text(self, txts: List[str]) -> np.ndarray:
-        inp = self.processor(text=txts, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        inp = self.processor(
+            text=txts, return_tensors="pt", padding=True, truncation=True
+        ).to(self.device)
         with torch.no_grad():
             return self.model.get_text_features(**inp).cpu().numpy()
 
