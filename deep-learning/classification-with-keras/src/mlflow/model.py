@@ -115,7 +115,9 @@ class Model:
                     model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
                     if model_artifacts_path and os.path.exists(model_artifacts_path):
                         for filename in possible_filenames:
-                            potential_path = os.path.join(model_artifacts_path, filename)
+                            potential_path = os.path.join(
+                                model_artifacts_path, filename
+                            )
                             if os.path.exists(potential_path):
                                 model_file_path = potential_path
                                 logger.info(
@@ -133,7 +135,7 @@ class Model:
                 model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
                 if model_artifacts_path:
                     searched_paths.append(model_artifacts_path)
-                
+
                 raise FileNotFoundError(
                     f"No Keras model file found. Searched in {searched_paths} for: {possible_filenames}"
                 )
