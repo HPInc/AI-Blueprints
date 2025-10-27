@@ -34,8 +34,8 @@ class Logger:
         cls,
         train_data_matrix_path: str,
         movie_titles_path: str,
-        config_path: str = "configs/config.yaml",
-        demo_folder: Optional[str] = None,
+        config_path = "configs/config.yaml",
+        demo_folder= None,
         artifact_path: str = "AIStudio-Model",
         signature=None,
     ):
@@ -68,7 +68,7 @@ class Logger:
 
         # Create temp directory
         temp_base = tempfile.gettempdir()
-        temp_dir = os.path.join(temp_base, "movie_model_artifacts")
+        temp_dir = os.path.join(temp_base, "model_artifacts")
 
         # Clean slate for deterministic results
         if os.path.exists(temp_dir):
