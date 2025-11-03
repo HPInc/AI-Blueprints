@@ -25,6 +25,25 @@ except ImportError:
 
 
 # Simple path utilities for project-relative paths
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+
+    Returns:
+        Full path to the model file
+    """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+
+    return model_path
+
+
 def get_project_root():
     """Get the project root directory (image-generation-with-stablediffusion)"""
     return Path(__file__).parent.parent
@@ -212,6 +231,19 @@ def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
         os.environ[env_key] = str(value)
 
     print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
+
+
+def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any]:
+    """
+    Alias for load_configuration for backward compatibility.
+
+    Args:
+        config_path: Path to the configuration YAML file.
+
+    Returns:
+        Dictionary containing the project configurations.
+    """
+    return load_configuration(config_path)
 
 
 def load_configuration(

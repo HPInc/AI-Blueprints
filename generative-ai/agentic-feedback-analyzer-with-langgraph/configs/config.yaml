@@ -1,6 +1,12 @@
 # Blueprint Configuration
 # This file configures the UI mode and ports for the model service
 
+# Path to the local model file (used for LlamaCpp initialization)
+model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+
+# Context window size for the LLM (default: 8192)
+context_window: 8192
+
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.

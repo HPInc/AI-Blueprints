@@ -36,9 +36,7 @@ This notebook performs automatic code explanation by extracting code snippets fr
 │   │   ├── main.py                                                   # Streamlit application
 │   │   └── ...                                                       # Additional Streamlit files
 ├── docs
-│   └── successful-swagger-ui-code-generation-result.pdf              # Swagger UI page
-│   └── swagger-ui-spam-detection-with-nlp.png                        # Swagger screenshot
-│   └── streamlit-ui-spam-detection-with-nlp.pdf                      # Streamlit screenshot
+│   └── streamlit-ss.png                                              # Streamlit screenshot
 ├── notebooks
 │   ├── core/                                                         # Core modules within notebooks
 │   │   ├── chroma_embedding_adapter.py
@@ -140,10 +138,12 @@ To ensure smooth execution, make sure your system meets the following minimum ha
 ### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
+
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 
 - **Configure Secrets in Secrets Manager (Premium users):**
+
   - Add your API keys to the project's Secrets Manager vault, located in the `Project Setup` tab -> `Setup` -> `Project Secrets`:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
   - In `Secrets Name` field add: `HUGGINGFACE_API_KEY`
@@ -156,12 +156,12 @@ To ensure smooth execution, make sure your system meets the following minimum ha
 ### Step 7: Setup Configuration
 
 1. Edit `config.yaml` with relevant configuration details:
-  - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
-  - `ui.mode`: Set UI mode to `streamlit` or `static`
-  - `ports`: Configure external and internal port mappings
-  - `service`: Adjust MLflow timeout and health check settings
-  - `proxy`: Set proxy settings if needed for restricted networks
 
+- `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
+- `ui.mode`: Set UI mode to `streamlit` or `static`
+- `ports`: Configure external and internal port mappings
+- `service`: Adjust MLflow timeout and health check settings
+- `proxy`: Set proxy settings if needed for restricted networks
 
 ---
 
@@ -176,6 +176,7 @@ notebooks/run-workflow.ipynb
 ```
 
 This will:
+
 - Run the full RAG pipeline
 
 ### Step 2: Run the Register Notebook
@@ -187,6 +188,7 @@ notebooks/register-model.ipynb
 ```
 
 This will:
+
 - Register the model in MLflow
 
 ### Step 3: Deploy the Chatbot Service
@@ -236,10 +238,7 @@ And as response:
 
 ![Streamlit Screenshot](docs/streamlit-ss.png)
 
-
-
 ---
-
 
 ## Contact and Support
 
