@@ -4,13 +4,14 @@ import logging
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 
+
 class AcceleratedInferenceRunner:
     """
     A lightweight inference runner that loads a base model using a ModelSelector
     and optionally applies LoRA fine-tuned weights.
 
     Designed for accelerated local inference with support for mixed precision (e.g., float16).
-    
+
     Attributes:
         model_selector (ModelSelector): Provides model loading utilities.
         finetuned_path (str, optional): Path to the fine-tuned LoRA adapter weights.
@@ -53,22 +54,27 @@ class AcceleratedInferenceRunner:
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_path,
-            torch_dtype=self.dtype
+            model_path, torch_dtype=self.dtype
         ).to(self.device)
 
         if self.finetuned_path:
-            adapter_config_path = os.path.join(self.finetuned_path, "adapter_config.json")
+            adapter_config_path = os.path.join(
+                self.finetuned_path, "adapter_config.json"
+            )
             if os.path.exists(adapter_config_path):
                 self.logger.info("🎯 Applying LoRA fine-tuned weights...")
                 self.model = PeftModel.from_pretrained(self.model, self.finetuned_path)
             else:
-                self.logger.warning(f"⚠️ No adapter_config.json found at {self.finetuned_path}. Skipping LoRA application.")
+                self.logger.warning(
+                    f"⚠️ No adapter_config.json found at {self.finetuned_path}. Skipping LoRA application."
+                )
 
         self.model = self.model.eval()
         self.logger.info("✅ Model loaded and ready for inference.")
 
-    def infer(self, prompt: str, max_new_tokens: int = 100, temperature: float = 0.7) -> str:
+    def infer(
+        self, prompt: str, max_new_tokens: int = 100, temperature: float = 0.7
+    ) -> str:
         """
         Runs inference for a given prompt using the loaded model.
 
@@ -83,7 +89,9 @@ class AcceleratedInferenceRunner:
         if self.model is None or self.tokenizer is None:
             self.load_model()
 
-        self.logger.info(f"🔍 Running inference for prompt (truncated): {prompt[:80]}...")
+        self.logger.info(
+            f"🔍 Running inference for prompt (truncated): {prompt[:80]}..."
+        )
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
@@ -93,7 +101,7 @@ class AcceleratedInferenceRunner:
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id
+                pad_token_id=self.tokenizer.eos_token_id,
             )
 
         result = self.tokenizer.decode(outputs[0], skip_special_tokens=True)

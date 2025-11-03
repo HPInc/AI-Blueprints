@@ -3,16 +3,30 @@ import logging  # Logging system for status and debugging output
 import time  # Time tracking and delays
 from datetime import datetime  # Handling date and time objects
 from pathlib import Path  # Filesystem path abstraction
-from typing import Any, Dict, List, Literal, Optional, TypedDict  # Type annotations for clarity and safety
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    TypedDict,
+)  # Type annotations for clarity and safety
 
 # ─────── Third-Party Package Imports ───────
 from tqdm import tqdm  # Visual progress bar for iterables
 from langchain.docstore.document import Document  # Standardized document format
-from langchain.text_splitter import RecursiveCharacterTextSplitter  # Text chunking utility
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,
+)  # Text chunking utility
 
 # ─────── Local Application-Specific Imports ───────
 from src.agentic_state import AgenticState  # Manages shared state across agent workflow
-from src.utils import get_response_from_llm, log_timing, logger  # Core utilities: LLM calls, logging, and timers
+from src.utils import (
+    get_response_from_llm,
+    log_timing,
+    logger,
+)  # Core utilities: LLM calls, logging, and timers
+
 
 @log_timing
 def ingest_question(state: AgenticState) -> Dict[str, Any]:
@@ -60,10 +74,9 @@ def check_relevance(state: AgenticState) -> Dict[str, Any]:
         "Your judgment should be inclusive — if there's any reasonable connection or utility, classify it as relevant ('yes')."
     )
 
-
     user_prompt = (
-        f"Topic: \"{topic}\"\n"
-        f"User's Question: \"{question}\"\n\n"
+        f'Topic: "{topic}"\n'
+        f'User\'s Question: "{question}"\n\n'
         "Determine if the question is relevant to the topic.\n"
         "A question is considered relevant if it:\n"
         "- Directly asks about the topic, or\n"
@@ -73,12 +86,15 @@ def check_relevance(state: AgenticState) -> Dict[str, Any]:
         "Answer:"
     )
 
-
     # Get LLM response
     response = get_response_from_llm(llm, system_prompt, user_prompt).strip().lower()
     is_relevant = response == "yes"
 
-    logger.info("🧠 Relevance response: %s → %s", response, "Relevant" if is_relevant else "Irrelevant")
+    logger.info(
+        "🧠 Relevance response: %s → %s",
+        response,
+        "Relevant" if is_relevant else "Irrelevant",
+    )
 
     # Append LLM trace and result
     messages = state.get("messages", [])
@@ -93,7 +109,9 @@ def check_relevance(state: AgenticState) -> Dict[str, Any]:
     }
 
     if not is_relevant:
-        result["answer"] = f"🚫 Sorry, I can only answer questions related to '{topic}'."
+        result["answer"] = (
+            f"🚫 Sorry, I can only answer questions related to '{topic}'."
+        )
 
     return result
 
@@ -115,25 +133,22 @@ def check_memory(state: AgenticState) -> Dict[str, Any]:
 
     if cached_answer:
         logger.info("💾 Cache hit for question: %s", question)
-        messages.append({
-            "role": "developer",
-            "content": f"💾 Retrieved cached answer for question: '{question}'"
-        })
-        return {
-            "answer": cached_answer,
-            "from_memory": True,
-            "messages": messages
-        }
+        messages.append(
+            {
+                "role": "developer",
+                "content": f"💾 Retrieved cached answer for question: '{question}'",
+            }
+        )
+        return {"answer": cached_answer, "from_memory": True, "messages": messages}
 
     logger.info("🧭 Cache miss for question: %s", question)
-    messages.append({
-        "role": "developer",
-        "content": f"🧭 No cached answer found for question: '{question}'"
-    })
-    return {
-        "from_memory": False,
-        "messages": messages
-    }
+    messages.append(
+        {
+            "role": "developer",
+            "content": f"🧭 No cached answer found for question: '{question}'",
+        }
+    )
+    return {"from_memory": False, "messages": messages}
 
 
 @log_timing
@@ -160,7 +175,7 @@ def rewrite_question(state: AgenticState) -> Dict[str, Any]:
     )
 
     user_prompt = (
-        f"Original user question:\n\"{original_question}\"\n\n"
+        f'Original user question:\n"{original_question}"\n\n'
         "Rewrite the question above as a clear and concise instruction for an AI to answer using document content. "
         "Ensure it remains in question form, not declarative."
     )
@@ -203,19 +218,34 @@ def create_chunks(state: AgenticState) -> Dict[str, Any]:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
-        separators=["\n\n", "\n", ".", "!", "?", " ", ""],  # Order: most to least semantic
+        separators=[
+            "\n\n",
+            "\n",
+            ".",
+            "!",
+            "?",
+            " ",
+            "",
+        ],  # Order: most to least semantic
         add_start_index=True,
     )
 
     chunks = splitter.split_documents(docs)
-    logger.info("🧩 Created %d total chunks (size=%d, overlap=%d)", len(chunks), CHUNK_SIZE, CHUNK_OVERLAP)
+    logger.info(
+        "🧩 Created %d total chunks (size=%d, overlap=%d)",
+        len(chunks),
+        CHUNK_SIZE,
+        CHUNK_OVERLAP,
+    )
 
     # Append developer message
     messages = state.get("messages", [])
-    messages.append({
-        "role": "developer",
-        "content": f"🧩 Chunked {len(docs)} documents into {len(chunks)} chunks (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})"
-    })
+    messages.append(
+        {
+            "role": "developer",
+            "content": f"🧩 Chunked {len(docs)} documents into {len(chunks)} chunks (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})",
+        }
+    )
 
     return {
         "chunks": chunks,
@@ -235,8 +265,12 @@ def generate_answer_per_chunks(state: AgenticState) -> Dict[str, Any]:
     chunks = state["chunks"]
     llm = state["llm"]
     topic = state["topic"]
-    
-    logger.info("🧩 Generating answers for %d chunks using rewritten question: '%s'", len(chunks), rewritten_question)
+
+    logger.info(
+        "🧩 Generating answers for %d chunks using rewritten question: '%s'",
+        len(chunks),
+        rewritten_question,
+    )
 
     # 🔒 System Prompt (invariant per chunk)
     system_prompt = (
@@ -256,8 +290,8 @@ def generate_answer_per_chunks(state: AgenticState) -> Dict[str, Any]:
     # 🧾 User Prompt Template
     user_prompt_template = (
         f"User question:\n"
-        f"\"{rewritten_question}\"\n\n"
-        f"This chunk is part of a document about the topic: \"{topic}\".\n"
+        f'"{rewritten_question}"\n\n'
+        f'This chunk is part of a document about the topic: "{topic}".\n'
         f"Read the chunk carefully and answer the question using only what is written below:\n\n"
         f"--- START OF CHUNK ---\n"
         f"{{chunk}}\n"
@@ -277,25 +311,34 @@ def generate_answer_per_chunks(state: AgenticState) -> Dict[str, Any]:
 
         try:
             response = get_response_from_llm(llm, system_prompt, user_prompt).strip()
-            progress_bar.set_postfix({"group": f"✅ Chunk {i + 1} response length: {len(response)} chars"})
+            progress_bar.set_postfix(
+                {"group": f"✅ Chunk {i + 1} response length: {len(response)} chars"}
+            )
         except Exception as e:
             response = f"[ERROR in chunk {i+1}]: {e}"
-            progress_bar.set_postfix({"group": f"❌ Error processing chunk {i + 1}: {e}"})
+            progress_bar.set_postfix(
+                {"group": f"❌ Error processing chunk {i + 1}: {e}"}
+            )
 
         chunk_responses.append(response)
 
-    logger.info("🧠 Finished generating %d chunk-level responses.", len(chunk_responses))
+    logger.info(
+        "🧠 Finished generating %d chunk-level responses.", len(chunk_responses)
+    )
 
     # Add summary message
-    messages.append({
-        "role": "developer",
-        "content": f"🧠 Processed {len(chunks)} chunks for question: '{rewritten_question}'"
-    })
+    messages.append(
+        {
+            "role": "developer",
+            "content": f"🧠 Processed {len(chunks)} chunks for question: '{rewritten_question}'",
+        }
+    )
 
     return {
         "chunk_responses": chunk_responses,
         "messages": messages,
     }
+
 
 @log_timing
 def generate_synthetized_answer(state: AgenticState) -> Dict[str, Any]:
@@ -334,7 +377,9 @@ def generate_synthetized_answer(state: AgenticState) -> Dict[str, Any]:
 
     logger.info("🧠 Synthesizing across %d chunk groups", len(grouped_chunks))
 
-    logger.info("🧠 Synthesizing final answer from %d chunk responses", len(chunk_answers))
+    logger.info(
+        "🧠 Synthesizing final answer from %d chunk responses", len(chunk_answers)
+    )
 
     # 🧠 System Prompt (for synthesis agent)
     synthesis_system_prompt = (
@@ -354,15 +399,17 @@ def generate_synthetized_answer(state: AgenticState) -> Dict[str, Any]:
 
     progress_bar = tqdm(grouped_chunks, desc="🔁 Processing each grouped chunk answers")
 
-    partial_summaries = [] 
+    partial_summaries = []
 
     for i, chunk_group in enumerate(progress_bar):
-        formatted_chunks = "\n".join(f"- Chunk {j+1}: {a}" for j, a in enumerate(chunk_group))
+        formatted_chunks = "\n".join(
+            f"- Chunk {j+1}: {a}" for j, a in enumerate(chunk_group)
+        )
         # 💬 User Prompt Template
         synthesis_user_prompt = (
             f"The user asked the following question:\n"
-            f"\"{rewritten_question}\"\n\n"
-            f"The topic of the document is: \"{topic}\"\n\n"
+            f'"{rewritten_question}"\n\n'
+            f'The topic of the document is: "{topic}"\n\n'
             f"Below are the LLM-generated answers for each chunk:\n\n"
             f"{formatted_chunks}\n\n"
             f"Please now synthesize a final, complete, non-redundant answer to the user's question. "
@@ -375,21 +422,29 @@ def generate_synthetized_answer(state: AgenticState) -> Dict[str, Any]:
             llm=llm,
             system_prompt=synthesis_system_prompt,
             user_prompt=synthesis_user_prompt,
-            ).strip()
-        
-        progress_bar.set_postfix({"group": f"🧠 Synthesized partial answer ({i + 1}/{len(grouped_chunks)})"})
-        
-        partial_summary = f"# 🧠 Synthesized partial answer ({i + 1}/{len(grouped_chunks)})\n\n" + summary
+        ).strip()
+
+        progress_bar.set_postfix(
+            {"group": f"🧠 Synthesized partial answer ({i + 1}/{len(grouped_chunks)})"}
+        )
+
+        partial_summary = (
+            f"# 🧠 Synthesized partial answer ({i + 1}/{len(grouped_chunks)})\n\n"
+            + summary
+        )
         partial_summaries.append(partial_summary)
-        
+
     logger.info(f"✅ Synthesized {len(partial_summaries)} group-level summaries.")
 
     final_answer = "\n---\n".join(partial_summaries)
 
     messages = state.get("messages", [])
     messages += [
-        {"role": "developer", "content": f"✅ Synthesized {len(partial_summaries)} group-level summaries."},
-        {"role": "assistant", "content": final_answer}
+        {
+            "role": "developer",
+            "content": f"✅ Synthesized {len(partial_summaries)} group-level summaries.",
+        },
+        {"role": "assistant", "content": final_answer},
     ]
 
     return {
@@ -418,10 +473,12 @@ def update_memory(state: AgenticState) -> Dict[str, Any]:
     logger.info("💾 Stored question-answer pair in memory (key: %s)", question)
 
     messages = state.get("messages", [])
-    messages.append({
-        "role": "developer",
-        "content": f"💾 Stored answer in memory for question key: '{question}'"
-    })
+    messages.append(
+        {
+            "role": "developer",
+            "content": f"💾 Stored answer in memory for question key: '{question}'",
+        }
+    )
 
     return {"messages": messages}
 
@@ -445,9 +502,8 @@ def output_answer(state: AgenticState) -> Dict[str, Any]:
 
     # Append developer message to trace
     messages = state.get("messages", [])
-    messages.append({
-        "role": "developer",
-        "content": f"📤 Final answer delivered: {answer}"
-    })
+    messages.append(
+        {"role": "developer", "content": f"📤 Final answer delivered: {answer}"}
+    )
 
     return {"messages": messages}

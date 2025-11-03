@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import os
@@ -18,8 +16,13 @@ from PIL import Image
 
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-from src.utils import get_project_root, get_config_dir, get_output_dir, get_default_model_path, get_model_cache_dir
-
+from src.utils import (
+    get_project_root,
+    get_config_dir,
+    get_output_dir,
+    get_default_model_path,
+    get_model_cache_dir,
+)
 
 
 _CONFIG_FILENAMES = {
@@ -32,10 +35,10 @@ _CONFIG_FILENAMES = {
 def _find_config_dir() -> Path:
     """
     Find the configuration directory containing the required config files.
-    
+
     Returns:
         Path to the directory containing the config files.
-    
+
     Raises:
         FileNotFoundError: If config directory cannot be found.
     """
@@ -43,7 +46,7 @@ def _find_config_dir() -> Path:
     config_dir = get_config_dir()
     if config_dir.exists():
         return config_dir
-    
+
     # Fallback to the original search logic if simple approach fails
     required = set(_CONFIG_FILENAMES.values())
 
@@ -60,7 +63,6 @@ def _find_config_dir() -> Path:
 
 
 def load_config(config_dir: str | Path | None = None) -> dict:
-   
 
     if config_dir:
         base = Path(config_dir).expanduser()
@@ -82,10 +84,12 @@ def load_config(config_dir: str | Path | None = None) -> dict:
         return yaml.safe_load(f)
 
 
-
-
 class StableDiffusionPipelineOutput:
-    def __init__(self, images: Union[List[Image.Image], np.ndarray], nsfw_content_detected: List[bool]):
+    def __init__(
+        self,
+        images: Union[List[Image.Image], np.ndarray],
+        nsfw_content_detected: List[bool],
+    ):
         self.images = images
         self.nsfw_content_detected = nsfw_content_detected
 
@@ -140,7 +144,7 @@ def run_inference(
     # Use the new path utility to get the default model path
     default_model_path = get_default_model_path()
     model_path = cfg.get("model_path", default_model_path)
-    
+
     # Set cache directory for downloaded models
     cache_dir = get_model_cache_dir()
     os.environ["HF_HOME"] = str(cache_dir)
@@ -155,7 +159,7 @@ def run_inference(
 
     inference_times: list[float] = []
     images: list[Image.Image] = []
-    
+
     # Get output directory for saving images
     output_dir = get_output_dir()
 
@@ -194,8 +198,6 @@ def run_inference(
             _display_images(images)
 
     accelerator.end_training()
-
-
 
 
 if __name__ == "__main__":

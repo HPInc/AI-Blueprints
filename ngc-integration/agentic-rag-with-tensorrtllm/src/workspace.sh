@@ -43,10 +43,8 @@ non_root_user=$(getent passwd | grep /home | cut -d: -f1)
 echo "User name = ${non_root_user}"
 
 /bin/bash "${SETUP_FOLDER}/jupyter.sh" "${JUPYTERLAB_PORT}" "${JUPYTERLAB_INTERNAL_PORT}" "${SETUP_FOLDER}"
-#if [ -z "${non_root_user}" ]; then 
+#if [ -z "${non_root_user}" ]; then
 #	/bin/bash "${SETUP_FOLDER}/jupyter.sh" "${JUPYTERLAB_PORT}" "${JUPYTERLAB_INTERNAL_PORT}" "${SETUP_FOLDER}"
 #else
 #	sudo -u "${non_root_user}" env PATH="$PATH" /bin/bash "${SETUP_FOLDER}/jupyter.sh" "${JUPYTERLAB_PORT}" "${JUPYTERLAB_INTERNAL_PORT}" "${SETUP_FOLDER}"
 #fi
-
-

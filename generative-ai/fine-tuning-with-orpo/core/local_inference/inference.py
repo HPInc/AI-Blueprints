@@ -11,8 +11,9 @@ project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root / "src"))
 from src.utils import get_configs_dir
 
+
 class InferenceRunner:
-  
+
     def __init__(self, model_selector, config_dir=None):
         self.model_selector = model_selector
         self.model = None
@@ -34,7 +35,7 @@ class InferenceRunner:
         self.logger.info(f"[InferenceRunner] {message}")
 
     def load_optimal_config(self) -> dict:
-        
+
         num_gpus = torch.cuda.device_count()
 
         if num_gpus >= 2:
@@ -61,12 +62,16 @@ class InferenceRunner:
 
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            self.model = AutoModelForCausalLM.from_pretrained(model_path).to(self.device)
+            self.model = AutoModelForCausalLM.from_pretrained(model_path).to(
+                self.device
+            )
         except Exception as e:
             raise RuntimeError(f"Error model/tokenizer: {e}")
 
-    def infer(self, prompt: str, max_new_tokens: int = 100, temperature: float = 0.7) -> str:
-        
+    def infer(
+        self, prompt: str, max_new_tokens: int = 100, temperature: float = 0.7
+    ) -> str:
+
         if self.model is None or self.tokenizer is None:
             self.load_model_from_snapshot()
 
@@ -80,7 +85,7 @@ class InferenceRunner:
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id
+                pad_token_id=self.tokenizer.eos_token_id,
             )
 
         decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
