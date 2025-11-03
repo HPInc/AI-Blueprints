@@ -1,6 +1,12 @@
 # Blueprint Configuration
 # This file configures the UI mode and ports for the model service
 
+# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
+model_source: "local"
+
+# Path to the local model file (used when model_source is "local")
+model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
