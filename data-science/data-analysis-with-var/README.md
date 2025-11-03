@@ -44,9 +44,7 @@ It highlights how city-level movement patterns changed during the crisis. The pr
 ├── notebooks/
 │   └── run-workflow.ipynb                                         # One‑click notebook for executing the pipeline using custom inputs
 │   └── register-model.ipynb                                       # One‑click notebook for registering trained models to MLflow, generating API
-├── src/
-│   └── utils.py                                                   # Utility functions for configuration loading
-├── README.md                                                      # Project documentation
+└── README.md                                                      # Project documentation
 
 ```
 
@@ -195,8 +193,6 @@ And as response:
 ### Streamlit Preview
 
 ![Streamlit Screenshot](docs/streamlit-ss.png)
-
-
 
 ---
 
