@@ -415,17 +415,7 @@ def retriever(
                 )
     except Exception as e:
         logger.error(f"Error in retrieval: {str(e)}")
-        # If retrieval fails, try to fall back to the original dynamic_retriever
-        from src.utils import dynamic_retriever
-
-        try:
-            documents = dynamic_retriever(
-                query, collection, top_n=initial_top_n, context_window=context_window
-            )
-        except Exception:
-            # If all methods fail, return empty list
-            logger.error("All retrieval methods failed")
-            return []
+        return []
 
     # Enhance metadata with file type classification
     for i, doc in enumerate(documents):
