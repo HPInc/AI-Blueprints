@@ -143,7 +143,7 @@ class ModelExportConfig:
 
         # Auto-detect model type if not provided
         if self.model_type is None:
-            from onnx_export import identify_model_type
+            from .onnx_export import identify_model_type
 
             self.model_type = identify_model_type(self.model)
 
@@ -173,7 +173,7 @@ class ModelExportConfig:
     def __post_init__(self):
         """Auto-detect model type from loaded model"""
         if self.model_type is None:
-            from onnx_export import identify_model_type
+            from .onnx_export import identify_model_type
 
             self.model_type = identify_model_type(self.model)
 
@@ -252,7 +252,7 @@ def _convert_single_model_to_onnx(config: ModelExportConfig) -> str:
         Path to the model directory containing the ONNX model and other files
     """
     try:
-        from onnx_export import export_model_to_onnx
+        from .onnx_export import export_model_to_onnx
 
         # Create model directory
         model_dir = config.model_name
@@ -441,6 +441,8 @@ def _create_model_directories(
 def log_model(
     artifact_path: str,
     python_model: Optional[Any] = None,
+    loader_module=None,
+    data_path=None,
     artifacts: Optional[Dict[str, str]] = None,
     conda_env: Optional[Union[str, Dict]] = None,
     code_paths: Optional[List[str]] = None,
@@ -568,20 +570,21 @@ def log_model(
                 # Note: Model directory artifacts are already added above as fallback
 
     try:
-        # MLflow logging with model directory artifacts included
-        mlflow.pyfunc.log_model(
-            artifact_path=artifact_path,
-            python_model=python_model,
-            artifacts=final_artifacts,
-            conda_env=conda_env,
-            code_paths=code_paths,
-            signature=signature,
-            input_example=input_example,
-            pip_requirements=pip_requirements,
-            extra_pip_requirements=extra_pip_requirements,
-            metadata=metadata,
-            **kwargs,
-        )
+        if loader_module and data_path:
+            # Models-from-code approach
+            mlflow.pyfunc.log_model(
+                name=artifact_path,
+                loader_module=loader_module,
+                data_path=data_path,
+                conda_env=conda_env,
+                code_paths=code_paths,
+                signature=signature,
+                input_example=input_example,
+                pip_requirements=pip_requirements,
+                extra_pip_requirements=extra_pip_requirements,
+                metadata=metadata,
+                **kwargs,
+            )
 
         # Log artifacts information
         artifact_list = list(final_artifacts.keys()) if final_artifacts else []

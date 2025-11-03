@@ -261,56 +261,93 @@ def load_movie_titles_from_mlflow():
     from mlflow import MlflowClient
 
     try:
-        # Method 1: Try to load from the registered model
+        # Method 1: Check local relative paths
+        local_paths = [
+            "../../model_artifacts/movie_titles.csv",
+            "../../../model_artifacts/movie_titles.csv",
+            "/home/jovyan/datafabric/tutorial/Movie_Id_Titles.csv",
+        ]
+
+        for local_path in local_paths:
+            abs_path = os.path.abspath(local_path)
+            if os.path.exists(abs_path):
+                df = pd.read_csv(abs_path)
+                if not df.empty and "item_id" in df.columns and "title" in df.columns:
+                    st.info(
+                        f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}"
+                    )
+                    return df
+
+        # Method 2: Try to load from the MLflow registered model
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
-            model_name = "movie_titles"
 
-            # Get the latest version
-            model_metadata = client.get_latest_versions(model_name, stages=["None"])
-            if model_metadata:
-                latest_version = model_metadata[0].version
-                model_uri = f"models:/{model_name}/{latest_version}"
+            for model_name in ["AIStudio-Model", "movie_titles"]:
+                try:
+                    model_metadata = client.get_latest_versions(
+                        model_name, stages=["None"]
+                    )
+                    if model_metadata:
+                        latest_version = model_metadata[0].version
+                        model_uri = f"models:/{model_name}/{latest_version}"
 
-                # Download the model artifacts
-                local_path = mlflow.artifacts.download_artifacts(model_uri)
-                movie_titles_path = os.path.join(local_path, "movie_titles.csv")
+                        # Download the model artifacts
+                        local_path = mlflow.artifacts.download_artifacts(model_uri)
 
-                if os.path.exists(movie_titles_path):
-                    df = pd.read_csv(movie_titles_path)
-                    if (
-                        not df.empty
-                        and "item_id" in df.columns
-                        and "title" in df.columns
-                    ):
-                        st.success("✅ Movie titles loaded from MLflow model registry")
-                        return df
+                        # Check multiple locations within the artifacts
+                        possible_paths = [
+                            os.path.join(local_path, "movie_titles.csv"),
+                            os.path.join(local_path, "data", "movie_titles.csv"),
+                            os.path.join(local_path, "artifacts", "movie_titles.csv"),
+                        ]
+
+                        for movie_titles_path in possible_paths:
+                            if os.path.exists(movie_titles_path):
+                                df = pd.read_csv(movie_titles_path)
+                                if (
+                                    not df.empty
+                                    and "item_id" in df.columns
+                                    and "title" in df.columns
+                                ):
+                                    st.success(
+                                        f"✅ Movie titles loaded from MLflow model: {model_name}"
+                                    )
+                                    return df
+                except Exception:
+                    continue
         except Exception as e:
-            st.warning(f"Could not load from MLflow model registry: {str(e)}")
+            st.warning(f"MLflow registry not available: {str(e)}")
 
-        # Method 2
+        # Method 3: Search MLflow artifact directories with glob patterns
         mlflow_paths = [
-            "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
-            "/phoenix/mlflow/*/*/artifacts/movie_titles/movie_titles.csv",
+            "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
+            "/phoenix/mlflow/*/*/artifacts/AIStudio-Model/data/movie_titles.csv",
         ]
 
         for pattern in mlflow_paths:
             matching_paths = glob.glob(pattern)
-            for mlflow_path in matching_paths:
-                if os.path.exists(mlflow_path):
-                    df = pd.read_csv(mlflow_path)
-                    if (
-                        not df.empty
-                        and "item_id" in df.columns
-                        and "title" in df.columns
-                    ):
-                        st.info(
-                            f"📁 Movie titles loaded from MLflow artifact: {os.path.basename(mlflow_path)}"
-                        )
-                        return df
+            if matching_paths:
+                # Sort by modification time to get the most recent
+                matching_paths.sort(key=lambda x: os.path.getmtime(x), reverse=True)
 
-        st.warning("⚠️ Could not find movie titles file in any expected location")
+                for mlflow_path in matching_paths:
+                    if os.path.exists(mlflow_path):
+                        try:
+                            df = pd.read_csv(mlflow_path)
+                            if (
+                                not df.empty
+                                and "item_id" in df.columns
+                                and "title" in df.columns
+                            ):
+                                st.info(
+                                    f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}"
+                                )
+                                return df
+                        except Exception:
+                            continue
+
+        st.error("❌ Could not find movie titles file in any expected location.")
         return None
 
     except Exception as e:

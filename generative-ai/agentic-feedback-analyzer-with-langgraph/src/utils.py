@@ -1,9 +1,11 @@
 # ─────── Standard Library Imports ───────
 import base64  # Encoding and decoding binary data
 import logging  # Logging utilities
+import os  # Operating system interface
 import sys  # System-specific parameters and functions
 import time  # Time-related utilities
 from functools import wraps  # Function decorators support
+from typing import Dict, Any  # Type annotations
 
 # ─────── Third-Party Package Imports ───────
 from IPython.display import (
@@ -108,3 +110,57 @@ def json_schema_from_type(input_type: type):
         bool: {"type": "boolean"},
     }
     return mapping.get(input_type, {"type": "string"})
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+
+    Returns:
+        Full path to the model file
+    """
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+
+    return model_path
+
+
+def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
+    """
+    Load configuration from YAML file with proper error handling.
+
+    Args:
+        config_path: Path to the configuration YAML file
+
+    Returns:
+        Dictionary containing the project configurations, empty dict if file not found
+
+    Raises:
+        FileNotFoundError: If the config file is not found in strict mode
+    """
+    import yaml
+
+    # Convert to absolute path for consistency
+    config_path = os.path.abspath(config_path)
+
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, "r") as f:
+                config = yaml.safe_load(f)
+            logger.info(f"✅ Configuration loaded from: {config_path}")
+            return config if config is not None else {}
+        except yaml.YAMLError as e:
+            logger.error(f"❌ Failed to parse YAML config at {config_path}: {e}")
+            return {}
+        except Exception as e:
+            logger.error(f"❌ Failed to load config from {config_path}: {e}")
+            return {}
+    else:
+        logger.warning(f"⚠️ Config file not found at: {config_path}, using defaults")
+        return {}
