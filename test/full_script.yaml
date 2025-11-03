@@ -1,6 +1,6 @@
 code_folder: "."
 test_folder: "."
-files: 
+files:
 - data-science/classification-with-svm/notebooks/run-workflow_test.py
 - deep-learning/classification-with-keras/notebooks/run-workflow_test.py
 - deep-learning/question-answering-with-bert/notebooks/run-workflow_test.py
@@ -17,4 +17,4 @@ baseimages:
   minimalgpu: "0.11.5"
   datasciencegpu: "0.11.5"
   deeplearninggpu: "0.11.6"
-  localgenai: "0.4.8"  
+  localgenai: "0.4.8"

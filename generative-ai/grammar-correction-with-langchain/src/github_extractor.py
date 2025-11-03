@@ -1,25 +1,11 @@
 import base64
-import logging
 import os
 from typing import Dict, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import requests
 
-# Configure logger
-logger: logging.Logger = logging.getLogger("run_workflow_logger")
-logger.setLevel(logging.INFO)
-logger.propagate = False  # Prevent duplicate logs from parent loggers
-
-# Set formatter
-formatter: logging.Formatter = logging.Formatter(
-    fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-)
-
-# Configure and attach stream handler
-stream_handler: logging.StreamHandler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
+from src.utils import logger
 
 
 class GitHubMarkdownProcessor:

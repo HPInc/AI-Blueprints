@@ -154,6 +154,17 @@ Expected response:
 
 ```
 
+### Step 4: Launch the Streamlit Web App
+
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
+
+### Streamlit Preview
+
+![Streamlit Screenshot](docs/streamlit-ss.png)
+
+
+
 ---
 
 # Contact and Support

@@ -13,6 +13,7 @@ from pathlib import Path
 # Import path utilities from src
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
+
 class ModelComparer:
     """
     A utility for comparing outputs between a base model and a fine-tuned model locally.
@@ -32,7 +33,7 @@ class ModelComparer:
         finetuned_path: str,
         prompts: list[str],
         project_name: str = "model-comparison",  # Kept for API compatibility
-        dtype=torch.float16
+        dtype=torch.float16,
     ):
         """
         Initializes the ModelComparer.
@@ -51,14 +52,11 @@ class ModelComparer:
 
         # Initialize runners for base and fine-tuned models
         self.runner_base = AcceleratedInferenceRunner(
-            model_selector=base_selector,
-            dtype=dtype
+            model_selector=base_selector, dtype=dtype
         )
 
         self.runner_ft = AcceleratedInferenceRunner(
-            model_selector=base_selector,
-            finetuned_path=finetuned_path,
-            dtype=dtype
+            model_selector=base_selector, finetuned_path=finetuned_path, dtype=dtype
         )
 
         self.runner_base.load_model()
@@ -85,18 +83,20 @@ class ModelComparer:
             response_ft = self.runner_ft.infer(prompt)
 
             # Store results
-            self.results.append({
-                "prompt_id": idx,
-                "prompt": prompt,
-                "base_model_response": response_base,
-                "finetuned_model_response": response_ft,
-                "base_model_length": len(response_base),
-                "finetuned_model_length": len(response_ft),
-            })
+            self.results.append(
+                {
+                    "prompt_id": idx,
+                    "prompt": prompt,
+                    "base_model_response": response_base,
+                    "finetuned_model_response": response_ft,
+                    "base_model_length": len(response_base),
+                    "finetuned_model_length": len(response_ft),
+                }
+            )
 
         # Display comparison table
         self._display_comparison_table()
-        
+
         print("✅ Finished comparing base and fine-tuned models.")
         return self.results
 
@@ -107,42 +107,63 @@ class ModelComparer:
         table_data = []
         for idx, result in enumerate(self.results):
             # Format prompt and responses for display (truncate if too long)
-            prompt_display = (result["prompt"][:50] + '...') if len(result["prompt"]) > 50 else result["prompt"]
-            base_response = (result["base_model_response"][:100] + '...') if len(result["base_model_response"]) > 100 else result["base_model_response"]
-            ft_response = (result["finetuned_model_response"][:100] + '...') if len(result["finetuned_model_response"]) > 100 else result["finetuned_model_response"]
-            
-            table_data.append([
-                idx + 1,
-                prompt_display,
-                base_response,
-                ft_response,
-                result["base_model_length"],
-                result["finetuned_model_length"]
-            ])
-        
+            prompt_display = (
+                (result["prompt"][:50] + "...")
+                if len(result["prompt"]) > 50
+                else result["prompt"]
+            )
+            base_response = (
+                (result["base_model_response"][:100] + "...")
+                if len(result["base_model_response"]) > 100
+                else result["base_model_response"]
+            )
+            ft_response = (
+                (result["finetuned_model_response"][:100] + "...")
+                if len(result["finetuned_model_response"]) > 100
+                else result["finetuned_model_response"]
+            )
+
+            table_data.append(
+                [
+                    idx + 1,
+                    prompt_display,
+                    base_response,
+                    ft_response,
+                    result["base_model_length"],
+                    result["finetuned_model_length"],
+                ]
+            )
+
         # Print the table
-        headers = ["ID", "Prompt", "Base Model Response", "Fine-tuned Model Response", "Base Length", "FT Length"]
+        headers = [
+            "ID",
+            "Prompt",
+            "Base Model Response",
+            "Fine-tuned Model Response",
+            "Base Length",
+            "FT Length",
+        ]
         print("\n" + tabulate(table_data, headers=headers, tablefmt="grid"))
-        
+
     def save_results(self, output_path: Optional[str] = None):
         """
         Saves the comparison results to a CSV file.
-        
+
         Args:
-            output_path (str, optional): Path to save the results. 
+            output_path (str, optional): Path to save the results.
                 If None, saves to 'model_comparison_results.csv' in the current directory.
-                
+
         Returns:
             str: Path to the saved file.
         """
         if not output_path:
             output_path = "model_comparison_results.csv"
-            
+
         # Create a DataFrame from results
         df = pd.DataFrame(self.results)
-        
+
         # Save to CSV
         df.to_csv(output_path, index=False)
         print(f"Results saved to {output_path}")
-        
+
         return output_path

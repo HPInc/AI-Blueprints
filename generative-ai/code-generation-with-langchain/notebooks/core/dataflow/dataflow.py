@@ -1,6 +1,7 @@
 import pandas as pd
 from tqdm import tqdm
 
+
 class EmbeddingUpdater:
     def __init__(self, embedding_model, verbose=False):
         """
@@ -20,37 +21,51 @@ class EmbeddingUpdater:
         :return: List with embeddings included
         """
         updated_structure = []
-        iterator = tqdm(data_structure, desc="Generating Embeddings") if self.verbose else data_structure
+        iterator = (
+            tqdm(data_structure, desc="Generating Embeddings")
+            if self.verbose
+            else data_structure
+        )
 
         for item in iterator:
             context = item.get("context", "")
-            
+
             # Skip empty contexts to avoid embedding errors
             if not context.strip():
                 if self.verbose:
-                    print(f"[WARNING] Empty context for ID {item.get('id', 'unknown')} - skipping embedding")
+                    print(
+                        f"[WARNING] Empty context for ID {item.get('id', 'unknown')} - skipping embedding"
+                    )
                 # Create a default small embedding instead of None (zeros with proper dimension)
                 embedding_vector = [0.0] * 384  # Default dimension for all-MiniLM-L6-v2
                 item["embedding"] = embedding_vector
                 updated_structure.append(item)
                 continue
-                
+
             try:
                 # Generate the embedding
                 embedding_vector = self.embedding_model.embed_query(context)
-                
+
                 # Validate the embedding - make sure it's not None and has values
-                if embedding_vector is None or (isinstance(embedding_vector, list) and len(embedding_vector) == 0):
+                if embedding_vector is None or (
+                    isinstance(embedding_vector, list) and len(embedding_vector) == 0
+                ):
                     if self.verbose:
-                        print(f"[WARNING] Received empty embedding for ID {item.get('id', 'unknown')} - using zeros")
+                        print(
+                            f"[WARNING] Received empty embedding for ID {item.get('id', 'unknown')} - using zeros"
+                        )
                     # Create a default small embedding (zeros with proper dimension)
-                    embedding_vector = [0.0] * 384  # Default dimension for all-MiniLM-L6-v2
+                    embedding_vector = [
+                        0.0
+                    ] * 384  # Default dimension for all-MiniLM-L6-v2
             except Exception as e:
                 if self.verbose:
-                    print(f"[ERROR] Failed to generate embedding for ID {item.get('id', 'unknown')}: {str(e)}")
+                    print(
+                        f"[ERROR] Failed to generate embedding for ID {item.get('id', 'unknown')}: {str(e)}"
+                    )
                 # Create a default small embedding (zeros with proper dimension)
                 embedding_vector = [0.0] * 384  # Default dimension for all-MiniLM-L6-v2
-            
+
             # Add the embedding to the item
             item["embedding"] = embedding_vector
             updated_structure.append(item)
@@ -79,19 +94,23 @@ class DataFrameConverter:
         """
         outputs = []
         default_embedding = [0.0] * 384  # Default dimension for all-MiniLM-L6-v2
-        
+
         for snippet in embedded_snippets:
             # Ensure we never add None embeddings to the DataFrame
             embedding = snippet.get("embedding")
-            if embedding is None or (isinstance(embedding, list) and len(embedding) == 0):
+            if embedding is None or (
+                isinstance(embedding, list) and len(embedding) == 0
+            ):
                 if self.verbose:
-                    print(f"[WARNING] Missing embedding for ID {snippet.get('id', 'unknown')} - using zeros")
+                    print(
+                        f"[WARNING] Missing embedding for ID {snippet.get('id', 'unknown')} - using zeros"
+                    )
                 embedding = default_embedding
-                
+
             row = {
-                "ids": snippet.get("id", f"id_{len(outputs)}"), 
-                "embeddings": embedding, 
-                "code": snippet.get("code", ""), 
+                "ids": snippet.get("id", f"id_{len(outputs)}"),
+                "embeddings": embedding,
+                "code": snippet.get("code", ""),
                 "metadatas": {
                     "filenames": snippet.get("filename", "unknown"),
                     "context": snippet.get("context", ""),

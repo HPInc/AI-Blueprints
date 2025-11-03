@@ -1,14 +1,249 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/demo/icon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeMo Demo</title>
-    <script type="module" crossorigin src="/demo/assets/index-C4Y5RX8-.js"></script>
-    <link rel="stylesheet" crossorigin href="/demo/assets/index-CcFLplwL.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🪶 Text Generation with RNN</title>
+  <meta name="description" content="Generate text using an RNN model served via MLflow." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f4f4f6;
+      --panel:#ffffff;
+      --ink:#1e293b;
+      --muted:#5b667a;
+      --brand:#4CAF50;
+      --brand-700:#3A8E40;
+      --border: 1px solid rgba(2,6,23,.08);
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(2,6,23,.10);
+      --focus: 0 0 0 3px rgba(76,175,80,.25);
+    }
+    *,*::before,*::after{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrap{ max-width: 860px; margin: 24px auto 40px; padding: 0 16px; }
+
+    /* Logos row */
+    .logos{
+      display:flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.25rem;
+      gap: 12px;
+    }
+    .logos img{ width: 90px; height: auto; }
+
+    /* Header */
+    .header{
+      text-align: center;
+      background: var(--panel);
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .header h1{
+      margin: 0;
+      color: #2C3E50;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+    }
+
+    /* Card */
+    .card{
+      background: var(--panel);
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .label{ font-weight: 700; margin: 6px 0; display:block; }
+    .input, .number, textarea{
+      width: 100%;
+      background: #fff;
+      border: 1px solid rgba(2,6,23,.12);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .input:focus, .number:focus, textarea:focus{ box-shadow: var(--focus); border-color: #c6e9c8; }
+    .number{ appearance: textfield; }
+    .number::-webkit-outer-spin-button, .number::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+    textarea{ min-height: 300px; resize: vertical; }
+
+    .row{ display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    .btn{
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s;
+      box-shadow: 0 10px 24px rgba(76,175,80,.25);
+      font-size: 16px;
+    }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity: .65; cursor: not-allowed; }
+
+    .help{ color: var(--muted); font-size: 14px; }
+
+    .alert{
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .alert.warn{ background: #fffce3; color: #5e4b00; border-color: #fff3a3; }
+    .alert.error{ background: #fff0f0; color: #7a0b0b; border-color: #ffcaca; }
+    .alert.info{ background: #eefaf0; color: #13521d; border-color: #c2efc9; }
+
+    .result-title{ margin: 14px 0 6px; font-weight: 800; }
+    .footer{ margin-top: 18px; color: var(--muted); text-align: center; }
+
+    hr{ border: none; border-top: 1px solid rgba(2,6,23,.12); margin: 16px 0; }
+
+    @media (max-width: 560px){
+      .logos img{ width: 64px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="header">
+      <h1>🪶 Text Generation with RNN</h1>
+    </header>
+
+    <section class="card">
+      <div>
+        <label class="label" for="initial">Choose a initial word:</label>
+        <input id="initial" class="input" type="text" placeholder="e.g., Once" />
+      </div>
+
+      <div style="margin-top: 10px;">
+        <label class="label" for="size">Choose a size:</label>
+        <input id="size" class="number" type="number" inputmode="numeric" min="1" step="1" placeholder="Enter an integer ≥ 1" />
+        <div class="help">Only integer values are allowed.</div>
+      </div>
+
+      <div class="row" style="margin-top: 14px;">
+        <button id="btn-generate" class="btn">Get generated text</button>
+      </div>
+
+      <div id="alert-host"></div>
+
+      <div id="result-wrap" style="display:none;">
+        <h3 class="result-title">✅ Here is your generated text!</h3>
+        <textarea id="result" disabled></textarea>
+      </div>
+
+      <hr />
+
+      <footer>
+        <div><em>📄✨ Text Generation with RNN with AI Studio © 2025</em></div>
+        <div>Built with ❤️ using <a href="https://hp.com/ai-studio" target="_blank" rel="noopener">HP AI Studio</a>.</div>
+      </footer>
+
+    </section>
+  </div>
+
+  <script>
+    // Config
+    const API_URL = "/invocations";
+
+    // Helpers
+    const qs = (s, c=document) => c.querySelector(s);
+    function setAlert(kind, msg){
+      const host = qs("#alert-host");
+      if(!msg){ host.innerHTML = ""; return; }
+      host.innerHTML = `<div class="alert ${kind}">${msg}</div>`;
+    }
+    function spinner(msg="Generating text..."){
+      setAlert("info", msg);
+    }
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Wire up
+    qs("#endpoint").textContent = API_URL;
+
+    qs("#btn-generate").addEventListener("click", async () => {
+      const initial = (qs("#initial").value || "").trim();
+      const sizeStr = (qs("#size").value || "").trim();
+
+      // Validation: both required
+      if(!initial || !sizeStr){
+        setAlert("warn", "⚠️ Please fill all the fields");
+        return;
+      }
+      // Enforce integer >= 1
+      const size = Number(sizeStr);
+      if(!Number.isInteger(size) || size < 1){
+        setAlert("warn", "⚠️ \"Choose a size\" must be an integer ≥ 1");
+        return;
+      }
+
+      // Build payload per Streamlit logic
+      const payload = { inputs: { initial_word: [initial], size: [size] } };
+
+      try{
+        spinner("Generating text...");
+        qs("#btn-generate").disabled = true;
+
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const t = await res.text().catch(() => "");
+          throw new Error(t || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+
+        // Extract predictions (Streamlit uses data.get("predictions"))
+        const gen = data && data.predictions !== undefined ? data.predictions : null;
+
+        if(gen !== null && gen !== undefined){
+          // If backend returns array or object, stringify; else show as text
+          const value = (typeof gen === "string") ? gen : JSON.stringify(gen, null, 2);
+          qs("#result").value = value;
+          qs("#result-wrap").style.display = "block";
+          setAlert(); // clear alert
+        }else{
+          setAlert("error", "❌ Unexpected response format. Please try again.");
+          qs("#result-wrap").style.display = "none";
+        }
+      }catch(err){
+        console.error(err);
+        setAlert("error", `❌ Error fetching generated text. ${err.message || err}`);
+        qs("#result-wrap").style.display = "none";
+      }finally{
+        qs("#btn-generate").disabled = false;
+      }
+    });
+  </script>
+</body>
 </html>
