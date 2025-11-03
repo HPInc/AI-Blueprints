@@ -25,7 +25,7 @@ def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
         FileNotFoundError: If the config file is not found.
     """
     config_path = os.path.abspath(config_path)
-    
+
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
 

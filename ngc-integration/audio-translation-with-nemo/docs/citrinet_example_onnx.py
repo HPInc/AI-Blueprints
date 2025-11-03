@@ -17,7 +17,7 @@ from pydub import AudioSegment
 TRITON_URL = "http://localhost:8000"
 MODEL_NAME = "enc_dec_CTC"
 MODEL_INFER_URL = f"{TRITON_URL}/v2/models/{MODEL_NAME}/infer"
-MP3_PATH = "audio.mp3" # set our audio file path
+MP3_PATH = "audio.mp3"  # set our audio file path
 
 CHUNK_DURATION_SEC = 10.0
 CHUNK_OVERLAP_SEC = 1.0
@@ -34,6 +34,7 @@ EPS = 1e-5
 
 STRIDE_TOTAL = 8
 
+
 def make_mel_transform():
     return T.MelSpectrogram(
         sample_rate=SAMPLE_RATE,
@@ -47,8 +48,9 @@ def make_mel_transform():
         n_mels=N_MELS,
         mel_scale="htk",
         f_min=F_MIN,
-        f_max=F_MAX
+        f_max=F_MAX,
     )
+
 
 def preprocess_waveform(signal_np):
     mel_spec = make_mel_transform()
@@ -60,6 +62,7 @@ def preprocess_waveform(signal_np):
         mel = (mel - mel_mean) / (mel_std + EPS)
     return mel
 
+
 def pad_to_stride(mel, stride_total):
     time_dim = mel.shape[1]
     pad_frames = ((time_dim + stride_total - 1) // stride_total) * stride_total
@@ -67,6 +70,7 @@ def pad_to_stride(mel, stride_total):
         pad_amount = pad_frames - time_dim
         mel = torch.nn.functional.pad(mel, (0, pad_amount))
     return mel
+
 
 def chunk_audio(samples, sr, chunk_sec, overlap_sec):
     total_len = samples.shape[0]
@@ -80,17 +84,34 @@ def chunk_audio(samples, sr, chunk_sec, overlap_sec):
             end = total_len
         yield start, end, samples[start:end]
 
+
 def send_to_triton(features_np, lengths_np):
     inputs = [
-        {"name": "audio_signal", "shape": list(features_np.shape), "datatype": "FP32", "data": features_np.flatten().tolist()},
-        {"name": "length", "shape": list(lengths_np.shape), "datatype": "INT64", "data": lengths_np.tolist()}
+        {
+            "name": "audio_signal",
+            "shape": list(features_np.shape),
+            "datatype": "FP32",
+            "data": features_np.flatten().tolist(),
+        },
+        {
+            "name": "length",
+            "shape": list(lengths_np.shape),
+            "datatype": "INT64",
+            "data": lengths_np.tolist(),
+        },
     ]
     outputs = [{"name": "logprobs"}]
     body = {"inputs": inputs, "outputs": outputs}
-    r = requests.post(MODEL_INFER_URL, headers={"Content-Type": "application/json"}, data=json.dumps(body), timeout=60)
+    r = requests.post(
+        MODEL_INFER_URL,
+        headers={"Content-Type": "application/json"},
+        data=json.dumps(body),
+        timeout=60,
+    )
     if r.status_code != 200:
         raise RuntimeError(f"Triton error {r.status_code}: {r.text}")
     return r.json()
+
 
 def main():
     # Load audio
@@ -113,7 +134,9 @@ def main():
         features_np = mel.unsqueeze(0).numpy().astype(np.float32)  # (1, 80, time)
         lengths_np = np.array([[mel.shape[1]]], dtype=np.int64)
 
-        print(f"Chunk {i}/{len(chunks)}: frames={mel.shape[1]} (padded stride {STRIDE_TOTAL})")
+        print(
+            f"Chunk {i}/{len(chunks)}: frames={mel.shape[1]} (padded stride {STRIDE_TOTAL})"
+        )
         resp = send_to_triton(features_np, lengths_np)
 
         logprobs_entry = next(o for o in resp["outputs"] if o["name"] == "logprobs")
@@ -125,5 +148,7 @@ def main():
     # Concatenate all logits over time
     final_logits = np.concatenate(all_logits, axis=0)
     print(final_logits)
+
+
 if __name__ == "__main__":
     main()
