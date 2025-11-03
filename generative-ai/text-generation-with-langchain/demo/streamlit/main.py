@@ -129,20 +129,17 @@ if st.button("🚀 Run"):
     generation_prompt_final = generation_prompt.strip() or DEFAULT_SCRIPT_PROMPT
 
     payload = {
-        "inputs": [
-            {
-                "query": str(query),
-                "max_results": int(max_results),
-                "chunk_size": int(chunk_size),
-                "chunk_overlap": int(chunk_overlap),
-                "do_extract": bool(do_extract),
-                "do_analyze": bool(do_analyze),
-                "do_generate": bool(do_generate),
-                "analysis_prompt": str(analysis_prompt),
-                "generation_prompt": str(generation_prompt_final),
-            }
-        ],
-        "params": {},
+        "inputs": {
+            "query": str(query),
+            "max_results": int(max_results),
+            "chunk_size": int(chunk_size),
+            "chunk_overlap": int(chunk_overlap),
+            "do_extract": bool(do_extract),
+            "do_analyze": bool(do_analyze),
+            "do_generate": bool(do_generate),
+            "analysis_prompt": str(analysis_prompt),
+            "generation_prompt": str(generation_prompt_final),
+        }
     }
 
     # ─────────────────────── HTTP request ────────────────────────
