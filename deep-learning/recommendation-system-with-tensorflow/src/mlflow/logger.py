@@ -34,8 +34,8 @@ class Logger:
         cls,
         train_data_matrix_path: str,
         movie_titles_path: str,
-        config_path = "configs/config.yaml",
-        demo_folder= None,
+        config_path="configs/config.yaml",
+        demo_folder=None,
         artifact_path: str = "AIStudio-Model",
         signature=None,
     ):
