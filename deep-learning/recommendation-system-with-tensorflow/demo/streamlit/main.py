@@ -293,7 +293,7 @@ def load_movie_titles_from_mlflow():
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/movie_titles/artifacts/movie_titles.csv",
             "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
-            "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv"
+            "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
         ]
 
         for pattern in mlflow_paths:

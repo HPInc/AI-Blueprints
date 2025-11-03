@@ -16,17 +16,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def normalize_ratings(ratings, min_rating=1, max_rating=5):
     """Normalize ratings to 1-5 scale"""
     ratings = np.array(ratings)
-    
+
     if ratings.max() == ratings.min():
         return np.full(ratings.shape, 3.0)  # Return middle value
-    
+
     normalized = (ratings - ratings.min()) / (ratings.max() - ratings.min())
     scaled = normalized * (max_rating - min_rating) + min_rating
-    
+
     return np.clip(scaled, min_rating, max_rating)
+
 
 class Model:
     """
@@ -56,14 +58,14 @@ class Model:
         self.movie_titles = movie_titles
         self.config = config
         self.n_users, self.n_items = self.train_data_matrix.shape
-        self.neutral_rating =  3.0
-        self.personalization_weight =  2.0
-        self.top_n =  5
-            
+        self.neutral_rating = 3.0
+        self.personalization_weight = 2.0
+        self.top_n = 5
+
         # Replace zeros with NaN so they don't affect the average
-        data_with_nan = np.where(self.train_data_matrix > 0, 
-                                    self.train_data_matrix, 
-                                    np.nan)
+        data_with_nan = np.where(
+            self.train_data_matrix > 0, self.train_data_matrix, np.nan
+        )
         self.mean_ratings = np.nanmean(data_with_nan, axis=0)
         self.mean_ratings = np.nan_to_num(self.mean_ratings, nan=0.0)
         logger.info(
@@ -81,9 +83,9 @@ class Model:
             str: The title of the movie, or None if not found.
         """
         try:
-            title_row = self.movie_titles[self.movie_titles['item_id'] == movie_id]
+            title_row = self.movie_titles[self.movie_titles["item_id"] == movie_id]
             if not title_row.empty:
-                return title_row.iloc[0]['title']
+                return title_row.iloc[0]["title"]
             else:
                 logger.warning(f"⚠️ Movie ID {movie_id} not found in titles.")
                 return None
@@ -108,44 +110,48 @@ class Model:
             List of tuples containing (movie_title, predicted_rating) for top 5 recommendations.
         """
         try:
-            movie_ids = model_input['movie_id'].tolist()
-            ratings = model_input['rating'].tolist()
-            
+            movie_ids = model_input["movie_id"].tolist()
+            ratings = model_input["rating"].tolist()
+
             # Calculate predictions for all movies
             predictions = np.zeros(len(self.mean_ratings))
-            
+
             for movie_id, rating in zip(movie_ids, ratings):
                 movie_idx = int(movie_id) - 1  # Convert to array index
-                
+
                 # Skip invalid movie IDs
                 if movie_idx < 0 or movie_idx >= len(predictions):
                     continue
-                
+
                 # How much user likes/dislikes compared to neutral (3.0)
                 weight = (float(rating) - self.neutral_rating) / 2.0
 
-                item_similarity = 1 - pairwise_distances(self.train_data_matrix.T, metric='cosine')
+                item_similarity = 1 - pairwise_distances(
+                    self.train_data_matrix.T, metric="cosine"
+                )
                 # Add similar movies weighted by user preference
                 predictions += item_similarity[movie_idx] * weight
-            
+
             # Combine user preference with popular movies
-            final_predictions = self.mean_ratings + predictions * self.personalization_weight
-            
+            final_predictions = (
+                self.mean_ratings + predictions * self.personalization_weight
+            )
+
             # Normalize to 1-5 scale
             final_predictions = normalize_ratings(final_predictions)
-            
+
             # Create list of (title, score, index)
-            movie_titles = self.movie_titles['title'].tolist()
+            movie_titles = self.movie_titles["title"].tolist()
             rated_indices = set(int(mid) - 1 for mid in movie_ids)
-            
+
             all_movies = []
             for idx, (title, score) in enumerate(zip(movie_titles, final_predictions)):
                 if idx not in rated_indices:  # Skip already rated
                     all_movies.append((title, float(score)))
-            
+
             # Sort by score and return top N
             all_movies.sort(key=lambda x: x[1], reverse=True)
-            return all_movies[:self.top_n]
+            return all_movies[: self.top_n]
 
         except Exception as e:
             logger.error(f"❌ Error performing prediction: {str(e)}")
