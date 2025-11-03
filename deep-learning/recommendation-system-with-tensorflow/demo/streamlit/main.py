@@ -267,13 +267,15 @@ def load_movie_titles_from_mlflow():
             "../../../model_artifacts/movie_titles.csv",
             "/home/jovyan/datafabric/tutorial/Movie_Id_Titles.csv",
         ]
-        
+
         for local_path in local_paths:
             abs_path = os.path.abspath(local_path)
             if os.path.exists(abs_path):
                 df = pd.read_csv(abs_path)
                 if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                    st.info(f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}")
+                    st.info(
+                        f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}"
+                    )
                     return df
 
         # Method 2: Try to load from the MLflow registered model
@@ -283,26 +285,34 @@ def load_movie_titles_from_mlflow():
             
             for model_name in ["AIStudio-Model", "movie_titles"]:
                 try:
-                    model_metadata = client.get_latest_versions(model_name, stages=["None"])
+                    model_metadata = client.get_latest_versions(
+                        model_name, stages=["None"]
+                    )
                     if model_metadata:
                         latest_version = model_metadata[0].version
                         model_uri = f"models:/{model_name}/{latest_version}"
 
                         # Download the model artifacts
                         local_path = mlflow.artifacts.download_artifacts(model_uri)
-                        
+
                         # Check multiple locations within the artifacts
                         possible_paths = [
                             os.path.join(local_path, "movie_titles.csv"),
                             os.path.join(local_path, "data", "movie_titles.csv"),
                             os.path.join(local_path, "artifacts", "movie_titles.csv"),
                         ]
-                        
+
                         for movie_titles_path in possible_paths:
                             if os.path.exists(movie_titles_path):
                                 df = pd.read_csv(movie_titles_path)
-                                if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                                    st.success(f"✅ Movie titles loaded from MLflow model: {model_name}")
+                                if (
+                                    not df.empty
+                                    and "item_id" in df.columns
+                                    and "title" in df.columns
+                                ):
+                                    st.success(
+                                        f"✅ Movie titles loaded from MLflow model: {model_name}"
+                                    )
                                     return df
                 except Exception:
                     continue
@@ -320,13 +330,19 @@ def load_movie_titles_from_mlflow():
             if matching_paths:
                 # Sort by modification time to get the most recent
                 matching_paths.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-                
+
                 for mlflow_path in matching_paths:
                     if os.path.exists(mlflow_path):
                         try:
                             df = pd.read_csv(mlflow_path)
-                            if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                                st.info(f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}")
+                            if (
+                                not df.empty
+                                and "item_id" in df.columns
+                                and "title" in df.columns
+                            ):
+                                st.info(
+                                    f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}"
+                                )
                                 return df
                         except Exception:
                             continue
