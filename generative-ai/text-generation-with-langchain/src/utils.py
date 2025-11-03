@@ -7,9 +7,11 @@ including configuration loading, model initialization, and local processing.
 
 import os
 import yaml
+import logging
 import importlib.util
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
+from IPython.display import HTML, display
 from .trt_llm_langchain import TensorRTLangchain
 
 
@@ -808,3 +810,65 @@ def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
     formatted_text = "\n\n".join(formatted_docs)
 
     return formatted_text
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Get the full path to the model file using the artifacts path and model name.
+
+    Args:
+        model_name: Name of the model file or full path (will extract filename)
+
+    Returns:
+        Full path to the model file
+    """
+    import os
+
+    # Extract just the filename if model_name contains a path
+    filename = os.path.basename(model_name)
+
+    artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    model_path = os.path.join(artifacts_path, filename)
+
+    return model_path
+
+
+# Color and emoji mapping per level
+STYLE_MAP = {
+    logging.DEBUG: {"bg": "#1e90ff", "fg": "white", "icon": "🔍"},
+    logging.INFO: {"bg": "#228B22", "fg": "white", "icon": "✅"},
+    logging.WARNING: {"bg": "#ffcc00", "fg": "black", "icon": "⚠️"},
+    logging.ERROR: {"bg": "#cc0000", "fg": "white", "icon": "❌"},
+    logging.CRITICAL: {"bg": "#8B0000", "fg": "white", "icon": "🔥"},
+}
+
+
+class EmojiStyledJupyterHandler(logging.Handler):
+    """Custom logging handler that displays styled messages with emojis in Jupyter notebooks."""
+
+    def emit(self, record):
+        style = STYLE_MAP.get(
+            record.levelno, {"bg": "white", "fg": "black", "icon": "💬"}
+        )
+        formatted = self.format(record)
+        html = f"""
+        <div style="background-color: {style['bg']}; color: {style['fg']};
+                    padding: 4px 8px; font-family: monospace; border-radius: 4px;">
+            {style["icon"]} {formatted}
+        </div>
+        """
+        display(HTML(html))
+
+
+# Logger setup
+logger = logging.getLogger("AIS_logger")
+logger.setLevel(logging.DEBUG)
+logger.handlers.clear()
+
+formatter = logging.Formatter(
+    fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+handler = EmojiStyledJupyterHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
