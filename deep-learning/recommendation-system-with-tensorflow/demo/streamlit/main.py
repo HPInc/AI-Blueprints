@@ -261,19 +261,10 @@ def load_movie_titles_from_mlflow():
     from mlflow import MlflowClient
 
     try:
-        # Method 1: Check environment variable first
-        env_path = os.environ.get("MOVIE_TITLES_PATH")
-        if env_path and os.path.exists(env_path):
-            df = pd.read_csv(env_path)
-            if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                st.success(f"✅ Movie titles loaded from environment variable: {env_path}")
-                return df
-
-        # Method 2: Check local relative paths (for development/testing)
+        # Method 1: Check local relative paths 
         local_paths = [
             "../../model_artifacts/movie_titles.csv",
             "../../../model_artifacts/movie_titles.csv",
-            "../../Movie_Id_Titles.csv",
             "/home/jovyan/datafabric/tutorial/Movie_Id_Titles.csv",
         ]
         
@@ -285,12 +276,11 @@ def load_movie_titles_from_mlflow():
                     st.info(f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}")
                     return df
 
-        # Method 3: Try to load from the MLflow registered model
+        # Method 2: Try to load from the MLflow registered model
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
             
-            # Try the recommendation model first (it contains movie_titles.csv in artifacts)
             for model_name in ["AIStudio-Model", "movie_titles"]:
                 try:
                     model_metadata = client.get_latest_versions(model_name, stages=["None"])
@@ -319,7 +309,7 @@ def load_movie_titles_from_mlflow():
         except Exception as e:
             st.warning(f"MLflow registry not available: {str(e)}")
 
-        # Method 4: Search MLflow artifact directories with glob patterns
+        # Method 3: Search MLflow artifact directories with glob patterns
         mlflow_paths = [
             "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
             "/phoenix/mlflow/*/*/artifacts/AIStudio-Model/data/movie_titles.csv",
@@ -341,9 +331,7 @@ def load_movie_titles_from_mlflow():
                         except Exception:
                             continue
 
-        st.error("❌ Could not find movie titles file in any expected location. "
-                "Please ensure you have run the notebook workflow to generate the model artifacts, "
-                "or set the MOVIE_TITLES_PATH environment variable.")
+        st.error("❌ Could not find movie titles file in any expected location.")
         return None
 
     except Exception as e:
