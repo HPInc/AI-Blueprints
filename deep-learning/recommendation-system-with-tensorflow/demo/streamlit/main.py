@@ -261,7 +261,7 @@ def load_movie_titles_from_mlflow():
     from mlflow import MlflowClient
 
     try:
-        # Method 1: Check local relative paths 
+        # Method 1: Check local relative paths
         local_paths = [
             "../../model_artifacts/movie_titles.csv",
             "../../../model_artifacts/movie_titles.csv",
@@ -282,7 +282,7 @@ def load_movie_titles_from_mlflow():
         try:
             mlflow.set_tracking_uri("/phoenix/mlflow")
             client = MlflowClient()
-            
+
             for model_name in ["AIStudio-Model", "movie_titles"]:
                 try:
                     model_metadata = client.get_latest_versions(
