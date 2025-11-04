@@ -5,9 +5,9 @@ sidebar_position: 9
 # Using Git in AI Studio
 
 ## Push and Pull
-To push and pull in AI Studio, you will need to use Git within your workspace. 
+To push and pull in AI Studio, you will need to use Git within your workspace.
 
-Ensure that AI Studio is set as the **kernel** when creating a custom workspace. This helps avoid issues where the base image does not display the necessary packages. 
+Ensure that AI Studio is set as the **kernel** when creating a custom workspace. This helps avoid issues where the base image does not display the necessary packages.
 
 :::tip
 
@@ -24,10 +24,9 @@ All work should be saved within the designated folders. Take note of the folder 
 - Use local folders for private work and shared folders for collaborative projects.
 
 
-## Jupyter Notebook 
+## Jupyter Notebook
 
 Use Jupyter Notebook to push and pull changes after connecting to Git. The workspace will default to Jupyter Notebook.
 
 ## Kernel Settings
 Set the kernel to AI Studio for custom workspaces.
-

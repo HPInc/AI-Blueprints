@@ -4,6 +4,12 @@
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
 model_source: "local"
 
+# NeMo model paths configuration for audio translation models
+nemo_models:
+  enc_dec_CTC: "/home/jovyan/datafabric/STT_En_Citrinet_1024_Gamma_0.25/stt_en_citrinet_1024_gamma_0_25.nemo"
+  fast_pitch: "/home/jovyan/datafabric/TTS_Es_Multispeaker_FastPitch_HiFiGAN/tts_es_fastpitch_multispeaker.nemo"
+  hifi_gan: "/home/jovyan/datafabric/TTS_Es_Multispeaker_FastPitch_HiFiGAN/tts_es_hifigan_ft_fastpitch_multispeaker.nemo"
+
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
@@ -14,11 +20,11 @@ ui:
   # UI mode: gradio, streamlit, or static
   mode: "streamlit"
 
-# Port Configuration  
+# Port Configuration
 ports:
   # External port exposed by Envoy proxy
   external: 5000
-  
+
   # Internal port mappings for different UI types
   internal:
     gradio: 7860
@@ -29,9 +35,9 @@ ports:
 service:
   # MLflow model server timeout (seconds)
   mlflow_timeout: 600
-  
+
   # Health check timeout for service startup (seconds)
   health_check_timeout: 600
-  
+
   # Number of health check retries
   health_check_retries: 5

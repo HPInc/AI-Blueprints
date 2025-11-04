@@ -25,6 +25,8 @@
 
 This project demonstrates how to build a semantic chunking and summarization pipeline for texts using **LangChain** and **Sentence Transformers**. It leverages the **Z by HP AI Studio Local GenAI image** and the Meta Llama 3.1 model with 8B parameters to generate concise and contextually accurate summaries from text data.
 
+The blueprint follows the universal MLflow structure with modular components in `src/mlflow/` for consistent model registration and deployment across AI Studio blueprints.
+
 ---
 
 ## Project Structure
@@ -32,9 +34,6 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ```text
 ├── configs
 │   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-├── core
-│   ├── __init__.py
-│   └── text_summarization_service.py                                   # Text summarization service implementation
 ├── data
 │   ├── inputs/                                                         # Input data directory
 │   └── outputs/                                                        # Generated summaries directory
@@ -51,6 +50,13 @@ This project demonstrates how to build a semantic chunking and summarization pip
 │   └── run-workflow.ipynb                                             # Main text summarization notebook
 ├── src
 │   ├── __init__.py
+│   ├── mlflow/                                                         # Universal MLflow integration
+│   │   ├── __init__.py                                                 # Exports Model and Logger classes
+│   │   ├── model.py                                                    # Business logic layer - core functionality
+│   │   ├── loader.py                                                   # MLflow integration layer - model loading
+│   │   └── logger.py                                                   # Registration layer - model packaging
+│   ├── prompt_templates.py                                            # LangChain prompt templates
+│   ├── trt_llm_langchain.py                                           # TensorRT LLM integration
 │   └── utils.py                                                        # Utility functions for config loading
 ├── README.md
 └── requirements.txt
@@ -118,10 +124,12 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 5: Configure Secrets
 
 - **Configure Secrets in YAML file (Freemium users):**
+
   - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
 
 - **Configure Secrets in Secrets Manager (Premium users):**
+
   - Add your API keys to the project's Secrets Manager vault, located in the `Project Setup` tab -> `Setup` -> `Project Secrets`:
     - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
   - In `Secrets Name` field add: `HUGGINGFACE_API_KEY`
@@ -166,6 +174,7 @@ notebooks/register-model.ipynb
 ```
 
 This will:
+
 - Register the model in MLflow
 
 ### Step 3: Deploy the Summarization Service
@@ -177,11 +186,16 @@ This will:
 - Once deployed, access the **Swagger UI** via the Service URL.
 - Use the API endpoints to generate summaries from your text data.
 
-### Successful Demonstration of the User Interface
+### Step 4: Launch the Streamlit Web App
 
-![text Summarization Demo UI](docs/ui_summarization.png)
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-:warning: Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of the suggested local model (i.e., Llama 3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
+### Streamlit Preview
+
+![Streamlit Screenshot](docs/streamlit-ss.png)
+
+**Note:** Current implementation of deployed model **do not** perform the chunking steps: summarization is run directly by the LLM model. In the case of the suggested local model (i.e., Llama 3.1-8b), texts with more than 1000 words may cause instabilities when summarization is triggered on the UI. We recommend using different models or smaller texts to avoid these problems.
 
 ---
 

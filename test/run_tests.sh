@@ -17,7 +17,7 @@ if ! command -v yq; then
   if ! command -v snap; then
     sudo apt install snapd
   fi
-  sudo snap install yq  
+  sudo snap install yq
 fi
 
 ### Ensures nerdctl is installed
@@ -62,7 +62,7 @@ if [[ "${HOST_TESTSCRIPT}" == ${GITHUB_HOST}* ]]; then
   RELATIVE_TESTSCRIPT=${HOST_TESTSCRIPT#"${GITHUB_HOST}/"}
   CONTAINER_TESTSCRIPT="${HOME_CONTAINER}/${GITHUB_REPO}/${RELATIVE_TESTSCRIPT}"
 else
-  echo "PROBLEM IS HERE"  
+  echo "PROBLEM IS HERE"
 fi
 
 ### Defines parameter to mount assets
@@ -72,14 +72,14 @@ for ASSET in $(yq ".assets|keys" $TESTSCRIPT); do
 	ASSET_HOST=$(yq ".assets.$ASSET" $TESTSCRIPT)
 	if [[ ${ASSET_HOST:1:1} == ":" ]]; then
 		ASSET_HOST=$(wslpath $ASSET_HOST)
-	fi	
+	fi
 	ASSET_CONTAINER="${DATAFABRIC_FOLDER}${ASSET}"
 	ASSETS_PARAM="-v ${ASSETS_PARAM} ${ASSET_HOST}:${ASSET_CONTAINER}"
   fi
  done
 
 ### Run tests on each base image
-for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do  
+for IMAGE in $(yq ".baseimages|keys" $TESTSCRIPT); do
   if [[ -n "$IMAGE" ]] && [[ $IMAGE != "-" ]] && [[ $IMAGE != "registry" ]]; then
     echo ""
     echo ""
@@ -102,7 +102,7 @@ if [[ -z $(yq 'has("ngcconfig")' $TESTSCRIPT) ]]; then
   exit 0
 else
   ### If there is NGC images, run tests on each of them
-  for IMAGE_ENTRY in $(yq ".ngcconfig|keys" $TESTSCRIPT); do  
+  for IMAGE_ENTRY in $(yq ".ngcconfig|keys" $TESTSCRIPT); do
     if [[ $IMAGE_ENTRY != "-" ]]; then
       echo ""
       echo ""

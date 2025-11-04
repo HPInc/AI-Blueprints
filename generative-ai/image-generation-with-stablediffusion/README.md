@@ -108,8 +108,8 @@ Ensure your environment meets the minimum hardware requirements for smooth model
 
 1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
 
-> ⚠️ **GPU Compatibility Notice**  
-> If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.  
+> ⚠️ **GPU Compatibility Notice**
+> If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.
 > To ensure stable execution, uncomment the line below at the beginning of your script or notebook to force synchronous CUDA execution:
 
 ```python
@@ -156,7 +156,7 @@ notebooks/run-workflow.ipynb
 2. In the Training DreamBooth section of the notebook:
   - Train your DreamBooth model.
 
-**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired.
 
 ### Step 2: Run the Register Notebook
 
@@ -175,7 +175,7 @@ This will:
 ### Step 2: Deploy the Image Generation Service:
 
 1. After running the entire notebook, go to **Deployments > New Service** in AI Studio.
-2. Create a service named as desired and select the **ImageGenerationService** model.
+2. Create a service named as desired and select the **ImageGenerationLogger** model.
 3. Choose a model version and enable **GPU acceleration**.
 4. Deploy the service.
 5. Once deployed, open the Service URL to access the Swagger API page.
@@ -191,17 +191,15 @@ This will:
 
 8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
 
-### Step 3: Launch the Streamlit UI
+### Step 3: Launch the Streamlit Web App
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-2. Navigate to the shown URL and view the image generation.
+### Streamlit Preview
 
-### Successful UI demo
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-- Streamlit
-
-  ![Image Generation Streamlit UI](docs/streamlit-ui-image-generation.png)
 
 
 ---

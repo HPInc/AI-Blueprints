@@ -1,10 +1,9 @@
-mlflow==2.21.2
-langchain 
+mlflow==3.1.0 #TODO: remove me when you finish
+langchain
 chromadb
 langchain_core
 langchain_huggingface
-langchain_community
+llama-cpp-python
 sentence-transformers
 gitpython
 pyyaml
-

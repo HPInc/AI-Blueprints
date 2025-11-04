@@ -4,6 +4,9 @@
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
 model_source: "local"
 
+# Path to the local model file (used when model_source is "local")
+model_path: "FSRCNN_300_epochs.pt"
+
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
@@ -14,11 +17,11 @@ ui:
   # UI mode: gradio, streamlit, or static
   mode: "streamlit"
 
-# Port Configuration  
+# Port Configuration
 ports:
   # External port exposed by Envoy proxy
   external: 5000
-  
+
   # Internal port mappings for different UI types
   internal:
     gradio: 7860
@@ -29,9 +32,9 @@ ports:
 service:
   # MLflow model server timeout (seconds)
   mlflow_timeout: 600
-  
+
   # Health check timeout for service startup (seconds)
   health_check_timeout: 600
-  
+
   # Number of health check retries
   health_check_retries: 5

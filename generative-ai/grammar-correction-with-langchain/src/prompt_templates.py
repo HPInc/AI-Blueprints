@@ -12,9 +12,9 @@ Strictly follow these rules:
 - Do **NOT** add or remove any extra space around placeholders.
 - Do **NOT** remove Markdown styling characters (e.g., **, *, _, __, `, [, ]).
 - Do **NOT** add or remove extra content from the original text.
-- Do **NOT** change or swap markdown syntax ([], (), *, `). They should remain **EXACTLY** as they are in the original text. 
+- Do **NOT** change or swap markdown syntax ([], (), *, `). They should remain **EXACTLY** as they are in the original text.
 - Only correct grammar **within natural language sentences**, leaving structure unchanged.
-- **ALWAYS** maintain title case wherever it is is present in the original text. 
+- **ALWAYS** maintain title case wherever it is is present in the original text.
 
 Example:
 - Original: "<SEP>We use <<PH4>> to **builds** 2 model **likke** this:<<PH17>><<PH18>>"
