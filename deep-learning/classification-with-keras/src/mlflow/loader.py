@@ -19,7 +19,7 @@ def _load_pyfunc(data_path: str):
     Args:
         data_path: Path to model artifacts directory containing:
             - config.yaml: Model configuration
-            - model_keras_mnist.keras: Trained Keras model
+            - models/model_keras_mnist.keras: Trained Keras model
             - demo/: Demo folder with UI components (optional)
 
     Returns:
@@ -37,8 +37,9 @@ def _load_pyfunc(data_path: str):
     config = load_config(config_path)
     logger.info("Configuration loaded successfully")
 
-    # The model file is always named "model_keras_mnist.keras" in artifacts
-    model_path = os.path.join(data_path, "model_keras_mnist.keras")
+    # The model file is stored in the models/ subdirectory within artifacts
+    # This matches the Logger.log_model() behavior which copies to models/ subdirectory
+    model_path = os.path.join(data_path, "models", "model_keras_mnist.keras")
 
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at: {model_path}")
@@ -46,15 +47,9 @@ def _load_pyfunc(data_path: str):
     logger.info(f"Model path resolved to: {model_path}")
 
     # Initialize and return the Model
-    model = Model(config=config, model_path=model_path)
-
-    logger.info("MNIST Model initialized successfully")
-    return model
     try:
-        model = Model(
-            config=config, docs_path=docs_path, secrets=secrets, model_path=model_path
-        )
-        logger.info("Model initialized successfully")
+        model = Model(config=config, model_path=model_path)
+        logger.info("MNIST Model initialized successfully")
         return model
     except Exception as e:
         logger.error(f"Failed to initialize Model: {str(e)}")
