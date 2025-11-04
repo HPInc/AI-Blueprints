@@ -4,6 +4,12 @@
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
 model_source: "local"
 
+# Path to the local spam dataset file (used for model training and artifacts)
+data_path: "/home/jovyan/datafabric/tutorial/spam_utf8.csv"
+
+# NLTK data directory path (required for text preprocessing)
+nltk_data_path: "/home/jovyan/local/nltk_data"
+
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
 # you should specify the proxy in this config.yaml file.
