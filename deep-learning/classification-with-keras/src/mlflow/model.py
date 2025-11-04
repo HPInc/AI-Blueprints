@@ -1,21 +1,28 @@
 """
-Standalone Model class for MNIST digit classification.
+Standalone Model class for MNIST handwritten digit classification.
 
 Business Logic Layer
-- Handles handwritten digit classification using Keras/TensorFlow models
-- Manages model initialization, base64 image conversion, and prediction logic
+- Handles image classification using TensorFlow/Keras CNN model
+- Manages model initialization and prediction logic for MNIST digits
 - Contains all domain-specific functionality without MLflow dependencies
 - Designed to be framework-agnostic and easily testable
 """
-
 import os
+import sys
 import base64
 import logging
-from typing import Dict, Any, Optional, Union, List
 from io import BytesIO
+from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
 from PIL import Image
+
+# TensorFlow imports
+import tensorflow as tf
+
+# Add the src directory to the path to import utilities
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+from src.utils import load_config
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -24,160 +31,67 @@ logger = logging.getLogger(__name__)
 class Model:
     """
     Standalone model class with no MLflow inheritance.
-    Handles MNIST digit classification with base64 image input.
+    Handles MNIST digit classification using TensorFlow/Keras.
     """
 
-    def __init__(
-        self, config: dict, docs_path: str, secrets: dict = None, model_path: str = None
-    ):
+    def __init__(self, config: dict, model_path: str = None):
         """
         Initialize the MNIST classification model.
 
         Args:
             config: Configuration dictionary containing model settings
-            docs_path: Path to data directory (required by generic loader, may contain model files)
-            secrets: Secrets dictionary (optional, not used in MNIST classification)
-            model_path: Path to model file (optional, can specify specific model location)
+            model_path: Path to the trained Keras model file
         """
         self.config = config
-        self.docs_path = docs_path
-        self.secrets = secrets
         self.model_path = model_path
+        self.model = None
 
-        # Load the Keras model from artifacts
-        self.model = self._load_keras_model()
+        # Load the model
+        self._load_model()
 
         logger.info("✅ MNIST Model initialized successfully")
 
-    def _load_keras_model(self):
+    def _load_model(self):
         """
-        Load the Keras model from artifacts.
-
-        Returns:
-            Loaded Keras model ready for prediction
+        Load the trained TensorFlow/Keras model.
         """
         try:
-            import tensorflow as tf
-
-            # Try to find the model file in the docs_path (artifacts directory)
-            # Look for common Keras model file extensions
-            possible_filenames = [
-                "mnist_model.keras",
-                "model_keras_mnist.keras",
-                "model.keras",
-                "mnist_model.h5",
-                "model.h5",
-            ]
-
-            model_file_path = None
-
-            # First, check if a specific model_path was provided
             if self.model_path and os.path.exists(self.model_path):
-                model_file_path = self.model_path
-                logger.info(f"Using specified model path: {model_file_path}")
+                self.model = tf.keras.models.load_model(self.model_path)
+                logger.info(f"✅ Model loaded from: {self.model_path}")
             else:
-                # Search for model files in the docs_path (artifacts directory)
-                for filename in possible_filenames:
-                    potential_path = os.path.join(self.docs_path, filename)
-                    if os.path.exists(potential_path):
-                        model_file_path = potential_path
-                        logger.info(f"Found model file: {model_file_path}")
-                        break
-
-                # Check in parent directory of docs_path (artifacts root)
-                if not model_file_path:
-                    artifacts_root = os.path.dirname(self.docs_path)
-                    for filename in possible_filenames:
-                        potential_path = os.path.join(artifacts_root, filename)
-                        if os.path.exists(potential_path):
-                            model_file_path = potential_path
-                            logger.info(
-                                f"Found model file in artifacts root: {model_file_path}"
-                            )
-                            break
-
-                # Check in models subdirectory of artifacts root
-                if not model_file_path:
-                    artifacts_root = os.path.dirname(self.docs_path)
-                    models_dir = os.path.join(artifacts_root, "models")
-                    if os.path.exists(models_dir):
-                        for filename in possible_filenames:
-                            potential_path = os.path.join(models_dir, filename)
-                            if os.path.exists(potential_path):
-                                model_file_path = potential_path
-                                logger.info(
-                                    f"Found model file in models directory: {model_file_path}"
-                                )
-                                break
-
-                # Check if MODEL_ARTIFACTS_PATH environment variable is set
-                if not model_file_path:
-                    model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
-                    if model_artifacts_path and os.path.exists(model_artifacts_path):
-                        for filename in possible_filenames:
-                            potential_path = os.path.join(
-                                model_artifacts_path, filename
-                            )
-                            if os.path.exists(potential_path):
-                                model_file_path = potential_path
-                                logger.info(
-                                    f"Found model file via MODEL_ARTIFACTS_PATH: {model_file_path}"
-                                )
-                                break
-
-            if not model_file_path:
-                # Provide more detailed error message with all searched paths
-                searched_paths = [
-                    self.docs_path,
-                    os.path.dirname(self.docs_path),
-                    os.path.join(os.path.dirname(self.docs_path), "models"),
-                ]
-                model_artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH")
-                if model_artifacts_path:
-                    searched_paths.append(model_artifacts_path)
-
-                raise FileNotFoundError(
-                    f"No Keras model file found. Searched in {searched_paths} for: {possible_filenames}"
-                )
-
-            # Load the Keras model
-            keras_model = tf.keras.models.load_model(model_file_path)
-            logger.info(f"✅ Keras model loaded successfully from: {model_file_path}")
-
-            return keras_model
+                raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
         except Exception as e:
-            logger.error(f"❌ Error loading Keras model: {str(e)}")
+            logger.error(f"❌ Error loading model: {str(e)}")
             raise
 
-    def predict(
-        self,
-        model_input: Union[pd.DataFrame, List, str],
-        params: Optional[Dict[str, Any]] = None,
-    ) -> List[int]:
+    def predict(self, model_input, params=None):
         """
-        Predict digit from base64 encoded image.
+        Predict the handwritten digit from base64 encoded image input.
 
         Args:
             model_input: Input data containing base64 encoded image
-            params: Optional parameters (not used in current implementation)
+            params: Additional parameters (optional)
 
         Returns:
-            List containing predicted digit(s)
+            List containing predicted digit class
         """
         try:
-            # Extract base64 image from input
+            # Handle different input formats
             if isinstance(model_input, pd.DataFrame):
                 image_input = model_input.iloc[0, 0]
+            elif isinstance(model_input, dict) and "digit" in model_input:
+                image_input = model_input["digit"]
             elif isinstance(model_input, list):
-                image_input = model_input[0] if model_input else ""
+                image_input = model_input[0]
             else:
                 image_input = str(model_input)
 
             # Convert base64 to numpy array
             base64_array = self._base64_to_numpy(image_input)
 
-            # Make prediction using the Keras model
+            # Make prediction
             predictions = self.model.predict(base64_array)
             predicted_classes = np.argmax(predictions, axis=1)
 
@@ -187,7 +101,7 @@ class Model:
             logger.error(f"❌ Error performing prediction: {str(e)}")
             raise
 
-    def _base64_to_numpy(self, base64_string: str) -> np.ndarray:
+    def _base64_to_numpy(self, base64_string):
         """
         Convert base64 string to numpy array for MNIST digit prediction.
 
@@ -195,16 +109,14 @@ class Model:
             base64_string: Base64 encoded image string
 
         Returns:
-            Numpy array shaped for model input (1, 28, 28, 1)
+            Numpy array formatted for MNIST model input (28x28x1)
         """
         try:
-            # Decode the base64 string
+            # Decode base64 string to image
             image_data = base64.b64decode(base64_string)
-
-            # Open the image using PIL
             image = Image.open(BytesIO(image_data))
 
-            # Convert to grayscale if not already
+            # Convert to grayscale if needed
             if image.mode != "L":
                 image = image.convert("L")
 
@@ -212,17 +124,33 @@ class Model:
             if image.size != (28, 28):
                 image = image.resize((28, 28))
 
-            # Convert to numpy array
-            numpy_array = np.array(image)
+            # Convert to numpy array and normalize
+            image_array = np.array(image, dtype=np.float32)
+            image_array = image_array / 255.0
 
-            # Normalize pixel values to 0-1 range
-            numpy_array = numpy_array.astype("float32") / 255.0
+            # Reshape to match model input format (1, 28, 28, 1)
+            image_array = image_array.reshape(1, 28, 28, 1)
 
-            # Reshape for model input (1, 28, 28, 1)
-            numpy_array = numpy_array.reshape(1, 28, 28, 1)
-
-            return numpy_array
+            return image_array
 
         except Exception as e:
-            logger.error(f"Error converting base64 to numpy: {str(e)}")
+            logger.error(f"❌ Error converting base64 to numpy array: {str(e)}")
             raise
+
+    def get_model_info(self):
+        """
+        Get information about the loaded model.
+
+        Returns:
+            Dictionary containing model information
+        """
+        if self.model:
+            return {
+                "model_type": "TensorFlow/Keras CNN",
+                "input_shape": self.model.input_shape,
+                "output_shape": self.model.output_shape,
+                "model_path": self.model_path,
+                "num_classes": 10,
+            }
+        else:
+            return {"status": "Model not loaded"}
