@@ -239,7 +239,9 @@ class Model:
             return self.model.decoder[char], hidden
         except KeyError as e:
             logger.error(f"Character not found in encoder: {str(e)}")
-            logger.error(f"Available characters in encoder: {list(self.model.encoder.keys())[:20]}...")  # Show first 20
+            logger.error(
+                f"Available characters in encoder: {list(self.model.encoder.keys())[:20]}..."
+            )  # Show first 20
             raise KeyError(f"Character '{char}' not found in encoder dictionary") from e
         except Exception as e:
             logger.error(f"Error predicting next char: {str(e)}")
@@ -299,11 +301,11 @@ class Model:
         """
         try:
             # Extract inputs from model_input dictionary
-            
-            initial_word = model_input['initial_word'][0]
-            size = model_input['size'][0]
+
+            initial_word = model_input["initial_word"][0]
+            size = model_input["size"][0]
             output = self.generate_text(seed=initial_word, size=size)
-            
+
             return output
 
         except Exception as e:
@@ -311,6 +313,10 @@ class Model:
             logger.error(error_details)
             # Return detailed error in DataFrame format for debugging
             error_df = pd.DataFrame(
-                {"generated_text": [f"Error generating text: {str(e)} (Check logs for details)"]}
+                {
+                    "generated_text": [
+                        f"Error generating text: {str(e)} (Check logs for details)"
+                    ]
+                }
             )
             return error_df
