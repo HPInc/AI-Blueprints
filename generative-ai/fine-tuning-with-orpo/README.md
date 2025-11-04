@@ -63,7 +63,7 @@ We incorporate:
 │   └── fine_tuning_service.py                                          # Fine-tuning service implementation
 ├── demo/                                                               # Compiled Interface Folder
 ├── docs
-│   ├── successful-swagger-ui-fine-tuning-result.pdf                    # Swagger screenshot 
+│   ├── successful-swagger-ui-fine-tuning-result.pdf                    # Swagger screenshot
 │   ├── streamlit-fine-tuning-with-orpo.pdf                             # Streamlit screenshot
 │   ├── streamlit-fine-tuning-with-orpo.png                             # Streamlit screenshot
 ├── notebooks
@@ -182,7 +182,7 @@ This notebook will:
 - Generate comparative analysis and metrics
 
 
-**Disclaimer**: The number of training steps and the size of training and validation datasets has been intentionally reduced to optimize computational efficiency and minimize training time. However, these parameters can be adjusted if further model performance improvements are desired. 
+**Disclaimer**: The number of training steps and the size of training and validation datasets has been intentionally reduced to optimize computational efficiency and minimize training time. However, these parameters can be adjusted if further model performance improvements are desired.
 
 ### Step 2: Register the Models for Deployment
 
@@ -213,18 +213,15 @@ The deployed service will allow you to:
 - Compare outputs between both models
 - Use the same API endpoint for both model variants
 
+### Step 4: Launch the Streamlit Web App
 
-### Step 4: Launch the Streamlit UI
+1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
+2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
 
-1. To launch the Streamlit UI, follow the instructions in the README file located in the `demo/streamlit` folder.
+### Streamlit Preview
 
-2. Navigate to the shown URL and view the fine tuning with orpo.
+![Streamlit Screenshot](docs/streamlit-ss.png)
 
-### Successful UI demo
-
-- Streamlit
-
-  ![Fine Tuning Streamlit UI](docs/streamlit-fine-tuning-with-orpo.png)
 
 
 ---

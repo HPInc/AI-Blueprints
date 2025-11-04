@@ -1,14 +1,296 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/demo/icon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeMo Demo</title>
-    <script type="module" crossorigin src="/demo/assets/index-CAt31nWr.js"></script>
-    <link rel="stylesheet" crossorigin href="/demo/assets/index-CqWKgmLI.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📝 Nemo Text Translation</title>
+  <meta name="description" content="Enter text and get its translation from your MLflow model." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0d1117;
+      --panel: #111827;
+      --panel-2: #0b1220;
+      --text: #E6F4EA;
+      --muted: #CFEAD6;
+      --brand: #76B900;
+      --brand-dark: #3A5F00;
+      --accent: #E8F5E9;
+      --accent-border: #76B900;
+      --warn-bg: #fffbe6;
+      --warn-fg: #573e00;
+      --err-bg: #fff0f0;
+      --err-fg: #5a0e0e;
+      --border: 1px solid rgba(255,255,255,.10);
+      --radius: 12px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --focus: 0 0 0 3px rgba(118,185,0,.35);
+    }
+    *,*::before,*::after{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin:0;
+      background:
+        radial-gradient(900px 500px at 110% -10%, #417c0f26, transparent 60%),
+        radial-gradient(900px 500px at -10% 110%, #1e470c26, transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 20px auto 40px;
+      padding: 16px;
+    }
+
+    .header{
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(90deg, var(--brand), var(--brand-dark));
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .header h1{
+      color: white;
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      letter-spacing: .2px;
+    }
+    .header p{
+      color: #E0F2F1;
+      margin: .4rem 0 0;
+      font-size: 1.05rem;
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, var(--panel), #0d1830);
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .side{
+      background: linear-gradient(180deg, #0f1a34, var(--panel));
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      position: sticky;
+      top: 16px;
+      height: fit-content;
+      box-shadow: var(--shadow);
+    }
+    .side h2{ margin: 8px 0 6px; font-size: 1.05rem; }
+    .side ol{ margin: 0.25rem 0 0; padding-left: 1.15rem; color: var(--muted); }
+    .side li{ margin: .35rem 0; }
+
+    .label{ font-weight: 700; margin: 6px 0; display:block; }
+    textarea{
+      width: 100%;
+      min-height: 200px;
+      resize: vertical;
+      background: var(--panel-2);
+      color: var(--text);
+      border: var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+      font-size: 15px;
+    }
+    textarea::placeholder{ color: #cde8cf; opacity: .8; }
+    textarea:focus{ box-shadow: var(--focus); }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      background: var(--brand);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s;
+      box-shadow: 0 10px 24px rgba(118,185,0,.35);
+      font-size: 16px;
+    }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ cursor: not-allowed; opacity: .6; }
+
+    .row{ display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    .alert{
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .alert.warn{ background: var(--warn-bg); color: var(--warn-fg); border-color: #ffeeab; }
+    .alert.error{ background: var(--err-bg); color: var(--err-fg); border-color: #ffc2c2; }
+    .alert.info{ background: #e8f5e9; color: #1b5e20; border-color: #c8e6c9; }
+
+    .result-box{
+      background: var(--accent);
+      border-left: 6px solid var(--accent-border);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #103b14;
+      box-shadow: 0 6px 18px rgba(0,0,0,.15);
+      white-space: pre-wrap;
+    }
+
+    .spinner{
+      display: inline-flex; align-items: center; gap: 10px; font-weight: 700;
+    }
+    .spinner:before{
+      content: "";
+      width: 16px; height: 16px; border: 2px solid #cde8cf; border-top-color: transparent; border-radius: 50%;
+      display: inline-block; animation: spin 1s linear infinite;
+    }
+    @keyframes spin{ to { transform: rotate(360deg); } }
+
+    footer{ opacity:.85; text-align:center; padding:28px 16px 40px; color:var(--muted); }
+    footer a{ color:#a8d8ff; text-decoration: underline; }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>📝 Nemo Text Translation</h1>
+      <p>Enter text below and get its translation via our MLflow model</p>
+    </header>
+
+    <div class="grid">
+      <!-- Main card -->
+      <section class="card">
+        <label class="label" for="text">✏️ Enter text to translate</label>
+        <textarea id="text" placeholder="Type your source text here..."></textarea>
+
+        <div class="row" style="margin-top: 10px;">
+          <button id="btn-translate" class="btn">🚀 Translate</button>
+        </div>
+        <div id="alert-host"></div>
+
+        <!-- Results -->
+        <div id="results"></div>
+      </section>
+
+      <!-- Sidebar instructions -->
+      <aside class="side">
+        <h2>How to Use</h2>
+        <ol>
+          <li>The model endpoint is automatically configured for deployment.</li>
+          <li>Type or paste the text to translate.</li>
+          <li>Click <strong>Translate</strong> to see the result.</li>
+        </ol>
+      </aside>
+    </div>
+
+    <footer>
+      <div><em>📄✨ Nemo Text Translation with AI Studio © 2025</em></div>
+      <div>Built with ❤️ using <a href="https://hp.com/ai-studio" target="_blank" rel="noopener">HP AI Studio</a>.</div>
+    </footer>
+  </div>
+
+  <script>
+    // --- Config ---
+    const MLFLOW_ENDPOINT = "/invocations";
+
+    // --- Helpers ---
+    const qs = (s, c=document) => c.querySelector(s);
+    function setAlert(kind, msg){
+      const host = qs("#alert-host");
+      if(!msg){ host.innerHTML = ""; return; }
+      host.innerHTML = `<div class="alert ${kind}">${msg}</div>`;
+    }
+    function showSpinner(msg){ setAlert("info", `<span class="spinner">${msg || "Working..."}</span>`); }
+
+    function firstRecord(obj){
+      if(!obj) return null;
+      const rec = obj.predictions || obj.dataframe_records || obj.data;
+      if(Array.isArray(rec)) return rec[0] || null;
+      return rec || null;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderResults(original, translated){
+      const box = qs("#results");
+      box.innerHTML = `
+        <div class="result-box"><strong>🔍 Original:</strong><br>${escapeHtml(original || "")}</div>
+        <div class="result-box"><strong>💡 Translation:</strong><br>${escapeHtml(translated || "")}</div>
+      `;
+    }
+
+    qs("#btn-translate").addEventListener("click", async () => {
+      const text = (qs("#text").value || "").trim();
+
+      // Validate inputs
+      if(!text){
+        setAlert("warn", "Please enter some text to translate.");
+        return;
+      }
+
+      // Build payload per Streamlit logic
+      const payload = {
+        dataframe_records: [{ source_text: text, source_serialized_audio: "" }],
+        parameters: { use_audio: false }
+      };
+
+      try{
+        showSpinner("Translating…");
+        const res = await fetch(MLFLOW_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const t = await res.text().catch(() => "");
+          throw new Error(t || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+
+        // Extract record and fields
+        let rec = firstRecord(data) || {};
+        const original = rec.original_text || "";
+        const translated = rec.translated_text || "";
+
+        renderResults(original, translated);
+        setAlert(); // clear spinner/alerts
+      }catch(err){
+        console.error(err);
+        setAlert("error", `Translation request failed: ${err.message || err}`);
+      }
+    });
+  </script>
+</body>
 </html>

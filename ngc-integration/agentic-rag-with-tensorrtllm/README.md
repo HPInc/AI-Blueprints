@@ -69,8 +69,6 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - Disk: ≥ 32 GB free
 
-- CUDA: Compatible CUDA toolkit (11.8 or 12.x) installed on your system
-
 ### Step 1: Create an AI Studio Project
 
 1. Create a **New Project** in AI Studio.
@@ -78,19 +76,6 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 ### Step 2: Create a Workspace
 
 1. Select **NeMo Framework (version 25.04)** as the base image.
-2. To use this specific image version in AI Studio, add the following two lines to your `config.yaml` file located in `C:\Users\<user-name>\AppData\Local\HP\AIStudio` on Windows (or the corresponding directory on Ubuntu):
-
-   ```
-   ngcconfig:
-      nemoversionpin: "25.04"
-   ```
-
-3. To use this specific image version with all necessary root user permissions in AI Studio and avoid errors when running the notebook, replace the existing `workspace.sh` file in your AI Studio app with the one provided in the `src/` folder.
-
-- On **Windows**, the file is located at:  
-  `C:\Program Files\HP\AIStudio\util\container-setup\workspace.sh`
-
-- On **Ubuntu**, replace the corresponding `workspace.sh` file in the equivalent directory.
 
 ### Step 3: Verify Project Files
 
@@ -114,7 +99,7 @@ Execute the following notebook located in the `notebooks/` folder to see the Age
 
 ### Step 2: Register the Agentic RAG Model in MLflow
 
-Run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
+After running the first notebook, run the following notebook in the `notebooks/` folder to register the Agentic RAG model in MLflow:
 
 - **`register-model.ipynb`**
 
@@ -128,14 +113,14 @@ The model here can also be exported in ONNX format alongside the MLflow pyfunc f
 
 ## Contact and Support
 
-- Issues: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+- **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
 
-- Docs: Refer to the **[AI Studio Documentation](https://zdocs.datascience.hp.com/docs/aistudio/overview)** for detailed guidance and troubleshooting.
+- **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+- **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+- **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
 
 ---
-
-
 
 > Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio).

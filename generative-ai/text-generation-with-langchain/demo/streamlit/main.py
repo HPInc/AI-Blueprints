@@ -82,20 +82,20 @@ st.markdown(
 )
 
 # ────────────────────────── sidebar (settings) ─────────────────────────
+api_url = "http://localhost:5002/invocations"
+
 with st.sidebar:
     st.header("⚙️ Settings")
 
     # MLflow API Configuration
-    api_url = "http://localhost:5002/invocations"
-
     st.markdown("---")
     st.subheader("Steps")
     col_a, col_b = st.columns(2)
     with col_a:
-        do_extract  = st.checkbox("📥 Extract",  value=True)
-        do_generate = st.checkbox("🎬 Script",   value=False)
+        do_extract = st.checkbox("📥 Extract", value=True)
+        do_generate = st.checkbox("🎬 Script", value=False)
     with col_b:
-        do_analyze  = st.checkbox("🧐 Analyze",  value=True)
+        do_analyze = st.checkbox("🧐 Analyze", value=True)
 
     st.markdown("---")
     st.subheader("Prompts")
@@ -119,9 +119,9 @@ with st.sidebar:
 st.subheader("🔍 Search articles on arXiv")
 query = st.text_input("Search term", value="graph neural networks")
 cols = st.columns(3)
-max_results   = cols[0].number_input("Number of articles",   1, 10, 3)
-chunk_size    = cols[1].number_input("Chunk size",           200, 2000, 1200, step=100)
-chunk_overlap = cols[2].number_input("Chunk overlap",          0,  800,  400, step=50)
+max_results = cols[0].number_input("Number of articles", 1, 10, 3)
+chunk_size = cols[1].number_input("Chunk size", 200, 2000, 1200, step=100)
+chunk_overlap = cols[2].number_input("Chunk overlap", 0, 800, 400, step=50)
 
 # ───────────────────────────── submission ──────────────────────────────
 if st.button("🚀 Run"):
@@ -130,17 +130,16 @@ if st.button("🚀 Run"):
 
     payload = {
         "inputs": {
-            "query":             [query],
-            "max_results":       [max_results],
-            "chunk_size":        [chunk_size],
-            "chunk_overlap":     [chunk_overlap],
-            "do_extract":        [do_extract],
-            "do_analyze":        [do_analyze],
-            "do_generate":       [do_generate],
-            "analysis_prompt":   [analysis_prompt],
-            "generation_prompt": [generation_prompt_final],
-        },
-        "params": {},
+            "query": str(query),
+            "max_results": int(max_results),
+            "chunk_size": int(chunk_size),
+            "chunk_overlap": int(chunk_overlap),
+            "do_extract": bool(do_extract),
+            "do_analyze": bool(do_analyze),
+            "do_generate": bool(do_generate),
+            "analysis_prompt": str(analysis_prompt),
+            "generation_prompt": str(generation_prompt_final),
+        }
     }
 
     # ─────────────────────── HTTP request ────────────────────────
@@ -148,8 +147,14 @@ if st.button("🚀 Run"):
         t0 = time.perf_counter()
         with st.spinner("Processing…"):
             response = requests.post(api_url, json=payload, verify=False, timeout=600)
+
             response.raise_for_status()
-            result = response.json()
+            try:
+                result = response.json()
+            except json.JSONDecodeError as e:
+                st.error(f"❌ Error decoding Json: {e}")
+                st.stop()
+
         elapsed = time.perf_counter() - t0
     except Exception as exc:
         st.error(f"Request failed: {exc}")
@@ -193,8 +198,10 @@ if st.button("🚀 Run"):
             )
         else:
             if main_output:
-                st.markdown(f"<div class='result-box'>{main_output}</div>",
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f"<div class='result-box'>{main_output}</div>",
+                    unsafe_allow_html=True,
+                )
             else:
                 st.info("No summary returned.")
 
@@ -204,8 +211,10 @@ if st.button("🚀 Run"):
             st.info("Generation is turned off.")
         else:
             if main_output:
-                st.markdown(f"<div class='result-box'>{main_output}</div>",
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f"<div class='result-box'>{main_output}</div>",
+                    unsafe_allow_html=True,
+                )
             else:
                 st.info("No script generated.")
 
