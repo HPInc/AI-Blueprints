@@ -503,9 +503,7 @@ class Model:
             import traceback
 
             logger.error(f"Traceback: {traceback.format_exc()}")
-            raise RuntimeError(
-                f"Model initialization failed: {str(e)}"
-            ) from e
+            raise RuntimeError(f"Model initialization failed: {str(e)}") from e
 
     def _setup_environment(self) -> None:
         """Configure environment variables based on configuration and secrets."""
