@@ -303,6 +303,7 @@ def _generate_onnx_from_models(
 
     for config in model_configs:
         try:
+            logger.info(f"🔄 Starting conversion for model: {config.model_name}")
             model_dir = _convert_single_model_to_onnx(config)
             model_results[config.model_name] = model_dir
             logger.info(f"✅ Converted {config.model_name} to directory: {model_dir}")
@@ -441,6 +442,8 @@ def _create_model_directories(
 def log_model(
     artifact_path: str,
     python_model: Optional[Any] = None,
+    loader_module=None,
+    data_path=None,
     artifacts: Optional[Dict[str, str]] = None,
     conda_env: Optional[Union[str, Dict]] = None,
     code_paths: Optional[List[str]] = None,
@@ -569,19 +572,21 @@ def log_model(
 
     try:
         # MLflow logging with model directory artifacts included
-        mlflow.pyfunc.log_model(
-            artifact_path=artifact_path,
-            python_model=python_model,
-            artifacts=final_artifacts,
-            conda_env=conda_env,
-            code_paths=code_paths,
-            signature=signature,
-            input_example=input_example,
-            pip_requirements=pip_requirements,
-            extra_pip_requirements=extra_pip_requirements,
-            metadata=metadata,
-            **kwargs,
-        )
+        if loader_module and data_path:
+            # Models-from-code approach
+            mlflow.pyfunc.log_model(
+                name=artifact_path,
+                loader_module=loader_module,
+                data_path=data_path,
+                conda_env=conda_env,
+                code_paths=code_paths,
+                signature=signature,
+                input_example=input_example,
+                pip_requirements=pip_requirements,
+                extra_pip_requirements=extra_pip_requirements,
+                metadata=metadata,
+                **kwargs,
+            )
 
         # Log artifacts information
         artifact_list = list(final_artifacts.keys()) if final_artifacts else []
