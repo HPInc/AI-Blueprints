@@ -1,5 +1,5 @@
 """
-Standalone AgenticAudioModel class.
+Standalone Model class for Agentic Audio RAG.
 
 Business Logic Layer
 - Manages model initialization, embeddings, vector database, and prediction logic
@@ -380,7 +380,7 @@ def _set_embeddings(MEDIA_DIR, index_dir, config_path):
     print("Indexed segments:", len(audio_index.meta))
 
 
-class AgenticAudioModel:
+class Model:
     """
     Standalone agentic audio RAG model class with no MLflow inheritance.
     Handles RAG-based question answering with audio files.
@@ -398,7 +398,7 @@ class AgenticAudioModel:
         secrets: dict = None,
     ):
         """
-        Initialize the AgenticAudioModel with configuration and artifacts.
+        Initialize the Model with configuration and artifacts.
 
         Args:
             config: Model configuration dictionary
@@ -497,14 +497,14 @@ class AgenticAudioModel:
                 clap_model=self.clap_model,
             )
 
-            logger.info("AgenticAudioModel initialized successfully")
+            logger.info("Model initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize AgenticAudioModel: {str(e)}")
+            logger.error(f"Failed to initialize Model: {str(e)}")
             import traceback
 
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise RuntimeError(
-                f"AgenticAudioModel initialization failed: {str(e)}"
+                f"Model initialization failed: {str(e)}"
             ) from e
 
     def _setup_environment(self) -> None:

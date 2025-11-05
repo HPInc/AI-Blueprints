@@ -1,8 +1,8 @@
 """
-Agentic Audio RAG Service implementation for MLflow model logging.
+Logger Service implementation for MLflow model logging.
 
 MLflow Registration Layer
-- Provides log_model functionality for packaging models
+- Provides log_model functionality for models
 - Handles artifact organization and temporary directory management
 - Uses MLflow's models-from-code approach for deployment
 - Manages configuration, documents, secrets, and demo assets
@@ -18,32 +18,28 @@ import yaml
 import tempfile
 import pandas as pd
 
-import mlflow
-from mlflow.models.signature import ModelSignature
-from mlflow.types.schema import Schema, ColSpec
-
 # Set up logger
 logger = logging.getLogger(__name__)
 
 
-class AgenticAudioService:
+class Logger:
     """
-    Agentic Audio RAG Service for MLflow model logging.
+    Logger Service for MLflow model logging.
     This class provides the log_model functionality for packaging RAG-based
     conversational AI with document retrieval capabilities.
     """
 
     def __init__(self):
-        """Initialize the chatbot service for logging purposes."""
-        logger.info("AgenticAudioService initialized for MLflow model logging")
+        """Initialize the logger service for logging purposes."""
+        logger.info("Logger initialized for MLflow model logging")
 
     @classmethod
     def log_model(
         cls,
-        artifact_path="AIStudio-Agentic_Audio-RAG-Model",
+        signature,
+        artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
-        docs_path="data/input/meeting_recording/",
-        # bundle_path=None,
+        docs_path="data/",
         secrets_dict=None,
         model_path=None,
         demo_folder=None,
@@ -58,15 +54,16 @@ class AgenticAudioService:
         /artifacts/
           └── data/                    # MLflow automatically created
               ├── config.yaml          # Configuration
-              ├── data/                # File directory (mp3, wav, etc.)
+              ├── data/                # Documents directory (PDFs, etc.)
               ├── demo/                # UI components
               ├── models/              # Model files (optional)
               └── secrets.yaml         # Secrets (optional)
 
         Args:
+            signature: MLflow ModelSignature defining input/output schema for the model
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
-            docs_path: Path to the file directory
+            docs_path: Path to the documents directory
             secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
@@ -74,22 +71,11 @@ class AgenticAudioService:
         Returns:
             None
         """
-
-        # Define model input/output schema
-        input_schema = Schema(
-            [
-                ColSpec("string", "question"),
-                ColSpec("string", "file_id"),
-            ]
-        )
-        output_schema = Schema(
-            [
-                ColSpec("string", "answer"),
-                ColSpec("boolean", "from_memory"),
-            ]
-        )
-        # Create signature without param_schema for now to avoid compatibility issues
-        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+        import mlflow
+        import tempfile
+        import shutil
+        import os
+        import yaml
 
         # Create temp directory
         temp_base = tempfile.gettempdir()
@@ -115,20 +101,17 @@ class AgenticAudioService:
             data_temp_dir = os.path.join(temp_dir, "data")
             os.makedirs(data_temp_dir, exist_ok=True)
 
-            # Copy audio files to data subdirectory
-            if not os.path.exists(docs_path):
-                raise FileNotFoundError(
-                    f"Documents directory not found at: {docs_path}"
-                )
-
-            for item in os.listdir(docs_path):
-                item_path = os.path.join(docs_path, item)
-                if os.path.isfile(item_path):
-                    shutil.copy2(item_path, data_temp_dir)
-                    logger.info(f"Copied file: {item}")
-                elif os.path.isdir(item_path):
-                    shutil.copytree(item_path, os.path.join(data_temp_dir, item))
-                    logger.info(f"Copied file directory: {item}")
+            # Copy documents to data subdirectory
+            if docs_path and os.path.exists(docs_path):
+                for item in os.listdir(docs_path):
+                    item_path = os.path.join(docs_path, item)
+                    if os.path.isfile(item_path):
+                        shutil.copy2(item_path, data_temp_dir)
+                        logger.info(f"Copied document: {item}")
+                    elif os.path.isdir(item_path):
+                        shutil.copytree(item_path, os.path.join(data_temp_dir, item))
+                        logger.info(f"Copied document directory: {item}")
+            logger.info("data folder not provided or doesn't exist - skipping")
 
             # ✅ Demo folder -> /artifacts/data/demo/
             if demo_folder and os.path.exists(demo_folder):
@@ -160,10 +143,10 @@ class AgenticAudioService:
                 logger.info("Model path not provided or doesn't exist - skipping")
 
             mlflow.pyfunc.log_model(
-                artifact_path=artifact_path,
-                loader_module="core.agentic_audio_rag_service.agentic_audio_rag_loader",  # "core.chatbot_service.chatbot_loader",
+                name=artifact_path,
+                loader_module="src.mlflow.loader",
                 data_path=temp_dir,
-                code_paths=["../core", "../src"],
+                code_paths=["../src"],
                 signature=signature,
                 pip_requirements="../requirements.txt",
             )
