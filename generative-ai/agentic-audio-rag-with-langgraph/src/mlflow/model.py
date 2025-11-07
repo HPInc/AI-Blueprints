@@ -268,7 +268,7 @@ class Model:
             self._setup_environment()
 
             # --- Artifacts ---
-            config_path = Path(context.artifacts.get("config_path", "config.json"))
+            config_path = Path(context.artifacts.get("config_path", "config.yaml"))
             memory_dir = Path(context.artifacts.get("memory_dir", "memory"))
             memory_dir.mkdir(parents=True, exist_ok=True)
 
@@ -280,7 +280,7 @@ class Model:
             # Load or create runtime config
             if config_path.exists():
                 with open(config_path, "r") as f:
-                    cfg = json.load(f)
+                    cfg = yaml.safe_load(f) or {}
             else:
                 cfg = {
                     "relevance_threshold": 0.18,
@@ -289,7 +289,7 @@ class Model:
                     "clap_repo": CLAP_REPO,
                 }
                 with open(config_path, "w") as f:
-                    json.dump(cfg, f, indent=2)
+                    yaml.safe_dump(cfg, f, indent=2)
 
             self.relevance_threshold = float(cfg.get("relevance_threshold", 0.18))
             self.fetch_k = int(cfg.get("fetch_k", 24))
