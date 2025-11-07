@@ -9,14 +9,13 @@ from typing import Optional
 
 # Disable SSL warnings for localhost
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Streamlit Page Configuration ---
-st.set_page_config(
-    page_title="Agentic Audio RAG", page_icon="🎧", layout="centered"
-)
+st.set_page_config(page_title="Agentic Audio RAG", page_icon="🎧", layout="centered")
 
 # --- Enhanced Custom Styling ---
 st.markdown(
@@ -185,7 +184,7 @@ st.markdown(
             border-color: rgba(0,0,0,0.1) !important;
             margin: 2rem 0 !important;
         }
-        
+
         /* Progress Bar */
         .stProgress > div > div > div > div {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
@@ -269,7 +268,9 @@ if "qa_history" not in st.session_state:
 # ─────────────────────────────────────────────────────────────
 # File Upload Section
 # ─────────────────────────────────────────────────────────────
-st.markdown('<p class="section-header">📁 Upload Audio/Video</p>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="section-header">📁 Upload Audio/Video</p>', unsafe_allow_html=True
+)
 
 uploaded_file = st.file_uploader(
     "Choose an audio or video file",
@@ -285,62 +286,67 @@ if uploaded_file is not None:
         st.session_state.file_processed = False
         st.session_state.file_id = uploaded_file.name
         st.session_state.qa_history = []
-        
-        st.info(f"📎 File loaded: **{uploaded_file.name}** ({uploaded_file.size / 1024 / 1024:.2f} MB)")
-        
+
+        st.info(
+            f"📎 File loaded: **{uploaded_file.name}** ({uploaded_file.size / 1024 / 1024:.2f} MB)"
+        )
+
         # Process the file
         with st.spinner("🎧 Processing audio and generating embeddings..."):
             try:
                 # Save uploaded file to temp location
-                with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as tmp:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=Path(uploaded_file.name).suffix
+                ) as tmp:
                     tmp.write(uploaded_file.getvalue())
                     temp_path = tmp.name
-                
+
                 # Create progress bar
                 progress_bar = st.progress(0)
                 status_text = st.empty()
-                
+
                 status_text.text("Converting audio format...")
                 progress_bar.progress(25)
-                
+
                 status_text.text("Generating CLAP embeddings...")
                 progress_bar.progress(50)
-                
+
                 # Make API call to process audio
                 payload = {
-                    "inputs": [{
-                        "audio_path": temp_path,
-                        "question": "Initialize",  # Dummy question to trigger processing
-                        "file_id": st.session_state.file_id
-                    }]
+                    "inputs": [
+                        {
+                            "audio_path": temp_path,
+                            "question": "Initialize",  # Dummy question to trigger processing
+                            "file_id": st.session_state.file_id,
+                        }
+                    ]
                 }
-                
+
                 status_text.text("Indexing audio segments...")
                 progress_bar.progress(75)
-                
+
                 response = requests.post(
-                    MLFLOW_ENDPOINT,
-                    json=payload,
-                    verify=False,
-                    timeout=600
+                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=600
                 )
-                
+
                 status_text.text("Complete!")
                 progress_bar.progress(100)
-                
+
                 if response.status_code == 200:
                     st.session_state.file_processed = True
-                    st.success("✅ Audio processed successfully! You can now ask questions.")
+                    st.success(
+                        "✅ Audio processed successfully! You can now ask questions."
+                    )
                 else:
                     st.error(f"❌ Processing failed: {response.status_code}")
                     st.session_state.file_processed = False
-                
+
                 # Clean up temp file
                 try:
                     os.unlink(temp_path)
                 except:
                     pass
-                    
+
             except Exception as e:
                 st.error(f"❌ Error processing file: {str(e)}")
                 st.session_state.file_processed = False
@@ -355,48 +361,49 @@ if uploaded_file is not None:
 # ─────────────────────────────────────────────────────────────
 if st.session_state.file_processed:
     st.markdown("---")
-    st.markdown('<p class="section-header">❓ Ask Questions</p>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<p class="section-header">❓ Ask Questions</p>', unsafe_allow_html=True
+    )
+
     with st.form("question_form"):
         question = st.text_area(
             "Enter your question about the audio",
             height=100,
             placeholder="e.g., What was the main topic discussed?",
         )
-        
+
         submitted = st.form_submit_button("🔍 Get Answer")
-    
+
     if submitted and question.strip():
         with st.spinner("🤔 Analyzing audio and generating answer..."):
             try:
                 payload = {
-                    "inputs": [{
-                        "question": question,
-                        "file_id": st.session_state.file_id
-                    }]
+                    "inputs": [
+                        {"question": question, "file_id": st.session_state.file_id}
+                    ]
                 }
-                
+
                 response = requests.post(
-                    MLFLOW_ENDPOINT,
-                    json=payload,
-                    verify=False,
-                    timeout=600
+                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=600
                 )
-                
+
                 if response.status_code == 200:
                     result = response.json()["predictions"][0]
-                    
+
                     # Add to history
-                    st.session_state.qa_history.insert(0, {
-                        "question": question,
-                        "answer": result.get("answer", ""),
-                        "evidence": result.get("evidence", []),
-                        "from_memory": result.get("from_memory", False)
-                    })
-                    
+                    st.session_state.qa_history.insert(
+                        0,
+                        {
+                            "question": question,
+                            "answer": result.get("answer", ""),
+                            "evidence": result.get("evidence", []),
+                            "from_memory": result.get("from_memory", False),
+                        },
+                    )
+
                 else:
                     st.error(f"❌ Request failed: {response.status_code}")
-                    
+
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
 
@@ -406,11 +413,13 @@ if st.session_state.file_processed:
 # ─────────────────────────────────────────────────────────────
 if st.session_state.qa_history:
     st.markdown("---")
-    st.markdown('<p class="section-header">💬 Conversation History</p>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<p class="section-header">💬 Conversation History</p>', unsafe_allow_html=True
+    )
+
     for idx, qa in enumerate(st.session_state.qa_history):
         cache_badge = "🔄 (from cache)" if qa.get("from_memory") else ""
-        
+
         st.markdown(
             f"""
             <div class="answer-card">
@@ -420,9 +429,9 @@ if st.session_state.qa_history:
                 </p>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
-        
+
         # Display evidence with timestamps
         if qa.get("evidence"):
             with st.expander(f"🔍 View Evidence ({len(qa['evidence'])} segments)"):
@@ -430,11 +439,11 @@ if st.session_state.qa_history:
                     start_s = ev.get("start_s", 0)
                     end_s = ev.get("end_s", 0)
                     score = ev.get("score", 0)
-                    
+
                     # Format timestamps
                     start_mm_ss = f"{int(start_s // 60):02d}:{int(start_s % 60):02d}"
                     end_mm_ss = f"{int(end_s // 60):02d}:{int(end_s % 60):02d}"
-                    
+
                     st.markdown(
                         f"""
                         <div class="evidence-item">
@@ -443,9 +452,9 @@ if st.session_state.qa_history:
                             <strong>File:</strong> {ev.get('file_name', 'Unknown')}
                         </div>
                         """,
-                        unsafe_allow_html=True
+                        unsafe_allow_html=True,
                     )
-    
+
     # Clear history button
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])

@@ -60,10 +60,10 @@ from src.simple_kv_memory import (
 )  # In-memory key-value store for agent state
 from src.utils import setup_model_environment  # Project-wide configured logger
 from src.segment_audio_embeddings import (
-    AudioIndex, 
-    ensure_wav, 
+    AudioIndex,
+    ensure_wav,
     segment_audio,
-    clap_embed_audio
+    clap_embed_audio,
 )
 
 # Set up logger
@@ -259,7 +259,7 @@ class Model:
         self.prompt_str = ""
         self.memory = []
         self.callback_manager = None
-        
+
         # Track processed files
         self.processed_files = {}  # {file_id: {"path": str, "segment_ids": list}}
 
@@ -317,16 +317,24 @@ class Model:
             ).eval()
 
             self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
-            
+
             # Initialize empty audio index for API-based dynamic indexing
             self.audio_index = AudioIndex(dim=512)
-            logger.info("Initialized empty audio index - files will be indexed on API upload")
+            logger.info(
+                "Initialized empty audio index - files will be indexed on API upload"
+            )
 
             self.graph = build_audio_agentic_graph(
                 relevance_threshold=self.relevance_threshold,
                 fetch_k=self.fetch_k,
                 top_k=self.top_k,
-                vecs=np.array([]).reshape(0, 512).astype(np.float32) if len(self.audio_index.meta) == 0 else np.vstack([m.get('vec', np.zeros(512)) for m in self.audio_index.meta]),
+                vecs=(
+                    np.array([]).reshape(0, 512).astype(np.float32)
+                    if len(self.audio_index.meta) == 0
+                    else np.vstack(
+                        [m.get("vec", np.zeros(512)) for m in self.audio_index.meta]
+                    )
+                ),
                 metas=self.audio_index.meta,
                 audio_index=self.audio_index,
                 clap_processor=self.clap_processor,
@@ -371,11 +379,11 @@ class Model:
         3. Generate CLAP embeddings
         4. Add to FAISS index
         5. Return file_id for subsequent queries
-        
+
         Args:
             audio_path: Path to audio/video file
             file_id: Optional identifier for this file (defaults to filename)
-            
+
         Returns:
             file_id: Identifier to use in subsequent queries
         """
@@ -383,65 +391,69 @@ class Model:
             audio_path = Path(audio_path)
             if not audio_path.exists():
                 raise FileNotFoundError(f"Audio file not found: {audio_path}")
-            
+
             if file_id is None:
                 file_id = audio_path.name
-            
+
             # Check if already processed
             if file_id in self.processed_files:
                 logger.info(f"File {file_id} already processed, skipping")
                 return file_id
-            
+
             logger.info(f"Processing audio file: {file_id}")
-            
+
             # Convert to WAV
             wav_path = ensure_wav(AUDIO_EXTS, VIDEO_EXTS, str(audio_path))
-            
+
             # Segment audio
             segs = segment_audio(wav_path, window_s=30.0, hop_s=15.0)
             if not segs:
                 raise ValueError(f"No audio segments extracted from {audio_path}")
-            
+
             # Generate embeddings and metadata
             vecs, metas = [], []
             segment_ids = []
-            
+
             for idx, (s0, s1, wav_seg, sr) in enumerate(segs):
                 # Generate CLAP embedding
                 v = clap_embed_audio(self.clap_processor, self.clap_model, wav_seg, sr)
                 vecs.append(v)
-                
+
                 # Create metadata
                 seg_id = f"{file_id}::{idx}"
                 segment_ids.append(seg_id)
-                
-                metas.append({
-                    "file_path": str(audio_path),
-                    "file_name": audio_path.name,
-                    "wav_path": wav_path,
-                    "start_s": float(s0 / sr),
-                    "end_s": float(s1 / sr),
-                    "segment_id": seg_id,
-                    "file_id": file_id,
-                    "vec": v,  # Store for rebuild
-                })
-            
+
+                metas.append(
+                    {
+                        "file_path": str(audio_path),
+                        "file_name": audio_path.name,
+                        "wav_path": wav_path,
+                        "start_s": float(s0 / sr),
+                        "end_s": float(s1 / sr),
+                        "segment_id": seg_id,
+                        "file_id": file_id,
+                        "vec": v,  # Store for rebuild
+                    }
+                )
+
             # Add to index
             if vecs:
                 vecs_array = np.stack(vecs, axis=0).astype(np.float32)
                 self.audio_index.add(vecs_array, metas)
-                
+
                 # Track processed file
                 self.processed_files[file_id] = {
                     "path": str(audio_path),
                     "segment_ids": segment_ids,
                     "num_segments": len(segment_ids),
                 }
-                
-                logger.info(f"Successfully processed {file_id}: {len(segment_ids)} segments indexed")
-            
+
+                logger.info(
+                    f"Successfully processed {file_id}: {len(segment_ids)} segments indexed"
+                )
+
             return file_id
-            
+
         except Exception as e:
             logger.error(f"Error processing audio file {audio_path}: {e}")
             raise
@@ -495,13 +507,13 @@ class Model:
     def predict(self, model_input):
         """
         Make predictions on input data.
-        
+
         Input format:
         - DataFrame or list of dicts with columns/keys:
           - 'question': str (required) - The question to ask
           - 'file_id': str (optional) - Identifier for previously processed audio
           - 'audio_path': str (optional) - Path to audio file (for first-time processing)
-          
+
         Returns:
         - List of prediction dictionaries containing:
           - 'question': str - The input question
@@ -524,40 +536,44 @@ class Model:
             q = (r.get("question") or "").strip()
             audio_path = r.get("audio_path")
             fid = r.get("file_id", "").strip()
-            
+
             try:
                 # If audio_path provided, process it first
                 if audio_path:
                     # Use audio filename as file_id if not provided
                     if not fid:
                         fid = Path(audio_path).name
-                    
+
                     # Process the audio file (will skip if already processed)
                     fid = self.process_audio_file(audio_path, fid)
                     logger.info(f"Audio file processed: {fid}")
-                
+
                 # Default to "global" if no file_id specified
                 if not fid:
                     fid = "global"
-                
+
                 # Execute query
                 s = self._invoke(q, fid)
-                out.append({
-                    "question": q,
-                    "file_id": fid,
-                    "answer": s.get("answer", ""),
-                    "evidence": s.get("evidence", []),
-                    "from_memory": s.get("from_memory", False),
-                })
+                out.append(
+                    {
+                        "question": q,
+                        "file_id": fid,
+                        "answer": s.get("answer", ""),
+                        "evidence": s.get("evidence", []),
+                        "from_memory": s.get("from_memory", False),
+                    }
+                )
 
             except Exception as e:
                 logger.error(f"Error processing question '{q}': {e}")
-                out.append({
-                    "question": q,
-                    "file_id": fid or "error",
-                    "answer": "",
-                    "evidence": [],
-                    "from_memory": False,
-                    "error": f"{type(e).__name__}: {e}",
-                })
+                out.append(
+                    {
+                        "question": q,
+                        "file_id": fid or "error",
+                        "answer": "",
+                        "evidence": [],
+                        "from_memory": False,
+                        "error": f"{type(e).__name__}: {e}",
+                    }
+                )
         return out

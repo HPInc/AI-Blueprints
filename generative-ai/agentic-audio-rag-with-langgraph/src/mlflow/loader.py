@@ -76,12 +76,15 @@ def _load_pyfunc(data_path: str):
     try:
         # Create context object with artifacts paths
         from types import SimpleNamespace
-        context = SimpleNamespace(artifacts={
-            "index_dir": os.path.join(data_path, "index"),
-            "config_path": config_path,
-            "memory_dir": os.path.join(data_path, "memory"),
-        })
-        
+
+        context = SimpleNamespace(
+            artifacts={
+                "index_dir": os.path.join(data_path, "index"),
+                "config_path": config_path,
+                "memory_dir": os.path.join(data_path, "memory"),
+            }
+        )
+
         model = Model(
             context=context,
             config=config,
