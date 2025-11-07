@@ -65,8 +65,8 @@ agentic-audio-rag-with-langgraph/
 │   └── mlflow/                          # Universal MLflow structure
 │       ├── __init__.py                  # Dynamic imports for Model and Logger
 │       ├── model.py                     # Business logic layer (audio RAG model)
-│       ├── loader.py                    # MLflow loader (synchronized with vanilla-rag)
-│       └── logger.py                    # MLflow logger service (synchronized with vanilla-rag)
+│       ├── loader.py                    # MLflow loader
+│       └── logger.py                    # MLflow logger service
 ├── requirements.txt                     # All required packages
 └── README.md                            # Project documentation
 
