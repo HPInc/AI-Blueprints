@@ -47,24 +47,29 @@ It delivers:
 agentic-audio-rag-with-langgraph/
 ├── configs/                             # Configuration files
 │   └── config.yaml                      # Blueprint configuration (UI mode, ports, service settings)
-├── data/                                # Sample media files (input directory)
-│   └── inputs/                          #  └─ *.mp3 / *.wav / *.mp4 …
+├── data/                                # Runtime data (optional)
+│   ├── memory/                          # Q&A cache for faster repeat queries
+│   └── temp/                            # Temporary uploads (auto-cleaned)
 ├── demo/                                # UI frontend code (Streamlit)
 │   └── streamlit/
+│       ├── main.py                      # Modern UI with file upload
+│       ├── assets/                      # CSS styling
+│       └── static/                      # Logo images
 ├── docs/                                # UI documentation & screenshots
 │   ├── Streamlit UI Page - Agentic Audio RAG.pdf
 │   └── streamlit-ui-ss-agentic-audio-rag.png
 ├── notebooks/                           # Workflow and MLflow notebooks
-│   ├── register-model.ipynb
-│   └── run-workflow.ipynb
+│   ├── register-model.ipynb             # Register model with dynamic audio processing
+│   └── run-workflow.ipynb               # Test workflow locally
 ├── src/                                 # Core LangGraph modules & MLflow integration
 │   ├── __init__.py
 │   ├── agentic_workflow.py              # LangGraph DAG construction
+│   ├── segment_audio_embeddings.py      # Audio processing and CLAP embeddings
 │   ├── simple_kv_memory.py              # Disk-based memory module
 │   ├── utils.py                         # Helper functions
 │   └── mlflow/                          # Universal MLflow structure
 │       ├── __init__.py                  # Dynamic imports for Model and Logger
-│       ├── model.py                     # Business logic layer (audio RAG model)
+│       ├── model.py                     # Business logic layer (audio processing)
 │       ├── loader.py                    # MLflow loader
 │       └── logger.py                    # MLflow logger service
 ├── requirements.txt                     # All required packages
@@ -146,9 +151,9 @@ ui:
 
 ## 🚀 Usage
 
-### 🧪 Step 1: Run LangGraph Workflow
+### 🧪 Step 1: Run LangGraph Workflow (Optional)
 
-Use the provided notebook to run the end-to-end pipeline:
+Use the provided notebook to test the workflow locally:
 
 ```bash
 notebooks/run-workflow.ipynb
@@ -156,10 +161,12 @@ notebooks/run-workflow.ipynb
 
 This notebook will:
 
-- Scan data/inputs for audio/video, normalize audio, and segment into timestamped windows
-- Build a true audio embedding index over segments using CLAP (audio↔text joint space)
-- Run the agentic retrieval-and-rerank workflow, sending the top audio windows to the model to listen and answer directly
-- Show the generated answers together with the highlighted transcript segments and timestamps
+- Process audio/video files dynamically
+- Build audio embedding index over 30-second segments using CLAP (audio↔text joint space)
+- Run the agentic retrieval-and-rerank workflow, sending the top audio windows to Qwen Omni
+- Show the generated answers together with timestamped evidence segments
+
+**Note:** This step is optional for development/testing. In production, the Streamlit UI handles all processing automatically.
 
 ### 🧠 Step 2: Register Model with MLflow
 
@@ -171,8 +178,9 @@ notebooks/register-model.ipynb
 
 This notebook will:
 
-- Packages the complete **Agentic Audio RAG** workflow (vector store, reranker, LangGraph DAG, memory module) as a single MLflow artifact
-- Registers the model to MLflow so it can be queried over HTTP
+- Package the **Agentic Audio RAG** workflow (CLAP embeddings, Qwen Omni, LangGraph DAG, memory module) as a single MLflow artifact
+- Configure the model for **dynamic audio processing**
+- Register the model to MLflow so it can be queried over HTTP with uploaded audio files
 
 ### 📦 Step 3: Deploy the Service
 
@@ -183,15 +191,67 @@ This notebook will:
 - Once deployed, access the **Streamlit UI** via the Service URL.
 - The service will automatically use the configuration logged as an artifact during model registration.
 
-### 🌐 Step 4: Launch Streamlit UI
+### 🌐 Step 4: Use the Streamlit UI
 
-This web UI will allow the user to:
+Once deployed, access the Streamlit UI through the Service URL. The interface allows you to:
 
-- Upload one or more audio / video files (or pick the samples in `data/inputs/`)
-- Ask questions about their content
-- See the **highlighted transcript segments** (with timestamps) that the model used to craft each answer
-- Benefit from the built-in memory: repeated queries return quickly after the first run
-- Connect to a local MLflow model endpoint
+**Upload & Process:**
+
+1. **Upload any audio or video file** (MP3, WAV, MP4, MOV, etc.)
+2. Watch the **real-time progress bar** as the system:
+   - Converts audio to WAV format (ffmpeg)
+   - Segments into 30-second windows
+   - Generates CLAP embeddings
+   - Builds the FAISS vector index
+3. File processing takes ~30 seconds for a 5-minute audio file
+
+**Ask Questions:**
+
+1. Once processed, type your question in natural language
+2. The system will:
+   - Search the audio index using CLAP embeddings
+   - Retrieve the most relevant 6 segments
+   - Let Qwen Omni "listen" to those audio clips
+   - Generate an answer based on what it heard
+3. View the **timestamped evidence** showing exactly which audio segments were used
+
+**Benefits:**
+
+- 🔄 **Memory Cache**: Repeated questions return instantly
+- 📊 **Conversation History**: Track all Q&A pairs in the session
+- 🎯 **Precise Timestamps**: Jump directly to relevant audio moments
+
+**API Usage Example:**
+
+```python
+import requests
+
+# First request: Upload and process audio
+payload = {
+    "inputs": [{
+        "audio_path": "/path/to/meeting.mp3",
+        "question": "What were the main action items?",
+        "file_id": "meeting.mp3"
+    }]
+}
+
+response = requests.post(
+    "http://localhost:5002/invocations",
+    json=payload
+)
+
+result = response.json()["predictions"][0]
+print(f"Answer: {result['answer']}")
+print(f"Evidence: {result['evidence']}")
+
+# Subsequent requests: Just use file_id (already processed)
+payload = {
+    "inputs": [{
+        "question": "Who was assigned to each task?",
+        "file_id": "meeting.mp3"  # No audio_path needed
+    }]
+}
+```
 
 ---
 

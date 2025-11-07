@@ -1,193 +1,464 @@
 import streamlit as st
-import shutil
-import requests
-import base64
 import os
+import requests
+import tempfile
+import base64
 import json
 from pathlib import Path
-from typing import List
-from langchain.document_loaders import (
-    TextLoader,
-    CSVLoader,
-    PyPDFLoader,
-    UnstructuredWordDocumentLoader,
-    UnstructuredExcelLoader,
-    UnstructuredMarkdownLoader,
-)
-from langchain.docstore.document import Document
+from typing import Optional
 
-# Set page config
-st.set_page_config(page_title="Agentic Audio RAG", page_icon="🔬", layout="wide")
+# Disable SSL warnings for localhost
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# ------------------------- CSS STYLING -------------------------
+os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
-st.markdown(
-    "<style>" + open("assets/styles.css").read() + "</style>", unsafe_allow_html=True
+# --- Streamlit Page Configuration ---
+st.set_page_config(
+    page_title="Agentic Audio RAG", page_icon="🎧", layout="centered"
 )
 
-# ------------------------- LOGOS -------------------------
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.image("static/HP-logo.png", width=100)
-with col2:
-    st.image("static/Z-logo.png", width=100)
-with col3:
-    st.image("static/AIS-logo.png", width=100)
-
-
-# ------------------------- HEADER -------------------------
+# --- Enhanced Custom Styling ---
 st.markdown(
-    '<div class="gradient-header"><h2>🤖 Agentic Audio RAG 🤖</h2></div>',
+    """
+    <style>
+        .block-container {
+            padding-top: 1rem !important;
+            max-width: 900px !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: white;
+        }
+
+        .stApp {
+            background: white;
+        }
+
+        /* Main Title Styling */
+        .main-title {
+            text-align: center;
+            color: black;
+            font-weight: 700;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        /* Card Styling */
+        .info-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        /* Button Styling */
+        .stButton>button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            border-radius: 12px !important;
+            padding: 12px 32px !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important;
+        }
+
+        .stButton>button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+        }
+
+        /* File Uploader Styling */
+        .uploadedFile {
+            border-radius: 10px !important;
+            border: 2px solid #667eea !important;
+        }
+
+        /* Answer Card */
+        .answer-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            margin: 15px 0;
+            border-left: 6px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .answer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            border-left-color: #764ba2;
+        }
+
+        .answer-card h4 {
+            color: #2C3E50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* Evidence Items */
+        .evidence-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .evidence-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Timestamp Badge */
+        .timestamp-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+
+        /* Logo Container */
+        .logo-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        img[alt="HP Logo"],
+        img[alt="AI Studio Logo"],
+        img[alt="Z by HP Logo"] {
+            width: 80px !important;
+            height: auto !important;
+            transition: all 0.3s ease;
+        }
+
+        img[alt="HP Logo"]:hover,
+        img[alt="AI Studio Logo"]:hover,
+        img[alt="Z by HP Logo"]:hover {
+            transform: scale(1.1);
+        }
+
+        /* Section Headers */
+        .section-header {
+            color: #2C3E50;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin: 20px 0 15px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        hr {
+            border-color: rgba(0,0,0,0.1) !important;
+            margin: 2rem 0 !important;
+        }
+        
+        /* Progress Bar */
+        .stProgress > div > div > div > div {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+    </style>
+""",
     unsafe_allow_html=True,
 )
 
-# ------------------------- SIDEBAR CONFIG -------------------------
+
+# --- Logo Section ---
+def uri_from(path: Path) -> str:
+    """Convert image file to base64 data URI"""
+    return (
+        f"data:image/{path.suffix[1:].lower()};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )
+
+
+static = Path("static")
+hp_uri = uri_from(static / "HP-Logo.png")
+ais_uri = uri_from(static / "AIS-logo.png")
+zhp_uri = uri_from(static / "Z-logo.png")
+
+st.markdown(
+    f"""
+    <div class="logo-container">
+        <img src="{hp_uri}" alt="HP Logo">
+        <img src="{ais_uri}" alt="AI Studio Logo">
+        <img src="{zhp_uri}" alt="Z by HP Logo">
+    </div>
+""",
+    unsafe_allow_html=True,
+)
+
+# --- Header ---
+st.markdown(
+    """
+    <h1 class="main-title">🎧 Agentic Audio RAG</h1>
+    <p class="subtitle">Upload audio/video files and ask questions powered by AI</p>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ─────────────────────────────────────────────────────────────
+# MLflow API Configuration
+# ─────────────────────────────────────────────────────────────
 st.sidebar.title("⚙️ Configuration")
 
 st.sidebar.markdown(
     """
-**Instructions:**
-1. Enter your model's `/invocations` endpoint URL.
-2. Upload an audio/video file to analyze, and fill out the question.
-3. Click **Run Analysis** to receive an AI-generated answer.
+**How to use:**
+1. Upload an audio or video file
+2. Wait for processing (embedding generation)
+3. Ask questions about the content
+4. View AI-generated answers with timestamps
 
-**Example URL:** `https://localhost:5000/invocations`
+**Supported Formats:**
+- Audio: MP3, WAV, OGG, FLAC, M4A
+- Video: MP4, MOV, AVI, MKV, WEBM
 """
 )
 
-endpoint_url = st.sidebar.text_input("MLflow Model Endpoint URL", key="endpoint")
+MLFLOW_ENDPOINT = st.sidebar.text_input(
+    "MLflow Model Endpoint URL",
+    value="http://localhost:5002/invocations",
+    help="Enter the /invocations endpoint of your deployed model",
+)
 
-if endpoint_url and not endpoint_url.strip().lower().startswith("https://"):
-    st.sidebar.error("Endpoint must start with https://")
-
-# ------------------------- INPUTS -------------------------
-with st.form("inference_form"):
-    question = st.text_area("❓ Question", height=100, key="question")
-    uploaded_files = st.file_uploader(
-        "Upload an Audio or Video File",
-        accept_multiple_files=False,
-        type=[
-            ".mp3",
-            ".wav",
-            ".ogg",
-            ".flac",
-            ".m4a",
-            ".mp4",
-            ".mov",
-            ".avi",
-            ".mkv",
-            ".m4v",
-            ".webm",
-        ],
-    )
-
-    submitted = st.form_submit_button("🔢 Run Analysis")
+# Initialize session state
+if "uploaded_file_name" not in st.session_state:
+    st.session_state.uploaded_file_name = None
+if "file_processed" not in st.session_state:
+    st.session_state.file_processed = False
+if "file_id" not in st.session_state:
+    st.session_state.file_id = None
+if "qa_history" not in st.session_state:
+    st.session_state.qa_history = []
 
 
-# ------------------------- FILE PROCESSING -------------------------
-class SafeTextLoader(TextLoader):
-    def load(self) -> list[Document]:
-        encodings = ["utf-8", "utf-16", "latin-1", "cp1252"]
-        for enc in encodings:
+# ─────────────────────────────────────────────────────────────
+# File Upload Section
+# ─────────────────────────────────────────────────────────────
+st.markdown('<p class="section-header">📁 Upload Audio/Video</p>', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader(
+    "Choose an audio or video file",
+    type=["mp3", "wav", "ogg", "flac", "m4a", "mp4", "mov", "avi", "mkv", "webm"],
+    help="Upload a media file to analyze",
+)
+
+# Handle file upload
+if uploaded_file is not None:
+    if uploaded_file.name != st.session_state.uploaded_file_name:
+        # New file uploaded
+        st.session_state.uploaded_file_name = uploaded_file.name
+        st.session_state.file_processed = False
+        st.session_state.file_id = uploaded_file.name
+        st.session_state.qa_history = []
+        
+        st.info(f"📎 File loaded: **{uploaded_file.name}** ({uploaded_file.size / 1024 / 1024:.2f} MB)")
+        
+        # Process the file
+        with st.spinner("🎧 Processing audio and generating embeddings..."):
             try:
-                with open(self.file_path, encoding=enc) as f:
-                    text = f.read()
-                return [Document(page_content=text)]
-            except Exception:
-                continue
-        raise ValueError(f"Failed to decode file: {self.file_path}")
-
-
-# File Type Mapping
-supported_extensions = {
-    ".txt": SafeTextLoader,
-    ".csv": lambda path: CSVLoader(path, encoding="utf-8", csv_args={"delimiter": ","}),
-    ".xlsx": UnstructuredExcelLoader,
-    ".docx": UnstructuredWordDocumentLoader,
-    ".pdf": PyPDFLoader,
-    ".md": UnstructuredMarkdownLoader,
-}
-
-
-def process_files(files: List) -> str:
-    all_docs = []
-    temp_dir = Path(".tmp")
-    temp_dir.mkdir(exist_ok=True)
-
-    try:
-        for file in files:
-            suffix = Path(file.name).suffix.lower()
-            loader_class = supported_extensions.get(suffix)
-
-            if not loader_class:
-                st.warning(f"⚠️ Unsupported file type: {file.name}")
-                continue
-
-            try:
-                # Save uploaded file to disk
-                temp_path = temp_dir / file.name
-                with open(temp_path, "wb") as f:
-                    f.write(file.getvalue())
-
-                # Normalize path for loaders (especially for Windows)
-                resolved_path = temp_path.resolve()
-
-                # Instantiate and load document
-                loader = loader_class(str(resolved_path))
-                docs = loader.load()
-                all_docs.extend(docs)
-            except Exception as e:
-                st.error(f"❌ Failed to load {file.name}: {e}")
-    finally:
-        # Always attempt to clean up the temporary directory
-        if temp_dir.exists():
-            try:
-                shutil.rmtree(temp_dir)
-            except Exception as cleanup_err:
-                st.warning(f"⚠️ Failed to clean up temp directory: {cleanup_err}")
-
-    return "\n\n".join(doc.page_content for doc in all_docs)
-
-
-# ------------------------- API CALL -------------------------
-if submitted:
-    if not endpoint_url or not question or not uploaded_files:
-        st.error("Please fill in all required fields.")
-        input_text = process_files(uploaded_files)
-    else:
-        with st.spinner("Analyzing with AI..."):
-            input_text = process_files(uploaded_files)
-
-            payload = {
-                "inputs": [
-                    {
-                        "question": question,
-                        "input_text": input_text,
-                    }
-                ],
-                "params": {},
-            }
-
-            try:
+                # Save uploaded file to temp location
+                with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as tmp:
+                    tmp.write(uploaded_file.getvalue())
+                    temp_path = tmp.name
+                
+                # Create progress bar
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                status_text.text("Converting audio format...")
+                progress_bar.progress(25)
+                
+                status_text.text("Generating CLAP embeddings...")
+                progress_bar.progress(50)
+                
+                # Make API call to process audio
+                payload = {
+                    "inputs": [{
+                        "audio_path": temp_path,
+                        "question": "Initialize",  # Dummy question to trigger processing
+                        "file_id": st.session_state.file_id
+                    }]
+                }
+                
+                status_text.text("Indexing audio segments...")
+                progress_bar.progress(75)
+                
                 response = requests.post(
-                    endpoint_url.strip(), json=payload, verify=False, timeout=600
+                    MLFLOW_ENDPOINT,
+                    json=payload,
+                    verify=False,
+                    timeout=600
                 )
-                response.raise_for_status()
-                output = response.json()["predictions"][
-                    0
-                ]  # Assuming single-record output
+                
+                status_text.text("Complete!")
+                progress_bar.progress(100)
+                
+                if response.status_code == 200:
+                    st.session_state.file_processed = True
+                    st.success("✅ Audio processed successfully! You can now ask questions.")
+                else:
+                    st.error(f"❌ Processing failed: {response.status_code}")
+                    st.session_state.file_processed = False
+                
+                # Clean up temp file
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+                    
+            except Exception as e:
+                st.error(f"❌ Error processing file: {str(e)}")
+                st.session_state.file_processed = False
+    else:
+        # Same file - already processed
+        if st.session_state.file_processed:
+            st.success(f"✅ File ready: **{uploaded_file.name}**")
 
-                st.markdown("### 📈 Final Answer")
-                st.markdown(
-                    f"<div class='result-box'>{output['answer']}</div>",
-                    unsafe_allow_html=True,
+
+# ─────────────────────────────────────────────────────────────
+# Question-Answer Section
+# ─────────────────────────────────────────────────────────────
+if st.session_state.file_processed:
+    st.markdown("---")
+    st.markdown('<p class="section-header">❓ Ask Questions</p>', unsafe_allow_html=True)
+    
+    with st.form("question_form"):
+        question = st.text_area(
+            "Enter your question about the audio",
+            height=100,
+            placeholder="e.g., What was the main topic discussed?",
+        )
+        
+        submitted = st.form_submit_button("🔍 Get Answer")
+    
+    if submitted and question.strip():
+        with st.spinner("🤔 Analyzing audio and generating answer..."):
+            try:
+                payload = {
+                    "inputs": [{
+                        "question": question,
+                        "file_id": st.session_state.file_id
+                    }]
+                }
+                
+                response = requests.post(
+                    MLFLOW_ENDPOINT,
+                    json=payload,
+                    verify=False,
+                    timeout=600
                 )
-                st.divider()
+                
+                if response.status_code == 200:
+                    result = response.json()["predictions"][0]
+                    
+                    # Add to history
+                    st.session_state.qa_history.insert(0, {
+                        "question": question,
+                        "answer": result.get("answer", ""),
+                        "evidence": result.get("evidence", []),
+                        "from_memory": result.get("from_memory", False)
+                    })
+                    
+                else:
+                    st.error(f"❌ Request failed: {response.status_code}")
+                    
+            except Exception as e:
+                st.error(f"❌ Error: {str(e)}")
 
-                with st.expander("🔍 Full Message Trace"):
-                    st.json(json.loads(output["messages"]))
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Request failed: {e}")
-            except Exception as ex:
-                st.error(f"Unexpected error: {ex}")
+# ─────────────────────────────────────────────────────────────
+# Display Q&A History
+# ─────────────────────────────────────────────────────────────
+if st.session_state.qa_history:
+    st.markdown("---")
+    st.markdown('<p class="section-header">💬 Conversation History</p>', unsafe_allow_html=True)
+    
+    for idx, qa in enumerate(st.session_state.qa_history):
+        cache_badge = "🔄 (from cache)" if qa.get("from_memory") else ""
+        
+        st.markdown(
+            f"""
+            <div class="answer-card">
+                <h4>Q: {qa['question']} {cache_badge}</h4>
+                <p style="color: #2C3E50; font-size: 1.05rem; line-height: 1.6;">
+                    <strong>A:</strong> {qa['answer']}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Display evidence with timestamps
+        if qa.get("evidence"):
+            with st.expander(f"🔍 View Evidence ({len(qa['evidence'])} segments)"):
+                for i, ev in enumerate(qa["evidence"], 1):
+                    start_s = ev.get("start_s", 0)
+                    end_s = ev.get("end_s", 0)
+                    score = ev.get("score", 0)
+                    
+                    # Format timestamps
+                    start_mm_ss = f"{int(start_s // 60):02d}:{int(start_s % 60):02d}"
+                    end_mm_ss = f"{int(end_s // 60):02d}:{int(end_s % 60):02d}"
+                    
+                    st.markdown(
+                        f"""
+                        <div class="evidence-item">
+                            <span class="timestamp-badge">{start_mm_ss} - {end_mm_ss}</span>
+                            <strong>Relevance:</strong> {score:.2%}<br>
+                            <strong>File:</strong> {ev.get('file_name', 'Unknown')}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+    
+    # Clear history button
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🗑️ Clear History", use_container_width=True):
+            st.session_state.qa_history = []
+            st.rerun()
+
+elif st.session_state.file_processed:
+    st.info("💡 Ask your first question above to get started!")
+
+# ─────────────────────────────────────────────────────────────
+# Footer
+# ─────────────────────────────────────────────────────────────
+st.write("---")
+st.write("Built with ❤️ using HP AI Studio")

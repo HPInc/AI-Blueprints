@@ -51,10 +51,9 @@ def _load_pyfunc(data_path: str):
     else:
         secrets = None
 
-    # Set up documents path
     docs_path = os.path.join(data_path, "data")
     if not os.path.exists(docs_path):
-        raise FileNotFoundError(f"Documents directory not found at: {docs_path}")
+        docs_path = None
 
     # Get model path from config and resolve it for MLflow artifacts context
     model_path = config.get("model_path")
@@ -75,8 +74,19 @@ def _load_pyfunc(data_path: str):
 
     # Initialize Model
     try:
+        # Create context object with artifacts paths
+        from types import SimpleNamespace
+        context = SimpleNamespace(artifacts={
+            "index_dir": os.path.join(data_path, "index"),
+            "config_path": config_path,
+            "memory_dir": os.path.join(data_path, "memory"),
+        })
+        
         model = Model(
-            config=config, docs_path=docs_path, secrets=secrets, model_path=model_path
+            context=context,
+            config=config,
+            model_path=model_path,
+            secrets=secrets,
         )
         logger.info("Model initialized successfully")
         return model

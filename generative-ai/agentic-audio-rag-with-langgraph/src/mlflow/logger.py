@@ -39,37 +39,28 @@ class Logger:
         signature,
         artifact_path="AIStudio-Model",
         config_path="configs/config.yaml",
-        docs_path="data/",
         secrets_dict=None,
         model_path=None,
         demo_folder=None,
     ):
         """
-        Log model using refined models-from-code approach with elegant directory structure.
+        Log model using MLflow's models-from-code approach.
 
-        This implementation uses MLflow's models-from-code approach exclusively with proper
-        temp directory naming to avoid redundant nesting while maintaining full MLflow 3.1.0 compatibility.
-
-        Final MLflow structure achieved:
+        Final MLflow structure:
         /artifacts/
-          └── data/                    # MLflow automatically created
-              ├── config.yaml          # Configuration
-              ├── data/                # Documents directory (PDFs, etc.)
-              ├── demo/                # UI components
-              ├── models/              # Model files (optional)
-              └── secrets.yaml         # Secrets (optional)
+          └── data/
+              ├── config.yaml
+              ├── demo/
+              ├── models/
+              └── secrets.yaml
 
         Args:
-            signature: MLflow ModelSignature defining input/output schema for the model
+            signature: MLflow ModelSignature defining input/output schema
             artifact_path: Path to store the model artifacts
             config_path: Path to the configuration file
-            docs_path: Path to the documents directory
             secrets_dict: Dict with secrets to persist as YAML (optional)
             model_path: Path to the model file (optional)
             demo_folder: Path to the demo folder (optional)
-
-        Returns:
-            None
         """
         import mlflow
         import tempfile
@@ -88,45 +79,21 @@ class Logger:
 
         try:
             logger.info(f"Organizing artifacts in temp directory: {temp_dir}")
-            # Organize temp directory for clean final structure
-            # MLflow will place this under /artifacts/data/ automatically
 
-            # ✅ Config at root -> /artifacts/data/config.yaml
             if not os.path.exists(config_path):
                 raise FileNotFoundError(f"Config file not found at: {config_path}")
             shutil.copy2(config_path, os.path.join(temp_dir, "config.yaml"))
-            logger.info(f"Copied config from {config_path} to temp directory")
+            logger.info(f"Copied config from {config_path}")
 
-            # ✅ Create data subdirectory -> /artifacts/data/data/
-            data_temp_dir = os.path.join(temp_dir, "data")
-            os.makedirs(data_temp_dir, exist_ok=True)
-
-            # Copy documents to data subdirectory
-            if docs_path and os.path.exists(docs_path):
-                for item in os.listdir(docs_path):
-                    item_path = os.path.join(docs_path, item)
-                    if os.path.isfile(item_path):
-                        shutil.copy2(item_path, data_temp_dir)
-                        logger.info(f"Copied document: {item}")
-                    elif os.path.isdir(item_path):
-                        shutil.copytree(item_path, os.path.join(data_temp_dir, item))
-                        logger.info(f"Copied document directory: {item}")
-            logger.info("data folder not provided or doesn't exist - skipping")
-
-            # ✅ Demo folder -> /artifacts/data/demo/
             if demo_folder and os.path.exists(demo_folder):
                 shutil.copytree(demo_folder, os.path.join(temp_dir, "demo"))
-                logger.info(f"Copied demo folder from {demo_folder}")
-            else:
-                logger.info("Demo folder not provided or doesn't exist - skipping")
+                logger.info(f"Copied demo folder")
 
-            # ✅ Handle secrets -> /artifacts/data/secrets.yaml
             if secrets_dict:
                 with open(os.path.join(temp_dir, "secrets.yaml"), "w") as f:
                     yaml.safe_dump(secrets_dict, f)
-                logger.info("Created secrets.yaml in temp directory")
+                logger.info("Created secrets.yaml")
 
-            # ✅ Handle model files -> /artifacts/data/models/
             if model_path and os.path.exists(model_path):
                 models_temp_dir = os.path.join(temp_dir, "models")
                 os.makedirs(models_temp_dir, exist_ok=True)
@@ -135,12 +102,10 @@ class Logger:
                         model_path,
                         os.path.join(models_temp_dir, os.path.basename(model_path)),
                     )
-                    logger.info(f"Copied model file: {os.path.basename(model_path)}")
+                    logger.info(f"Copied model file")
                 else:
                     shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied model directory: {model_path}")
-            else:
-                logger.info("Model path not provided or doesn't exist - skipping")
+                    logger.info(f"Copied model directory")
 
             mlflow.pyfunc.log_model(
                 name=artifact_path,
