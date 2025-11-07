@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "agentic-rag-streamlit-webapp"
+version = "0.1.0"
+description = "Streamlit web application for Agentic RAG with TensorRT-LLM"
+authors = ["gabriela.ponciano2016@gmail.com"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+streamlit = ">=1.43.1,<2.0.0"
+pillow = ">=11.3.0"
+urllib3 = ">=2.5.0"
+requests = ">=2.32.0"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
