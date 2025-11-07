@@ -30,6 +30,7 @@ import operator  # Functional programming utilities
 import uuid
 import sys
 import pandas as pd
+import yaml
 
 # ─────── Third-Party Package Imports ───────
 from langchain.docstore.document import (
