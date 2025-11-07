@@ -297,8 +297,9 @@ class Model:
             self.top_k = int(cfg.get("top_k", 6))
 
             # --- CLAP (CPU to avoid OOM) ---
-            self.clap_processor = ClapProcessor.from_pretrained(cfg["clap_repo"])
-            self.clap_model = ClapModel.from_pretrained(cfg["clap_repo"]).eval()
+            clap_repo = cfg.get("clap_repo", CLAP_REPO)
+            self.clap_processor = ClapProcessor.from_pretrained(clap_repo)
+            self.clap_model = ClapModel.from_pretrained(clap_repo).eval()
             try:
                 self.clap_model.to("cpu")
             except Exception:
