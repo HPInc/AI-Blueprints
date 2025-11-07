@@ -78,7 +78,9 @@ def _load_pyfunc(data_path: str):
             artifacts={
                 "config_path": config_path,
                 "memory_dir": os.path.join(data_path, "memory"),
-                "index_dir": os.path.join(data_path, "indexes"),  # Changed from "index" to "indexes"
+                "index_dir": os.path.join(
+                    data_path, "indexes"
+                ),  # Changed from "index" to "indexes"
             }
         )
 

@@ -216,7 +216,7 @@ def segment_audio_embeddings(
     docs_for_ui: List[Document] = []
 
     input_path = Path(INPUT_PATH)
-    
+
     # Handle both single file and directory
     if input_path.is_file():
         # Single file mode (for API on-demand processing)
@@ -225,7 +225,9 @@ def segment_audio_embeddings(
         # Directory mode (for notebook batch processing)
         media_paths = []
         for p in sorted(input_path.rglob("*")):
-            if any(part.startswith(".") and part not in {".", ".."} for part in p.parts):
+            if any(
+                part.startswith(".") and part not in {".", ".."} for part in p.parts
+            ):
                 continue
             if p.is_file() and p.suffix.lower() in MEDIA_EXTS:
                 media_paths.append(p)

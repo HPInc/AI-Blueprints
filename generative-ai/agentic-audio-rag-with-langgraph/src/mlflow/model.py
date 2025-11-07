@@ -271,7 +271,7 @@ class Model:
             config_path = Path(context.artifacts.get("config_path", "config.json"))
             memory_dir = Path(context.artifacts.get("memory_dir", "memory"))
             memory_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Index storage directory
             self.index_base_dir = Path(context.artifacts.get("index_dir", "indexes"))
             self.index_base_dir.mkdir(parents=True, exist_ok=True)
@@ -356,7 +356,7 @@ class Model:
     def _sanitize_file_id(self, file_id: str) -> str:
         """Sanitize file_id for safe filesystem usage."""
         # Replace unsafe characters with underscores
-        safe_id = re.sub(r'[<>:"/\\|?*]', '_', file_id)
+        safe_id = re.sub(r'[<>:"/\\|?*]', "_", file_id)
         return safe_id
 
     def _get_index_dir(self, file_id: str) -> Path:
@@ -369,30 +369,33 @@ class Model:
         try:
             index_dir = self._get_index_dir(file_id)
             index_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Save FAISS index
             index_file = index_dir / "faiss.index"
             faiss.write_index(audio_index.index, str(index_file))
-            
+
             # Save metadata (without embedding vectors to save space)
             meta_file = index_dir / "metadata.json"
             # Remove 'vec' from metadata if present (it's in FAISS index)
             clean_meta = [
-                {k: v for k, v in m.items() if k != 'vec'}
-                for m in audio_index.meta
+                {k: v for k, v in m.items() if k != "vec"} for m in audio_index.meta
             ]
-            with open(meta_file, 'w') as f:
+            with open(meta_file, "w") as f:
                 json.dump(clean_meta, f, indent=2)
-            
+
             # Save index info
             info_file = index_dir / "info.json"
-            with open(info_file, 'w') as f:
-                json.dump({
-                    "file_id": file_id,
-                    "num_segments": len(audio_index.meta),
-                    "dim": audio_index.index.d,
-                }, f, indent=2)
-            
+            with open(info_file, "w") as f:
+                json.dump(
+                    {
+                        "file_id": file_id,
+                        "num_segments": len(audio_index.meta),
+                        "dim": audio_index.index.d,
+                    },
+                    f,
+                    indent=2,
+                )
+
             logger.info(f"Saved index for {file_id}: {len(audio_index.meta)} segments")
         except Exception as e:
             logger.error(f"Error saving index for {file_id}: {e}")
@@ -404,25 +407,25 @@ class Model:
             index_dir = self._get_index_dir(file_id)
             index_file = index_dir / "faiss.index"
             meta_file = index_dir / "metadata.json"
-            
+
             if not (index_file.exists() and meta_file.exists()):
                 return None
-            
+
             # Load FAISS index
             faiss_index = faiss.read_index(str(index_file))
-            
+
             # Load metadata
-            with open(meta_file, 'r') as f:
+            with open(meta_file, "r") as f:
                 metadata = json.load(f)
-            
+
             # Reconstruct AudioIndex
             audio_index = AudioIndex(dim=faiss_index.d)
             audio_index.index = faiss_index
             audio_index.meta = metadata
-            
+
             logger.info(f"Loaded index for {file_id}: {len(metadata)} segments")
             return audio_index
-            
+
         except Exception as e:
             logger.warning(f"Could not load index for {file_id}: {e}")
             return None
@@ -460,12 +463,14 @@ class Model:
             cached_index = self._load_index(file_id)
             if cached_index is not None:
                 self.file_indexes[file_id] = cached_index
-                logger.info(f"Loaded {file_id} from disk cache: {len(cached_index.meta)} segments")
+                logger.info(
+                    f"Loaded {file_id} from disk cache: {len(cached_index.meta)} segments"
+                )
                 return file_id
 
             # Not cached - process using notebook's exact pattern
             logger.info(f"Processing new audio file: {file_id}")
-            
+
             # Call segment_audio_embeddings exactly like run-workflow.ipynb does
             audio_index, media_paths = segment_audio_embeddings(
                 self.clap_processor,
@@ -473,7 +478,7 @@ class Model:
                 audio_path,  # Pass the file path directly
                 MEDIA_EXTS,
                 AUDIO_EXTS,
-                VIDEO_EXTS
+                VIDEO_EXTS,
             )
 
             if not audio_index.meta:
@@ -545,8 +550,10 @@ class Model:
             else:
                 # No index for this file_id - create empty one
                 audio_index = AudioIndex(dim=512)
-                logger.warning(f"No index found for file_id '{file_id}', using empty index")
-        
+                logger.warning(
+                    f"No index found for file_id '{file_id}', using empty index"
+                )
+
         # Build graph with file-specific index (exactly like run-workflow does)
         graph = build_audio_agentic_graph(
             relevance_threshold=self.relevance_threshold,
@@ -558,7 +565,7 @@ class Model:
             clap_processor=self.clap_processor,
             clap_model=self.clap_model,
         )
-        
+
         # Execute with file-namespaced state (matching notebook pattern)
         return graph.invoke(
             {
