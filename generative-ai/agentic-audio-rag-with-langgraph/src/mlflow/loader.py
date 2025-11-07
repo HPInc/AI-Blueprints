@@ -50,10 +50,7 @@ def _load_pyfunc(data_path: str):
         logger.info("Secrets loaded into environment and retrieved")
     else:
         secrets = None
-
-    docs_path = os.path.join(data_path, "data")
-    if not os.path.exists(docs_path):
-        docs_path = None
+        logger.info("No secrets file found, proceeding without secrets")
 
     # Get model path from config and resolve it for MLflow artifacts context
     model_path = config.get("model_path")
@@ -79,9 +76,11 @@ def _load_pyfunc(data_path: str):
 
         context = SimpleNamespace(
             artifacts={
-                "index_dir": os.path.join(data_path, "index"),
                 "config_path": config_path,
                 "memory_dir": os.path.join(data_path, "memory"),
+                "index_dir": os.path.join(
+                    data_path, "indexes"
+                ),  # Changed from "index" to "indexes"
             }
         )
 

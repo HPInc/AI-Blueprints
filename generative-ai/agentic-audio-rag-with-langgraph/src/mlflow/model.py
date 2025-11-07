@@ -62,8 +62,7 @@ from src.utils import setup_model_environment  # Project-wide configured logger
 from src.segment_audio_embeddings import (
     AudioIndex,
     ensure_wav,
-    segment_audio,
-    clap_embed_audio,
+    segment_audio_embeddings,
 )
 
 # Set up logger
@@ -260,8 +259,9 @@ class Model:
         self.memory = []
         self.callback_manager = None
 
-        # Track processed files
-        self.processed_files = {}  # {file_id: {"path": str, "segment_ids": list}}
+        # File-based index storage
+        self.index_base_dir = None
+        self.file_indexes = {}  # In-memory cache: {file_id: AudioIndex}
 
         # Setup environment and load components
         try:
@@ -271,6 +271,11 @@ class Model:
             config_path = Path(context.artifacts.get("config_path", "config.json"))
             memory_dir = Path(context.artifacts.get("memory_dir", "memory"))
             memory_dir.mkdir(parents=True, exist_ok=True)
+
+            # Index storage directory
+            self.index_base_dir = Path(context.artifacts.get("index_dir", "indexes"))
+            self.index_base_dir.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Index storage directory: {self.index_base_dir}")
 
             # Load or create runtime config
             if config_path.exists():
@@ -318,29 +323,6 @@ class Model:
 
             self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
 
-            # Initialize empty audio index for API-based dynamic indexing
-            self.audio_index = AudioIndex(dim=512)
-            logger.info(
-                "Initialized empty audio index - files will be indexed on API upload"
-            )
-
-            self.graph = build_audio_agentic_graph(
-                relevance_threshold=self.relevance_threshold,
-                fetch_k=self.fetch_k,
-                top_k=self.top_k,
-                vecs=(
-                    np.array([]).reshape(0, 512).astype(np.float32)
-                    if len(self.audio_index.meta) == 0
-                    else np.vstack(
-                        [m.get("vec", np.zeros(512)) for m in self.audio_index.meta]
-                    )
-                ),
-                metas=self.audio_index.meta,
-                audio_index=self.audio_index,
-                clap_processor=self.clap_processor,
-                clap_model=self.clap_model,
-            )
-
             logger.info("Model initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Model: {str(e)}")
@@ -371,14 +353,90 @@ class Model:
             logger.error(f"Error setting up environment: {str(e)}")
             # Continue without failing to allow the model to still function
 
+    def _sanitize_file_id(self, file_id: str) -> str:
+        """Sanitize file_id for safe filesystem usage."""
+        # Replace unsafe characters with underscores
+        safe_id = re.sub(r'[<>:"/\\|?*]', "_", file_id)
+        return safe_id
+
+    def _get_index_dir(self, file_id: str) -> Path:
+        """Get the directory path for storing a file's index."""
+        safe_id = self._sanitize_file_id(file_id)
+        return self.index_base_dir / safe_id
+
+    def _save_index(self, file_id: str, audio_index: AudioIndex) -> None:
+        """Save AudioIndex to disk using FAISS binary format + JSON metadata."""
+        try:
+            index_dir = self._get_index_dir(file_id)
+            index_dir.mkdir(parents=True, exist_ok=True)
+
+            # Save FAISS index
+            index_file = index_dir / "faiss.index"
+            faiss.write_index(audio_index.index, str(index_file))
+
+            # Save metadata (without embedding vectors to save space)
+            meta_file = index_dir / "metadata.json"
+            # Remove 'vec' from metadata if present (it's in FAISS index)
+            clean_meta = [
+                {k: v for k, v in m.items() if k != "vec"} for m in audio_index.meta
+            ]
+            with open(meta_file, "w") as f:
+                json.dump(clean_meta, f, indent=2)
+
+            # Save index info
+            info_file = index_dir / "info.json"
+            with open(info_file, "w") as f:
+                json.dump(
+                    {
+                        "file_id": file_id,
+                        "num_segments": len(audio_index.meta),
+                        "dim": audio_index.index.d,
+                    },
+                    f,
+                    indent=2,
+                )
+
+            logger.info(f"Saved index for {file_id}: {len(audio_index.meta)} segments")
+        except Exception as e:
+            logger.error(f"Error saving index for {file_id}: {e}")
+            raise
+
+    def _load_index(self, file_id: str) -> Optional[AudioIndex]:
+        """Load AudioIndex from disk if it exists."""
+        try:
+            index_dir = self._get_index_dir(file_id)
+            index_file = index_dir / "faiss.index"
+            meta_file = index_dir / "metadata.json"
+
+            if not (index_file.exists() and meta_file.exists()):
+                return None
+
+            # Load FAISS index
+            faiss_index = faiss.read_index(str(index_file))
+
+            # Load metadata
+            with open(meta_file, "r") as f:
+                metadata = json.load(f)
+
+            # Reconstruct AudioIndex
+            audio_index = AudioIndex(dim=faiss_index.d)
+            audio_index.index = faiss_index
+            audio_index.meta = metadata
+
+            logger.info(f"Loaded index for {file_id}: {len(metadata)} segments")
+            return audio_index
+
+        except Exception as e:
+            logger.warning(f"Could not load index for {file_id}: {e}")
+            return None
+
     def process_audio_file(self, audio_path: str, file_id: str = None) -> str:
         """
-        Process a single audio file on-demand:
-        1. Convert to WAV (ffmpeg)
-        2. Segment into 30s windows
-        3. Generate CLAP embeddings
-        4. Add to FAISS index
-        5. Return file_id for subsequent queries
+        Process a single audio file on-demand using the same pattern as run-workflow.ipynb:
+        1. Check if already indexed (load from disk cache)
+        2. Call segment_audio_embeddings() exactly like the notebook does
+        3. Save index to disk for persistence
+        4. Cache in memory for fast access
 
         Args:
             audio_path: Path to audio/video file
@@ -392,65 +450,49 @@ class Model:
             if not audio_path.exists():
                 raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
+            # Use filename as file_id if not provided
             if file_id is None:
                 file_id = audio_path.name
 
-            # Check if already processed
-            if file_id in self.processed_files:
-                logger.info(f"File {file_id} already processed, skipping")
+            # Check in-memory cache first
+            if file_id in self.file_indexes:
+                logger.info(f"File {file_id} already in memory cache")
                 return file_id
 
-            logger.info(f"Processing audio file: {file_id}")
+            # Try loading from disk
+            cached_index = self._load_index(file_id)
+            if cached_index is not None:
+                self.file_indexes[file_id] = cached_index
+                logger.info(
+                    f"Loaded {file_id} from disk cache: {len(cached_index.meta)} segments"
+                )
+                return file_id
 
-            # Convert to WAV
-            wav_path = ensure_wav(AUDIO_EXTS, VIDEO_EXTS, str(audio_path))
+            # Not cached - process using notebook's exact pattern
+            logger.info(f"Processing new audio file: {file_id}")
 
-            # Segment audio
-            segs = segment_audio(wav_path, window_s=30.0, hop_s=15.0)
-            if not segs:
+            # Call segment_audio_embeddings exactly like run-workflow.ipynb does
+            audio_index, media_paths = segment_audio_embeddings(
+                self.clap_processor,
+                self.clap_model,
+                audio_path,  # Pass the file path directly
+                MEDIA_EXTS,
+                AUDIO_EXTS,
+                VIDEO_EXTS,
+            )
+
+            if not audio_index.meta:
                 raise ValueError(f"No audio segments extracted from {audio_path}")
 
-            # Generate embeddings and metadata
-            vecs, metas = [], []
-            segment_ids = []
+            # Save to disk
+            self._save_index(file_id, audio_index)
 
-            for idx, (s0, s1, wav_seg, sr) in enumerate(segs):
-                # Generate CLAP embedding
-                v = clap_embed_audio(self.clap_processor, self.clap_model, wav_seg, sr)
-                vecs.append(v)
+            # Cache in memory
+            self.file_indexes[file_id] = audio_index
 
-                # Create metadata
-                seg_id = f"{file_id}::{idx}"
-                segment_ids.append(seg_id)
-
-                metas.append(
-                    {
-                        "file_path": str(audio_path),
-                        "file_name": audio_path.name,
-                        "wav_path": wav_path,
-                        "start_s": float(s0 / sr),
-                        "end_s": float(s1 / sr),
-                        "segment_id": seg_id,
-                        "file_id": file_id,
-                        "vec": v,  # Store for rebuild
-                    }
-                )
-
-            # Add to index
-            if vecs:
-                vecs_array = np.stack(vecs, axis=0).astype(np.float32)
-                self.audio_index.add(vecs_array, metas)
-
-                # Track processed file
-                self.processed_files[file_id] = {
-                    "path": str(audio_path),
-                    "segment_ids": segment_ids,
-                    "num_segments": len(segment_ids),
-                }
-
-                logger.info(
-                    f"Successfully processed {file_id}: {len(segment_ids)} segments indexed"
-                )
+            logger.info(
+                f"Successfully processed {file_id}: {len(audio_index.meta)} segments indexed"
+            )
 
             return file_id
 
@@ -494,10 +536,42 @@ class Model:
 
     # Wrapper used by mlflow
     def _invoke(self, question: str, file_id: str = "global") -> dict:
-        return self.graph.invoke(
+        """
+        Execute the agentic workflow for a question against a specific file index.
+        Builds the graph with file-specific AudioIndex to match notebook behavior.
+        """
+        # Get or load the file-specific index
+        audio_index = self.file_indexes.get(file_id)
+        if audio_index is None:
+            # Try loading from disk
+            audio_index = self._load_index(file_id)
+            if audio_index is not None:
+                self.file_indexes[file_id] = audio_index
+            else:
+                # No index for this file_id - create empty one
+                audio_index = AudioIndex(dim=512)
+                logger.warning(
+                    f"No index found for file_id '{file_id}', using empty index"
+                )
+
+        # Build graph with file-specific index (exactly like run-workflow does)
+        graph = build_audio_agentic_graph(
+            relevance_threshold=self.relevance_threshold,
+            fetch_k=self.fetch_k,
+            top_k=self.top_k,
+            vecs=np.array([]).reshape(0, 512).astype(np.float32),  # Not used by graph
+            metas=[],  # Not used by graph
+            audio_index=audio_index,
+            clap_processor=self.clap_processor,
+            clap_model=self.clap_model,
+        )
+
+        # Execute with file-namespaced state (matching notebook pattern)
+        return graph.invoke(
             {
                 "question": question,
                 "file_id": file_id,
+                "index": audio_index,
                 "memory": self.memory,
                 "audio_llm": self.audio_llm,
                 "messages": [],
