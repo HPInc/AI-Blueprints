@@ -20,7 +20,8 @@ from IPython.display import (
 # Default models to be loaded in our examples:
 DEFAULT_MODELS = {
     "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
-    # "hugging-face-local": "",
+    "qwen-local": "/home/jovyan/datafabric/Qwen2.5-Omni-7B/",
+    "clap-local": "/home/jovyan/datafabric/clap-htsat-unfused/",
     "hugging-face-cloud": ["Qwen/Qwen2.5-Omni-7B", "laion/clap-htsat-unfused"],
 }
 
@@ -762,3 +763,95 @@ def slice_with_timestamps(
     end_ts = sec_to_timestamp(end_idx * ratio)
     preview = text[:180].replace("\n", " ") + ("…" if len(text) > 180 else "")
     return {"start": start_ts, "end": end_ts, "text": preview}
+
+
+def initialize_audio_models(
+    config: Dict[str, Any], secrets: Optional[Dict[str, Any]] = None
+) -> Tuple[Any, Any, Any, Any]:
+    """
+    Initialize both Qwen and CLAP models based on configuration.
+
+    This function follows the standard AI Studio pattern used by other blueprints:
+    1. Try to load from local datafabric paths first
+    2. Fallback to remote download if local models not found
+    3. Use ModelSelector for consistent model management
+
+    Args:
+        config: Configuration dictionary containing model paths and settings
+        secrets: Optional secrets for HuggingFace authentication
+
+    Returns:
+        Tuple of (qwen_model, qwen_processor, clap_model, clap_processor)
+    """
+    from .model_selection import ModelSelector
+
+    model_source = config.get("model_source", "local")
+
+    qwen_model, qwen_processor = None, None
+    clap_model, clap_processor = None, None
+
+    if model_source == "local":
+        qwen_path = config.get("qwen_model_path", DEFAULT_MODELS["qwen-local"])
+        clap_path = config.get("clap_model_path", DEFAULT_MODELS["clap-local"])
+
+        qwen_exists = Path(qwen_path).exists()
+        clap_exists = Path(clap_path).exists()
+
+        logger.info(f"Checking local models: Qwen={qwen_exists}, CLAP={clap_exists}")
+
+        if qwen_exists and clap_exists:
+            logger.info("✅ Loading models from local datafabric")
+            try:
+                # Load Qwen from local path
+                from transformers import (
+                    Qwen2_5OmniProcessor,
+                    Qwen2_5OmniThinkerForConditionalGeneration,
+                )
+
+                qwen_processor = Qwen2_5OmniProcessor.from_pretrained(qwen_path)
+                qwen_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                    qwen_path, torch_dtype="auto", device_map="auto"
+                )
+
+                # Load CLAP from local path
+                from transformers import AutoProcessor, ClapModel
+
+                clap_processor = AutoProcessor.from_pretrained(clap_path)
+                clap_model = ClapModel.from_pretrained(clap_path)
+
+                logger.info("✅ Successfully loaded models from local datafabric")
+                return qwen_model, qwen_processor, clap_model, clap_processor
+
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to load local models: {e}")
+
+        # If local loading failed or models don't exist, try remote
+        if not (qwen_exists and clap_exists) or (qwen_model is None):
+            logger.info("📡 Falling back to remote model download")
+            model_source = "hugging-face-cloud"
+
+    # Load from remote (either direct request or fallback)
+    if model_source in ["hugging-face-cloud", "hugging-face-local"]:
+        logger.info("📡 Loading models from HuggingFace")
+
+        # Setup HuggingFace authentication if available
+        if secrets and "AIS_HUGGINGFACE_API_KEY" in secrets:
+            os.environ["AIS_HUGGINGFACE_API_KEY"] = secrets["AIS_HUGGINGFACE_API_KEY"]
+
+        selector = ModelSelector()
+
+        # Load Qwen
+        logger.info("Loading Qwen/Qwen2.5-Omni-7B...")
+        selector.select_model("Qwen/Qwen2.5-Omni-7B")
+        qwen_model = selector.get_model()
+        qwen_processor = selector.get_processor()
+
+        # Load CLAP
+        logger.info("Loading laion/clap-htsat-unfused...")
+        selector.select_model("laion/clap-htsat-unfused")
+        clap_model = selector.get_model()
+        clap_processor = selector.get_processor()
+
+        logger.info("✅ Successfully loaded models from HuggingFace")
+
+    return qwen_model, qwen_processor, clap_model, clap_processor

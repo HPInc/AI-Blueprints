@@ -138,10 +138,43 @@ ui:
 
   **Note: If both options (YAML option and Secrets Manager) are used, the Secrets Manager option will override the YAML option.**
 
-### Step 4: Setup Configuration
+### Step 4: Setup Configuration and Models
+
+#### Model Storage Options
+
+This blueprint supports **two model storage approaches**:
+
+**Option A: Local Datafabric Storage (Recommended)**
+
+For optimal performance and to avoid download timeouts, store models locally:
+
+**Required Models:**
+
+1. **Qwen2.5-Omni-7B** (~14GB) - Audio/video multimodal reasoning model
+2. **clap-htsat-unfused** (~300MB) - Audio embedding model for retrieval
+
+**Storage Locations:**
+
+```
+/home/jovyan/datafabric/
+├── Qwen2.5-Omni-7B/                    # Main audio reasoning model
+├── clap-htsat-unfused/                 # Audio embedding model
+```
+
+**Manual Download Instructions:**
+
+```bash
+# Using HuggingFace CLI (requires authentication)
+huggingface-cli download Qwen/Qwen2.5-Omni-7B --local-dir /home/jovyan/datafabric/Qwen2.5-Omni-7B
+huggingface-cli download laion/clap-htsat-unfused --local-dir /home/jovyan/datafabric/clap-htsat-unfused
+```
+
+#### Configuration Settings
 
 - Edit `config.yaml` with relevant configuration details:
-  - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
+  - `model_source`: Set to `local` for datafabric storage or `hugging-face-cloud` for remote download
+  - `qwen_model_path`: Path to local Qwen model (if using local storage)
+  - `clap_model_path`: Path to local CLAP model (if using local storage)
   - `ui.mode`: Set UI mode to `streamlit` or `static`
   - `ports`: Configure external and internal port mappings
   - `service`: Adjust MLflow timeout and health check settings

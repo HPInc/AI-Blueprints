@@ -56,6 +56,7 @@ class ModelSelector:
         # Set up model environment (HF cache, etc.)
         setup_model_environment()
 
+        self.datafabric_base = "/home/jovyan/datafabric"
         self.base_local_dir = str(get_models_dir())
         self.model_id: str | None = None
         self.model = None
@@ -70,6 +71,20 @@ class ModelSelector:
         """Converts a repo ID into a local directory name using centralized utility."""
         return str(format_model_path(model_id))
 
+    def _check_datafabric_path(self, model_id: str) -> str | None:
+        """Check if model exists in datafabric using standard AI Studio paths."""
+        # Convert model ID to datafabric path format
+        if model_id == "Qwen/Qwen2.5-Omni-7B":
+            datafabric_path = os.path.join(self.datafabric_base, "Qwen2.5-Omni-7B")
+        elif model_id == "laion/clap-htsat-unfused":
+            datafabric_path = os.path.join(self.datafabric_base, "clap-htsat-unfused")
+        else:
+            # General case: replace '/' with '-' for other models
+            safe_name = model_id.replace("/", "-")
+            datafabric_path = os.path.join(self.datafabric_base, safe_name)
+
+        return datafabric_path if Path(datafabric_path).exists() else None
+
     def select_model(self, model_id: str):
         """Downloads and validates the selected model."""
         self.log(f"Selected model: {model_id}")
@@ -77,7 +92,15 @@ class ModelSelector:
             raise ValueError(f"{model_id} is not a valid option in the model list.")
 
         self.model_id = model_id
-        local_path = self.download_model()
+
+        # First, try to load from datafabric
+        datafabric_path = self._check_datafabric_path(model_id)
+        if datafabric_path and Path(datafabric_path).exists():
+            self.log(f"📁 Loading from datafabric: {datafabric_path}")
+            local_path = datafabric_path
+        else:
+            self.log(f"📡 Datafabric path not found, downloading: {model_id}")
+            local_path = self.download_model()
 
         if self.model_id == "Qwen/Qwen2.5-Omni-7B":
             self.load_qwen_model(local_path)

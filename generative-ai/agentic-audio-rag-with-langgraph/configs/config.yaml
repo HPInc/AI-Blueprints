@@ -2,7 +2,11 @@
 # This file configures the UI mode and ports for the model service
 
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
-model_source: "hugging-face-cloud"
+model_source: "local"
+
+# Local model paths in datafabric (standard AI Studio pattern)
+qwen_model_path: "/home/jovyan/datafabric/Qwen2.5-Omni-7B/"
+clap_model_path: "/home/jovyan/datafabric/clap-htsat-unfused/"
 
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
