@@ -33,7 +33,7 @@ import pandas as pd
 import yaml
 
 # ─────── Third-Party Package Imports ───────
-from langchain.docstore.document import (
+from langchain_core.documents import (
     Document,
 )  # Core document abstraction for LangChain
 from langgraph.graph import StateGraph, END  # LangGraph for stateful agent workflows
