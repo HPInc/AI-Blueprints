@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Optional
 from src.utils import logger
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from src.generate_test_audio import ensure_ffmpeg_bin, ffmpeg_ok
 
 

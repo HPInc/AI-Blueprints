@@ -1,7 +1,7 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
-langgraph==0.5.3
+langgraph==1.0.1
 unstructured==0.18.9
 tqdm>=4.66.4
 pydantic<3
