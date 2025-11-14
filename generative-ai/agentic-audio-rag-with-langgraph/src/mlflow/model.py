@@ -73,7 +73,6 @@ MEMORY_FILENAME = "kv_memory.json"
 AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".flac", ".m4a"}
 VIDEO_EXTS = {".mp4", ".mov", ".avi", ".mkv", ".m4v", ".webm"}
 MEDIA_EXTS = AUDIO_EXTS | VIDEO_EXTS
-CLAP_REPO = "laion/clap-htsat-unfused"
 
 RELEVANCE_THRESHOLD = 0.18
 FETCH_K = 24  # breadth for stage-1
@@ -287,7 +286,6 @@ class Model:
                     "relevance_threshold": 0.18,
                     "fetch_k": 24,
                     "top_k": 6,
-                    "clap_repo": CLAP_REPO,
                 }
                 with open(config_path, "w") as f:
                     yaml.safe_dump(cfg, f, indent=2)
@@ -297,9 +295,40 @@ class Model:
             self.top_k = int(cfg.get("top_k", 6))
 
             # --- CLAP (CPU to avoid OOM) ---
-            clap_repo = cfg.get("clap_repo", CLAP_REPO)
-            self.clap_processor = ClapProcessor.from_pretrained(clap_repo)
-            self.clap_model = ClapModel.from_pretrained(clap_repo).eval()
+            clap_local_path = cfg.get("clap_model_path")
+
+            # Check for packaged model in artifacts first (deployment), then datafabric (development)
+            clap_artifacts_path = None
+            if "models" in context.artifacts:
+                models_dir = Path(context.artifacts["models"])
+                if models_dir.exists():
+                    clap_artifacts_path = models_dir / "clap"
+
+            if clap_artifacts_path and clap_artifacts_path.exists():
+                logger.info(
+                    f"🔄 Loading CLAP model from artifacts: {clap_artifacts_path}"
+                )
+                self.clap_processor = ClapProcessor.from_pretrained(
+                    str(clap_artifacts_path)
+                )
+                self.clap_model = ClapModel.from_pretrained(
+                    str(clap_artifacts_path)
+                ).eval()
+            elif clap_local_path and Path(clap_local_path).exists():
+                logger.info(f"🔄 Loading CLAP model from datafabric: {clap_local_path}")
+                self.clap_processor = ClapProcessor.from_pretrained(clap_local_path)
+                self.clap_model = ClapModel.from_pretrained(clap_local_path).eval()
+            else:
+                # Fallback to default repo with cache-only loading
+                clap_repo = "laion/clap-htsat-unfused"
+                logger.info(f"🔄 Loading CLAP model from cache: {clap_repo}")
+                self.clap_processor = ClapProcessor.from_pretrained(
+                    clap_repo, local_files_only=True, force_download=False
+                )
+                self.clap_model = ClapModel.from_pretrained(
+                    clap_repo, local_files_only=True, force_download=False
+                ).eval()
+
             try:
                 self.clap_model.to("cpu")
             except Exception:
@@ -309,19 +338,78 @@ class Model:
             self.memory = SimpleKVMemory(memory_dir / MEMORY_FILENAME)
 
             # --- Qwen Omni (audio agent) ---
-            audio_llm_id = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
-            self.q_processor = Qwen2_5OmniProcessor.from_pretrained(
-                audio_llm_id, trust_remote_code=True
-            )
-            self.q_model = Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
-                audio_llm_id,
-                torch_dtype=(
-                    torch.float16 if torch.cuda.is_available() else torch.float32
-                ),
-                device_map="auto",
-                trust_remote_code=True,
-                low_cpu_mem_usage=True,
-            ).eval()
+            qwen_local_path = cfg.get("qwen_model_path")
+
+            # Check for packaged model in artifacts first (deployment), then datafabric (development)
+            qwen_artifacts_path = None
+            if "models" in context.artifacts:
+                models_dir = Path(context.artifacts["models"])
+                if models_dir.exists():
+                    qwen_artifacts_path = models_dir / "qwen"
+
+            if qwen_artifacts_path and qwen_artifacts_path.exists():
+                logger.info(
+                    f"🔄 Loading Qwen model from artifacts: {qwen_artifacts_path}"
+                )
+                self.q_processor = Qwen2_5OmniProcessor.from_pretrained(
+                    str(qwen_artifacts_path), trust_remote_code=True
+                )
+                self.q_model = (
+                    Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                        str(qwen_artifacts_path),
+                        torch_dtype=(
+                            torch.float16
+                            if torch.cuda.is_available()
+                            else torch.float32
+                        ),
+                        device_map="auto",
+                        trust_remote_code=True,
+                        low_cpu_mem_usage=True,
+                    ).eval()
+                )
+            elif qwen_local_path and Path(qwen_local_path).exists():
+                logger.info(f"🔄 Loading Qwen model from datafabric: {qwen_local_path}")
+                self.q_processor = Qwen2_5OmniProcessor.from_pretrained(
+                    qwen_local_path, trust_remote_code=True
+                )
+                self.q_model = (
+                    Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                        qwen_local_path,
+                        torch_dtype=(
+                            torch.float16
+                            if torch.cuda.is_available()
+                            else torch.float32
+                        ),
+                        device_map="auto",
+                        trust_remote_code=True,
+                        low_cpu_mem_usage=True,
+                    ).eval()
+                )
+            else:
+                # Fallback to default repo with cache-only loading
+                audio_llm_id = "Qwen/Qwen2.5-Omni-7B"
+                logger.info(f"🔄 Loading Qwen model from cache: {audio_llm_id}")
+                self.q_processor = Qwen2_5OmniProcessor.from_pretrained(
+                    audio_llm_id,
+                    trust_remote_code=True,
+                    local_files_only=True,
+                    force_download=False,
+                )
+                self.q_model = (
+                    Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                        audio_llm_id,
+                        torch_dtype=(
+                            torch.float16
+                            if torch.cuda.is_available()
+                            else torch.float32
+                        ),
+                        device_map="auto",
+                        trust_remote_code=True,
+                        low_cpu_mem_usage=True,
+                        local_files_only=True,
+                        force_download=False,
+                    ).eval()
+                )
 
             self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
 
@@ -350,6 +438,31 @@ class Model:
                 os.environ["HTTP_PROXY"] = self.model_config["proxy"]
             else:
                 logger.info("No proxy configuration found")
+
+            # Configure environment for optimal model loading
+            logger.info("🚀 Configuring model loading environment")
+
+            # Only set offline mode if we detect we'll be using HuggingFace cache
+            # (datafabric models don't need offline restrictions)
+            qwen_local_path = self.model_config.get("qwen_model_path")
+            clap_local_path = self.model_config.get("clap_model_path")
+
+            using_datafabric = (
+                qwen_local_path
+                and Path(qwen_local_path).exists()
+                and clap_local_path
+                and Path(clap_local_path).exists()
+            )
+
+            if not using_datafabric:
+                logger.info("Setting offline mode for HuggingFace cache loading")
+                os.environ["HF_HUB_OFFLINE"] = "1"
+                os.environ["TRANSFORMERS_OFFLINE"] = "1"
+                os.environ["HF_DATASETS_OFFLINE"] = "1"
+            else:
+                logger.info("Using datafabric models - no offline restrictions needed")
+
+            os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
         except Exception as e:
             logger.error(f"Error setting up environment: {str(e)}")

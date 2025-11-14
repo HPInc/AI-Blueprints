@@ -420,6 +420,17 @@ def setup_model_environment():
     hf_cache_dir = str(get_model_cache_dir())
     os.environ["HF_HOME"] = hf_cache_dir
     os.environ["HF_HUB_CACHE"] = hf_cache_dir
+    os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
+
+    # Optimize HuggingFace behavior for deployment
+    os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"  # Reduce console noise
+    os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"  # Disable telemetry
+
+    # Configure tokenizers cache
+    tokenizers_cache = str(get_model_cache_dir() / "tokenizers")
+    os.environ["TOKENIZERS_CACHE"] = tokenizers_cache
+
+    logger.info(f"✅ Model environment configured with cache: {hf_cache_dir}")
 
 
 def display_image(image_bytes: bytes, width: int = 400) -> str:
