@@ -46,6 +46,8 @@ class Logger:
         """
         Log model using MLflow's models-from-code approach.
 
+        This method includes model pre-caching to ensure deployment works offline.
+
         Final MLflow structure:
         /artifacts/
           └── data/
@@ -67,6 +69,10 @@ class Logger:
         import shutil
         import os
         import yaml
+
+        # Pre-cache models for deployment to ensure cache-only availability
+        # Skip if using local datafabric models
+        cls._ensure_models_cached(secrets_dict, config_path)
 
         # Create temp directory
         temp_base = tempfile.gettempdir()
@@ -94,19 +100,40 @@ class Logger:
                     yaml.safe_dump(secrets_dict, f)
                 logger.info("Created secrets.yaml")
 
-            if model_path and os.path.exists(model_path):
-                models_temp_dir = os.path.join(temp_dir, "models")
-                os.makedirs(models_temp_dir, exist_ok=True)
-                if os.path.isfile(model_path):
-                    shutil.copy2(
-                        model_path,
-                        os.path.join(models_temp_dir, os.path.basename(model_path)),
-                    )
-                    logger.info(f"Copied model file")
-                else:
-                    shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied model directory")
+            # Copy datafabric models to artifacts if they exist
+            if config_path and os.path.exists(config_path):
+                with open(config_path, "r") as f:
+                    config = yaml.safe_load(f) or {}
 
+                qwen_local_path = config.get("qwen_model_path")
+                clap_local_path = config.get("clap_model_path")
+
+                if (
+                    qwen_local_path
+                    and os.path.exists(qwen_local_path)
+                    and clap_local_path
+                    and os.path.exists(clap_local_path)
+                ):
+                    models_temp_dir = os.path.join(temp_dir, "models")
+                    os.makedirs(models_temp_dir, exist_ok=True)
+
+                    # Copy Qwen model
+                    qwen_dest = os.path.join(models_temp_dir, "qwen")
+                    shutil.copytree(qwen_local_path, qwen_dest, dirs_exist_ok=True)
+                    logger.info(
+                        f"Copied Qwen model from {qwen_local_path} to artifacts"
+                    )
+
+                    # Copy CLAP model
+                    clap_dest = os.path.join(models_temp_dir, "clap")
+                    shutil.copytree(clap_local_path, clap_dest, dirs_exist_ok=True)
+                    logger.info(
+                        f"Copied CLAP model from {clap_local_path} to artifacts"
+                    )
+
+                    logger.info("✅ Datafabric models packaged with MLflow model")
+
+            # Log model with models-from-code approach (no artifacts parameter)
             mlflow.pyfunc.log_model(
                 name=artifact_path,
                 loader_module="src.mlflow.loader",
@@ -123,3 +150,68 @@ class Logger:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
                 logger.info("Cleaned up temporary directory")
+
+    @classmethod
+    def _ensure_models_cached(cls, secrets_dict=None, config_path=None):
+        """
+        Pre-cache models to ensure they're available for cache-only deployment.
+        Only caches when using remote models - skips if local datafabric models exist.
+        """
+        # Check if we should use local datafabric models
+        if config_path and os.path.exists(config_path):
+            import yaml
+
+            with open(config_path, "r") as f:
+                config = yaml.safe_load(f) or {}
+
+            qwen_local_path = config.get("qwen_model_path")
+            clap_local_path = config.get("clap_model_path")
+
+            if (
+                qwen_local_path
+                and os.path.exists(qwen_local_path)
+                and clap_local_path
+                and os.path.exists(clap_local_path)
+            ):
+                logger.info(
+                    "🏠 Local datafabric models detected - skipping pre-caching"
+                )
+                logger.info(f"  Qwen: {qwen_local_path}")
+                logger.info(f"  CLAP: {clap_local_path}")
+                return
+
+        logger.info("🔄 Pre-caching models for cache-only deployment...")
+
+        # Set up HuggingFace token if available
+        if secrets_dict and "AIS_HUGGINGFACE_API_KEY" in secrets_dict:
+            os.environ["HF_TOKEN"] = secrets_dict["AIS_HUGGINGFACE_API_KEY"]
+
+        from transformers import (
+            ClapProcessor,
+            ClapModel,
+            Qwen2_5OmniProcessor,
+            Qwen2_5OmniThinkerForConditionalGeneration,
+        )
+
+        try:
+            # Pre-cache CLAP model
+            clap_repo = "laion/clap-htsat-unfused"
+            logger.info(f"📥 Caching CLAP model: {clap_repo}")
+            ClapProcessor.from_pretrained(clap_repo)
+            ClapModel.from_pretrained(clap_repo)
+
+            # Pre-cache Qwen model
+            qwen_repo = os.environ.get("AUDIO_LLM_ID", "Qwen/Qwen2.5-Omni-7B")
+            logger.info(f"📥 Caching Qwen model: {qwen_repo}")
+            Qwen2_5OmniProcessor.from_pretrained(qwen_repo, trust_remote_code=True)
+            Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
+                qwen_repo,
+                trust_remote_code=True,
+                torch_dtype="auto",
+            )
+
+            logger.info("✅ Models successfully cached for deployment")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to cache models: {e}")
+            raise RuntimeError(f"Model caching failed - deployment will not work: {e}")

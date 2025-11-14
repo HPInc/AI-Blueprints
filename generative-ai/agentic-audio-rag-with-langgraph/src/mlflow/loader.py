@@ -81,6 +81,7 @@ def _load_pyfunc(data_path: str):
                 "index_dir": os.path.join(
                     data_path, "indexes"
                 ),  # Changed from "index" to "indexes"
+                "models": os.path.join(data_path, "models"),  # Add models directory
             }
         )
 
