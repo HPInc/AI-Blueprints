@@ -9,3 +9,4 @@ httpx>=0.24.0
 mlflow==2.21.2
 langchain==0.3.27
 langchain-community==0.3.27
+langchain-huggingface
