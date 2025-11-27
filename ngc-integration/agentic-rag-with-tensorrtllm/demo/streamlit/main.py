@@ -10,9 +10,7 @@ os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Streamlit Page Configuration ---
 st.set_page_config(
-    page_title="Agentic RAG with TensorRT-LLM", 
-    page_icon="🤖", 
-    layout="centered"
+    page_title="Agentic RAG with TensorRT-LLM", page_icon="🤖", layout="centered"
 )
 
 # --- Custom Styling ---
@@ -80,6 +78,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 # --- Logo ---
 def uri_from(path: Path) -> str:
     return (
@@ -110,7 +109,7 @@ st.markdown(
 # Header
 # ─────────────────────────────────────────────────────────────
 st.markdown(
-    "<h1 style='text-align: center; color: #2C3E50; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>" \
+    "<h1 style='text-align: center; color: #2C3E50; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>"
     "🤖 Agentic RAG with TensorRT-LLM</h1>",
     unsafe_allow_html=True,
 )
@@ -143,6 +142,8 @@ def normalize_prediction_entry(entry):
         return {"answer": joined}
 
     return {"answer": str(entry)}
+
+
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – Data Input
 # ─────────────────────────────────────────────────────────────
@@ -150,8 +151,7 @@ def normalize_prediction_entry(entry):
 # Example queries for user reference
 st.markdown("### 💬 Ask a Question")
 user_query = st.text_input(
-    "Enter your question about AI Studio:",
-    placeholder="Type your question here..."
+    "Enter your question about AI Studio:", placeholder="Type your question here..."
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -164,12 +164,9 @@ if st.button("🔍 Get Answer"):
         # --- Loading Spinner ---
         with st.spinner("Processing your query through the Agentic RAG system..."):
             payload = {
-                "inputs": {
-                    "query": [user_query.strip()],
-                    "topic": ["aistudio"]
-                },
+                "inputs": {"query": [user_query.strip()], "topic": ["aistudio"]},
             }
-            
+
             try:
                 response = requests.post(api_url, json=payload, verify=False)
                 response.raise_for_status()
@@ -189,7 +186,9 @@ if st.button("🔍 Get Answer"):
                     if not isinstance(predictions, list):
                         predictions = [predictions]
 
-                    parsed_predictions = [normalize_prediction_entry(item) for item in predictions]
+                    parsed_predictions = [
+                        normalize_prediction_entry(item) for item in predictions
+                    ]
 
                     if not parsed_predictions:
                         st.error("❌ No predictions returned from the model.")
@@ -221,13 +220,15 @@ if st.button("🔍 Get Answer"):
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error connecting to the MLflow endpoint.")
                 st.error(f"Details: {str(e)}")
-                st.info("""
+                st.info(
+                    """
                 **Troubleshooting Tips:**
                 - Ensure the MLflow model is deployed and running
                 - Check that the endpoint URL is correct
                 - Verify the model is registered in MLflow
                 - Make sure the service is accessible on port 5002
-                """)
+                """
+                )
             except Exception as e:
                 st.error(f"❌ An unexpected error occurred: {str(e)}")
 
