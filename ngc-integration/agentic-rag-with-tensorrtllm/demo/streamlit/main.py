@@ -143,7 +143,6 @@ def normalize_prediction_entry(entry):
         return {"answer": joined}
 
     return {"answer": str(entry)}
-
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – Data Input
 # ─────────────────────────────────────────────────────────────
@@ -154,13 +153,6 @@ user_query = st.text_input(
     "Enter your question about AI Studio:",
     placeholder="Type your question here..."
 )
-
-# Options for displaying additional information
-col1, col2 = st.columns(2)
-with col1:
-    show_context = st.checkbox("Show Retrieved Context", value=False)
-with col2:
-    show_metadata = st.checkbox("Show Metadata", value=False)
 
 # ─────────────────────────────────────────────────────────────
 # 3 ▸ Call the Model
@@ -220,26 +212,8 @@ if st.button("🔍 Get Answer"):
                                 unsafe_allow_html=True,
                             )
 
-                            if show_context and 'retrieved_chunks' in result:
-                                st.markdown("### 📚 Retrieved Context")
-                                chunks = result.get('retrieved_chunks', [])
-                                if chunks:
-                                    for idx, chunk in enumerate(chunks, 1):
-                                        with st.expander(f"Context Chunk {idx}"):
-                                            st.markdown(f"<div class='context-box'>{chunk}</div>", unsafe_allow_html=True)
-                                else:
-                                    st.info("No context chunks retrieved.")
-
-                            if show_metadata:
-                                st.markdown("### 🔍 Metadata")
-                                metadata_info = {
-                                    "From Memory": result.get('from_memory', False),
-                                    "Is Relevant": result.get('is_relevant', True),
-                                    "Rewritten Query": result.get('rewritten_query', 'N/A'),
-                                    "Topic": result.get('topic', 'N/A')
-                                }
-
-                                st.json(metadata_info)
+                            with st.expander("🔎 Raw Response Entry"):
+                                st.json(result)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
                     st.json(data)
