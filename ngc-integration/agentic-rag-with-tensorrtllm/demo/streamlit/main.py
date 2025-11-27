@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import requests
 import base64
+import json
 from pathlib import Path
 
 
@@ -122,6 +123,27 @@ st.markdown(
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 api_url = MLFLOW_ENDPOINT
 
+
+def normalize_prediction_entry(entry):
+    """Return a dict with answer/context fields regardless of backend output shape."""
+    if isinstance(entry, dict):
+        return entry
+
+    if isinstance(entry, str):
+        try:
+            parsed = json.loads(entry)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            return parsed
+        return {"answer": entry}
+
+    if isinstance(entry, (list, tuple)):
+        joined = "\n\n".join(str(item) for item in entry)
+        return {"answer": joined}
+
+    return {"answer": str(entry)}
+
 # ─────────────────────────────────────────────────────────────
 # 2 ▸ Main – Data Input
 # ─────────────────────────────────────────────────────────────
@@ -163,50 +185,61 @@ if st.button("🔍 Get Answer"):
 
                 # --- Display Results ---
                 if "predictions" in data:
-                    predictions = data.get("predictions", [])
-                    
-                    for result in predictions:
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background-color: #f9f9f9;
-                                padding: 24px;
-                                border-radius: 12px;
-                                margin: 15px 0px;
-                                border-left: 5px solid #4CAF50;
-                                border: 1px solid #e8e8e8;
-                            ">
-                                <h4 style="color: #2C3E50; margin-bottom: 12px; font-weight: 600;">📝 Answer:</h4>
-                                <p style="color: #34495E; line-height: 1.8; margin: 0;">{result.get('answer', 'No answer available')}</p>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-                        
-                        # Display retrieved context if requested
-                        if show_context and 'retrieved_chunks' in result:
-                            st.markdown("### 📚 Retrieved Context")
-                            chunks = result.get('retrieved_chunks', [])
-                            if chunks:
-                                for idx, chunk in enumerate(chunks, 1):
-                                    with st.expander(f"Context Chunk {idx}"):
-                                        st.markdown(f"<div class='context-box'>{chunk}</div>", unsafe_allow_html=True)
-                            else:
-                                st.info("No context chunks retrieved.")
-                        
-                        # Display metadata if requested
-                        if show_metadata:
-                            st.markdown("### 🔍 Metadata")
-                            metadata_info = {
-                                "From Memory": result.get('from_memory', False),
-                                "Is Relevant": result.get('is_relevant', True),
-                                "Rewritten Query": result.get('rewritten_query', 'N/A'),
-                                "Topic": result.get('topic', 'N/A')
-                            }
-                            
-                            st.json(metadata_info)
+                    predictions_raw = data.get("predictions", [])
+
+                    if isinstance(predictions_raw, dict):
+                        predictions = [predictions_raw]
+                    elif isinstance(predictions_raw, (str, int, float)):
+                        predictions = [predictions_raw]
                     else:
+                        predictions = predictions_raw
+
+                    if not isinstance(predictions, list):
+                        predictions = [predictions]
+
+                    parsed_predictions = [normalize_prediction_entry(item) for item in predictions]
+
+                    if not parsed_predictions:
                         st.error("❌ No predictions returned from the model.")
+                    else:
+                        for result in parsed_predictions:
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    background-color: #f9f9f9;
+                                    padding: 24px;
+                                    border-radius: 12px;
+                                    margin: 15px 0px;
+                                    border-left: 5px solid #4CAF50;
+                                    border: 1px solid #e8e8e8;
+                                ">
+                                    <h4 style="color: #2C3E50; margin-bottom: 12px; font-weight: 600;">📝 Answer:</h4>
+                                    <p style="color: #34495E; line-height: 1.8; margin: 0;">{result.get('answer', 'No answer available')}</p>
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+
+                            if show_context and 'retrieved_chunks' in result:
+                                st.markdown("### 📚 Retrieved Context")
+                                chunks = result.get('retrieved_chunks', [])
+                                if chunks:
+                                    for idx, chunk in enumerate(chunks, 1):
+                                        with st.expander(f"Context Chunk {idx}"):
+                                            st.markdown(f"<div class='context-box'>{chunk}</div>", unsafe_allow_html=True)
+                                else:
+                                    st.info("No context chunks retrieved.")
+
+                            if show_metadata:
+                                st.markdown("### 🔍 Metadata")
+                                metadata_info = {
+                                    "From Memory": result.get('from_memory', False),
+                                    "Is Relevant": result.get('is_relevant', True),
+                                    "Rewritten Query": result.get('rewritten_query', 'N/A'),
+                                    "Topic": result.get('topic', 'N/A')
+                                }
+
+                                st.json(metadata_info)
                 else:
                     st.error("❌ Unexpected response format. Please try again.")
                     st.json(data)
