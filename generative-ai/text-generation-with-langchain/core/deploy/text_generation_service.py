@@ -155,12 +155,14 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
 
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
+
             embeddings = HuggingFaceEmbeddings()
         except (ImportError, ValueError) as e:
             # Fallback to OpenAI embeddings or simple embeddings if HuggingFace fails
             logging.warning(f"HuggingFace embeddings failed: {e}. Using fallback.")
             try:
                 from langchain_community.embeddings import FakeEmbeddings
+
                 embeddings = FakeEmbeddings(size=384)
                 logging.info("Using FakeEmbeddings as fallback")
             except ImportError:
@@ -169,12 +171,25 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
                     def embed_documents(self, texts):
                         # Simple hash-based embeddings for testing
                         import hashlib
-                        return [[float(int(hashlib.md5(text.encode()).hexdigest()[i:i+2], 16)) 
-                                for i in range(0, 32, 2)] for text in texts]
-                    
+
+                        return [
+                            [
+                                float(
+                                    int(
+                                        hashlib.md5(text.encode()).hexdigest()[
+                                            i : i + 2
+                                        ],
+                                        16,
+                                    )
+                                )
+                                for i in range(0, 32, 2)
+                            ]
+                            for text in texts
+                        ]
+
                     def embed_query(self, text):
                         return self.embed_documents([text])[0]
-                
+
                 embeddings = SimpleEmbeddings()
                 logging.info("Using SimpleEmbeddings as last resort fallback")
 
