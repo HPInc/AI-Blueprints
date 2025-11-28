@@ -15,3 +15,5 @@ llama-cpp-python>=0.2.0
 PyYAML>=6.0
 requests>=2.25.0
 mlflow==2.21.2
+pyarrow==15.0.2
+datasets==2.14.7
