@@ -164,7 +164,7 @@ if st.button("🔍 Get Answer"):
         # --- Loading Spinner ---
         with st.spinner("Processing your query through the Agentic RAG system..."):
             payload = {
-                "inputs": {"query": [user_query.strip()], "topic": ["aistudio"]},
+                "inputs": {"query": user_query.strip()}
             }
 
             try:
