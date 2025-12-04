@@ -163,9 +163,7 @@ if st.button("🔍 Get Answer"):
     else:
         # --- Loading Spinner ---
         with st.spinner("Processing your query through the Agentic RAG system..."):
-            payload = {
-                "inputs": {"query": user_query.strip()}
-            }
+            payload = {"inputs": {"query": user_query.strip()}}
 
             try:
                 response = requests.post(api_url, json=payload, verify=False)

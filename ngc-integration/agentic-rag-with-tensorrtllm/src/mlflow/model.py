@@ -287,17 +287,17 @@ class Model(mlflow.pyfunc.PythonModel):
         from langchain_text_splitters import RecursiveCharacterTextSplitter
         import json
         import shutil
-        
+
         collection = "-".join(self.TOPIC.split())
-        
+
         # Check if context directory exists
         if self.docs_path:
             context_dir = Path(os.path.join(self.docs_path, "context"))
         else:
             context_dir = Path("../data/context")
-            
+
         manifest_path = chroma_dir_path / "manifest.json"
-        
+
         def _load_markdown(path: Path) -> List[Document]:
             """Load markdown files with fallback to text loader."""
             try:
@@ -358,7 +358,9 @@ class Model(mlflow.pyfunc.PythonModel):
                 _save_manifest(_current_manifest())
                 logger.info(f"Chroma index rebuilt with {len(docs)} chunks.")
             else:
-                logger.warning("No documents found to index. Creating empty vector store.")
+                logger.warning(
+                    "No documents found to index. Creating empty vector store."
+                )
                 chroma = Chroma(
                     collection_name=collection,
                     persist_directory=str(chroma_dir_path),
@@ -374,8 +376,6 @@ class Model(mlflow.pyfunc.PythonModel):
             persist_directory=str(chroma_dir_path),
             embedding_function=self._embed_model,
         )
-
-
 
     # ----------------------------------------
     # Node Functions (each mirrors the notebook)
@@ -628,7 +628,7 @@ class Model(mlflow.pyfunc.PythonModel):
                 # If it's a dict, accept either string or single-element list
                 if "query" not in model_input:
                     raise Exception("Input dict must contain key 'query'.")
-                
+
                 query_value = model_input["query"]
                 # Handle list format from Streamlit (e.g., [query_string])
                 if isinstance(query_value, list):
@@ -665,7 +665,7 @@ class Model(mlflow.pyfunc.PythonModel):
 
             logger.error(f"Error in predict: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-            
+
             # Return a meaningful error response instead of None
             return {
                 "answer": f"Error processing query: {str(e)}",
