@@ -5,7 +5,7 @@
 model_source: "local"
 
 # Path to the local model file (used when model_source is "local")
-model_path: "/root/.cache/huggingface/hub/models--nvidia--Llama-3.1-Nemotron-Nano-8B-v1/snapshots/a22e1c57330633cd3522903f9bb82480bf3192a6"
+model_path: "nvidia/Llama-3.1-Nemotron-Nano-8B-v1"
 
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,
@@ -15,7 +15,7 @@ model_path: "/root/.cache/huggingface/hub/models--nvidia--Llama-3.1-Nemotron-Nan
 # UI Configuration
 ui:
   # UI mode: gradio, streamlit, or static
-  mode: "static"
+  mode: "streamlit"
 
 # Port Configuration
 ports:

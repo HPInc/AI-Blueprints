@@ -233,17 +233,14 @@ class Model(mlflow.pyfunc.PythonModel):
 
             # 2. Set up Chroma vectorstore directory based on docs_path
             # Use chroma_store to match existing artifacts and class constants
-            # if self.docs_path:
-            #     chroma_dir = os.path.join(os.path.dirname(self.docs_path), "chroma_store")
-            # else:
-            chroma_dir = "../data/chroma_store"
+            if self.docs_path:
+                chroma_dir = os.path.join(self.docs_path, "chroma_store")
+            else:
+                chroma_dir = "../data/chroma_store"
             chroma_dir_path = Path(chroma_dir)
 
-            self._vectorstore = Chroma(
-                collection_name="-".join(self.TOPIC.split()),
-                persist_directory=str(chroma_dir_path),
-                embedding_function=self._embed_model,
-            )
+            # Initialize or create the vector database
+            self._vectorstore = self._initialize_vectorstore(chroma_dir_path)
 
             # 3. Load LLM via TensorRTLangchain
             sampling_params = tensorrt_llm.SamplingParams(
@@ -262,10 +259,10 @@ class Model(mlflow.pyfunc.PythonModel):
             )
 
             # 3. Initialize memory - use memory subdirectory to match class constants
-            # if self.docs_path:
-            #     memory_path = os.path.join(os.path.dirname(self.docs_path), "memory", "memory.json")
-            # else:
-            memory_path = "../data/memory/memory.json"
+            if self.docs_path:
+                memory_path = os.path.join(self.docs_path, "memory", "memory.json")
+            else:
+                memory_path = "../data/memory/memory.json"
             memory_path_obj = Path(memory_path)
             memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
             if not memory_path_obj.exists():
@@ -280,22 +277,105 @@ class Model(mlflow.pyfunc.PythonModel):
             logger.error(f"Error loading models: {str(e)}")
             raise
 
-    # def _setup_memory(self) -> None:
-    #     """Initialize persistent memory system."""
-    #     try:
-    #         memory_path = os.path.join(self.docs_path, "memory.json") if self.docs_path else "data/memory.json"
-    #         memory_path_obj = Path(memory_path)
-    #         memory_path_obj.parent.mkdir(parents=True, exist_ok=True)
-    #         if not memory_path_obj.exists():
-    #             memory_path_obj.write_text("{}", encoding="utf-8")
-    #         self._memory = Model.SimpleKVMemory(memory_path_obj)
-    #         self._LLMResponse = namedtuple("Response", ["content"])
+    def _initialize_vectorstore(self, chroma_dir_path: Path) -> Chroma:
+        """Initialize or create the Chroma vector database."""
+        from langchain.docstore.document import Document
+        from langchain_community.document_loaders import (
+            UnstructuredMarkdownLoader,
+            TextLoader,
+        )
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        import json
+        import shutil
 
-    #         self._build_state_graph()
-    #         logger.info(f"Memory system initialized at: {memory_path}")
-    #     except Exception as e:
-    #         logger.error(f"Error setting up memory: {str(e)}")
-    #         raise
+        collection = "-".join(self.TOPIC.split())
+
+        # Check if context directory exists
+        if self.docs_path:
+            context_dir = Path(os.path.join(self.docs_path, "context"))
+        else:
+            context_dir = Path("../data/context")
+
+        manifest_path = chroma_dir_path / "manifest.json"
+
+        def _load_markdown(path: Path) -> List[Document]:
+            """Load markdown files with fallback to text loader."""
+            try:
+                return UnstructuredMarkdownLoader(str(path)).load()
+            except Exception:
+                return TextLoader(str(path), encoding="utf-8").load()
+
+        def _current_manifest() -> List[str]:
+            """Compute a sorted list of all Markdown file paths."""
+            if not context_dir.exists():
+                logger.warning(f"Context directory does not exist: {context_dir}")
+                return []
+            return sorted(str(p.resolve()) for p in context_dir.rglob("*.md"))
+
+        def _needs_rebuild() -> bool:
+            """Check whether we need to rebuild the vector database."""
+            if not chroma_dir_path.exists() or not manifest_path.exists():
+                return True
+            try:
+                old = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except Exception:
+                return True
+            return old != _current_manifest()
+
+        def _save_manifest(manifest: List[str]) -> None:
+            """Save the current manifest so future runs can compare."""
+            chroma_dir_path.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+        # If the manifest has changed, wipe & rebuild
+        if _needs_rebuild():
+            if chroma_dir_path.exists():
+                shutil.rmtree(chroma_dir_path)
+            logger.info("Building new Chroma index from Markdown files…")
+
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1024, chunk_overlap=128, add_start_index=True
+            )
+            docs: List[Document] = []
+
+            if context_dir.exists():
+                for md_file in context_dir.rglob("*.md"):
+                    try:
+                        for page in _load_markdown(md_file):
+                            for chunk in splitter.split_documents([page]):
+                                chunk.metadata.setdefault("source", md_file.name)
+                                docs.append(chunk)
+                    except Exception as e:
+                        logger.warning(f"Error processing {md_file}: {e}")
+
+            if docs:
+                chroma = Chroma.from_documents(
+                    docs,
+                    embedding=self._embed_model,
+                    collection_name=collection,
+                    persist_directory=str(chroma_dir_path),
+                )
+                _save_manifest(_current_manifest())
+                logger.info(f"Chroma index rebuilt with {len(docs)} chunks.")
+            else:
+                logger.warning(
+                    "No documents found to index. Creating empty vector store."
+                )
+                chroma = Chroma(
+                    collection_name=collection,
+                    persist_directory=str(chroma_dir_path),
+                    embedding_function=self._embed_model,
+                )
+                _save_manifest([])
+            return chroma
+
+        # Otherwise, load the existing, up-to-date index
+        logger.info(f"Loading existing Chroma index from {chroma_dir_path}")
+        return Chroma(
+            collection_name=collection,
+            persist_directory=str(chroma_dir_path),
+            embedding_function=self._embed_model,
+        )
 
     # ----------------------------------------
     # Node Functions (each mirrors the notebook)
@@ -548,7 +628,16 @@ class Model(mlflow.pyfunc.PythonModel):
                 # If it's a dict, accept either string or single-element list
                 if "query" not in model_input:
                     raise Exception("Input dict must contain key 'query'.")
-                raw_query = model_input["query"]
+
+                query_value = model_input["query"]
+                # Handle list format from Streamlit (e.g., [query_string])
+                if isinstance(query_value, list):
+                    if len(query_value) == 0:
+                        raise Exception("Query list cannot be empty.")
+                    raw_query = query_value[0]
+                else:
+                    # Handle direct string
+                    raw_query = query_value
 
             # Initialize state with topic, query, and empty messages
             initial_state: Model.RAGState = {
@@ -576,6 +665,13 @@ class Model(mlflow.pyfunc.PythonModel):
 
             logger.error(f"Error in predict: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
+
+            # Return a meaningful error response instead of None
+            return {
+                "answer": f"Error processing query: {str(e)}",
+                "retrieved_chunks": [],
+                "messages": [{"role": "error", "content": str(e)}],
+            }
 
     def get_onnx_export_config(self) -> List:
         """

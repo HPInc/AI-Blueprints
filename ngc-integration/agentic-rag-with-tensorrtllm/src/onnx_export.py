@@ -580,7 +580,7 @@ def export_transformers_model_to_onnx(
                 feature_name = feature or "seq2seq-lm"
 
                 try:
-                    # Para tradução, usar a API oficial do Transformers
+
                     model_kind, model_onnx_config = (
                         FeaturesManager.check_supported_model_or_raise(
                             model, feature=feature_name
