@@ -507,16 +507,6 @@ def log_model(
     # Prepare artifacts dictionary
     final_artifacts = artifacts.copy() if artifacts else {}
 
-    # Ensure Streamlit demo assets are packaged unless explicitly overridden
-    demo_root = Path("../demo")
-    streamlit_entrypoint = demo_root / "streamlit" / "main.py"
-    if "demo" not in final_artifacts and streamlit_entrypoint.exists():
-        final_artifacts["demo"] = str(demo_root.resolve())
-        logger.info(
-            "📦 Added Streamlit demo artifact: demo -> %s",
-            demo_root.resolve(),
-        )
-
     # Generate ONNX model(s) if specified
     model_result = None
 
