@@ -2,7 +2,6 @@
 name = "agentic-rag-streamlit-webapp"
 version = "0.1.0"
 description = "Streamlit web application for Agentic RAG with TensorRT-LLM"
-authors = ["gabriela.ponciano2016@gmail.com"]
 readme = "README.md"
 package-mode = false
 
