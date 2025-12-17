@@ -439,7 +439,7 @@ def export_pytorch_model_to_onnx(
         input_names = kwargs.get("input_names", ["input"])
         output_names = kwargs.get("output_names", ["output"])
         dynamic_axes = kwargs.get("dynamic_axes", None)
-        opset_version = kwargs.get("opset", 12)
+        opset_version = kwargs.get("opset", 17)
         do_constant_folding = kwargs.get("do_constant_folding", True)
         export_params = kwargs.get("export_params", True)
         verbose = kwargs.get("verbose", False)
