@@ -1,14 +1,11 @@
 # Create the workspace using the RAPIDS Notebooks image within Z by HP AI Studio.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-nemo-toolkit==2.4.0
-ipython>=8.20
-pandas>=2.0
-wandb>=0.22
-mlflow==3.1.0
-optimum>=1.17
-onnxruntime>=1.16
-huggingface_hub>=0.21
-protobuf>=4.25
-numpy>=1.26
-transformer-engine>=2.2.0.dev0
-megatron-core>=0.12.0
+nemo-toolkit==2.3.2
+ipython==9.0.1
+protobuf==4.24.4
+pandas==2.2.3
+wandb==0.21.1
+mlflow==3.1.0 #TODO: remove me when you finish
+optimum==1.27.0
+onnxruntime==1.23.2
+huggingface_hub==0.34.4
