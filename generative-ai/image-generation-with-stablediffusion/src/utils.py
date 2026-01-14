@@ -64,11 +64,11 @@ def get_output_dir():
 def get_default_model_path():
     """Get the default model path, preferring local models directory"""
     # First, check if we have a local models directory with the model
-    local_model_path = get_project_root() / "models" / "stable-diffusion-2-1"
+    local_model_path = get_project_root() / "models" / "stable-diffusion-xl-base-1.0"
     if local_model_path.exists():
         return str(local_model_path)
     # Fall back to HuggingFace model identifier (will be downloaded automatically)
-    return "stabilityai/stable-diffusion-2-1"
+    return "stabilityai/stable-diffusion-xl-base-1.0"
 
 
 def get_model_cache_dir():

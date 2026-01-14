@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import yaml
 from accelerate import Accelerator
-from diffusers import StableDiffusionPipeline
+from diffusers import DiffusionPipeline
 from PIL import Image
 
 # Check for xformers availability
@@ -114,8 +114,8 @@ def display_generated_images(images: List[Image.Image]):
 def run_inference_dreambooth(
     prompt: str | None = None,
     *,
-    height: int = 512,
-    width: int = 512,
+    height: int = 1024,
+    width: int = 1024,
     num_images: int = 5,
     num_inference_steps: int = 50,
     output: bool = True,
@@ -134,7 +134,7 @@ def run_inference_dreambooth(
     accelerator = Accelerator(mixed_precision="fp16", cpu=False)
     max_memory = get_max_memory_per_gpu()
 
-    pipe = StableDiffusionPipeline.from_pretrained(
+    pipe = DiffusionPipeline.from_pretrained(
         model_path,
         torch_dtype=torch.float16,
         device_map="balanced",

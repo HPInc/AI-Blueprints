@@ -36,6 +36,7 @@ from diffusers import (
     DDPMScheduler,
     DiffusionPipeline,
     StableDiffusionPipeline,
+    StableDiffusionXLPipeline,
     UNet2DConditionModel,
 )
 from diffusers.optimization import get_scheduler
@@ -75,7 +76,9 @@ def log_images_to_mlflow(images, step, output_dir="mlflow_images"):
 
 def log_validation(
     text_encoder,
+    text_encoder_2,
     tokenizer,
+    tokenizer_2,
     unet,
     vae,
     args,
@@ -95,10 +98,13 @@ def log_validation(
     if vae is not None:
         pipeline_args["vae"] = vae
 
+    # For SDXL, we need both text encoders
     pipeline = DiffusionPipeline.from_pretrained(
         args.pretrained_model_name_or_path,
-        tokenizer=tokenizer,
         text_encoder=text_encoder,
+        text_encoder_2=text_encoder_2,
+        tokenizer=tokenizer,
+        tokenizer_2=tokenizer_2,
         unet=unet,
         revision=args.revision,
         torch_dtype=weight_dtype,
@@ -178,6 +184,8 @@ DreamBooth for the text encoder was enabled: {train_text_encoder}.
     tags = ["text-to-image", "dreambooth", "diffusers-training"]
     if isinstance(pipeline, StableDiffusionPipeline):
         tags.extend(["stable-diffusion", "stable-diffusion-diffusers"])
+    elif isinstance(pipeline, StableDiffusionXLPipeline):
+        tags.extend(["stable-diffusion-xl", "stable-diffusion-xl-diffusers"])
     else:
         tags.extend(["if", "if-diffusers"])
     model_card = populate_model_card(model_card, tags=tags)
@@ -186,11 +194,11 @@ DreamBooth for the text encoder was enabled: {train_text_encoder}.
 
 
 def import_model_class_from_model_name_or_path(
-    pretrained_model_name_or_path: str, revision: str
+    pretrained_model_name_or_path: str, revision: str, subfolder: str = "text_encoder"
 ):
     text_encoder_config = PretrainedConfig.from_pretrained(
         pretrained_model_name_or_path,
-        subfolder="text_encoder",
+        subfolder=subfolder,
         revision=revision,
     )
     model_class = text_encoder_config.architectures[0]
@@ -199,6 +207,10 @@ def import_model_class_from_model_name_or_path(
         from transformers import CLIPTextModel
 
         return CLIPTextModel
+    elif model_class == "CLIPTextModelWithProjection":
+        from transformers import CLIPTextModelWithProjection
+
+        return CLIPTextModelWithProjection
     elif model_class == "RobertaSeriesModelWithTransformation":
         from diffusers.pipelines.alt_diffusion.modeling_roberta_series import (
             RobertaSeriesModelWithTransformation,
@@ -301,7 +313,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--resolution",
         type=int,
-        default=512,
+        default=1024,
         help=(
             "The resolution for input images, all the images in the train/validation dataset will be resized to this"
             " resolution"
@@ -654,6 +666,7 @@ class DreamBoothDataset(Dataset):
     """
     A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
     It pre-processes the images and the tokenizes prompts.
+    Now includes SDXL micro-conditioning support (original_size, crop_top_left).
     """
 
     def __init__(
@@ -664,7 +677,7 @@ class DreamBoothDataset(Dataset):
         class_data_root=None,
         class_prompt=None,
         class_num=None,
-        size=512,
+        size=1024,
         center_crop=False,
         encoder_hidden_states=None,
         class_prompt_encoder_hidden_states=None,
@@ -705,16 +718,15 @@ class DreamBoothDataset(Dataset):
         else:
             self.class_data_root = None
 
-        self.image_transforms = transforms.Compose(
+        # Image transforms setup
+        self.train_resize = transforms.Resize(
+            size, interpolation=transforms.InterpolationMode.BILINEAR
+        )
+        self.train_crop = (
+            transforms.CenterCrop(size) if center_crop else transforms.RandomCrop(size)
+        )
+        self.train_transforms = transforms.Compose(
             [
-                transforms.Resize(
-                    size, interpolation=transforms.InterpolationMode.BILINEAR
-                ),
-                (
-                    transforms.CenterCrop(size)
-                    if center_crop
-                    else transforms.RandomCrop(size)
-                ),
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]
@@ -732,7 +744,28 @@ class DreamBoothDataset(Dataset):
 
         if not instance_image.mode == "RGB":
             instance_image = instance_image.convert("RGB")
-        example["instance_images"] = self.image_transforms(instance_image)
+        
+        # Store original size for SDXL micro-conditioning
+        original_size = (instance_image.height, instance_image.width)
+        example["original_size"] = original_size
+        
+        # Resize and crop
+        instance_image = self.train_resize(instance_image)
+        
+        # Get crop coordinates for SDXL micro-conditioning
+        if self.center_crop:
+            y1 = max(0, int(round((instance_image.height - self.size) / 2.0)))
+            x1 = max(0, int(round((instance_image.width - self.size) / 2.0)))
+            instance_image = self.train_crop(instance_image)
+        else:
+            y1 = torch.randint(0, instance_image.height - self.size + 1, (1,)).item()
+            x1 = torch.randint(0, instance_image.width - self.size + 1, (1,)).item()
+            instance_image = transforms.functional.crop(instance_image, y1, x1, self.size, self.size)
+        
+        crop_top_left = (y1, x1)
+        example["crop_top_left"] = crop_top_left
+        
+        example["instance_images"] = self.train_transforms(instance_image)
 
         if self.encoder_hidden_states is not None:
             example["instance_prompt_ids"] = self.encoder_hidden_states
@@ -753,7 +786,19 @@ class DreamBoothDataset(Dataset):
 
             if not class_image.mode == "RGB":
                 class_image = class_image.convert("RGB")
-            example["class_images"] = self.image_transforms(class_image)
+            
+            # Process class image similarly for SDXL
+            class_image = self.train_resize(class_image)
+            if self.center_crop:
+                y1 = max(0, int(round((class_image.height - self.size) / 2.0)))
+                x1 = max(0, int(round((class_image.width - self.size) / 2.0)))
+                class_image = self.train_crop(class_image)
+            else:
+                y1 = torch.randint(0, class_image.height - self.size + 1, (1,)).item()
+                x1 = torch.randint(0, class_image.width - self.size + 1, (1,)).item()
+                class_image = transforms.functional.crop(class_image, y1, x1, self.size, self.size)
+            
+            example["class_images"] = self.train_transforms(class_image)
 
             if self.class_prompt_encoder_hidden_states is not None:
                 example["class_prompt_ids"] = self.class_prompt_encoder_hidden_states
@@ -774,6 +819,10 @@ def collate_fn(examples, with_prior_preservation=False):
 
     input_ids = [example["instance_prompt_ids"] for example in examples]
     pixel_values = [example["instance_images"] for example in examples]
+    
+    # For SDXL micro-conditioning
+    original_sizes = [example["original_size"] for example in examples]
+    crop_top_lefts = [example["crop_top_left"] for example in examples]
 
     if has_attention_mask:
         attention_mask = [example["instance_attention_mask"] for example in examples]
@@ -781,6 +830,9 @@ def collate_fn(examples, with_prior_preservation=False):
     if with_prior_preservation:
         input_ids += [example["class_prompt_ids"] for example in examples]
         pixel_values += [example["class_images"] for example in examples]
+        # Duplicate SDXL conditioning for class images
+        original_sizes += [example["original_size"] for example in examples]
+        crop_top_lefts += [example["crop_top_left"] for example in examples]
 
         if has_attention_mask:
             attention_mask += [example["class_attention_mask"] for example in examples]
@@ -793,6 +845,8 @@ def collate_fn(examples, with_prior_preservation=False):
     batch = {
         "input_ids": input_ids,
         "pixel_values": pixel_values,
+        "original_sizes": original_sizes,
+        "crop_top_lefts": crop_top_lefts,
     }
 
     if has_attention_mask:
@@ -837,6 +891,45 @@ def encode_prompt(
     prompt_embeds = prompt_embeds[0]
 
     return prompt_embeds
+
+
+def encode_prompt_sdxl(text_encoders, tokenizers, prompt, text_input_ids_list=None):
+    """
+    Encode prompts for SDXL using dual text encoders.
+    Adapted from StableDiffusionXLPipeline.encode_prompt
+    """
+    prompt_embeds_list = []
+    
+    for i, text_encoder in enumerate(text_encoders):
+        if prompt is not None and tokenizers is not None:
+            tokenizer = tokenizers[i]
+            text_inputs = tokenizer(
+                prompt,
+                padding="max_length",
+                max_length=tokenizer.model_max_length,
+                truncation=True,
+                return_tensors="pt",
+            )
+            text_input_ids = text_inputs.input_ids
+        else:
+            text_input_ids = text_input_ids_list[i]
+
+        prompt_embeds = text_encoder(
+            text_input_ids.to(text_encoder.device),
+            output_hidden_states=True,
+            return_dict=False,
+        )
+        
+        # We are only interested in the pooled output of the final text encoder
+        pooled_prompt_embeds = prompt_embeds[0]
+        prompt_embeds = prompt_embeds[-1][-2]
+        bs_embed, seq_len, _ = prompt_embeds.shape
+        prompt_embeds = prompt_embeds.view(bs_embed, seq_len, -1)
+        prompt_embeds_list.append(prompt_embeds)
+
+    prompt_embeds = torch.concat(prompt_embeds_list, dim=-1)
+    pooled_prompt_embeds = pooled_prompt_embeds.view(bs_embed, -1)
+    return prompt_embeds, pooled_prompt_embeds
 
 
 def model_has_vae(args):
@@ -986,8 +1079,12 @@ def main(args):
                 token=args.hub_token,
             ).repo_id
 
+    # Load tokenizers - SDXL uses two tokenizers
     if args.tokenizer_name:
         tokenizer = AutoTokenizer.from_pretrained(
+            args.tokenizer_name, revision=args.revision, use_fast=False
+        )
+        tokenizer_2 = AutoTokenizer.from_pretrained(
             args.tokenizer_name, revision=args.revision, use_fast=False
         )
     elif args.pretrained_model_name_or_path:
@@ -997,9 +1094,19 @@ def main(args):
             revision=args.revision,
             use_fast=False,
         )
+        tokenizer_2 = AutoTokenizer.from_pretrained(
+            args.pretrained_model_name_or_path,
+            subfolder="tokenizer_2",
+            revision=args.revision,
+            use_fast=False,
+        )
 
+    # Load text encoders - SDXL uses two text encoders
     text_encoder_cls = import_model_class_from_model_name_or_path(
         args.pretrained_model_name_or_path, args.revision
+    )
+    text_encoder_cls_2 = import_model_class_from_model_name_or_path(
+        args.pretrained_model_name_or_path, args.revision, subfolder="text_encoder_2"
     )
 
     noise_scheduler = DDPMScheduler.from_pretrained(
@@ -1008,6 +1115,12 @@ def main(args):
     text_encoder = text_encoder_cls.from_pretrained(
         args.pretrained_model_name_or_path,
         subfolder="text_encoder",
+        revision=args.revision,
+        variant=args.variant,
+    )
+    text_encoder_2 = text_encoder_cls_2.from_pretrained(
+        args.pretrained_model_name_or_path,
+        subfolder="text_encoder_2",
         revision=args.revision,
         variant=args.variant,
     )
@@ -1037,11 +1150,14 @@ def main(args):
     def save_model_hook(models, weights, output_dir):
         if accelerator.is_main_process:
             for model in models:
-                sub_dir = (
-                    "unet"
-                    if isinstance(model, type(unwrap_model(unet)))
-                    else "text_encoder"
-                )
+                if isinstance(model, type(unwrap_model(unet))):
+                    sub_dir = "unet"
+                elif isinstance(model, type(unwrap_model(text_encoder))):
+                    sub_dir = "text_encoder"
+                elif isinstance(model, type(unwrap_model(text_encoder_2))):
+                    sub_dir = "text_encoder_2"
+                else:
+                    continue
                 model.save_pretrained(os.path.join(output_dir, sub_dir))
                 weights.pop()
 
@@ -1051,6 +1167,11 @@ def main(args):
             if isinstance(model, type(unwrap_model(text_encoder))):
                 load_model = text_encoder_cls.from_pretrained(
                     input_dir, subfolder="text_encoder"
+                )
+                model.config = load_model.config
+            elif isinstance(model, type(unwrap_model(text_encoder_2))):
+                load_model = text_encoder_cls_2.from_pretrained(
+                    input_dir, subfolder="text_encoder_2"
                 )
                 model.config = load_model.config
             else:
@@ -1069,6 +1190,7 @@ def main(args):
 
     if not args.train_text_encoder:
         text_encoder.requires_grad_(False)
+        text_encoder_2.requires_grad_(False)
 
     if args.enable_xformers_memory_efficient_attention:
         if is_xformers_available():
@@ -1089,6 +1211,7 @@ def main(args):
         unet.enable_gradient_checkpointing()
         if args.train_text_encoder:
             text_encoder.gradient_checkpointing_enable()
+            text_encoder_2.gradient_checkpointing_enable()
 
     low_precision_error_string = (
         "Please make sure to always have all model weights in full float32 precision when starting training - even if"
@@ -1103,6 +1226,12 @@ def main(args):
     if args.train_text_encoder and unwrap_model(text_encoder).dtype != torch.float32:
         raise ValueError(
             f"Text encoder loaded as datatype {unwrap_model(text_encoder).dtype}."
+            f" {low_precision_error_string}"
+        )
+    
+    if args.train_text_encoder and unwrap_model(text_encoder_2).dtype != torch.float32:
+        raise ValueError(
+            f"Text encoder 2 loaded as datatype {unwrap_model(text_encoder_2).dtype}."
             f" {low_precision_error_string}"
         )
 
@@ -1130,7 +1259,7 @@ def main(args):
         optimizer_class = torch.optim.AdamW
 
     params_to_optimize = (
-        itertools.chain(unet.parameters(), text_encoder.parameters())
+        itertools.chain(unet.parameters(), text_encoder.parameters(), text_encoder_2.parameters())
         if args.train_text_encoder
         else unet.parameters()
     )
@@ -1146,46 +1275,51 @@ def main(args):
 
         def compute_text_embeddings(prompt):
             with torch.no_grad():
-                text_inputs = tokenize_prompt(
-                    tokenizer, prompt, tokenizer_max_length=args.tokenizer_max_length
+                # For SDXL, compute embeddings from both text encoders
+                text_encoders = [text_encoder, text_encoder_2]
+                tokenizers_list = [tokenizer, tokenizer_2]
+                prompt_embeds, pooled_prompt_embeds = encode_prompt_sdxl(
+                    text_encoders, tokenizers_list, prompt
                 )
-                prompt_embeds = encode_prompt(
-                    text_encoder,
-                    text_inputs.input_ids,
-                    text_inputs.attention_mask,
-                    text_encoder_use_attention_mask=args.text_encoder_use_attention_mask,
-                )
-            return prompt_embeds
+            return prompt_embeds, pooled_prompt_embeds
 
-        pre_computed_encoder_hidden_states = compute_text_embeddings(
+        pre_computed_encoder_hidden_states, pre_computed_pooled_prompt_embeds = compute_text_embeddings(
             args.instance_prompt
         )
-        validation_prompt_negative_prompt_embeds = compute_text_embeddings("")
+        validation_prompt_negative_prompt_embeds, validation_prompt_negative_pooled_embeds = compute_text_embeddings("")
 
         if args.validation_prompt is not None:
-            validation_prompt_encoder_hidden_states = compute_text_embeddings(
+            validation_prompt_encoder_hidden_states, validation_prompt_pooled_embeds = compute_text_embeddings(
                 args.validation_prompt
             )
         else:
             validation_prompt_encoder_hidden_states = None
+            validation_prompt_pooled_embeds = None
 
         if args.class_prompt is not None:
-            pre_computed_class_prompt_encoder_hidden_states = compute_text_embeddings(
+            pre_computed_class_prompt_encoder_hidden_states, pre_computed_class_pooled_embeds = compute_text_embeddings(
                 args.class_prompt
             )
         else:
             pre_computed_class_prompt_encoder_hidden_states = None
+            pre_computed_class_pooled_embeds = None
 
         text_encoder = None
+        text_encoder_2 = None
         tokenizer = None
+        tokenizer_2 = None
 
         gc.collect()
         torch.cuda.empty_cache()
     else:
         pre_computed_encoder_hidden_states = None
+        pre_computed_pooled_prompt_embeds = None
         validation_prompt_encoder_hidden_states = None
+        validation_prompt_pooled_embeds = None
         validation_prompt_negative_prompt_embeds = None
+        validation_prompt_negative_pooled_embeds = None
         pre_computed_class_prompt_encoder_hidden_states = None
+        pre_computed_class_pooled_embeds = None
 
     train_dataset = DreamBoothDataset(
         instance_data_root=args.instance_data_dir,
@@ -1227,9 +1361,9 @@ def main(args):
     )
 
     if args.train_text_encoder:
-        unet, text_encoder, optimizer, train_dataloader, lr_scheduler = (
+        unet, text_encoder, text_encoder_2, optimizer, train_dataloader, lr_scheduler = (
             accelerator.prepare(
-                unet, text_encoder, optimizer, train_dataloader, lr_scheduler
+                unet, text_encoder, text_encoder_2, optimizer, train_dataloader, lr_scheduler
             )
         )
     else:
@@ -1248,6 +1382,7 @@ def main(args):
 
     if not args.train_text_encoder and text_encoder is not None:
         text_encoder.to(accelerator.device, dtype=weight_dtype)
+        text_encoder_2.to(accelerator.device, dtype=weight_dtype)
 
     num_update_steps_per_epoch = math.ceil(
         len(train_dataloader) / args.gradient_accumulation_steps
@@ -1319,6 +1454,7 @@ def main(args):
         unet.train()
         if args.train_text_encoder:
             text_encoder.train()
+            text_encoder_2.train()
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet):
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
@@ -1354,20 +1490,46 @@ def main(args):
                     model_input, noise, timesteps
                 )
 
+                # Compute SDXL time_ids for micro-conditioning
+                # time_ids = [original_height, original_width, crop_top, crop_left, target_height, target_width]
+                def compute_time_ids(original_size, crop_top_left):
+                    target_size = (args.resolution, args.resolution)
+                    add_time_ids = list(original_size + crop_top_left + target_size)
+                    add_time_ids = torch.tensor([add_time_ids])
+                    add_time_ids = add_time_ids.to(accelerator.device, dtype=weight_dtype)
+                    return add_time_ids
+                
+                # Create time_ids for each sample in the batch
+                add_time_ids = torch.cat([
+                    compute_time_ids(original_size, crop_top_left)
+                    for original_size, crop_top_left in zip(batch["original_sizes"], batch["crop_top_lefts"])
+                ])
+
                 if args.pre_compute_text_embeddings:
                     encoder_hidden_states = batch["input_ids"]
+                    pooled_prompt_embeds = pre_computed_pooled_prompt_embeds.repeat(bsz, 1)
                 else:
-                    encoder_hidden_states = encode_prompt(
-                        text_encoder,
-                        batch["input_ids"],
-                        batch["attention_mask"],
-                        text_encoder_use_attention_mask=args.text_encoder_use_attention_mask,
+                    # For SDXL, encode using both text encoders
+                    text_encoders = [text_encoder, text_encoder_2]
+                    tokenizers_list = [tokenizer, tokenizer_2]
+                    # Create input_ids list for both tokenizers
+                    # Note: batch["input_ids"] should be split or we tokenize the prompts
+                    # For simplicity, we'll assume batch contains prompt text
+                    # This needs to be adapted based on actual batch structure
+                    encoder_hidden_states, pooled_prompt_embeds = encode_prompt_sdxl(
+                        text_encoders, tokenizers_list, None, text_input_ids_list=[batch["input_ids"], batch["input_ids"]]
                     )
 
                 if unwrap_model(unet).config.in_channels == channels * 2:
                     noisy_model_input = torch.cat(
                         [noisy_model_input, noisy_model_input], dim=1
                     )
+
+                # SDXL uses added_cond_kwargs for time_ids and pooled_prompt_embeds
+                added_cond_kwargs = {
+                    "text_embeds": pooled_prompt_embeds,
+                    "time_ids": add_time_ids
+                }
 
                 if args.class_labels_conditioning == "timesteps":
                     class_labels = timesteps
@@ -1379,6 +1541,7 @@ def main(args):
                     timesteps,
                     encoder_hidden_states,
                     class_labels=class_labels,
+                    added_cond_kwargs=added_cond_kwargs,
                     return_dict=False,
                 )[0]
 
@@ -1433,7 +1596,7 @@ def main(args):
                 accelerator.backward(loss)
                 if accelerator.sync_gradients:
                     params_to_clip = (
-                        itertools.chain(unet.parameters(), text_encoder.parameters())
+                        itertools.chain(unet.parameters(), text_encoder.parameters(), text_encoder_2.parameters())
                         if args.train_text_encoder
                         else unet.parameters()
                     )
@@ -1495,7 +1658,13 @@ def main(args):
                                 if text_encoder is not None
                                 else text_encoder
                             ),
+                            (
+                                unwrap_model(text_encoder_2)
+                                if text_encoder_2 is not None
+                                else text_encoder_2
+                            ),
                             tokenizer,
+                            tokenizer_2,
                             unwrap_model(unet),
                             vae,
                             args,
@@ -1532,9 +1701,11 @@ def main(args):
 
         if text_encoder is not None:
             pipeline_args["text_encoder"] = unwrap_model(text_encoder)
+            pipeline_args["text_encoder_2"] = unwrap_model(text_encoder_2)
 
         if args.skip_save_text_encoder:
             pipeline_args["text_encoder"] = None
+            pipeline_args["text_encoder_2"] = None
 
         pipeline = DiffusionPipeline.from_pretrained(
             args.pretrained_model_name_or_path,

@@ -2,10 +2,10 @@
 # This file configures the UI mode and ports for the model service
 
 # model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
-model_source: "local"
+model_source: "hugging-face-cloud"
 
-# Path to the local model file (used when model_source is "local")
-model_path: "/home/jovyan/datafabric/stable-diffusion-2-1/stable-diffusion-2-1.safetensors"
+# Path or repo ID for the base model
+model_path: "Manojb/stable-diffusion-2-1-base"
 
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,

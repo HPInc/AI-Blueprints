@@ -57,7 +57,7 @@ def _load_pyfunc(data_path: str):
         logger.warning(f"Models directory not found at: {models_path}")
         # Fall back to default model paths from config
         model_no_finetuning_path = config.get(
-            "model_no_finetuning_path", "stabilityai/stable-diffusion-2-1"
+            "model_no_finetuning_path", "stabilityai/stable-diffusion-xl-base-1.0"
         )
         model_finetuning_path = config.get("model_finetuning_path", "")
     else:
@@ -68,7 +68,7 @@ def _load_pyfunc(data_path: str):
         # If they don't exist as directories, fall back to config
         if not os.path.exists(model_no_finetuning_path):
             model_no_finetuning_path = config.get(
-                "model_no_finetuning_path", "stabilityai/stable-diffusion-2-1"
+                "model_no_finetuning_path", "stabilityai/stable-diffusion-xl-base-1.0"
             )
         if not os.path.exists(model_finetuning_path):
             model_finetuning_path = config.get("model_finetuning_path", "")
