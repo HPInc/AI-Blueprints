@@ -15,7 +15,7 @@ from typing import Dict, Any, Union, List
 import pandas as pd
 import torch
 from PIL import Image
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionXLPipeline
 
 # Check for xformers availability for memory-efficient attention
 try:
@@ -143,7 +143,7 @@ class Model:
         self, mdl_path: str, device: str, use_finetuning: bool
     ):
         """
-        Load model with targeted fallback strategies based on model type.
+        Load SDXL model with targeted fallback strategies.
         Fine-tuned models are more likely to lack fp16 variants than base models.
         """
         model_type = "fine-tuned" if use_finetuning else "base"
@@ -152,9 +152,9 @@ class Model:
         if torch.cuda.is_available():
             try:
                 logger.info(
-                    f"Attempting to load {model_type} model with fp16 variant and dtype"
+                    f"Attempting to load {model_type} SDXL model with fp16 variant and dtype"
                 )
-                return StableDiffusionPipeline.from_pretrained(
+                return StableDiffusionXLPipeline.from_pretrained(
                     mdl_path,
                     torch_dtype=torch.float16,
                     low_cpu_mem_usage=True,
@@ -176,8 +176,8 @@ class Model:
 
         # Strategy 2: Try fp16 dtype without variant (most common fallback)
         try:
-            logger.info(f"Loading {model_type} model with fp16 dtype (no variant)")
-            return StableDiffusionPipeline.from_pretrained(
+            logger.info(f"Loading {model_type} SDXL model with fp16 dtype (no variant)")
+            return StableDiffusionXLPipeline.from_pretrained(
                 mdl_path,
                 torch_dtype=(
                     torch.float16 if torch.cuda.is_available() else torch.float32
@@ -190,9 +190,9 @@ class Model:
         # Strategy 3: Try fp32 dtype (compatibility fallback)
         try:
             logger.info(
-                f"Loading {model_type} model with fp32 dtype (compatibility mode)"
+                f"Loading {model_type} SDXL model with fp32 dtype (compatibility mode)"
             )
-            return StableDiffusionPipeline.from_pretrained(
+            return StableDiffusionXLPipeline.from_pretrained(
                 mdl_path, torch_dtype=torch.float32, low_cpu_mem_usage=True
             ).to(device)
         except Exception as e:
@@ -201,9 +201,9 @@ class Model:
         # Strategy 4: Minimal configuration (last resort)
         try:
             logger.warning(
-                f"Loading {model_type} model with minimal configuration (last resort)"
+                f"Loading {model_type} SDXL model with minimal configuration (last resort)"
             )
-            return StableDiffusionPipeline.from_pretrained(
+            return StableDiffusionXLPipeline.from_pretrained(
                 mdl_path, low_cpu_mem_usage=True
             ).to(device)
         except Exception as e:
@@ -264,11 +264,11 @@ class Model:
 
         prompt = _first(model_input["prompt"])
         use_finetuning = _first(model_input["use_finetuning"])
-        height = _first(model_input.get("height", 512))
-        width = _first(model_input.get("width", 512))
-        # Keep original defaults to maintain image quality
+        # SDXL native resolution is 1024x1024, but support other resolutions
+        height = _first(model_input.get("height", 1024))
+        width = _first(model_input.get("width", 1024))
         num_images = _first(model_input.get("num_images", 1))
-        num_steps = _first(model_input.get("num_inference_steps", 100))
+        num_steps = _first(model_input.get("num_inference_steps", 50))
 
         logger.info("Running inference – '%s'", prompt)
         self._load_pipeline(bool(use_finetuning))
@@ -277,7 +277,7 @@ class Model:
         with torch.no_grad():
             for i in range(num_images):
                 logger.info("Image %d / %d", i + 1, num_images)
-                # Use original inference parameters for quality
+                # Generate image with specified parameters
                 img = self.current_pipeline(
                     prompt, height=height, width=width, num_inference_steps=num_steps
                 ).images[0]

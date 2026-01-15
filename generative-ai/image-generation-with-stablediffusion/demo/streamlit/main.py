@@ -11,7 +11,7 @@ os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="Image Generation with StableDifussion",
+    page_title="Image Generation with Stable Diffusion XL",
     page_icon="📷",
     layout="centered",
 )
@@ -90,7 +90,7 @@ st.markdown(
 
 # --- Header ---
 st.markdown(
-    "<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Generation with StableDifussion </h1>",
+    "<h1 style='text-align: center; color: #2C3E50;'>🖼️ Image Generation with Stable Diffusion XL</h1>",
     unsafe_allow_html=True,
 )
 
@@ -103,11 +103,19 @@ api_url = MLFLOW_ENDPOINT
 
 prompt = st.text_input("Prompt (image description):")
 use_finetuning = st.checkbox("Use fine-tuning")
-height = st.number_input("Image height (px):", min_value=1, value=512)
-width = st.number_input("Image width (px):", min_value=1, value=512)
+
+# SDXL native resolution is 1024x1024, minimum 768x768
+st.info("ℹ️ SDXL works best with dimensions between 768-2048px. Native resolution is 1024x1024.")
+height = st.number_input("Image height (px):", min_value=512, max_value=2048, value=1024, step=64)
+width = st.number_input("Image width (px):", min_value=512, max_value=2048, value=1024, step=64)
+
+# Validation warning for sub-optimal dimensions
+if height < 768 or width < 768:
+    st.warning("⚠️ Dimensions below 768px may produce lower quality results with SDXL. Consider using 1024x1024 for best results.")
+
 num_images = st.number_input("Number of images:", min_value=1, max_value=10, value=1)
 num_inference_steps = st.number_input(
-    "Number of inference steps:", min_value=1, value=50
+    "Number of inference steps:", min_value=1, max_value=100, value=50
 )
 
 

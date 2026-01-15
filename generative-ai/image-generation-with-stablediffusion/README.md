@@ -1,10 +1,10 @@
-# DreamBooth Inference with Stable Diffusion 2.1
+# DreamBooth Inference with Stable Diffusion XL
 
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
 ![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
-![Stable Diffusion](https://img.shields.io/badge/Stable%20Diffusion-2.1-blue.svg)
+![Stable Diffusion XL](https://img.shields.io/badge/Stable%20Diffusion-XL-blue.svg)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
 ![DreamBooth](https://img.shields.io/badge/DreamBooth-fine--tuning-lightgreen.svg)
 
@@ -20,7 +20,8 @@
 
 ## Overview
 
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics, such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with advanced evaluation capabilities.
+This notebook performs image generation inference using the **Stable Diffusion XL (SDXL)** architecture, with support for both standard and DreamBooth fine-tuned models.
+
 
 ## Project Structure
 
@@ -80,11 +81,14 @@ ui:
 
 ### Step 0: Minimum Hardware Requirements
 
-Ensure your environment meets the minimum hardware requirements for smooth model inference:
+Ensure your environment meets the minimum hardware requirements for smooth SDXL model inference:
 
-- RAM: 16 GB
-- VRAM: 8 GB
-- GPU: NVIDIA GPU
+- **RAM:** 16 GB (32 GB recommended for training)
+- **VRAM:** 10 GB minimum, 12 GB+ recommended for SDXL
+- **GPU:** NVIDIA GPU with Compute Capability 7.0+ (RTX 20 series or newer recommended)
+- **Storage:** 20 GB for model weights and outputs
+
+**Note:** SDXL requires more VRAM than SD 1.5/2.1 due to dual text encoders and higher resolution (1024x1024 native).
 
 ### Step 1: Create an AI Studio Project
 
@@ -141,6 +145,13 @@ os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
   - `service`: Adjust MLflow timeout and health check settings
   - `proxy`: Set proxy settings if needed for restricted networks
 
+**SDXL-Specific Configuration:**
+- Default model: `stabilityai/stable-diffusion-xl-base-1.0`
+- Recommended resolution: 1024x1024 (native SDXL resolution)
+- Minimum resolution: 768x768
+- Maximum resolution: 2048x2048
+- The system automatically detects SDXL vs SD 1.5/2.1 models and loads the appropriate pipeline
+
 
 ## Usage
 
@@ -183,11 +194,11 @@ This will:
 
 | Field                 | Description                                                                |
 | --------------------- | -------------------------------------------------------------------------- |
-| `prompt`              | Your input prompt                                                          |
+| `prompt`              | Your input prompt  |
 | `use_finetuning`      | `True` to use your fine-tuned DreamBooth model, `False` for the base model |
-| `height`, `width`     | Image dimensions                                                           |
+| `height`, `width`     | Image dimensions (SDXL: 768-2048px, optimal: 1024x1024)                    |
 | `num_images`          | Number of images to generate                                               |
-| `num_inference_steps` | Number of denoising steps used by Stable Diffusion                         |
+| `num_inference_steps` | Number of denoising steps (SDXL: 30-50 recommended)                        |
 
 8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
 

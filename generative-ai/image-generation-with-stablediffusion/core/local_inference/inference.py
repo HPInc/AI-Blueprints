@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import yaml
 from accelerate import Accelerator
-from diffusers import DiffusionPipeline
+from diffusers import StableDiffusionXLPipeline
 from PIL import Image
 
 # Import path utilities from src
@@ -100,7 +100,7 @@ def _get_max_memory_per_gpu() -> dict[int, str]:
     for i in range(torch.cuda.device_count()):
         props = torch.cuda.get_device_properties(i)
         max_mem[i] = f"{int(props.total_memory / 1024**3 - 2)}GB"
-        print(f"GPU {i}: reserving {max_mem[i]} ofix VRAM.")
+        print(f"GPU {i}: reserving {max_mem[i]} of VRAM.")
     return max_mem
 
 
@@ -149,7 +149,8 @@ def run_inference(
     cache_dir = get_model_cache_dir()
     os.environ["HF_HOME"] = str(cache_dir)
 
-    pipe = DiffusionPipeline.from_pretrained(
+    # Load SDXL pipeline
+    pipe = StableDiffusionXLPipeline.from_pretrained(
         model_path,
         torch_dtype=torch.float16,
         device_map="balanced",

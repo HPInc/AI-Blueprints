@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import yaml
 from accelerate import Accelerator
-from diffusers import DiffusionPipeline
+from diffusers import StableDiffusionXLPipeline
 from PIL import Image
 
 # Check for xformers availability
@@ -122,7 +122,7 @@ def run_inference_dreambooth(
     model_path: str | Path = "./dreambooth",
     config_dir: str | Path | None = None,
 ):
-    """Generates *num_images* using DreamBooth template.."""
+    """Generates *num_images* using DreamBooth fine-tuned SDXL model."""
     _ = load_config_dreambooth(config_dir)
 
     default_prompt = (
@@ -134,7 +134,8 @@ def run_inference_dreambooth(
     accelerator = Accelerator(mixed_precision="fp16", cpu=False)
     max_memory = get_max_memory_per_gpu()
 
-    pipe = DiffusionPipeline.from_pretrained(
+    # Load SDXL pipeline
+    pipe = StableDiffusionXLPipeline.from_pretrained(
         model_path,
         torch_dtype=torch.float16,
         device_map="balanced",
