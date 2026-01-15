@@ -5,7 +5,7 @@
 model_source: "hugging-face-cloud"
 
 # Path or repo ID for the base model
-model_path: "Manojb/stable-diffusion-2-1-base"
+model_path: "stabilityai/stable-diffusion-xl-base-1.0"
 
 # Proxy is used to set the HTTPS_PROXY environment variable when necessary.
 # For example, if you need to access external services from a restricted network,

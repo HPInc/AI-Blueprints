@@ -90,13 +90,13 @@ def deploy_model():
         finetuned = str(get_output_dir() / "dreambooth")
 
         # Try local model first, fallback to HuggingFace
-        local_base_model = project_root / "models" / "stable-diffusion-2-1-base"
+        local_base_model = project_root / "models" / "stable-diffusion-xl-base-1.0"
         if local_base_model.exists():
             base = str(local_base_model)
             logging.info("Using local base model: %s", base)
         else:
             # Use HuggingFace model identifier as fallback
-            base = "Manojb/stable-diffusion-2-1-base"
+            base = "stabilityai/stable-diffusion-xl-base-1.0"
             logging.info("Using HuggingFace base model: %s", base)
 
         # Check if the DreamBooth model exists before proceeding

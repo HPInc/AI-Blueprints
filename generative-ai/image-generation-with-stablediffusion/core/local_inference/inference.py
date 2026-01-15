@@ -122,8 +122,8 @@ def _display_images(images: List[Image.Image]) -> None:
 def run_inference(
     prompt: str | None = None,
     *,
-    height: int = 512,
-    width: int = 512,
+    height: int = 1024,
+    width: int = 1024,
     num_images: int = 5,
     num_inference_steps: int = 50,
     output: bool = True,
