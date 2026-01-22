@@ -10,4 +10,12 @@ langchain_core
 langchain_huggingface
 tokenizers>=0.13.0
 httpx>=0.24.0
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.1.0
+
+langchain==0.3.27
+langchain-core==0.3.76
+langchain-community==0.3.27
+langchain-text-splitters>=0.3.9
+langchain-huggingface==0.3.1
+sentence-transformers==3.0.0
+llama-cpp-python==0.3.16
