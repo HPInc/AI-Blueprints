@@ -54,6 +54,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"
 from src.agentic_workflow import (
     build_audio_agentic_graph,
 )  # Custom LangGraph construction logic
+from src.qwen_agent import QwenOmniAgent
 from src.simple_kv_memory import (
     SimpleKVMemory,
     _mem_get,
@@ -77,146 +78,6 @@ MEDIA_EXTS = AUDIO_EXTS | VIDEO_EXTS
 RELEVANCE_THRESHOLD = 0.18
 FETCH_K = 24  # breadth for stage-1
 TOP_K = 6  # final segments
-
-
-# Qwen adapter class
-class _QwenAdapter:
-    def __init__(self, proc, model):
-        self.processor = proc
-        self.model = model
-        self.qwen_default_system = (
-            "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, "
-            "capable of perceiving auditory and visual inputs, as well as generating text and speech."
-        )
-
-    def _sanitize(self, txt: str) -> str:
-        txt = re.sub(
-            r"^(?:\d+\s*)?(?:Human:|User:|Assistant:|System:)\s*",
-            "",
-            txt,
-            flags=re.IGNORECASE,
-        ).strip()
-        txt = re.sub(r"([!?.])\1{2,}", r"\1", txt)
-        return txt
-
-    def answer(
-        self, question: str, audio_hits: list, return_audio: bool = False
-    ) -> dict:
-        user_content = [
-            {
-                "type": "text",
-                "text": (
-                    "Answer ONLY using the provided audio clips."
-                    "If the clips do not contain the answer, reply exactly: NOT_FOUND_IN_AUDIO.\n"
-                    f"Question: {question}"
-                ),
-            }
-        ]
-
-        usable = 0
-        for h in audio_hits or []:
-            audio_full, sr = sf.read(h["wav_path"])
-            if audio_full.ndim == 2:
-                audio_full = audio_full.mean(axis=1)
-            s0, s1 = int(h["start_s"] * sr), int(h["end_s"] * sr)
-            s0 = max(0, min(s0, len(audio_full)))
-            s1 = max(0, min(s1, len(audio_full)))
-            if s1 <= s0:
-                continue
-            seg = audio_full[s0:s1].astype(np.float32)
-            user_content.append({"type": "audio", "audio": seg, "sampling_rate": sr})
-            usable += 1
-
-        if usable == 0:
-            return {"answer": "Not found in audio.", "evidence": []}
-
-        conv = [
-            {
-                "role": "system",
-                "content": [{"type": "text", "text": self.qwen_default_system}],
-            },
-            {"role": "user", "content": user_content},
-        ]
-
-        text = self.processor.apply_chat_template(
-            conv, add_generation_prompt=True, tokenize=False
-        )
-        audios, images, videos = process_mm_info(conv, use_audio_in_video=False)
-
-        audios = audios if (audios and len(audios) > 0) else None
-        images = images if (images and len(images) > 0) else None
-        videos = videos if (videos and len(videos) > 0) else None
-
-        inputs = self.processor(
-            text=text,
-            audio=audios,
-            images=images,
-            videos=videos,
-            return_tensors="pt",
-            padding=True,
-            use_audio_in_video=False,
-        ).to(self.model.device)
-
-        tok = getattr(self.processor, "tokenizer", None)
-        eos_id = getattr(tok, "eos_token_id", None)
-        try:
-            chat_eos = (
-                tok.convert_tokens_to_ids("<|im_end|>") if tok is not None else None
-            )
-        except Exception:
-            chat_eos = None
-        eos_ids = [i for i in (eos_id, chat_eos) if i is not None] or None
-        pad_id = getattr(tok, "pad_token_id", eos_id)
-
-        with torch.no_grad():
-            out = self.model.generate(
-                **inputs,
-                use_audio_in_video=False,
-                max_new_tokens=192,
-                do_sample=False,
-                num_beams=1,
-                repetition_penalty=1.1,
-                no_repeat_ngram_size=4,
-                eos_token_id=eos_ids,
-                pad_token_id=pad_id,
-                return_dict_in_generate=True,
-            )
-
-        prompt_ids = inputs.get("input_ids", None)
-        prompt_len = prompt_ids.shape[1] if prompt_ids is not None else 0
-        seqs = getattr(out, "sequences", None)
-
-        if seqs is None:
-            answer = ""
-        else:
-            try:
-                new_tokens = seqs[:, prompt_len:]
-            except Exception:
-                new_tokens = seqs
-            decoded = self.processor.batch_decode(
-                new_tokens, skip_special_tokens=True, clean_up_tokenization_spaces=True
-            )
-            answer = (decoded[0].strip() if decoded else "").strip()
-
-        answer = self._sanitize(answer)
-        if answer.upper().startswith("NOT_FOUND_IN_AUDIO"):
-            answer = "Not found in audio."
-
-        evid = [
-            {
-                "file_name": h["file_name"],
-                "file_path": h["file_path"],
-                "start_s": h["start_s"],
-                "end_s": h["end_s"],
-                "score": h.get("score_mmr", h.get("score", 0.0)),
-            }
-            for h in (audio_hits or [])
-        ]
-
-        return {
-            "answer": (answer if answer else "Not found in audio."),
-            "evidence": evid,
-        }
 
 
 class Model:
@@ -411,7 +272,7 @@ class Model:
                     ).eval()
                 )
 
-            self.audio_llm = _QwenAdapter(self.q_processor, self.q_model)
+            self.audio_llm = QwenOmniAgent(self.q_processor, self.q_model)
 
             logger.info("Model initialized successfully")
         except Exception as e:
