@@ -549,9 +549,10 @@ class Model:
         """
         Process a single audio file on-demand using the same pattern as run-workflow.ipynb:
         1. Check if already indexed (load from disk cache)
-        2. Call segment_audio_embeddings() exactly like the notebook does
-        3. Save index to disk for persistence
-        4. Cache in memory for fast access
+        2. Copy temp file to persistent storage
+        3. Call segment_audio_embeddings() exactly like the notebook does
+        4. Save index to disk for persistence
+        5. Cache in memory for fast access
 
         Args:
             audio_path: Path to audio/video file
@@ -568,6 +569,25 @@ class Model:
             # Use filename as file_id if not provided
             if file_id is None:
                 file_id = audio_path.name
+
+            # Create persistent audio storage directory
+            persistent_audio_dir = self.index_base_dir / "audio_files"
+            persistent_audio_dir.mkdir(parents=True, exist_ok=True)
+
+            # Copy temp file to persistent storage if it's in a temp location
+            safe_id = self._sanitize_file_id(file_id)
+            persistent_path = persistent_audio_dir / f"{safe_id}{audio_path.suffix}"
+
+            if audio_path.parent.name == "tmp" or "tmp" in str(audio_path):
+                # This is a temp file, copy it to persistent storage
+                import shutil
+
+                shutil.copy2(audio_path, persistent_path)
+                logger.info(
+                    f"Copied temp file to persistent storage: {persistent_path}"
+                )
+                # Use persistent path for processing
+                audio_path = persistent_path
 
             # Check in-memory cache first
             if file_id in self.file_indexes:

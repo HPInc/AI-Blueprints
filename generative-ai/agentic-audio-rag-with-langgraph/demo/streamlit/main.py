@@ -253,6 +253,14 @@ MLFLOW_ENDPOINT = st.sidebar.text_input(
     help="Enter the /invocations endpoint of your deployed model",
 )
 
+REQUEST_TIMEOUT = st.sidebar.number_input(
+    "Request Timeout (seconds)",
+    value=3600,
+    min_value=60,
+    max_value=7200,
+    help="Timeout for model requests. Increase for large audio files or slow inference.",
+)
+
 # Initialize session state
 if "uploaded_file_name" not in st.session_state:
     st.session_state.uploaded_file_name = None
@@ -262,6 +270,8 @@ if "file_id" not in st.session_state:
     st.session_state.file_id = None
 if "qa_history" not in st.session_state:
     st.session_state.qa_history = []
+if "temp_path" not in st.session_state:
+    st.session_state.temp_path = None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -325,7 +335,7 @@ if uploaded_file is not None:
                 progress_bar.progress(75)
 
                 response = requests.post(
-                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=600
+                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=REQUEST_TIMEOUT
                 )
 
                 status_text.text("Complete!")
@@ -333,18 +343,18 @@ if uploaded_file is not None:
 
                 if response.status_code == 200:
                     st.session_state.file_processed = True
+                    st.session_state.temp_path = temp_path  # Store for later cleanup
                     st.success(
                         "✅ Audio processed successfully! You can now ask questions."
                     )
                 else:
                     st.error(f"❌ Processing failed: {response.status_code}")
                     st.session_state.file_processed = False
-
-                # Clean up temp file
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
+                    # Clean up temp file only on failure
+                    try:
+                        os.unlink(temp_path)
+                    except:
+                        pass
 
             except Exception as e:
                 st.error(f"❌ Error processing file: {str(e)}")
@@ -383,7 +393,7 @@ if st.session_state.file_processed:
                 }
 
                 response = requests.post(
-                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=600
+                    MLFLOW_ENDPOINT, json=payload, verify=False, timeout=REQUEST_TIMEOUT
                 )
 
                 if response.status_code == 200:
@@ -460,6 +470,13 @@ if st.session_state.qa_history:
     with col2:
         if st.button("🗑️ Clear History", use_container_width=True):
             st.session_state.qa_history = []
+            # Clean up temp file when clearing history
+            if st.session_state.get("temp_path"):
+                try:
+                    os.unlink(st.session_state.temp_path)
+                except:
+                    pass
+                st.session_state.temp_path = None
             st.rerun()
 
 elif st.session_state.file_processed:

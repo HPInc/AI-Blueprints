@@ -37,10 +37,11 @@ ports:
 # Service Configuration
 service:
   # MLflow model server timeout (seconds)
-  mlflow_timeout: 2400
+
+  mlflow_timeout: 3600
 
   # Health check timeout for service startup (seconds)
-  health_check_timeout: 2400
+  health_check_timeout: 3600
 
   # Number of health check retries
   health_check_retries: 5
