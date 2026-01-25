@@ -101,7 +101,7 @@ ui:
 
 ### Step 0: Minimum Hardware Requirements
 
-- ✅ **GPU**: NVIDIA GPU with 12 GB+ VRAM (recommended for LLM acceleration)
+- ✅ **GPU**: NVIDIA GPU with 32 GB+ VRAM (recommended for LLM acceleration)
 - ✅ **RAM**: 32–64 GB system memory
 - ✅ **Disk**: ≥ 10 GB free space
 
