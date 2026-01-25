@@ -198,33 +198,33 @@ def clap_embed_audio(
 def segment_audio_embeddings(
     clap_processor,
     clap_model,
-    INPUT_PATH: str,
+    DATA_PATH: str,
     MEDIA_EXTS: List[str],
     AUDIO_EXTS: List[str],
     VIDEO_EXTS: List[str],
 ):
     """
-    Segment audio files in INPUT_PATH, extract embeddings using CLAP, and build an index.
-    INPUT_PATH: Directory containing media files OR path to a single media file.
+    Segment audio files in DATA_PATH, extract embeddings using CLAP, and build an index.
+    DATA_PATH: Directory containing media files OR path to a single media file.
     MEDIA_EXTS: List of valid media file extensions.
     AUDIO_EXTS: List of valid audio file extensions.
     VIDEO_EXTS: List of valid video file extensions.
     """
 
-    # Build index over INPUT_PATH
+    # Build index over DATA_PATH
     audio_index = AudioIndex(dim=512)  # CLAP audio/text proj dim is 512
     docs_for_ui: List[Document] = []
 
-    input_path = Path(INPUT_PATH)
+    data_path = Path(DATA_PATH)
 
     # Handle both single file and directory
-    if input_path.is_file():
+    if data_path.is_file():
         # Single file mode (for API on-demand processing)
-        media_paths = [input_path] if input_path.suffix.lower() in MEDIA_EXTS else []
+        media_paths = [data_path] if data_path.suffix.lower() in MEDIA_EXTS else []
     else:
         # Directory mode (for notebook batch processing)
         media_paths = []
-        for p in sorted(input_path.rglob("*")):
+        for p in sorted(data_path.rglob("*")):
             if any(
                 part.startswith(".") and part not in {".", ".."} for part in p.parts
             ):
