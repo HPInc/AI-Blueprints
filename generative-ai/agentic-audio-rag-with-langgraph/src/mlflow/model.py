@@ -218,11 +218,7 @@ class Model:
                 self.q_model = (
                     Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
                         str(qwen_artifacts_path),
-                        torch_dtype=(
-                            torch.float16
-                            if torch.cuda.is_available()
-                            else torch.float32
-                        ),
+                        torch_dtype="auto",
                         device_map="auto",
                         trust_remote_code=True,
                         low_cpu_mem_usage=True,
@@ -236,11 +232,7 @@ class Model:
                 self.q_model = (
                     Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
                         qwen_local_path,
-                        torch_dtype=(
-                            torch.float16
-                            if torch.cuda.is_available()
-                            else torch.float32
-                        ),
+                        torch_dtype="auto",
                         device_map="auto",
                         trust_remote_code=True,
                         low_cpu_mem_usage=True,
@@ -259,11 +251,7 @@ class Model:
                 self.q_model = (
                     Qwen2_5OmniThinkerForConditionalGeneration.from_pretrained(
                         audio_llm_id,
-                        torch_dtype=(
-                            torch.float16
-                            if torch.cuda.is_available()
-                            else torch.float32
-                        ),
+                        torch_dtype="auto",
                         device_map="auto",
                         trust_remote_code=True,
                         low_cpu_mem_usage=True,
