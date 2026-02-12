@@ -61,7 +61,7 @@ The **Vacation Recommendation Service** is an AI-powered system designed to prov
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
 - RAM: 16 GB
-- VRAM: 8 GB
+- VRAM: 4 GB
 - GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
