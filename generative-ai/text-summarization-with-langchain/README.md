@@ -89,7 +89,7 @@ ui:
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
 - RAM: 32 GB
-- VRAM: 6 GB
+- VRAM: 8 GB
 - GPU: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
