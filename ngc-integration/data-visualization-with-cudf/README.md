@@ -51,7 +51,7 @@ You can explore cell tower distributions by radio type, operator, country, and t
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
 - **RAM**: 16 GB
-- **VRAM**: 4 GB
+- **VRAM**: 2 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project
