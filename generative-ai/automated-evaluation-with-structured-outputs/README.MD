@@ -79,7 +79,7 @@ ui:
 ### 0 ▪ Minimum hardware
 
 - RAM: 64 GB
-- VRAM: 12 GB
+- VRAM: 8 GB
 - GPU: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio project
