@@ -97,12 +97,15 @@ class ChatbotModel:
 
     def _load_llm(self) -> None:
         """
-        Load the quantized LLM from the .gguf file.
+        Load the quantized Zephyr LLM from the .gguf file.
 
-        LlamaCpp settings are optimized for NVIDIA Blackwell GPUs (GB200 / RTX 5000):
+        Zephyr 7B Beta uses the same GGUF format as other LlamaCpp-compatible models,
+        so it loads identically. The key difference is the prompt template (see _infer).
+
+        LlamaCpp settings are optimised for NVIDIA Blackwell GPUs (GB200 / RTX 5000):
             n_gpu_layers=-1 offloads all layers to GPU for maximum speed.
             f16_kv=True uses float16 for the key-value cache to reduce VRAM usage.
-            temperature=0.0 makes outputs deterministic — important for reproducibility.
+            temperature=0.7 gives varied conversational responses (unlike 0.0 for RAG).
         """
         import multiprocessing
         from langchain_community.llms import LlamaCpp
@@ -121,12 +124,12 @@ class ChatbotModel:
         if not os.path.exists(self.model_path):
             logger.error(
                 f"❌ Model file not found at: {self.model_path}\n"
-                "   Download the GGUF model into datafabric. See README.md → Prerequisites."
+                "   Run project-setup.ipynb Cell 8 to download the Zephyr 7B Beta model."
             )
             self.llm = None
             return
 
-        logger.info(f"Loading LLM: {self.model_path}")
+        logger.info(f"Loading Zephyr 7B Beta LLM: {self.model_path}")
         logger.info(
             f"Context: {context_window} tokens | Max response: {max_tokens} tokens"
         )
@@ -140,14 +143,14 @@ class ChatbotModel:
             f16_kv=True,  # Float16 KV-cache (saves VRAM)
             use_mmap=False,  # Disable memory-mapped file I/O
             low_vram=False,  # Full VRAM mode (Blackwell default)
-            temperature=0.0,  # Deterministic outputs
-            repeat_penalty=1.0,  # No repetition penalty
+            temperature=0.7,  # Conversational temperature (0.7 = natural variation)
+            repeat_penalty=1.1,  # Light repetition penalty for natural chat
             streaming=False,  # Return complete response
             seed=42,  # Reproducible results
             num_threads=multiprocessing.cpu_count(),  # Use all CPU cores
             verbose=False,  # Suppress llama.cpp internal logs
         )
-        logger.info("✅ LLM loaded successfully")
+        logger.info("✅ Zephyr 7B Beta LLM loaded successfully")
 
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
@@ -189,9 +192,22 @@ class ChatbotModel:
         return pd.DataFrame(results)
 
     def _infer(self, inp: ChatbotInput) -> dict:
-        """Generate a single LLM response for one ChatbotInput."""
-        from src.utils import get_response_from_llm
+        """Generate a single LLM response using the Zephyr chat template.
 
+        Zephyr 7B Beta uses the ChatML-based prompt format:
+
+            <|system|>
+            {system_prompt}</s>
+            <|user|>
+            {user_message}</s>
+            <|assistant|>
+
+        The </s> token acts as the end-of-turn signal. The template ends with
+        <|assistant|> without </s> so the model starts generating immediately.
+
+        Learn more about Zephyr prompting:
+            https://huggingface.co/HuggingFaceH4/zephyr-7b-beta
+        """
         if not self.llm:
             return {
                 "answer": "❌ LLM not loaded. Check model_path in configs/chatbot.yaml.",
@@ -203,8 +219,19 @@ class ChatbotModel:
         )
         question = inp.question or "Hello!"
 
+        # Build the Zephyr prompt template
+        # Note: </s> is the end-of-sentence token used as end-of-turn delimiter
+        zephyr_prompt = (
+            f"<|system|>\n{system_prompt}</s>\n"
+            f"<|user|>\n{question}</s>\n"
+            f"<|assistant|>\n"
+        )
+
         logger.info(f"Chatbot: processing question ({len(question)} chars)")
-        answer = get_response_from_llm(self.llm, system_prompt, question)
+        answer = self.llm(zephyr_prompt)
+
+        # Strip any trailing </s> that some Zephyr variants append to the response
+        answer = answer.strip().rstrip("</s>").strip()
 
         messages = [
             {"role": "system", "content": system_prompt},

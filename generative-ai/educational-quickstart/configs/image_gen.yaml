@@ -4,10 +4,12 @@
 # Capability identifier — read by loader.py to select ImageGenModel
 capability: "image_gen"
 
-# Path to the SDXL-Turbo diffusion model (Stability AI)
-# This directory must be present in datafabric before running the notebook.
-# Download via: huggingface-cli download stabilityai/sdxl-turbo
-image_model_path: "/home/jovyan/datafabric/sdxl-turbo"
+# Path to the FLUX.1-dev model directory.
+# Contains: GGUF transformer (flux1-dev-Q4_K_S.gguf) + pipeline components.
+# Download via project-setup.ipynb Cell 8, or:
+# huggingface-cli download city96/FLUX.1-dev-gguf flux1-dev-Q4_K_S.gguf
+# huggingface-cli download black-forest-labs/FLUX.1-dev --ignore-patterns "transformer/*"
+image_model_path: "/home/jovyan/local/flux1-dev"
 
 # model_path is unused by ImageGenModel (no LLM needed for image generation)
 # but kept for structural consistency across all config files.

@@ -4,10 +4,10 @@
 # Capability identifier — read by loader.py to select DocumentModel
 capability: "document"
 
-# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q8)
-# This file must be present in datafabric before running the notebook.
-# Download via: huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
-model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q6_K_L)
+# Download via project-setup.ipynb Cell 8, or:
+# huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf
+model_path: "/home/jovyan/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf"
 
 # Context window size (tokens). 8192 supports documents up to ~6000 words per chunk.
 # Larger context windows allow bigger chunks and less synthesis overhead.

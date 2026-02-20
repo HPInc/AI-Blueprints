@@ -2,45 +2,57 @@
 VoiceModel — Business Logic Layer for Voice Assistant.
 
 Architecture (v2.0.0):
-    Focused on one capability: speech-to-text transcription + LLM response.
-    Implements a two-stage pipeline:
-        1. Whisper  → Transcribe audio bytes into text
-        2. LlamaCpp → Process transcribed text through the LLM
+    Focused on one capability: speech-to-text transcription + LLM response + text-to-speech.
+    Implements a three-stage pipeline:
+        1. Whisper (GGUF, pywhispercpp) → Transcribe audio bytes into text
+        2. LlamaCpp (Llama 3.1 8B)      → Process transcribed text through the LLM
+        3. XTTS v2 (CoquiTTS)           → Synthesise LLM response as audio
 
-    Zero MLflow imports — pure Python + Whisper + LangChain business logic.
+    Zero MLflow imports — pure Python + whisper.cpp + LangChain + CoquiTTS business logic.
 
-What is Whisper?
-    Whisper is OpenAI's open-source automatic speech recognition (ASR) model.
-    It was trained on 680,000 hours of multilingual audio and achieves near-human
-    accuracy for English transcription. We use the "large-v3" checkpoint.
+What is pywhispercpp?
+    pywhispercpp is a Python binding for whisper.cpp — the highly optimised C++ port
+    of OpenAI's Whisper speech recognition model. It loads Whisper in GGUF format,
+    enabling GPU-accelerated transcription with a much smaller memory footprint than
+    the original PyTorch implementation.
 
-    Key advantage: runs completely locally — no internet connection required.
+    Key advantage: the GGUF model is a single file vs. the multi-file HuggingFace snapshot.
+
+What is XTTS v2?
+    XTTS (Cross-lingual Text-to-Speech) v2 by Coqui is a zero-shot TTS model that can
+    clone any voice from a short audio sample (3-10 seconds). It supports 17 languages
+    and produces natural-sounding speech without fine-tuning.
+
+    In this blueprint, XTTS v2 synthesises the LLM's text response into audio so the
+    voice assistant can "speak" its answer back to the user.
 
 Pipeline:
     Audio bytes (WAV/MP3/etc.)
         ↓  base64-decode
     Raw audio bytes
-        ↓  write to temp file (Whisper needs a file path)
-    whisper.load_model().transcribe(path)
+        ↓  write to temp .wav file (pywhispercpp needs a file path)
+    WhisperCpp(gguf_path).transcribe(wav_path)
         ↓
     Transcription text
-        ↓  LlamaCpp
+        ↓  LlamaCpp (Llama 3.1 8B Q6_K_L)
     LLM response text
+        ↓  XTTS v2 (CoquiTTS)
+    Response audio (base64 WAV)
 
 Input schema (focused):
     question      (str) — Text fallback when no audio is provided
     audio_base64  (str) — Base64-encoded audio bytes (WAV, MP3, OGG, FLAC)
 
 Output schema:
-    answer   (str) — "[Transcription: ...]\\n\\n[Response: ...]"
-    messages (str) — JSON-serialized pipeline messages
+    answer         (str) — "[Transcription: ...]\\n\\n[Response: ...]"
+    messages       (str) — JSON-serialized pipeline messages
+    response_audio (str) — Base64-encoded WAV of the spoken response (empty if TTS disabled)
 """
 
 import json
 import logging
 import os
 import tempfile
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -104,8 +116,13 @@ class VoiceModel:
 
         self.stt_model_path = config.get(
             "stt_model_path",
-            "/home/jovyan/datafabric/whisper-large-v3",
+            "/home/jovyan/local/whisper-large-v3-turbo/model_q4_1.gguf",
         )
+        self.tts_model_path = config.get(
+            "tts_model_path",
+            "/home/jovyan/local/xtts-v2/gguf/xtts_v2_f16.gguf",
+        )
+        self._tts_pipeline = None  # Lazy-loaded on first TTS call
 
         self._load_llm()
 
@@ -187,6 +204,73 @@ class VoiceModel:
             return self._handle_audio(inp)
         return self._handle_text(inp)
 
+    def _load_tts(self):
+        """Lazily load the XTTS v2 TTS pipeline via CoquiTTS."""
+        if self._tts_pipeline is not None:
+            return self._tts_pipeline
+
+        try:
+            import torch
+            from TTS.api import TTS
+
+            tts_dir = os.path.dirname(self.tts_model_path)
+            config_path = os.path.join(tts_dir, "config.json")
+
+            if os.path.exists(config_path):
+                # Load fully from the local GGUF directory
+                self._tts_pipeline = TTS(
+                    model_path=tts_dir,
+                    config_path=config_path,
+                    progress_bar=False,
+                ).to("cuda" if torch.cuda.is_available() else "cpu")
+            else:
+                # Fall back to the CoquiTTS built-in XTTS v2 weights
+                logger.warning(
+                    "⚠️ XTTS config.json not found at %s — falling back to built-in XTTS v2",
+                    tts_dir,
+                )
+                self._tts_pipeline = TTS(
+                    "tts_models/multilingual/multi-dataset/xtts_v2",
+                    progress_bar=False,
+                ).to("cuda" if torch.cuda.is_available() else "cpu")
+
+            logger.info("✅ XTTS v2 TTS pipeline loaded")
+            return self._tts_pipeline
+
+        except Exception as e:
+            logger.warning("⚠️ TTS not loaded: %s", e)
+            return None
+
+    def _synthesize_speech(self, text: str) -> str:
+        """Synthesize speech from text using XTTS v2. Returns base64-encoded WAV."""
+        import base64
+
+        tts = self._load_tts()
+        if tts is None:
+            return ""
+
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                tmp_path = tmp.name
+
+            try:
+                # Cap length for educational demos; pick first built-in speaker if available
+                kwargs: dict = {"text": text[:500], "language": "en", "file_path": tmp_path}
+                speakers = getattr(tts, "speakers", None)
+                if speakers:
+                    kwargs["speaker"] = speakers[0]
+
+                tts.tts_to_file(**kwargs)
+
+                with open(tmp_path, "rb") as f:
+                    return base64.b64encode(f.read()).decode("utf-8")
+            finally:
+                os.unlink(tmp_path)
+
+        except Exception as e:
+            logger.warning("⚠️ TTS synthesis failed: %s", e)
+            return ""
+
     def _handle_text(self, inp: VoiceInput) -> dict:
         """Process a text command directly (no transcription needed)."""
         from src.utils import get_response_from_llm
@@ -210,54 +294,55 @@ class VoiceModel:
                     {"role": "assistant", "content": response},
                 ]
             ),
+            "response_audio": self._synthesize_speech(response),
         }
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
-        """Transcribe audio with Whisper, then generate LLM response."""
+        """Transcribe audio with Whisper GGUF (pywhispercpp), then generate LLM response."""
         import base64
         from src.utils import get_response_from_llm
 
-        # ── 1. Whisper transcription ──────────────────────────────────────────
+        # ── 1. Whisper GGUF transcription ─────────────────────────────────────
         transcription = ""
         whisper_error = None
 
         if os.path.exists(self.stt_model_path):
             try:
-                import whisper
+                from pywhispercpp.model import Model as WhisperCppModel
 
                 audio_bytes = base64.b64decode(inp.audio_base64)
 
-                # Whisper requires a file path — write to a temp file
+                # pywhispercpp requires a file path — write to a temp WAV file
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
                     tmp.write(audio_bytes)
                     tmp_path = tmp.name
 
                 try:
-                    # Load from local .pt file if present; otherwise use model name
-                    pt_files = list(Path(self.stt_model_path).glob("*.pt"))
-                    model_ref = str(pt_files[0]) if pt_files else "large-v3"
-                    whisper_model = whisper.load_model(model_ref)
-                    transcription = (
-                        whisper_model.transcribe(tmp_path).get("text", "").strip()
-                    )
-                    logger.info(f"Transcription: '{transcription[:60]}...'")
+                    whisper_cpp = WhisperCppModel(self.stt_model_path)
+                    segments = whisper_cpp.transcribe(tmp_path)
+                    transcription = " ".join(
+                        seg.text.strip() for seg in segments
+                    ).strip()
+                    logger.info("Transcription: '%s...'", transcription[:60])
                 finally:
                     os.unlink(tmp_path)  # Always clean up the temp file
 
             except Exception as e:
                 whisper_error = str(e)
-                logger.warning(f"⚠️ Whisper transcription failed: {e}")
+                logger.warning("⚠️ Whisper transcription failed: %s", e)
         else:
-            whisper_error = f"Whisper model not found at {self.stt_model_path}"
-            logger.warning(f"⚠️ {whisper_error}")
+            whisper_error = f"Whisper GGUF not found at {self.stt_model_path}"
+            logger.warning("⚠️ %s", whisper_error)
 
         if not transcription:
             return {
                 "answer": (
                     f"❌ Transcription failed: {whisper_error}\n"
-                    "Download 'whisper-large-v3' into datafabric. See README.md → Prerequisites."
+                    "Run project-setup.ipynb Cell 8 to download the model "
+                    "into /home/jovyan/local/. See README.md → Prerequisites."
                 ),
                 "messages": json.dumps([]),
+                "response_audio": "",
             }
 
         # ── 2. LLM response ───────────────────────────────────────────────────
@@ -270,6 +355,9 @@ class VoiceModel:
         else:
             response = "❌ LLM not loaded. Check model_path in configs/voice.yaml."
 
+        # ── 3. TTS synthesis ──────────────────────────────────────────────────
+        response_audio = self._synthesize_speech(response)
+
         messages = [
             {"role": "user", "content": f"[Voice] {transcription}"},
             {"role": "assistant", "content": response},
@@ -277,4 +365,5 @@ class VoiceModel:
         return {
             "answer": f"Transcription: {transcription}\n\nResponse: {response}",
             "messages": json.dumps(messages, indent=2),
+            "response_audio": response_audio,
         }

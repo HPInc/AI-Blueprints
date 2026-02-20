@@ -10,9 +10,10 @@ from typing import Optional, Dict, Any  # Type hints
 logger = logging.getLogger(__name__)
 
 # ─────── Constants ───────────────────────────────────────────────────────────
-# Base directory where AI Studio stores downloaded models.
-# All model paths in this project use this as the root.
-DATAFABRIC_BASE = "/home/jovyan/datafabric"
+# Base directory where this project stores downloaded models.
+# The educational quickstart stores models under /home/jovyan/local/ so students
+# can own their downloads directly in the JupyterHub home directory.
+LOCAL_BASE = "/home/jovyan/local"
 
 
 def verify_model_exists(model_path: str) -> bool:
@@ -40,7 +41,7 @@ def verify_model_exists(model_path: str) -> bool:
     else:
         logger.error(
             f"❌ Model not found: {model_path}\n"
-            "   Please follow README.md Step 2 to download the model into datafabric."
+            "   Run project-setup.ipynb Cell 8 to download the model into /home/jovyan/local/."
         )
     return exists
 
@@ -90,7 +91,7 @@ def load_llm(model_path: str, n_ctx: int = 8192, **kwargs):
     if not verify_model_exists(model_path):
         raise FileNotFoundError(
             f"Model file not found at: {model_path}\n"
-            "Please download the model first. See README.md Step 2."
+            "Run project-setup.ipynb Cell 8 to download the model."
         )
 
     # Get CPU count for optimal threading (use all available cores)

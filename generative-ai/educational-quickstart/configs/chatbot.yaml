@@ -4,10 +4,10 @@
 # Capability identifier — read by loader.py to select ChatbotModel
 capability: "chatbot"
 
-# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q8)
-# This file must be present in datafabric before running the notebook.
-# Download via: huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
-model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+# Path to the local LLM file (Zephyr 7B Beta quantized to Q5_K_M)
+# Download via project-setup.ipynb Cell 8, or:
+# huggingface-cli download TheBloke/zephyr-7B-beta-GGUF zephyr-7b-beta.Q5_K_M.gguf
+model_path: "/home/jovyan/local/zephyr-7b-beta/zephyr-7b-beta.Q5_K_M.gguf"
 
 # Context window size (tokens). 8192 works well for conversational Q&A.
 # Increase to 16384 or 32768 if you need longer conversations.

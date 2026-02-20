@@ -4,7 +4,7 @@
 # ─── Core ML/AI Frameworks ───
 mlflow==3.1.0
 transformers>=4.35.0
-diffusers>=0.24.0
+diffusers>=0.31.0
 accelerate>=0.25.0
 bitsandbytes>=0.41.3
 safetensors>=0.4.1
@@ -32,6 +32,8 @@ sounddevice
 librosa
 soundfile
 openai-whisper
+pywhispercpp
+TTS
 
 # ─── Agentic AI & RAG ───
 langchain>=0.3.26

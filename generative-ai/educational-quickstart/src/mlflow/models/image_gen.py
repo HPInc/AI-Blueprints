@@ -3,19 +3,29 @@ ImageGenModel — Business Logic Layer for Text-to-Image Generation.
 
 Architecture (v2.0.0):
     Focused on one capability: generating images from text prompts.
-    Uses the SDXL-Turbo diffusion model via the `diffusers` library.
+    Uses FLUX.1-dev with a quantized GGUF transformer via the `diffusers` library.
     Has ZERO MLflow imports — pure Python + PyTorch business logic.
 
-What is SDXL-Turbo?
-    SDXL-Turbo is a distilled version of Stable Diffusion XL that generates
-    high-quality images in just 1-4 denoising steps (vs. 20-50 for standard SD).
-    This makes it ideal for interactive demos and educational environments.
+What is FLUX.1-dev?
+    FLUX.1-dev is Black Forest Labs' state-of-the-art open-weights text-to-image model.
+    It uses a hybrid architecture combining a Multimodal Diffusion Transformer (MMDiT)
+    with T5 and CLIP text encoders for superior prompt understanding.
 
-What is a diffusion model?
-    A diffusion model learns to generate images by reversing a noise-adding process.
-    During training, it learns to "denoise" random noise into coherent images.
-    At inference time, it starts with random noise and iteratively denoises it
-    guided by your text prompt into a realistic image.
+What is a GGUF transformer?
+    The GGUF format (from llama.cpp) stores model weights in quantized form.
+    For FLUX, `city96/FLUX.1-dev-gguf` provides the transformer block as a single
+    quantized .gguf file. Using diffusers >= 0.31, we load this GGUF transformer
+    via `FluxTransformer2DModel.from_single_file()` with `GGUFQuantizationConfig`,
+    and inject it into a `FluxPipeline` loaded from the rest of the model directory.
+
+    Loading strategy:
+        flux1-dev-Q4_K_S.gguf  ← transformer block (GGUF, ~6.9 GB)
+        flux1-dev/             ← text encoders + VAE + scheduler (from HF snapshot)
+
+FLUX inference parameters:
+    num_inference_steps: 28   (FLUX.1-dev quality sweet-spot; more = better, slower)
+    guidance_scale: 3.5       (classifier-free guidance weight; 3-7 typical range)
+    height / width: 1024      (FLUX native resolution)
 
 Input schema (focused):
     prompt (str) — Text description of the image to generate
@@ -95,7 +105,7 @@ class ImageGenModel:
         # Resolved at init time; pipeline itself loaded lazily in predict()
         self.image_model_path = config.get(
             "image_model_path",
-            "/home/jovyan/datafabric/sdxl-turbo",
+            "/home/jovyan/local/flux1-dev",
         )
         self._pipeline = None  # Populated on first predict() call
 
@@ -135,45 +145,84 @@ class ImageGenModel:
         return pd.DataFrame(results)
 
     def _generate(self, inp: ImageGenInput) -> dict:
-        """Run one inference pass through the SDXL-Turbo pipeline."""
+        """Run one inference pass through the FLUX.1-dev GGUF pipeline."""
         import base64
         from io import BytesIO
+
+        gguf_path = os.path.join(self.image_model_path, "flux1-dev-Q4_K_S.gguf")
 
         if not os.path.exists(self.image_model_path):
             return {
                 "answer": (
-                    f"❌ Image model not found at: {self.image_model_path}\n"
-                    "Download 'sdxl-turbo' (stabilityai/sdxl-turbo) into datafabric.\n"
+                    f"❌ Image model directory not found at: {self.image_model_path}\n"
+                    "Run project-setup.ipynb Cell 8 to download FLUX.1-dev.\n"
                     "See README.md → Prerequisites."
                 ),
                 "messages": json.dumps([]),
             }
 
+        if not os.path.exists(gguf_path):
+            return {
+                "answer": (
+                    f"❌ FLUX GGUF transformer not found at: {gguf_path}\n"
+                    "Re-run project-setup.ipynb Cell 8 to download flux1-dev-Q4_K_S.gguf."
+                ),
+                "messages": json.dumps([]),
+            }
+
         try:
-            # Load pipeline once and reuse for subsequent calls
+            # Load pipeline once and cache for subsequent inference calls
             if self._pipeline is None:
                 import torch
-                from diffusers import AutoPipelineForText2Image
+                from diffusers import FluxPipeline, FluxTransformer2DModel
+                from diffusers.utils import GGUFQuantizationConfig
 
-                logger.info(
-                    f"Loading SDXL-Turbo pipeline from: {self.image_model_path}"
+                logger.info(f"Loading FLUX.1-dev GGUF transformer from: {gguf_path}")
+
+                # Step 1: Load the quantized FLUX transformer from the GGUF file.
+                # GGUFQuantizationConfig tells diffusers to use llama.cpp-style
+                # quantization when reading weights from the .gguf container.
+                quantization_config = GGUFQuantizationConfig(
+                    compute_dtype=torch.bfloat16
                 )
-                self._pipeline = AutoPipelineForText2Image.from_pretrained(
-                    self.image_model_path,
-                    torch_dtype=torch.bfloat16,  # BF16 avoids cuBLAS FP16 alignment issues on CUDA 12.x
-                ).to("cuda")
-                logger.info("✅ Diffusion pipeline loaded")
+                transformer = FluxTransformer2DModel.from_single_file(
+                    gguf_path,
+                    quantization_config=quantization_config,
+                    torch_dtype=torch.bfloat16,
+                )
+                logger.info("✅ FLUX GGUF transformer loaded")
 
-            prompt = inp.prompt or "A beautiful landscape"
+                # Step 2: Load the rest of the FLUX pipeline (T5 + CLIP text encoders,
+                # VAE, scheduler, tokenizers) from the local model directory.
+                # The transformer is replaced with our GGUF version via the kwarg.
+                logger.info(
+                    f"Loading FLUX.1-dev pipeline from: {self.image_model_path}"
+                )
+                self._pipeline = FluxPipeline.from_pretrained(
+                    self.image_model_path,
+                    transformer=transformer,
+                    torch_dtype=torch.bfloat16,
+                )
+                # CPU offload moves components to GPU only when needed, then back to CPU.
+                # This is necessary for FLUX on systems with < 24 GB VRAM.
+                self._pipeline.enable_model_cpu_offload()
+                logger.info("✅ FLUX.1-dev pipeline loaded with CPU offload enabled")
+
+            prompt = (
+                inp.prompt
+                or "A beautiful mountain landscape, photorealistic, golden hour lighting"
+            )
             logger.info(f"Generating image for prompt: '{prompt[:60]}...'")
 
             image = self._pipeline(
                 prompt=prompt,
-                num_inference_steps=4,  # SDXL-Turbo quality degrades above ~4 steps
-                guidance_scale=0.0,  # Turbo style: no classifier-free guidance
+                num_inference_steps=28,  # FLUX.1-dev quality sweet-spot (20–50 range)
+                guidance_scale=3.5,  # Classifier-free guidance weight for FLUX
+                height=1024,  # FLUX native resolution
+                width=1024,
             ).images[0]
 
-            # Convert PIL Image → PNG bytes → base64 ASCII string
+            # Convert PIL Image → PNG bytes → base64 ASCII string for MLflow transport
             buffer = BytesIO()
             image.save(buffer, format="PNG")
             img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")

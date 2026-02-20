@@ -4,15 +4,19 @@
 # Capability identifier — read by loader.py to select VoiceModel
 capability: "voice"
 
-# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q8)
-# This file must be present in datafabric before running the notebook.
-# Download via: huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
-model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q6_K_L)
+# Shared with the document analyzer — no extra download needed.
+# Download via project-setup.ipynb Cell 8.
+model_path: "/home/jovyan/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf"
 
-# Path to the Whisper large-v3 speech recognition model
-# This directory must be present in datafabric before running the notebook.
-# Download via: huggingface-cli download openai/whisper-large-v3
-stt_model_path: "/home/jovyan/datafabric/whisper-large-v3"
+# Path to the Whisper Large V3 Turbo GGUF model for speech-to-text.
+# Loaded via pywhispercpp (whisper.cpp Python binding).
+# Download via project-setup.ipynb Cell 8.
+stt_model_path: "/home/jovyan/local/whisper-large-v3-turbo/model_q4_1.gguf"
+
+# Path to the XTTS v2 GGUF model for text-to-speech synthesis.
+# Download via project-setup.ipynb Cell 8.
+tts_model_path: "/home/jovyan/local/xtts-v2/gguf/xtts_v2_f16.gguf"
 
 # Context window size (tokens). Transcribed audio is typically short,
 # so 8192 is more than sufficient for voice assistant responses.
