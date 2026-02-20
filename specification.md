@@ -1,9 +1,9 @@
 # 🎓 Educational Quickstart Blueprint — Implementation Specification
 
-**Document Type:** Implementation Specification  
-**Target Repository:** `AI-Blueprints/generative-ai/educational-quickstart/`  
-**Derived From:** `raw_specification.md` (SCAD Applied AI Design & Development)  
-**Date:** February 2026  
+**Document Type:** Implementation Specification
+**Target Repository:** `AI-Blueprints/generative-ai/educational-quickstart/`
+**Derived From:** `raw_specification.md` (SCAD Applied AI Design & Development)
+**Date:** February 2026
 **Version:** 2.0
 
 ---

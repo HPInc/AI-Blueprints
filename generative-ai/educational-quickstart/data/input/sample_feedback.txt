@@ -1,19 +1,19 @@
-I recently tried the new SmartHome AI Assistant app, and I have to say — it genuinely surprised me. 
-The voice recognition was nearly flawless, even in a noisy kitchen environment. Setting timers, 
+I recently tried the new SmartHome AI Assistant app, and I have to say — it genuinely surprised me.
+The voice recognition was nearly flawless, even in a noisy kitchen environment. Setting timers,
 adding items to a shopping list, and controlling smart lights all worked on the first try.
 
-However, the app struggles when requests become complex. Asking it to "remind me tomorrow at 9am 
-to call the dentist if it's raining" resulted in a confused response rather than a conditional 
+However, the app struggles when requests become complex. Asking it to "remind me tomorrow at 9am
+to call the dentist if it's raining" resulted in a confused response rather than a conditional
 reminder. The natural language understanding for multi-step commands still needs work.
 
-The user interface is clean and intuitive — a first-time user would have no trouble navigating 
-the main features. The settings menu, though, is buried three levels deep and lacks a search 
+The user interface is clean and intuitive — a first-time user would have no trouble navigating
+the main features. The settings menu, though, is buried three levels deep and lacks a search
 function, which is frustrating when you need to adjust less obvious options.
 
-Battery consumption while the app runs in the background is noticeably higher than competitors. 
-Over a full workday, I lost about 12% more battery compared to using the phone without the 
+Battery consumption while the app runs in the background is noticeably higher than competitors.
+Over a full workday, I lost about 12% more battery compared to using the phone without the
 assistant running.
 
-Overall rating: 4 out of 5 stars. The core functionality is excellent, the voice recognition 
-is best-in-class, and the integration with other apps is seamless. Addressing the complex command 
+Overall rating: 4 out of 5 stars. The core functionality is excellent, the voice recognition
+is best-in-class, and the integration with other apps is seamless. Addressing the complex command
 handling and battery efficiency would make this a top-tier product.
