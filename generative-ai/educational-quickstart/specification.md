@@ -1,9 +1,9 @@
 # HP AI STUDIO — SCAD Education Blueprint Specification
 
-**Document Type:** Specification Document  
-**Prepared for:** HP AI Studio Engineering Team  
-**Prepared by:** Dan Bartlett, SCAD Applied AI Design & Development  
-**Date:** February 2026  
+**Document Type:** Specification Document
+**Prepared for:** HP AI Studio Engineering Team
+**Prepared by:** Dan Bartlett, SCAD Applied AI Design & Development
+**Date:** February 2026
 **Version:** 1.0
 
 ---
@@ -409,6 +409,6 @@ The following conversations and documents were analyzed to produce this specific
 *   `Deployment README` (deploymentreadme.md) (Phase-by-phase deployment steps)
 *   `Complete Project Archive` (CompleteProjectArchive.md) (Full course history)
 
-**End of Specification**  
-For questions or clarification, contact Dan Bartlett (dbartlett@scad.edu)  
+**End of Specification**
+For questions or clarification, contact Dan Bartlett (dbartlett@scad.edu)
 SCAD Applied AI Design & Development 2025–2026
