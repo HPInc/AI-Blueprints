@@ -9,8 +9,6 @@ accelerate>=0.25.0
 bitsandbytes>=0.41.3
 safetensors>=0.4.1
 sentencepiece>=0.1.99
-xformers>=0.0.23
-vllm  # High-throughput LLM serving with PagedAttention (Spec 4.2.1)
 
 # ─── Interface & Deployment ───
 huggingface_hub>=0.19.4
@@ -33,7 +31,6 @@ invisible-watermark>=0.2.0  # Invisible watermark embedding for generated images
 sounddevice
 librosa
 soundfile
-torchaudio  # Audio processing and feature extraction (Spec 4.2.4)
 pyaudio     # Real-time audio capture/playback — requires portaudio19-dev system package (Spec 4.2.4)
 pywhispercpp
 coqui-tts  # Python 3.12-compatible maintained fork of TTS (same API: from TTS.api import TTS)
