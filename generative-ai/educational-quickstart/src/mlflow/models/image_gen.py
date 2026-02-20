@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
 
+
 class ImageGenInput(BaseModel):
     """
     Input schema for a single image generation request.
@@ -47,10 +48,12 @@ class ImageGenInput(BaseModel):
         Base64 encodes binary image bytes as an ASCII string, making it JSON-safe.
         The Streamlit app decodes this string back into bytes for display.
     """
+
     prompt: str = "A beautiful mountain landscape, photorealistic, golden hour lighting"
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
+
 
 class ImageGenModel:
     """
@@ -66,10 +69,10 @@ class ImageGenModel:
 
     def __init__(
         self,
-        config:     Dict[str, Any],
-        docs_path:  Optional[str] = None,
+        config: Dict[str, Any],
+        docs_path: Optional[str] = None,
         model_path: Optional[str] = None,
-        secrets:    Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
     ):
         """
         Initialize ImageGenModel.
@@ -84,10 +87,10 @@ class ImageGenModel:
             model_path: Unused for image gen (LLM not needed) — present for compatibility
             secrets:    Optional API keys (not used for local diffusion)
         """
-        self.config     = config
-        self.docs_path  = docs_path
+        self.config = config
+        self.docs_path = docs_path
         self.model_path = model_path
-        self.secrets    = secrets
+        self.secrets = secrets
 
         # Resolved at init time; pipeline itself loaded lazily in predict()
         self.image_model_path = config.get(
@@ -117,10 +120,13 @@ class ImageGenModel:
 
         for _, row in model_input.iterrows():
             try:
-                inp = ImageGenInput(**{
-                    k: str(v) for k, v in row.items()
-                    if v is not None and str(v).strip()
-                })
+                inp = ImageGenInput(
+                    **{
+                        k: str(v)
+                        for k, v in row.items()
+                        if v is not None and str(v).strip()
+                    }
+                )
             except Exception:
                 inp = ImageGenInput(prompt=str(row.get("prompt", "")))
 
@@ -149,7 +155,9 @@ class ImageGenModel:
                 import torch
                 from diffusers import AutoPipelineForText2Image
 
-                logger.info(f"Loading SDXL-Turbo pipeline from: {self.image_model_path}")
+                logger.info(
+                    f"Loading SDXL-Turbo pipeline from: {self.image_model_path}"
+                )
                 self._pipeline = AutoPipelineForText2Image.from_pretrained(
                     self.image_model_path,
                     torch_dtype=torch.float16,  # Float16 halves VRAM usage vs float32
@@ -162,7 +170,7 @@ class ImageGenModel:
             image = self._pipeline(
                 prompt=prompt,
                 num_inference_steps=4,  # SDXL-Turbo quality degrades above ~4 steps
-                guidance_scale=0.0,     # Turbo style: no classifier-free guidance
+                guidance_scale=0.0,  # Turbo style: no classifier-free guidance
             ).images[0]
 
             # Convert PIL Image → PNG bytes → base64 ASCII string
@@ -172,13 +180,13 @@ class ImageGenModel:
 
             logger.info("✅ Image generated successfully")
             return {
-                "answer":   img_b64,
+                "answer": img_b64,
                 "messages": json.dumps([{"role": "user", "content": prompt}]),
             }
 
         except Exception as e:
             logger.error(f"❌ Image generation error: {e}")
             return {
-                "answer":   f"❌ Image generation failed: {str(e)}",
+                "answer": f"❌ Image generation failed: {str(e)}",
                 "messages": json.dumps([]),
             }

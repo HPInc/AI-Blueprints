@@ -44,6 +44,7 @@ logger = logging.getLogger(__name__)
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
 
+
 class DocumentInput(BaseModel):
     """
     Input schema for a single document analysis request.
@@ -51,11 +52,13 @@ class DocumentInput(BaseModel):
     The question is what you want to know about the document.
     The input_text is the document content itself (plain text).
     """
-    question:   str = "What are the main themes and key points of this document?"
+
+    question: str = "What are the main themes and key points of this document?"
     input_text: str = ""
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
+
 
 class DocumentModel:
     """
@@ -75,10 +78,10 @@ class DocumentModel:
 
     def __init__(
         self,
-        config:     Dict[str, Any],
-        docs_path:  Optional[str] = None,
+        config: Dict[str, Any],
+        docs_path: Optional[str] = None,
         model_path: Optional[str] = None,
-        secrets:    Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
     ):
         """
         Initialize DocumentModel.
@@ -92,10 +95,10 @@ class DocumentModel:
             model_path: Full path to the .gguf LLM file in datafabric
             secrets:    Optional API keys (not used for local LLM)
         """
-        self.config     = config
-        self.docs_path  = docs_path
+        self.config = config
+        self.docs_path = docs_path
         self.model_path = model_path
-        self.secrets    = secrets
+        self.secrets = secrets
 
         self._load_llm()
 
@@ -105,10 +108,12 @@ class DocumentModel:
         from langchain_community.llms import LlamaCpp
 
         context_window = self.config.get("context_window", 8192)
-        max_tokens     = context_window // 8
+        max_tokens = context_window // 8
 
         if not self.model_path:
-            logger.warning("⚠️ No model_path provided — DocumentModel will return errors.")
+            logger.warning(
+                "⚠️ No model_path provided — DocumentModel will return errors."
+            )
             self.llm = None
             return
 
@@ -158,10 +163,13 @@ class DocumentModel:
 
         for _, row in model_input.iterrows():
             try:
-                inp = DocumentInput(**{
-                    k: str(v) for k, v in row.items()
-                    if v is not None and str(v).strip()
-                })
+                inp = DocumentInput(
+                    **{
+                        k: str(v)
+                        for k, v in row.items()
+                        if v is not None and str(v).strip()
+                    }
+                )
             except Exception:
                 inp = DocumentInput(question=str(row.get("question", "")))
 
@@ -175,12 +183,12 @@ class DocumentModel:
 
         if not self.llm:
             return {
-                "answer":   "❌ LLM not loaded. Check model_path in configs/document.yaml.",
+                "answer": "❌ LLM not loaded. Check model_path in configs/document.yaml.",
                 "messages": json.dumps([]),
             }
 
-        question = inp.question   or "What is this document about?"
-        text     = inp.input_text or ""
+        question = inp.question or "What is this document about?"
+        text = inp.input_text or ""
 
         # Fallback: load a sample document from the docs directory if no input_text provided
         if not text and self.docs_path and os.path.exists(self.docs_path):
@@ -192,23 +200,26 @@ class DocumentModel:
 
         if not text:
             return {
-                "answer":   "❌ No document text provided. Pass text in the 'input_text' field.",
+                "answer": "❌ No document text provided. Pass text in the 'input_text' field.",
                 "messages": json.dumps([]),
             }
 
         # ── Chunking: split document into groups of ~20 lines ────────────────
         # Why 20 lines? It fits comfortably within the LLM context window while
         # providing enough context for meaningful analysis.
-        lines      = text.split("\n")
+        lines = text.split("\n")
         chunk_size = 20
-        chunks     = ["\n".join(lines[i:i + chunk_size]) for i in range(0, len(lines), chunk_size)]
-        chunks     = [c.strip() for c in chunks if c.strip()]
+        chunks = [
+            "\n".join(lines[i : i + chunk_size])
+            for i in range(0, len(lines), chunk_size)
+        ]
+        chunks = [c.strip() for c in chunks if c.strip()]
 
         logger.info(f"Document: {len(chunks)} chunks | Question: '{question[:60]}...'")
 
         # ── Per-chunk Q&A ─────────────────────────────────────────────────────
         ANALYST_SYSTEM = "You are a precise document analyst."
-        chunk_answers  = []
+        chunk_answers = []
 
         for i, chunk in enumerate(chunks[:10]):  # Cap at 10 chunks to prevent timeout
             chunk_prompt = (
@@ -229,8 +240,7 @@ class DocumentModel:
 
         if relevant:
             synthesis_context = "\n".join(
-                f"Section {i+1}: {ans}"
-                for i, ans in enumerate(relevant)
+                f"Section {i+1}: {ans}" for i, ans in enumerate(relevant)
             )
             synthesis_prompt = (
                 f"I analyzed a document in sections. Below are the per-section answers:\n\n"
@@ -239,15 +249,19 @@ class DocumentModel:
                 "Write a clear, concise final answer that synthesizes the information above. "
                 "Avoid repetition. Be direct and informative."
             )
-            final_answer = get_response_from_llm(self.llm, ANALYST_SYSTEM, synthesis_prompt)
+            final_answer = get_response_from_llm(
+                self.llm, ANALYST_SYSTEM, synthesis_prompt
+            )
         else:
-            final_answer = "The document does not contain information relevant to this question."
+            final_answer = (
+                "The document does not contain information relevant to this question."
+            )
 
         messages = [
-            {"role": "user",      "content": question},
+            {"role": "user", "content": question},
             {"role": "assistant", "content": final_answer},
         ]
         return {
-            "answer":   final_answer,
+            "answer": final_answer,
             "messages": json.dumps(messages, indent=2),
         }

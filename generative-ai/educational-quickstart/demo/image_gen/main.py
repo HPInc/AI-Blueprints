@@ -93,6 +93,7 @@ st.sidebar.markdown(
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
+
 def call_model(prompt: str, timeout: int = 600) -> dict:
     """
     Send a POST request to the ImageGenModel's invocations endpoint.
@@ -171,7 +172,11 @@ if submitted:
                 try:
                     img_bytes = base64.b64decode(answer)
                     st.markdown("### 🖼️ Generated Image")
-                    st.image(img_bytes, caption=f'"{prompt[:80]}..."', use_container_width=True)
+                    st.image(
+                        img_bytes,
+                        caption=f'"{prompt[:80]}..."',
+                        use_container_width=True,
+                    )
                     st.divider()
                     with st.expander("📋 Request Details"):
                         st.json(json.loads(result["data"].get("messages", "[]")))

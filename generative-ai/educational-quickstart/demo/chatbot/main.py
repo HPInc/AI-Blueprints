@@ -97,6 +97,7 @@ st.sidebar.markdown(
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
+
 def call_model(question: str, system_prompt: str, timeout: int = 600) -> dict:
     """
     Send a POST request to the ChatbotModel's invocations endpoint.

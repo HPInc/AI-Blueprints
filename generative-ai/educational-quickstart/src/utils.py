@@ -1,11 +1,16 @@
 # ─────── Standard Library Imports ───────
-import base64               # Encoding binary data (images) as text for display in browsers
-import logging              # Python's built-in system for printing status messages with severity levels
-import os                   # Interacting with the operating system (file paths, environment variables)
-import sys                  # System-level utilities (Python version, path management)
-import time                 # Measuring how long things take
-from functools import wraps  # Helper for writing decorators (functions that wrap other functions)
-from typing import Dict, Any  # Type hints — help editors and readers understand what a function expects
+import base64  # Encoding binary data (images) as text for display in browsers
+import logging  # Python's built-in system for printing status messages with severity levels
+import os  # Interacting with the operating system (file paths, environment variables)
+import sys  # System-level utilities (Python version, path management)
+import time  # Measuring how long things take
+from functools import (
+    wraps,
+)  # Helper for writing decorators (functions that wrap other functions)
+from typing import (
+    Dict,
+    Any,
+)  # Type hints — help editors and readers understand what a function expects
 
 # ─────── Third-Party Package Imports ───────
 from IPython.display import (
@@ -18,11 +23,31 @@ from IPython.display import (
 # Each log level (DEBUG, INFO, WARNING, etc.) gets its own background color and emoji icon.
 # This makes notebook output much easier to read at a glance.
 STYLE_MAP = {
-    logging.DEBUG:    {"bg": "#1e90ff", "fg": "white", "icon": "🔍"},   # Blue  — detailed debug info
-    logging.INFO:     {"bg": "#228B22", "fg": "white", "icon": "✅"},   # Green — normal progress messages
-    logging.WARNING:  {"bg": "#ffcc00", "fg": "black", "icon": "⚠️"},  # Yellow — something to be aware of
-    logging.ERROR:    {"bg": "#cc0000", "fg": "white", "icon": "❌"},   # Red   — something went wrong
-    logging.CRITICAL: {"bg": "#8B0000", "fg": "white", "icon": "🔥"},  # Dark red — serious failure
+    logging.DEBUG: {
+        "bg": "#1e90ff",
+        "fg": "white",
+        "icon": "🔍",
+    },  # Blue  — detailed debug info
+    logging.INFO: {
+        "bg": "#228B22",
+        "fg": "white",
+        "icon": "✅",
+    },  # Green — normal progress messages
+    logging.WARNING: {
+        "bg": "#ffcc00",
+        "fg": "black",
+        "icon": "⚠️",
+    },  # Yellow — something to be aware of
+    logging.ERROR: {
+        "bg": "#cc0000",
+        "fg": "white",
+        "icon": "❌",
+    },  # Red   — something went wrong
+    logging.CRITICAL: {
+        "bg": "#8B0000",
+        "fg": "white",
+        "icon": "🔥",
+    },  # Dark red — serious failure
 }
 
 
@@ -65,13 +90,12 @@ class EmojiStyledJupyterHandler(logging.Handler):
 # Create a logger named "AIS_logger" that all modules in this project share.
 # The logger collects messages and routes them through the EmojiStyledJupyterHandler.
 logger = logging.getLogger("AIS_logger")
-logger.setLevel(logging.DEBUG)   # Accept all message levels (DEBUG and above)
-logger.handlers.clear()          # Remove any previously attached handlers to avoid duplicates
+logger.setLevel(logging.DEBUG)  # Accept all message levels (DEBUG and above)
+logger.handlers.clear()  # Remove any previously attached handlers to avoid duplicates
 
 # Define the timestamp format for log messages
 formatter = logging.Formatter(
-    fmt="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 # Attach our custom HTML handler to the logger
@@ -81,6 +105,7 @@ logger.addHandler(handler)
 
 
 # ─────── Utility Functions ───────────────────────────────────────────────────
+
 
 def log_timing(func):
     """
@@ -98,11 +123,12 @@ def log_timing(func):
     Learn more about Python decorators:
         https://docs.python.org/3/glossary.html#term-decorator
     """
+
     @wraps(func)  # Preserve the original function's name and docstring
     def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()          # Record start timestamp (high-precision)
-        result = func(*args, **kwargs)            # Run the original function
-        end_time = time.perf_counter()            # Record end timestamp
+        start_time = time.perf_counter()  # Record start timestamp (high-precision)
+        result = func(*args, **kwargs)  # Run the original function
+        end_time = time.perf_counter()  # Record end timestamp
         logger.info(
             f"Function '{func.__name__}' took {end_time - start_time:.4f} seconds."
         )
@@ -188,12 +214,14 @@ def json_schema_from_type(input_type: type) -> dict:
         https://json-schema.org/understanding-json-schema/
     """
     mapping = {
-        str:   {"type": "string"},    # Text data
-        int:   {"type": "integer"},   # Whole numbers
-        float: {"type": "number"},    # Decimal numbers
-        bool:  {"type": "boolean"},   # True/False values
+        str: {"type": "string"},  # Text data
+        int: {"type": "integer"},  # Whole numbers
+        float: {"type": "number"},  # Decimal numbers
+        bool: {"type": "boolean"},  # True/False values
     }
-    return mapping.get(input_type, {"type": "string"})  # Default to string if type unknown
+    return mapping.get(
+        input_type, {"type": "string"}
+    )  # Default to string if type unknown
 
 
 def get_model_path(model_name: str) -> str:

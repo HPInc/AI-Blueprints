@@ -23,18 +23,18 @@ Usage at MLflow serve time (automatic, via loader.py):
     You never call this manually.
 """
 
-from .chatbot   import ChatbotModel
-from .document  import DocumentModel
+from .chatbot import ChatbotModel
+from .document import DocumentModel
 from .image_gen import ImageGenModel
-from .voice     import VoiceModel
+from .voice import VoiceModel
 
 # Registry mapping: capability string → Model class
 # loader.py uses this to route requests to the right model at serving time.
 MODEL_REGISTRY = {
-    "chatbot":   ChatbotModel,
+    "chatbot": ChatbotModel,
     "image_gen": ImageGenModel,
-    "document":  DocumentModel,
-    "voice":     VoiceModel,
+    "document": DocumentModel,
+    "voice": VoiceModel,
 }
 
 __all__ = [

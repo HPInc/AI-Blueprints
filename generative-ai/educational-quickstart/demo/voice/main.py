@@ -100,6 +100,7 @@ st.sidebar.markdown(
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
+
 def call_model(question: str = "", audio_base64: str = "", timeout: int = 600) -> dict:
     """
     Send a POST request to the VoiceModel's invocations endpoint.
@@ -188,7 +189,7 @@ if submitted:
     if audio_file is not None:
         # Encode audio to base64 for JSON transport
         audio_bytes = audio_file.read()
-        audio_b64   = base64.b64encode(audio_bytes).decode("utf-8")
+        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
 
         st.info(
             f"Processing audio: {audio_file.name} "

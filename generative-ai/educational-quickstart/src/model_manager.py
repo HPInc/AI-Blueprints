@@ -1,9 +1,9 @@
 # ─────── Standard Library Imports ───────
-import gc                   # Python's garbage collector — frees RAM/VRAM from unused objects
-import logging              # Logging system
-import multiprocessing      # Used to count CPU cores for optimal thread count
-import os                   # File path utilities
-from pathlib import Path    # Object-oriented file paths (easier than string manipulation)
+import gc  # Python's garbage collector — frees RAM/VRAM from unused objects
+import logging  # Logging system
+import multiprocessing  # Used to count CPU cores for optimal thread count
+import os  # File path utilities
+from pathlib import Path  # Object-oriented file paths (easier than string manipulation)
 from typing import Optional, Dict, Any  # Type hints
 
 # Set up module-level logger
@@ -85,9 +85,7 @@ def load_llm(model_path: str, n_ctx: int = 8192, **kwargs):
     try:
         from langchain_community.llms import LlamaCpp  # LangChain wrapper for llama.cpp
     except ImportError:
-        raise ImportError(
-            "LlamaCpp not found. Run: %pip install langchain-community"
-        )
+        raise ImportError("LlamaCpp not found. Run: %pip install langchain-community")
 
     if not verify_model_exists(model_path):
         raise FileNotFoundError(
@@ -104,20 +102,20 @@ def load_llm(model_path: str, n_ctx: int = 8192, **kwargs):
 
     # Merge default settings with any user overrides from kwargs
     llm_kwargs = {
-        "model_path":   model_path,
-        "n_gpu_layers": -1,         # -1 = offload ALL layers to GPU
-        "n_batch":      512,        # Tokens processed per batch
-        "n_ctx":        n_ctx,      # Total context window
-        "max_tokens":   max_tokens, # Max tokens to generate per call
-        "f16_kv":       True,       # Use float16 for key-value cache (saves VRAM)
-        "use_mmap":     False,      # Disable memory-mapped file reading
-        "low_vram":     False,      # Don't use low-VRAM mode (we offload fully to GPU)
-        "temperature":  0.0,        # 0 = deterministic (greedy) decoding
-        "repeat_penalty": 1.0,      # Penalize repeated tokens (1.0 = no penalty)
-        "streaming":    False,      # Return complete response, not token-by-token
-        "seed":         42,         # Fixed seed = reproducible outputs
-        "num_threads":  cpu_count,  # Use all CPU cores for non-GPU operations
-        "verbose":      False,      # Suppress llama.cpp progress logs
+        "model_path": model_path,
+        "n_gpu_layers": -1,  # -1 = offload ALL layers to GPU
+        "n_batch": 512,  # Tokens processed per batch
+        "n_ctx": n_ctx,  # Total context window
+        "max_tokens": max_tokens,  # Max tokens to generate per call
+        "f16_kv": True,  # Use float16 for key-value cache (saves VRAM)
+        "use_mmap": False,  # Disable memory-mapped file reading
+        "low_vram": False,  # Don't use low-VRAM mode (we offload fully to GPU)
+        "temperature": 0.0,  # 0 = deterministic (greedy) decoding
+        "repeat_penalty": 1.0,  # Penalize repeated tokens (1.0 = no penalty)
+        "streaming": False,  # Return complete response, not token-by-token
+        "seed": 42,  # Fixed seed = reproducible outputs
+        "num_threads": cpu_count,  # Use all CPU cores for non-GPU operations
+        "verbose": False,  # Suppress llama.cpp progress logs
     }
     llm_kwargs.update(kwargs)  # Apply any user-provided overrides
 
@@ -172,7 +170,9 @@ def load_diffusion_pipeline(model_path: str, **kwargs):
         "torch_dtype": torch.float16,  # Use 16-bit precision to save VRAM
     }
     # Only add "variant" if using fp16 variant files (not all models have them)
-    if os.path.exists(os.path.join(model_path, "unet", "diffusion_pytorch_model.fp16.safetensors")):
+    if os.path.exists(
+        os.path.join(model_path, "unet", "diffusion_pytorch_model.fp16.safetensors")
+    ):
         pipeline_kwargs["variant"] = "fp16"
 
     pipeline_kwargs.update(kwargs)  # Apply user overrides
@@ -210,9 +210,7 @@ def load_whisper_model(model_path: str, **kwargs):
     try:
         import whisper  # openai-whisper package
     except ImportError:
-        raise ImportError(
-            "openai-whisper not found. Run: %pip install openai-whisper"
-        )
+        raise ImportError("openai-whisper not found. Run: %pip install openai-whisper")
 
     logger.info(f"Loading Whisper model from: {model_path}")
 
@@ -223,7 +221,9 @@ def load_whisper_model(model_path: str, **kwargs):
         if pt_files:
             model = whisper.load_model(str(pt_files[0]), **kwargs)
         else:
-            logger.warning("⚠️ No .pt file found in model_path directory — trying as model name")
+            logger.warning(
+                "⚠️ No .pt file found in model_path directory — trying as model name"
+            )
             # Fall back to treating model_path as a size identifier
             model_name = os.path.basename(model_path.rstrip("/"))
             model = whisper.load_model(model_name, **kwargs)
@@ -270,10 +270,10 @@ def get_quantization_config(model_size_b: float) -> Dict[str, Any]:
         # NF4 = "NormalFloat 4-bit", designed specifically for neural network weights
         logger.info(f"Using 4-bit NF4 quantization for {model_size_b}B model")
         config = BitsAndBytesConfig(
-            load_in_4bit=True,                        # Enable 4-bit loading
-            bnb_4bit_quant_type="nf4",                # NF4 quantization type
-            bnb_4bit_compute_dtype=torch.float16,     # Do computation in float16
-            bnb_4bit_use_double_quant=True,           # Double quantize for extra compression
+            load_in_4bit=True,  # Enable 4-bit loading
+            bnb_4bit_quant_type="nf4",  # NF4 quantization type
+            bnb_4bit_compute_dtype=torch.float16,  # Do computation in float16
+            bnb_4bit_use_double_quant=True,  # Double quantize for extra compression
         )
     elif model_size_b < 70.0:
         # 8-bit quantization — good balance for medium-large models (13B–70B)
@@ -284,7 +284,9 @@ def get_quantization_config(model_size_b: float) -> Dict[str, Any]:
     else:
         # For 70B+ models, 4-bit GPTQ with vLLM is typically recommended
         # Return basic 4-bit config as a fallback
-        logger.info(f"Using 4-bit NF4 for {model_size_b}B+ model (recommend vLLM for production)")
+        logger.info(
+            f"Using 4-bit NF4 for {model_size_b}B+ model (recommend vLLM for production)"
+        )
         config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -321,8 +323,9 @@ def safe_cuda_cleanup() -> None:
     """
     try:
         import torch
+
         if torch.cuda.is_available():
-            torch.cuda.empty_cache()   # Release PyTorch's VRAM cache
+            torch.cuda.empty_cache()  # Release PyTorch's VRAM cache
     except ImportError:
         pass  # No PyTorch available — nothing to clean up
 

@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 # ─────── Input / Output Schema ───────────────────────────────────────────────
 
+
 class ChatbotInput(BaseModel):
     """
     Input schema for a single chatbot inference request.
@@ -42,11 +43,13 @@ class ChatbotInput(BaseModel):
         Pydantic validates that fields have the correct types and provides clear
         error messages when input is malformed — helpful in educational settings.
     """
-    question:      str = ""
+
+    question: str = ""
     system_prompt: str = "You are a helpful and friendly AI assistant."
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
+
 
 class ChatbotModel:
     """
@@ -68,10 +71,10 @@ class ChatbotModel:
 
     def __init__(
         self,
-        config:     Dict[str, Any],
-        docs_path:  Optional[str] = None,
+        config: Dict[str, Any],
+        docs_path: Optional[str] = None,
         model_path: Optional[str] = None,
-        secrets:    Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
     ):
         """
         Initialize the ChatbotModel.
@@ -85,10 +88,10 @@ class ChatbotModel:
             model_path: Full path to the .gguf LLM file in datafabric
             secrets:    Optional API keys / tokens (not used for local LLM)
         """
-        self.config     = config
-        self.docs_path  = docs_path
+        self.config = config
+        self.docs_path = docs_path
         self.model_path = model_path
-        self.secrets    = secrets
+        self.secrets = secrets
 
         self._load_llm()
 
@@ -105,7 +108,7 @@ class ChatbotModel:
         from langchain_community.llms import LlamaCpp
 
         context_window = self.config.get("context_window", 8192)
-        max_tokens     = context_window // 8  # Reserve ⅛ of context for the response
+        max_tokens = context_window // 8  # Reserve ⅛ of context for the response
 
         if not self.model_path:
             logger.warning(
@@ -124,23 +127,25 @@ class ChatbotModel:
             return
 
         logger.info(f"Loading LLM: {self.model_path}")
-        logger.info(f"Context: {context_window} tokens | Max response: {max_tokens} tokens")
+        logger.info(
+            f"Context: {context_window} tokens | Max response: {max_tokens} tokens"
+        )
 
         self.llm = LlamaCpp(
             model_path=self.model_path,
-            n_gpu_layers=-1,                         # Offload ALL layers to GPU
-            n_batch=512,                             # Tokens processed per batch
-            n_ctx=context_window,                    # Total context window size
-            max_tokens=max_tokens,                   # Max tokens in the response
-            f16_kv=True,                             # Float16 KV-cache (saves VRAM)
-            use_mmap=False,                          # Disable memory-mapped file I/O
-            low_vram=False,                          # Full VRAM mode (Blackwell default)
-            temperature=0.0,                         # Deterministic outputs
-            repeat_penalty=1.0,                      # No repetition penalty
-            streaming=False,                         # Return complete response
-            seed=42,                                 # Reproducible results
-            num_threads=multiprocessing.cpu_count(), # Use all CPU cores
-            verbose=False,                           # Suppress llama.cpp internal logs
+            n_gpu_layers=-1,  # Offload ALL layers to GPU
+            n_batch=512,  # Tokens processed per batch
+            n_ctx=context_window,  # Total context window size
+            max_tokens=max_tokens,  # Max tokens in the response
+            f16_kv=True,  # Float16 KV-cache (saves VRAM)
+            use_mmap=False,  # Disable memory-mapped file I/O
+            low_vram=False,  # Full VRAM mode (Blackwell default)
+            temperature=0.0,  # Deterministic outputs
+            repeat_penalty=1.0,  # No repetition penalty
+            streaming=False,  # Return complete response
+            seed=42,  # Reproducible results
+            num_threads=multiprocessing.cpu_count(),  # Use all CPU cores
+            verbose=False,  # Suppress llama.cpp internal logs
         )
         logger.info("✅ LLM loaded successfully")
 
@@ -169,10 +174,13 @@ class ChatbotModel:
 
         for _, row in model_input.iterrows():
             try:
-                inp = ChatbotInput(**{
-                    k: str(v) for k, v in row.items()
-                    if v is not None and str(v).strip()
-                })
+                inp = ChatbotInput(
+                    **{
+                        k: str(v)
+                        for k, v in row.items()
+                        if v is not None and str(v).strip()
+                    }
+                )
             except Exception:
                 inp = ChatbotInput(question=str(row.get("question", "")))
 
@@ -186,22 +194,24 @@ class ChatbotModel:
 
         if not self.llm:
             return {
-                "answer":   "❌ LLM not loaded. Check model_path in configs/chatbot.yaml.",
+                "answer": "❌ LLM not loaded. Check model_path in configs/chatbot.yaml.",
                 "messages": json.dumps([]),
             }
 
-        system_prompt = inp.system_prompt or "You are a helpful and friendly AI assistant."
-        question      = inp.question      or "Hello!"
+        system_prompt = (
+            inp.system_prompt or "You are a helpful and friendly AI assistant."
+        )
+        question = inp.question or "Hello!"
 
         logger.info(f"Chatbot: processing question ({len(question)} chars)")
         answer = get_response_from_llm(self.llm, system_prompt, question)
 
         messages = [
-            {"role": "system",    "content": system_prompt},
-            {"role": "user",      "content": question},
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": question},
             {"role": "assistant", "content": answer},
         ]
         return {
-            "answer":   answer,
+            "answer": answer,
             "messages": json.dumps(messages, indent=2),
         }

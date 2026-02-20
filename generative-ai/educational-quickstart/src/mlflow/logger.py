@@ -109,6 +109,7 @@ class Logger:
             # ── 2. Optionally write secrets.yaml ─────────────────────────────
             if secrets_dict:
                 import yaml
+
                 secrets_dest = tmp_path / "secrets.yaml"
                 with open(secrets_dest, "w") as f:
                     yaml.dump(secrets_dict, f, default_flow_style=False)
@@ -131,6 +132,7 @@ class Logger:
             # so that loader.py can find the model after MLflow restores artifacts.
             if model_path:
                 import yaml
+
                 with open(config_dest, "r") as f:
                     cfg = yaml.safe_load(f) or {}
                 cfg["model_path"] = model_path
@@ -146,12 +148,12 @@ class Logger:
             # See: https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#mlflow.pyfunc.log_model
             logger.info(f"📦 Logging model to MLflow artifact path: '{artifact_path}'")
             mlflow.pyfunc.log_model(
-                name=artifact_path,                    # Name in the MLflow UI
-                loader_module="src.mlflow.loader",     # Which module implements _load_pyfunc
-                data_path=str(tmp_path),               # The temp dir we built above
-                code_paths=["../src"],                 # Python source code to bundle
-                signature=signature,                   # Input/output schema
-                pip_requirements=pip_reqs,             # Dependencies
-                registered_model_name=None,            # Register separately (see notebook)
+                name=artifact_path,  # Name in the MLflow UI
+                loader_module="src.mlflow.loader",  # Which module implements _load_pyfunc
+                data_path=str(tmp_path),  # The temp dir we built above
+                code_paths=["../src"],  # Python source code to bundle
+                signature=signature,  # Input/output schema
+                pip_requirements=pip_reqs,  # Dependencies
+                registered_model_name=None,  # Register separately (see notebook)
             )
             logger.info("✅ Model logged to MLflow successfully")

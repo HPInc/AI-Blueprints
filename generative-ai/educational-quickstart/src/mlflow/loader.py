@@ -75,7 +75,9 @@ def _load_pyfunc(data_path: str):
         secrets = load_config(str(secrets_path))
         logger.info("✅ Loaded secrets.yaml (contents not logged for security)")
     else:
-        logger.info("ℹ️ No secrets.yaml found — running without external API integrations")
+        logger.info(
+            "ℹ️ No secrets.yaml found — running without external API integrations"
+        )
 
     # ── 3. Resolve docs path ──────────────────────────────────────────────────
     docs_path_candidate = data_path / "docs"
@@ -84,10 +86,7 @@ def _load_pyfunc(data_path: str):
     # ── 4. Resolve model path ─────────────────────────────────────────────────
     # MODEL_ARTIFACTS_PATH is an environment variable set by the MLflow serving container.
     # When running locally on Jupyter, you typically set model_path via config.yaml.
-    model_path = os.environ.get(
-        "MODEL_ARTIFACTS_PATH",
-        config.get("model_path", "")
-    )
+    model_path = os.environ.get("MODEL_ARTIFACTS_PATH", config.get("model_path", ""))
 
     if not model_path:
         logger.warning(
@@ -111,7 +110,9 @@ def _load_pyfunc(data_path: str):
         # Default: chatbot (covers "chatbot" and any unrecognized capability string)
         from src.mlflow.models.chatbot import ChatbotModel as Model
 
-    logger.info(f"Building {Model.__name__}: model_path={model_path!r}, docs_path={docs_path!r}")
+    logger.info(
+        f"Building {Model.__name__}: model_path={model_path!r}, docs_path={docs_path!r}"
+    )
 
     # ── 6. Instantiate and return the Model ──────────────────────────────────
     # All Model classes share the same constructor signature for loader compatibility.

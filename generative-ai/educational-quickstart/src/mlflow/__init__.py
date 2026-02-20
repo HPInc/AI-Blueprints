@@ -41,17 +41,22 @@ def __getattr__(name):
     """
     if name == "ChatbotModel":
         from .models.chatbot import ChatbotModel
+
         return ChatbotModel
     if name == "ImageGenModel":
         from .models.image_gen import ImageGenModel
+
         return ImageGenModel
     if name == "DocumentModel":
         from .models.document import DocumentModel
+
         return DocumentModel
     if name == "VoiceModel":
         from .models.voice import VoiceModel
+
         return VoiceModel
     if name == "Logger":
         from .logger import Logger
+
         return Logger
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

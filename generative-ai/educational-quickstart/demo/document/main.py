@@ -93,6 +93,7 @@ st.sidebar.markdown(
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
+
 def call_model(question: str, input_text: str, timeout: int = 600) -> dict:
     """
     Send a POST request to the DocumentModel's invocations endpoint.

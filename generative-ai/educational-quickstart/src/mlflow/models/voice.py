@@ -51,6 +51,7 @@ logger = logging.getLogger(__name__)
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
 
+
 class VoiceInput(BaseModel):
     """
     Input schema for a single voice assistant request.
@@ -58,11 +59,13 @@ class VoiceInput(BaseModel):
     The model accepts EITHER audio (via audio_base64) OR text (via question),
     making it testable without a microphone during development.
     """
-    question:     str = ""   # Text command (used when no audio is provided)
-    audio_base64: str = ""   # Base64-encoded audio for Whisper transcription
+
+    question: str = ""  # Text command (used when no audio is provided)
+    audio_base64: str = ""  # Base64-encoded audio for Whisper transcription
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
+
 
 class VoiceModel:
     """
@@ -76,10 +79,10 @@ class VoiceModel:
 
     def __init__(
         self,
-        config:     Dict[str, Any],
-        docs_path:  Optional[str] = None,
+        config: Dict[str, Any],
+        docs_path: Optional[str] = None,
         model_path: Optional[str] = None,
-        secrets:    Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
     ):
         """
         Initialize VoiceModel.
@@ -94,10 +97,10 @@ class VoiceModel:
             model_path: Full path to the .gguf LLM file in datafabric
             secrets:    Optional API keys (not used for local models)
         """
-        self.config     = config
-        self.docs_path  = docs_path
+        self.config = config
+        self.docs_path = docs_path
         self.model_path = model_path
-        self.secrets    = secrets
+        self.secrets = secrets
 
         self.stt_model_path = config.get(
             "stt_model_path",
@@ -112,10 +115,12 @@ class VoiceModel:
         from langchain_community.llms import LlamaCpp
 
         context_window = self.config.get("context_window", 8192)
-        max_tokens     = context_window // 8
+        max_tokens = context_window // 8
 
         if not self.model_path:
-            logger.warning("⚠️ No model_path provided — LLM responses will be unavailable.")
+            logger.warning(
+                "⚠️ No model_path provided — LLM responses will be unavailable."
+            )
             self.llm = None
             return
 
@@ -162,10 +167,13 @@ class VoiceModel:
 
         for _, row in model_input.iterrows():
             try:
-                inp = VoiceInput(**{
-                    k: str(v) for k, v in row.items()
-                    if v is not None and str(v).strip()
-                })
+                inp = VoiceInput(
+                    **{
+                        k: str(v)
+                        for k, v in row.items()
+                        if v is not None and str(v).strip()
+                    }
+                )
             except Exception:
                 inp = VoiceInput(question=str(row.get("question", "")))
 
@@ -196,10 +204,12 @@ class VoiceModel:
 
         return {
             "answer": f"[Text input]\nCommand: {command}\nResponse: {response}",
-            "messages": json.dumps([
-                {"role": "user",      "content": command},
-                {"role": "assistant", "content": response},
-            ]),
+            "messages": json.dumps(
+                [
+                    {"role": "user", "content": command},
+                    {"role": "assistant", "content": response},
+                ]
+            ),
         }
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
@@ -224,10 +234,12 @@ class VoiceModel:
 
                 try:
                     # Load from local .pt file if present; otherwise use model name
-                    pt_files     = list(Path(self.stt_model_path).glob("*.pt"))
-                    model_ref    = str(pt_files[0]) if pt_files else "large-v3"
+                    pt_files = list(Path(self.stt_model_path).glob("*.pt"))
+                    model_ref = str(pt_files[0]) if pt_files else "large-v3"
                     whisper_model = whisper.load_model(model_ref)
-                    transcription = whisper_model.transcribe(tmp_path).get("text", "").strip()
+                    transcription = (
+                        whisper_model.transcribe(tmp_path).get("text", "").strip()
+                    )
                     logger.info(f"Transcription: '{transcription[:60]}...'")
                 finally:
                     os.unlink(tmp_path)  # Always clean up the temp file
@@ -259,10 +271,10 @@ class VoiceModel:
             response = "❌ LLM not loaded. Check model_path in configs/voice.yaml."
 
         messages = [
-            {"role": "user",      "content": f"[Voice] {transcription}"},
+            {"role": "user", "content": f"[Voice] {transcription}"},
             {"role": "assistant", "content": response},
         ]
         return {
-            "answer":   f"Transcription: {transcription}\n\nResponse: {response}",
+            "answer": f"Transcription: {transcription}\n\nResponse: {response}",
             "messages": json.dumps(messages, indent=2),
         }
