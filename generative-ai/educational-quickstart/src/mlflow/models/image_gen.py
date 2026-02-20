@@ -222,6 +222,21 @@ class ImageGenModel:
                 width=1024,
             ).images[0]
 
+            # Embed an invisible watermark to mark AI-generated content (Spec 4.2.3)
+            try:
+                import numpy as np
+                from imwatermark import WatermarkEncoder
+                from PIL import Image as PILImage
+
+                wm_encoder = WatermarkEncoder()
+                wm_encoder.set_watermark("bytes", b"AI-Studio-EQ")
+                img_np = np.array(image.convert("RGB"))
+                img_np = wm_encoder.encode(img_np, "rivaGan")
+                image = PILImage.fromarray(img_np)
+                logger.info("✅ Invisible watermark embedded (rivaGan)")
+            except Exception as wm_err:
+                logger.warning("⚠️ Watermark embedding failed (non-critical): %s", wm_err)
+
             # Convert PIL Image → PNG bytes → base64 ASCII string for MLflow transport
             buffer = BytesIO()
             image.save(buffer, format="PNG")

@@ -255,7 +255,11 @@ class VoiceModel:
 
             try:
                 # Cap length for educational demos; pick first built-in speaker if available
-                kwargs: dict = {"text": text[:500], "language": "en", "file_path": tmp_path}
+                kwargs: dict = {
+                    "text": text[:500],
+                    "language": "en",
+                    "file_path": tmp_path,
+                }
                 speakers = getattr(tts, "speakers", None)
                 if speakers:
                     kwargs["speaker"] = speakers[0]
@@ -316,6 +320,23 @@ class VoiceModel:
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
                     tmp.write(audio_bytes)
                     tmp_path = tmp.name
+
+                # Normalize audio to 16 kHz mono WAV — required by Whisper (Spec 4.2.4)
+                try:
+                    import torchaudio
+
+                    waveform, sample_rate = torchaudio.load(tmp_path)
+                    if waveform.shape[0] > 1:  # Stereo → mono
+                        waveform = waveform.mean(dim=0, keepdim=True)
+                    if sample_rate != 16000:  # Resample to 16 kHz
+                        resampler = torchaudio.transforms.Resample(sample_rate, 16000)
+                        waveform = resampler(waveform)
+                    torchaudio.save(tmp_path, waveform, 16000)
+                    logger.info("✅ Audio normalized to 16 kHz mono via torchaudio")
+                except Exception as ta_err:
+                    logger.warning(
+                        "⚠️ torchaudio normalization failed (using raw audio): %s", ta_err
+                    )
 
                 try:
                     whisper_cpp = WhisperCppModel(self.stt_model_path)

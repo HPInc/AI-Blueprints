@@ -197,6 +197,19 @@ class DocumentModel:
                 with open(sample_files[0], "r", encoding="utf-8") as f:
                     text = f.read()
                 logger.info(f"Using sample document: {sample_files[0].name}")
+            if not text:
+                # Try PDF files as a fallback when no .txt files are present (Spec 4.2.3)
+                pdf_files = list(Path(self.docs_path).glob("*.pdf"))
+                if pdf_files:
+                    import pypdf
+                    reader = pypdf.PdfReader(str(pdf_files[0]))
+                    text = "\n".join(
+                        page.extract_text() or "" for page in reader.pages
+                    )
+                    logger.info(
+                        f"Using sample PDF (pypdf): {pdf_files[0].name} "
+                        f"({len(reader.pages)} pages)"
+                    )
 
         if not text:
             return {

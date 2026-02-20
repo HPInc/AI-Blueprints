@@ -10,6 +10,7 @@ bitsandbytes>=0.41.3
 safetensors>=0.4.1
 sentencepiece>=0.1.99
 xformers>=0.0.23
+vllm  # High-throughput LLM serving with PagedAttention (Spec 4.2.1)
 
 # ─── Interface & Deployment ───
 huggingface_hub>=0.19.4
@@ -26,12 +27,14 @@ python-docx>=1.1.0
 markdown>=3.5.1
 pillow
 opencv-python
+invisible-watermark>=0.2.0  # Invisible watermark embedding for generated images (Spec 4.2.3)
 
 # ─── Audio & Voice Processing ───
 sounddevice
 librosa
 soundfile
-openai-whisper
+torchaudio  # Audio processing and feature extraction (Spec 4.2.4)
+pyaudio     # Real-time audio capture/playback — requires portaudio19-dev system package (Spec 4.2.4)
 pywhispercpp
 TTS
 
@@ -39,7 +42,7 @@ TTS
 langchain>=0.3.26
 langchain-community>=0.3.27
 chromadb
-faiss-cpu
+faiss-gpu  # GPU-accelerated similarity search for embeddings (Spec 4.2.5)
 sentence-transformers
 
 # ─── Monitoring & Visualization ───
