@@ -188,7 +188,7 @@ The blueprint container must include the following packages pre-installed and ve
 | :--- | :--- | :--- |
 | `langchain`, `langchain-community` | latest | Agent framework, tool-calling, and chain orchestration |
 | `chromadb` | latest | Vector database for RAG retrieval and memory persistence |
-| `faiss-gpu` | latest | GPU-accelerated similarity search for embeddings |
+| `faiss-gpu-cu12` | latest | GPU-accelerated similarity search for embeddings |
 | `sentence-transformers` | latest | Embedding models for semantic search and RAG pipelines |
 
 #### 4.2.6 — Monitoring & Utilities
