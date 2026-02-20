@@ -335,7 +335,8 @@ class VoiceModel:
                     logger.info("✅ Audio normalized to 16 kHz mono via torchaudio")
                 except Exception as ta_err:
                     logger.warning(
-                        "⚠️ torchaudio normalization failed (using raw audio): %s", ta_err
+                        "⚠️ torchaudio normalization failed (using raw audio): %s",
+                        ta_err,
                     )
 
                 try:

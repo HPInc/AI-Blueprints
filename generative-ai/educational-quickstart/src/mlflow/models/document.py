@@ -202,10 +202,9 @@ class DocumentModel:
                 pdf_files = list(Path(self.docs_path).glob("*.pdf"))
                 if pdf_files:
                     import pypdf
+
                     reader = pypdf.PdfReader(str(pdf_files[0]))
-                    text = "\n".join(
-                        page.extract_text() or "" for page in reader.pages
-                    )
+                    text = "\n".join(page.extract_text() or "" for page in reader.pages)
                     logger.info(
                         f"Using sample PDF (pypdf): {pdf_files[0].name} "
                         f"({len(reader.pages)} pages)"

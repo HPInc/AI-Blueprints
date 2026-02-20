@@ -235,7 +235,9 @@ class ImageGenModel:
                 image = PILImage.fromarray(img_np)
                 logger.info("✅ Invisible watermark embedded (rivaGan)")
             except Exception as wm_err:
-                logger.warning("⚠️ Watermark embedding failed (non-critical): %s", wm_err)
+                logger.warning(
+                    "⚠️ Watermark embedding failed (non-critical): %s", wm_err
+                )
 
             # Convert PIL Image → PNG bytes → base64 ASCII string for MLflow transport
             buffer = BytesIO()
