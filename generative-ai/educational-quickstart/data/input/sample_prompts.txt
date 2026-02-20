@@ -1,0 +1,29 @@
+# Sample Prompts for Educational Quickstart
+# ──────────────────────────────────────────
+# Use these example prompts as starting points in the starter notebooks.
+# Feel free to modify them or write your own!
+
+# ── Chatbot Prompts ──────────────────────────────────────────────────────────
+What is artificial intelligence and how is it different from traditional software?
+Explain machine learning to someone who has never heard the term before.
+What is the difference between supervised and unsupervised learning?
+Write a short poem about creativity and technology working together.
+Give me three real-world examples of AI being used in everyday life.
+What are large language models and how do they generate text?
+Explain neural networks using a simple analogy.
+
+# ── Image Generation Prompts ─────────────────────────────────────────────────
+A serene mountain landscape at golden hour, photorealistic, high detail
+A futuristic city skyline with flying vehicles and neon lights, cyberpunk style
+A watercolor painting of a white cat reading a thick book by firelight
+An abstract geometric pattern in vibrant blues, purples, and golds, digital art
+A cozy coffee shop interior with a laptop on the table and rain outside the window
+A robot and a human shaking hands in a field of sunflowers, optimistic and bright
+A close-up of a circuit board transformed into a flourishing garden
+
+# ── Document Analysis Questions ──────────────────────────────────────────────
+What is the overall sentiment of this document?
+What are the main strengths mentioned in the feedback?
+What areas for improvement are identified?
+Summarize the document in 3 bullet points.
+What numerical ratings or scores are mentioned?

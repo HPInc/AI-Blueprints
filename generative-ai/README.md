@@ -2,7 +2,7 @@
 
 The blueprint projects in this folder demonstrate how to build generative AI applications with [**HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html).
 
-We provide **7 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
+We provide **8 blueprint projects**, each designed for quick and easy use to help you get started efficiently.
 
 ### 📊 Automated Evaluation with Structured Outputs
 
@@ -43,3 +43,18 @@ This project demonstrates how to build a semantic chunking and summarization pip
 ### Vanilla RAG with LangChain
 
 This project is an AI-powered vanilla RAG (Retrieval-Augmented Generation) chatbot built using LangChain and Galileo for model evaluation, protection, and observability. It leverages the Z by HP AI Studio Local GenAI image and the Meta Llama 3.1 model with 8B parameters to generate contextual and document-grounded answers to user queries about Z by HP AI Studio.
+
+### 🎓 Educational Quickstart
+
+**Educational Quickstart** is a pre-configured, multi-capability AI development environment designed for learning AI and machine learning hands-on. No prior AI experience is required.
+
+It provides **four independently deployable AI models**, each with its own one-click starter notebook, Streamlit UI, and MLflow registration:
+
+| Capability | Starter Notebook | Registers As |
+|---|---|---|
+| 🤖 Conversational AI (LLM) | `chatbot-starter.ipynb` | `AIStudio-EQ-Chatbot` |
+| 🎨 Text-to-Image (SDXL-Turbo) | `image-gen-starter.ipynb` | `AIStudio-EQ-ImageGen` |
+| 📄 Document RAG Q&A | `document-analyzer-starter.ipynb` | `AIStudio-EQ-Document` |
+| 🎤 Voice Assistant (Whisper + LLM) | `voice-assistant-starter.ipynb` | `AIStudio-EQ-Voice` |
+
+Each starter notebook is self-contained: install dependencies, run the demo, and register the model — all in a single notebook run. Produce your first AI output within 20 minutes.

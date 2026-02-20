@@ -1,0 +1,41 @@
+# Chatbot Configuration
+# Registers as: AIStudio-EQ-Chatbot
+
+# Capability identifier — read by loader.py to select ChatbotModel
+capability: "chatbot"
+
+# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q8)
+# This file must be present in datafabric before running the notebook.
+# Download via: huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
+model_path: "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+
+# Context window size (tokens). 8192 works well for conversational Q&A.
+# Increase to 16384 or 32768 if you need longer conversations.
+context_window: 8192
+
+# UI Configuration — AI Studio reads this to serve the right Streamlit frontend
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 600
+
+  # Number of health check retries
+  health_check_retries: 5

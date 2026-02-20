@@ -1,0 +1,10 @@
+This file is a placeholder for the Streamlit UI screenshot.
+
+Replace this file with an actual PNG screenshot of the Streamlit web app
+once the app is running and deployed.
+
+To capture the screenshot:
+1. Complete the run-workflow.ipynb and register-model.ipynb notebooks
+2. Deploy the model via AI Studio Publishing Services
+3. Open the Streamlit app at the deployed URL
+4. Take a screenshot of the main interface and save it as streamlit-ss.png

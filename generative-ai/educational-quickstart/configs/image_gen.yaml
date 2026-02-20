@@ -1,0 +1,44 @@
+# Image Generation Configuration
+# Registers as: AIStudio-EQ-ImageGen
+
+# Capability identifier — read by loader.py to select ImageGenModel
+capability: "image_gen"
+
+# Path to the SDXL-Turbo diffusion model (Stability AI)
+# This directory must be present in datafabric before running the notebook.
+# Download via: huggingface-cli download stabilityai/sdxl-turbo
+image_model_path: "/home/jovyan/datafabric/sdxl-turbo"
+
+# model_path is unused by ImageGenModel (no LLM needed for image generation)
+# but kept for structural consistency across all config files.
+model_path: ""
+
+# Context window — not used by ImageGenModel, kept for structural consistency
+context_window: 8192
+
+# UI Configuration — AI Studio reads this to serve the right Streamlit frontend
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 600
+
+  # Number of health check retries
+  health_check_retries: 5
