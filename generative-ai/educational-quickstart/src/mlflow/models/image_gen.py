@@ -160,7 +160,7 @@ class ImageGenModel:
                 )
                 self._pipeline = AutoPipelineForText2Image.from_pretrained(
                     self.image_model_path,
-                    torch_dtype=torch.float16,  # Float16 halves VRAM usage vs float32
+                    torch_dtype=torch.bfloat16,  # BF16 avoids cuBLAS FP16 alignment issues on CUDA 12.x
                 ).to("cuda")
                 logger.info("✅ Diffusion pipeline loaded")
 

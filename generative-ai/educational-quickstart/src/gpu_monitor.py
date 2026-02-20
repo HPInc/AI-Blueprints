@@ -355,6 +355,17 @@ class GPUMonitor:
         if self.history:
             log_gpu_metrics_to_mlflow(self.history[-1])  # Only log the latest reading
 
+    def display_dashboard(self) -> None:
+        """
+        Collect a GPU snapshot and display the 4-panel dashboard inline in the notebook.
+
+        This is a convenience wrapper that combines snapshot() + dashboard() + fig.show()
+        into a single one-liner call — the pattern used in all starter notebooks.
+        """
+        self.snapshot()  # Collect current GPU stats
+        fig = self.dashboard()  # Build the Plotly figure
+        fig.show()  # Display inline in the Jupyter cell output
+
     def summary(self) -> str:
         """
         Return a formatted text summary of the current GPU state.

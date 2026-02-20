@@ -298,24 +298,39 @@ def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
         return {}
 
 
-def log_asset_status(asset_path: str, asset_name: str) -> None:
+def log_asset_status(asset_path_or_assets, asset_name: str = "") -> None:
     """
     Check whether a file or directory exists and log a pass/fail status message.
 
-    This is used before running expensive model loading steps to give early
-    and clear feedback if a required file is missing — saving time
-    that would otherwise be spent waiting for a crash message.
+    Accepts two calling styles:
+
+    1. List of asset dicts (as used in starter notebooks)::
+
+        log_asset_status([
+            {"name": "SDXL-Turbo model", "path": image_model_path, "required": True},
+            {"name": "Config YAML",      "path": "../configs/image_gen.yaml"},
+        ])
+
+    2. Two-argument form for a single asset (backward-compatible)::
+
+        log_asset_status("/path/to/model.gguf", "LLaMA Model File")
 
     Args:
-        asset_path: The full path to check (file or directory)
-        asset_name: A human-readable name for the asset, shown in the log message
-
-    Example usage:
-        log_asset_status("/home/jovyan/datafabric/my-model/model.gguf", "LLaMA Model File")
-        # Prints: ✅ [FOUND]   LLaMA Model File
-        #      or ❌ [MISSING] LLaMA Model File → /home/jovyan/datafabric/my-model/model.gguf
+        asset_path_or_assets: Either a list of asset dicts (each with "name" and "path" keys)
+                              or a string path to check (used with asset_name).
+        asset_name:           Human-readable label used only in the two-argument form.
     """
-    if os.path.exists(asset_path):
-        logger.info(f"[FOUND]   {asset_name}")
+    if isinstance(asset_path_or_assets, list):
+        for asset in asset_path_or_assets:
+            _path = asset.get("path", "")
+            _name = asset.get("name", _path)
+            if os.path.exists(_path):
+                logger.info(f"[FOUND]   {_name}")
+            else:
+                logger.error(f"[MISSING] {_name} → {_path}")
     else:
-        logger.error(f"[MISSING] {asset_name} → {asset_path}")
+        asset_path = asset_path_or_assets
+        if os.path.exists(asset_path):
+            logger.info(f"[FOUND]   {asset_name}")
+        else:
+            logger.error(f"[MISSING] {asset_name} → {asset_path}")
