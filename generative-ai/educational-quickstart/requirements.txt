@@ -1,5 +1,6 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
+────────────────────────────────────────────────────────────────
 
 # ─── Core ML/AI Frameworks ───
 mlflow==3.1.0
@@ -16,6 +17,7 @@ datasets
 fastapi
 uvicorn
 pydantic>=2.5.0
+streamlit>=1.28.0         
 
 # ─── Document & Media Processing ───
 pypdf>=4.0.0
@@ -24,7 +26,7 @@ pdfplumber
 python-docx>=1.1.0
 markdown>=3.5.1
 pillow
-opencv-python
+opencv-python-headless    
 invisible-watermark>=0.2.0  # Invisible watermark embedding for generated images (Spec 4.2.3)
 
 # ─── Audio & Voice Processing ───
@@ -33,13 +35,13 @@ librosa
 soundfile
 pyaudio     # Real-time audio capture/playback — requires portaudio19-dev system package (Spec 4.2.4)
 pywhispercpp
-coqui-tts  # Python 3.12-compatible maintained fork of TTS (same API: from TTS.api import TTS)
-
+coqui-tts  
 # ─── Agentic AI & RAG ───
-langchain>=0.3.26
-langchain-community>=0.3.27
+langchain>=1.0.0a1
+langchain-community>=1.0.0a1
+llama-cpp-python>=0.3.0
 chromadb
-faiss-gpu-cu12  # GPU-accelerated similarity search for CUDA 12 / Python 3.12 (Spec 4.2.5)
+faiss-gpu-cu12  
 sentence-transformers
 
 # ─── Monitoring & Visualization ───
