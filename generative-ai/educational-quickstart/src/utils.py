@@ -2,6 +2,7 @@
 import base64  # Encoding binary data (images) as text for display in browsers
 import logging  # Python's built-in system for printing status messages with severity levels
 import os  # Interacting with the operating system (file paths, environment variables)
+import subprocess  # Running external commands like pip install
 import sys  # System-level utilities (Python version, path management)
 import time  # Measuring how long things take
 from functools import (
@@ -10,6 +11,7 @@ from functools import (
 from typing import (
     Dict,
     Any,
+    Tuple,
 )  # Type hints — help editors and readers understand what a function expects
 
 # ─────── Third-Party Package Imports ───────
@@ -334,3 +336,34 @@ def log_asset_status(asset_path_or_assets, asset_name: str = "") -> None:
             logger.info(f"[FOUND]   {asset_name}")
         else:
             logger.error(f"[MISSING] {asset_name} → {asset_path}")
+
+
+def pip_install(*args) -> Tuple[int, str]:
+    """
+    Run pip install with the current Python interpreter.
+
+    This utility function wraps subprocess.run to install Python packages
+    using the same interpreter that's running the notebook. This is safer
+    than calling system pip, which might target a different Python installation.
+
+    Args:
+        *args: Arguments to pass to pip install (e.g., "torch==2.5.1", "--index-url", "...")
+
+    Returns:
+        A tuple (return_code, stderr_output):
+            - return_code: 0 on success, non-zero on failure
+            - stderr_output: Error messages from pip (empty string if successful)
+
+    Example usage:
+        rc, err = pip_install("torch==2.5.1", "--index-url", "https://download.pytorch.org/whl/cu128")
+        if rc == 0:
+            print("✅ Installation successful")
+        else:
+            print(f"❌ Installation failed: {err}")
+    """
+    result = subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--quiet"] + list(args),
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode, result.stderr
