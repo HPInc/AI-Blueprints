@@ -1,6 +1,5 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-────────────────────────────────────────────────────────────────
 
 # ─── Core ML/AI Frameworks ───
 mlflow==3.1.0
