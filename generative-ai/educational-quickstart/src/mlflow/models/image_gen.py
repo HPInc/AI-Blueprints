@@ -170,12 +170,37 @@ class ImageGenModel:
                 "messages": json.dumps([]),
             }
 
+        transformer_config_path = os.path.join(
+            self.image_model_path, "transformer", "config.json"
+        )
+        if not os.path.exists(transformer_config_path):
+            return {
+                "answer": (
+                    f"❌ FLUX transformer config not found at: {transformer_config_path}\n"
+                    "Re-run project-setup.ipynb step 3c to download transformer/config.json."
+                ),
+                "messages": json.dumps([]),
+            }
+
         try:
             # Load pipeline once and cache for subsequent inference calls
             if self._pipeline is None:
                 import torch
                 from diffusers import FluxPipeline, FluxTransformer2DModel
-                from diffusers.utils import GGUFQuantizationConfig
+                try:
+                    from diffusers import GGUFQuantizationConfig
+                except ImportError:
+                    from diffusers.utils import GGUFQuantizationConfig
+
+                # Force all HuggingFace Hub calls to use only local files.
+                # This prevents from_single_file() fetching the transformer config
+                # remotely when all model files are already present on disk.
+                os.environ["HF_HUB_OFFLINE"] = "1"
+                os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+                # transformer/config.json is downloaded by project-setup.ipynb (step 3c).
+                # Pass the directory so from_single_file() uses it directly.
+                transformer_config_dir = os.path.join(self.image_model_path, "transformer")
 
                 logger.info(f"Loading FLUX.1-dev GGUF transformer from: {gguf_path}")
 
@@ -189,12 +214,15 @@ class ImageGenModel:
                     gguf_path,
                     quantization_config=quantization_config,
                     torch_dtype=torch.bfloat16,
+                    local_files_only=True,
+                    config=transformer_config_dir,
                 )
                 logger.info("✅ FLUX GGUF transformer loaded")
 
                 # Step 2: Load the rest of the FLUX pipeline (T5 + CLIP text encoders,
                 # VAE, scheduler, tokenizers) from the local model directory.
                 # The transformer is replaced with our GGUF version via the kwarg.
+                # local_files_only=True prevents any HuggingFace network calls.
                 logger.info(
                     f"Loading FLUX.1-dev pipeline from: {self.image_model_path}"
                 )
@@ -202,6 +230,7 @@ class ImageGenModel:
                     self.image_model_path,
                     transformer=transformer,
                     torch_dtype=torch.bfloat16,
+                    local_files_only=True,
                 )
                 # CPU offload moves components to GPU only when needed, then back to CPU.
                 # This is necessary for FLUX on systems with < 24 GB VRAM.
@@ -229,7 +258,7 @@ class ImageGenModel:
                 from PIL import Image as PILImage
 
                 wm_encoder = WatermarkEncoder()
-                wm_encoder.set_watermark("bytes", b"AI-Studio-EQ")
+                wm_encoder.set_watermark("bytes", b"AIEQ")  # exactly 4 bytes = 32 bits (rivaGan limit)
                 img_np = np.array(image.convert("RGB"))
                 img_np = wm_encoder.encode(img_np, "rivaGan")
                 image = PILImage.fromarray(img_np)

@@ -1,30 +1,28 @@
-# Create the workspace using the Local GenAI image.
-# This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-
 # ─── Core ML/AI Frameworks ───
 mlflow==3.1.0
-transformers==4.35.0
-diffusers==0.31.0
-accelerate==0.25.0
-bitsandbytes==0.41.3
-safetensors==0.4.1
-sentencepiece==0.1.99
+transformers==4.57.6
+diffusers==0.36.0
+accelerate==1.12.0
+bitsandbytes==0.49.2
+safetensors==0.7.0
+sentencepiece==0.2.1
 vllm==0.15.1
+xformers==0.0.33.post2
 
 # ─── Interface & Deployment ───
-huggingface_hub==0.19.4
+huggingface_hub==0.36.2
 datasets==3.0.1
 fastapi==0.128.0
 uvicorn==0.40.0
-pydantic==2.5.0
-streamlit==1.28.0
+pydantic==2.12.5
+streamlit==1.54.0
 
 # ─── Document & Media Processing ───
-pypdf2==3.0.1
-pymupdf==1.27.1
+PyPDF2==3.0.1
+PyMuPDF==1.27.1
 pdfplumber==0.11.9
-python-docx==1.1.0
-markdown==3.5.1
+python-docx==1.2.0
+Markdown==3.10.1
 pillow==12.1.0
 opencv-python-headless==4.13.0.92
 invisible-watermark==0.2.0
@@ -33,20 +31,21 @@ invisible-watermark==0.2.0
 sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
-pyaudio==0.2.14
+PyAudio==0.2.14
 pywhispercpp==1.4.1
 coqui-tts==0.27.5
+
 # ─── Agentic AI & RAG ───
-langchain==1.0.0a1
+langchain==1.0.0a12
 langchain-community==1.0.0a1
-llama-cpp-python==0.3.0
+llama_cpp_python==0.3.16
 chromadb==0.5.20
 faiss-gpu-cu12==1.13.2
 sentence-transformers==3.0.0
 
 # ─── Monitoring & Visualization ───
-plotly==5.18.0
+plotly==6.5.2
 psutil==7.2.1
-gputil==1.4.0
-pyyaml==6.0.3
+GPUtil==1.4.0
+PyYAML==6.0.3
 python-dotenv==1.2.1
