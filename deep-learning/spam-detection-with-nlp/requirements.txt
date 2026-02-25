@@ -1,2 +1,2 @@
-nltk==3.9.1
-mlflow==2.21.2
+nltk==3.9.3
+mlflow==3.5.0
