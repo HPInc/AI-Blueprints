@@ -46,6 +46,7 @@ def get_gpu_stats() -> dict:
         "memory_percent": 0.0,
         "temperature": 0.0,
         "power_draw": 0.0,
+        "tokens_per_second": 0.0,
         "timestamp": datetime.now().strftime("%H:%M:%S"),
     }
 
@@ -93,18 +94,22 @@ def get_gpu_stats() -> dict:
     return stats
 
 
-def create_gpu_dashboard(history: List[dict]) -> go.Figure:
+def create_gpu_dashboard(
+    history: List[dict], inference_history: Optional[List[dict]] = None
+) -> go.Figure:
     """
-    Create a 4-panel interactive Plotly dashboard from a list of GPU stat snapshots.
+    Create a 5-panel interactive Plotly dashboard from GPU stat snapshots.
 
-    Dashboard layout (2 rows × 2 columns):
+    Dashboard layout (3 rows × 2 columns):
         ┌──────────────────┬──────────────────┐
         │ GPU Utilization% │  Memory Usage MB  │
         │   (line chart)   │   (area chart)    │
         ├──────────────────┼──────────────────┤
-        │  Temperature °C  │  Current Stats   │
-        │   (line chart)   │ (gauge meters)   │
-        └──────────────────┴──────────────────┘
+        │  Temperature °C  │  Tokens / Second │
+        │   (line chart)   │   (line chart)   │
+        ├─────────────────────────────────────┤
+        │   Current Stats (gauge — full row)  │
+        └─────────────────────────────────────┘
 
     Why Plotly?
         Plotly creates interactive charts that you can zoom, hover, and explore
@@ -114,6 +119,9 @@ def create_gpu_dashboard(history: List[dict]) -> go.Figure:
         history: A list of stat dicts, each produced by get_gpu_stats().
                  Each dict must have: timestamp, utilization, memory_used_mb,
                  memory_total_mb, temperature.
+        inference_history: An optional list of dicts produced by
+                           GPUMonitor.log_inference(). Each dict must have
+                           tokens_per_second and timestamp keys.
 
     Returns:
         A Plotly Figure object. Display it with fig.show() in a notebook cell.
@@ -137,20 +145,27 @@ def create_gpu_dashboard(history: List[dict]) -> go.Figure:
     latest = history[-1]
     gpu_name = latest.get("gpu_name", "GPU")
 
-    # Create a 2×2 subplot grid
+    # Create a 3×2 subplot grid — Row 3 is a full-width gauge spanning both columns
     fig = make_subplots(
-        rows=2,
+        rows=3,
         cols=2,
         subplot_titles=(
             "GPU Utilization (%)",
             "Memory Usage (MB)",
             "Temperature (°C)",
+            "Tokens / Second",
             f"Current Stats — {gpu_name}",
+            "",
         ),
         specs=[
-            [{"type": "xy"}, {"type": "xy"}],  # Row 1: line/area charts
-            [{"type": "xy"}, {"type": "indicator"}],  # Row 2: line + gauge indicators
+            [{"type": "xy"}, {"type": "xy"}],  # Row 1: Utilization + Memory
+            [{"type": "xy"}, {"type": "xy"}],  # Row 2: Temperature + Tokens/sec
+            [
+                {"type": "indicator", "colspan": 2},
+                None,
+            ],  # Row 3: Gauge spanning both cols
         ],
+        row_heights=[0.33, 0.33, 0.34],
     )
 
     # ── Panel 1: GPU Utilization % ────────────────────────────────────────────
@@ -231,8 +246,25 @@ def create_gpu_dashboard(history: List[dict]) -> go.Figure:
         col=1,
     )
 
-    # ── Panel 4: Gauge Indicators (current snapshot values) ──────────────────
-    # Gauge 1 — Current Utilization
+    # ── Panel 4: Tokens / Second (inference throughput over time) ───────────
+    tps_data = inference_history or []
+    tps_values = [e.get("tokens_per_second", 0) for e in tps_data]
+    tps_labels = [e.get("timestamp", f"#{i + 1}") for i, e in enumerate(tps_data)]
+    fig.add_trace(
+        go.Scatter(
+            x=tps_labels if tps_values else ["(no data)"],
+            y=tps_values if tps_values else [0],
+            mode="lines+markers",
+            name="Tokens/sec",
+            line=dict(color="#9C27B0", width=2),  # Purple line
+            fill="tozeroy",
+            fillcolor="rgba(156,39,176,0.15)",
+        ),
+        row=2,
+        col=2,
+    )
+
+    # ── Panel 5: Gauge Indicator (current utilization — spans full row 3) ────
     fig.add_trace(
         go.Indicator(
             mode="gauge+number",
@@ -249,8 +281,8 @@ def create_gpu_dashboard(history: List[dict]) -> go.Figure:
             },
             domain={"row": 0, "column": 0},
         ),
-        row=2,
-        col=2,
+        row=3,
+        col=1,
     )
 
     # ── Layout and Styling ────────────────────────────────────────────────────
@@ -261,20 +293,20 @@ def create_gpu_dashboard(history: List[dict]) -> go.Figure:
             "font": {"size": 18},
         },
         template="plotly_white",  # Clean white background — works well in both light/dark notebooks
-        height=600,
+        height=750,  # Taller to accommodate the 3-row layout
         showlegend=True,
-        legend=dict(
-            orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5
-        ),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
     )
 
     # Add axis labels
     fig.update_xaxes(title_text="Time", row=1, col=1)
     fig.update_xaxes(title_text="Time", row=1, col=2)
     fig.update_xaxes(title_text="Time", row=2, col=1)
+    fig.update_xaxes(title_text="Inference #", row=2, col=2)
     fig.update_yaxes(title_text="Utilization (%)", row=1, col=1)
     fig.update_yaxes(title_text="Memory (MB)", row=1, col=2)
     fig.update_yaxes(title_text="Temperature (°C)", row=2, col=1)
+    fig.update_yaxes(title_text="Tokens/sec", row=2, col=2)
 
     return fig
 
@@ -302,6 +334,7 @@ def log_gpu_metrics_to_mlflow(stats: dict) -> None:
             mlflow.log_metric("gpu_utilization", stats.get("utilization", 0))
             mlflow.log_metric("gpu_memory_used_mb", stats.get("memory_used_mb", 0))
             mlflow.log_metric("gpu_temperature", stats.get("temperature", 0))
+            mlflow.log_metric("tokens_per_second", stats.get("tokens_per_second", 0))
     except ImportError:
         logger.warning("⚠️ MLflow not available — skipping metric logging.")
     except Exception as e:
@@ -310,25 +343,28 @@ def log_gpu_metrics_to_mlflow(stats: dict) -> None:
 
 class GPUMonitor:
     """
-    Stateful GPU monitor that collects snapshots over time and produces dashboards.
+    Stateful GPU monitor that collects snapshots and inference timings over time.
 
     Usage pattern in notebooks:
-        monitor = GPUMonitor()
-        # ... run some AI code ...
-        monitor.snapshot()          # Collect a data point
-        # ... run more AI code ...
-        monitor.snapshot()          # Collect another data point
-        fig = monitor.dashboard()   # Build the 4-panel dashboard
-        fig.show()                  # Display it inline in the notebook
+        monitor = GPUMonitor()               # Create once, alongside model init
+        # ... run model.predict() ...
+        elapsed = time.time() - t0
+        monitor.log_inference(               # Record tokens/sec after each inference
+            num_tokens=len(answer) // 4,
+            elapsed_seconds=elapsed,
+        )
+        monitor.display_dashboard()          # Show 5-panel dashboard at end
 
     Why "stateful"?
-        Each `snapshot()` call appends to an internal list (`self.history`).
-        At the end of your notebook you can see how GPU usage evolved over time.
+        Each `snapshot()` call appends to `self.history` (GPU stats over time).
+        Each `log_inference()` call appends to `self._inference_history` (TPS over time).
+        At the end of your notebook both histories are visualised together.
     """
 
     def __init__(self):
-        """Initialize the monitor with an empty history list."""
-        self.history: List[dict] = []  # Will store one dict per snapshot
+        """Initialize the monitor with empty history lists."""
+        self.history: List[dict] = []  # One dict per snapshot() call
+        self._inference_history: List[dict] = []  # One dict per log_inference() call
 
     def snapshot(self) -> dict:
         """
@@ -341,14 +377,40 @@ class GPUMonitor:
         self.history.append(stats)  # Remember this snapshot
         return stats
 
+    def log_inference(self, num_tokens: int, elapsed_seconds: float) -> float:
+        """
+        Record one inference run's token throughput.
+
+        Call this immediately after each model.predict() to accumulate
+        tokens-per-second history shown in the dashboard's Tokens/sec panel.
+
+        Args:
+            num_tokens: Approximate number of output tokens. Use len(answer) // 4
+                        as a rough 4-chars-per-token estimate for English text.
+            elapsed_seconds: Wall-clock seconds the predict() call took.
+
+        Returns:
+            The computed tokens-per-second value (also stored in _inference_history).
+        """
+        tps = round(num_tokens / elapsed_seconds, 1) if elapsed_seconds > 0 else 0.0
+        self._inference_history.append(
+            {
+                "tokens_per_second": tps,
+                "num_tokens": num_tokens,
+                "elapsed_seconds": round(elapsed_seconds, 3),
+                "timestamp": datetime.now().strftime("%H:%M:%S"),
+            }
+        )
+        return tps
+
     def dashboard(self) -> go.Figure:
         """
-        Build and return a 4-panel Plotly dashboard from all collected snapshots.
+        Build and return a 5-panel Plotly dashboard from all collected snapshots.
 
         Returns:
             A Plotly Figure — display with fig.show() in a notebook cell
         """
-        return create_gpu_dashboard(self.history)
+        return create_gpu_dashboard(self.history, self._inference_history)
 
     def log_to_mlflow(self) -> None:
         """Log the most recent snapshot to the active MLflow run (if one exists)."""
@@ -357,7 +419,7 @@ class GPUMonitor:
 
     def display_dashboard(self) -> None:
         """
-        Collect a GPU snapshot and display the 4-panel dashboard inline in the notebook.
+        Collect a GPU snapshot and display the 5-panel dashboard inline in the notebook.
 
         This is a convenience wrapper that combines snapshot() + dashboard() + fig.show()
         into a single one-liner call — the pattern used in all starter notebooks.
@@ -377,12 +439,23 @@ class GPUMonitor:
             return "No GPU snapshots collected yet. Call monitor.snapshot() first."
 
         latest = self.history[-1]
+        tps_line = ""
+        if self._inference_history:
+            latest_tps = self._inference_history[-1]["tokens_per_second"]
+            avg_tps = sum(
+                e["tokens_per_second"] for e in self._inference_history
+            ) / len(self._inference_history)
+            tps_line = (
+                f"\n  Tokens/sec  : {latest_tps:.1f} "
+                f"(avg {avg_tps:.1f} over {len(self._inference_history)} inferences)"
+            )
         return (
             f"GPU: {latest.get('gpu_name', 'N/A')}\n"
             f"  Utilization : {latest.get('utilization', 0):.1f}%\n"
             f"  Memory Used : {latest.get('memory_used_mb', 0):.0f} MB "
             f"/ {latest.get('memory_total_mb', 0):.0f} MB "
             f"({latest.get('memory_percent', 0):.1f}%)\n"
-            f"  Temperature : {latest.get('temperature', 0):.1f}°C\n"
-            f"  Snapshot at : {latest.get('timestamp', 'N/A')}"
+            f"  Temperature : {latest.get('temperature', 0):.1f}°C"
+            + tps_line
+            + f"\n  Snapshot at : {latest.get('timestamp', 'N/A')}"
         )
