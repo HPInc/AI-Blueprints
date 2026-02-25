@@ -187,6 +187,7 @@ class ImageGenModel:
             if self._pipeline is None:
                 import torch
                 from diffusers import FluxPipeline, FluxTransformer2DModel
+
                 try:
                     from diffusers import GGUFQuantizationConfig
                 except ImportError:
@@ -200,7 +201,9 @@ class ImageGenModel:
 
                 # transformer/config.json is downloaded by project-setup.ipynb (step 3c).
                 # Pass the directory so from_single_file() uses it directly.
-                transformer_config_dir = os.path.join(self.image_model_path, "transformer")
+                transformer_config_dir = os.path.join(
+                    self.image_model_path, "transformer"
+                )
 
                 logger.info(f"Loading FLUX.1-dev GGUF transformer from: {gguf_path}")
 
@@ -258,7 +261,9 @@ class ImageGenModel:
                 from PIL import Image as PILImage
 
                 wm_encoder = WatermarkEncoder()
-                wm_encoder.set_watermark("bytes", b"AIEQ")  # exactly 4 bytes = 32 bits (rivaGan limit)
+                wm_encoder.set_watermark(
+                    "bytes", b"AIEQ"
+                )  # exactly 4 bytes = 32 bits (rivaGan limit)
                 img_np = np.array(image.convert("RGB"))
                 img_np = wm_encoder.encode(img_np, "rivaGan")
                 image = PILImage.fromarray(img_np)
