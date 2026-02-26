@@ -26,6 +26,7 @@ v2.0.0 Architecture Summary:
 """
 
 import logging
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -96,11 +97,17 @@ class Logger:
             demo_folder:   Optional path to the Streamlit demo folder (for CSS/logos).
             extra_pip_requirements: Additional pip packages beyond requirements.txt.
         """
-        # Create a temporary directory to stage all artifacts
-        # It is automatically cleaned up after the with-block, even if an exception occurs
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
+        # Use a fixed directory name "model_artifacts" so the container's main.py
+        # can reliably find artifacts at .../artifacts/data/model_artifacts/config.yaml.
+        # A random tempfile name (e.g. /tmp/tmpXXXXXX) would cause MLflow to store
+        # the files under .../artifacts/data/tmpXXXXXX/ which the container cannot find.
+        tmp_dir = os.path.join(tempfile.gettempdir(), "model_artifacts")
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
+        os.makedirs(tmp_dir)
+        tmp_path = Path(tmp_dir)
 
+        try:
             # ── 1. Copy config.yaml ──────────────────────────────────────────
             config_dest = tmp_path / "config.yaml"
             shutil.copy2(config_path, config_dest)
@@ -157,3 +164,10 @@ class Logger:
                 registered_model_name=None,  # Register separately (see notebook)
             )
             logger.info("✅ Model logged to MLflow successfully")
+        except Exception as e:
+            logger.error(f"❌ Error during model logging: {str(e)}")
+            raise
+        finally:
+            if os.path.exists(tmp_dir):
+                shutil.rmtree(tmp_dir)
+                logger.info("🧹 Cleaned up temporary directory")
