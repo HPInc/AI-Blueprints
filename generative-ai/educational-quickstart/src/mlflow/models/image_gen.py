@@ -264,6 +264,7 @@ class ImageGenModel:
                 wm_encoder.set_watermark(
                     "bytes", b"AIEQ"
                 )  # exactly 4 bytes = 32 bits (rivaGan limit)
+                wm_encoder.loadModel()
                 img_np = np.array(image.convert("RGB"))
                 img_np = wm_encoder.encode(img_np, "rivaGan")
                 image = PILImage.fromarray(img_np)
