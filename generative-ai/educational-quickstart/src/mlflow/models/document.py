@@ -107,6 +107,12 @@ class DocumentModel:
         import multiprocessing
         from langchain_community.llms import LlamaCpp
 
+        # Pydantic v2 compatibility fix — applied by every other blueprint in this repo.
+        # Rebuilds the LlamaCpp model validators before instantiation; without this,
+        # inconsistent internal Pydantic state causes a C++ backend segfault during inference.
+        if hasattr(LlamaCpp, "model_rebuild"):
+            LlamaCpp.model_rebuild()
+
         context_window = self.config.get("context_window", 8192)
         max_tokens = context_window // 8
 

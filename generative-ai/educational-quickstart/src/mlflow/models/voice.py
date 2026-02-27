@@ -131,6 +131,10 @@ class VoiceModel:
         import multiprocessing
         from langchain_community.llms import LlamaCpp
 
+        # Pydantic v2 compatibility fix — applied by every other blueprint in this repo.
+        if hasattr(LlamaCpp, "model_rebuild"):
+            LlamaCpp.model_rebuild()
+
         context_window = self.config.get("context_window", 8192)
         max_tokens = context_window // 8
 

@@ -88,6 +88,10 @@ def load_llm(model_path: str, n_ctx: int = 8192, **kwargs):
     except ImportError:
         raise ImportError("LlamaCpp not found. Run: %pip install langchain-community")
 
+    # Pydantic v2 compatibility fix — applied by every other blueprint in this repo.
+    if hasattr(LlamaCpp, "model_rebuild"):
+        LlamaCpp.model_rebuild()
+
     if not verify_model_exists(model_path):
         raise FileNotFoundError(
             f"Model file not found at: {model_path}\n"
