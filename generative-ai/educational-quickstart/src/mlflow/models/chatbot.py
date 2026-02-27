@@ -90,7 +90,7 @@ class ChatbotModel:
         """
         self.config = config
         self.docs_path = docs_path
-        self.model_path = model_path
+        self.model_path = os.path.join(model_path, "zephyr-7b-beta.Q5_K_M.gguf")
         self.secrets = secrets
 
         self._load_llm()

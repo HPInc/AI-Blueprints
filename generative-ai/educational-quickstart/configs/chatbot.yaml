@@ -7,7 +7,7 @@ capability: "chatbot"
 # Path to the local LLM file (Zephyr 7B Beta quantized to Q5_K_M)
 # Download via project-setup.ipynb Cell 8, or:
 # huggingface-cli download TheBloke/zephyr-7B-beta-GGUF zephyr-7b-beta.Q5_K_M.gguf
-model_path: "/home/jovyan/local/zephyr-7b-beta/zephyr-7b-beta.Q5_K_M.gguf"
+model_path: "/home/jovyan/local/zephyr-7b-beta"
 
 # Context window size (tokens). 8192 works well for conversational Q&A.
 # Increase to 16384 or 32768 if you need longer conversations.
