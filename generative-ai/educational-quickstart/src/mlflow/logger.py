@@ -129,23 +129,29 @@ class Logger:
                 logger.info(f"✅ Copied docs: {docs_path} → {docs_dest}")
 
             # ── 4. Optionally copy demo assets ───────────────────────────────
+            # Always store under demo/streamlit/ so the serving container can
+            # find assets at the expected path regardless of the source folder name
+            # (e.g. demo/image_gen, demo/chatbot → demo/streamlit).
             if demo_folder and Path(demo_folder).exists():
-                demo_dest = tmp_path / "demo"
+                demo_dest = tmp_path / "demo" / "streamlit"
                 shutil.copytree(demo_folder, demo_dest)
                 logger.info(f"✅ Copied demo: {demo_folder} → {demo_dest}")
 
-            # ── 5. Patch model_path into config ──────────────────────────────
-            # If a model_path was explicitly passed, update the config.yaml copy
-            # so that loader.py can find the model after MLflow restores artifacts.
-            if model_path:
-                import yaml
-
-                with open(config_dest, "r") as f:
-                    cfg = yaml.safe_load(f) or {}
-                cfg["model_path"] = model_path
-                with open(config_dest, "w") as f:
-                    yaml.dump(cfg, f, default_flow_style=False)
-                logger.info(f"✅ Patched model_path in config.yaml: {model_path}")
+            # ✅ Handle model files -> /artifacts/data/models/
+            if model_path and os.path.exists(model_path):
+                models_temp_dir = os.path.join(tmp_path, "models")
+                os.makedirs(models_temp_dir, exist_ok=True)
+                if os.path.isfile(model_path):
+                    shutil.copy2(
+                        model_path,
+                        os.path.join(models_temp_dir, os.path.basename(model_path)),
+                    )
+                    logger.info(f"Copied model file: {os.path.basename(model_path)}")
+                else:
+                    shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
+                    logger.info(f"Copied model directory: {model_path}")
+            else:
+                logger.info("Model path not provided or doesn't exist - skipping")
 
             # ── 6. Build pip requirements list ───────────────────────────────
             pip_reqs = "../requirements.txt"  # Path relative to where mlflow is run

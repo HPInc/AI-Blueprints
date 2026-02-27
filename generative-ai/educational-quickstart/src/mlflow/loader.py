@@ -84,22 +84,30 @@ def _load_pyfunc(data_path: str):
     docs_path = str(docs_path_candidate) if docs_path_candidate.exists() else None
 
     # ── 4. Resolve model path ─────────────────────────────────────────────────
-    # MODEL_ARTIFACTS_PATH is an environment variable set by the MLflow serving container.
-    # When running locally on Jupyter, you typically set model_path via config.yaml.
-    model_path = os.environ.get("MODEL_ARTIFACTS_PATH", config.get("model_path", ""))
+    # Priority:
+    #   1. models/ inside the artifact (copied by logger.py at register time)
+    #   2. MODEL_ARTIFACTS_PATH env var (set by AI Studio serving container)
+    #   3. model_path from config.yaml (fallback for local dev / notebook usage)
+    capability = config.get("capability", "chatbot")
+    artifact_models = os.path.join(data_path, "models")
 
-    if not model_path:
-        logger.warning(
-            "⚠️ model_path is not set.\n"
-            "   Set it in config.yaml OR as the MODEL_ARTIFACTS_PATH environment variable.\n"
-            "   LLM will be unavailable until this is configured."
-        )
+    if os.path.exists(artifact_models) and os.listdir(artifact_models):
+        model_path = artifact_models
+        logger.info(f"✅ model_path resolved from artifact: {model_path}")
+    else:
+        model_path = os.environ.get("MODEL_ARTIFACTS_PATH", config.get("model_path", ""))
+        if model_path:
+            logger.info(f"ℹ️ Using model_path fallback: {model_path}")
+        else:
+            logger.warning(
+                "⚠️ model_path is not set.\n"
+                "   Not found in artifact, MODEL_ARTIFACTS_PATH, or config.yaml.\n"
+                "   Model will be unavailable until this is configured."
+            )
 
     # ── 5. Select the right Model class based on config["capability"] ────────
     # Each config YAML has a "capability" key that tells loader.py which Model
     # class to instantiate. This is what enables per-capability model registration.
-    capability = config.get("capability", "chatbot")
-
     if capability == "image_gen":
         from src.mlflow.models.image_gen import ImageGenModel as Model
     elif capability == "document":

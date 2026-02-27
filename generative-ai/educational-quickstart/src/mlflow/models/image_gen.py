@@ -92,20 +92,18 @@ class ImageGenModel:
 
         Args:
             config:     Configuration dict from image_gen.yaml
-                        (reads image_model_path for the diffusion pipeline)
+                        (reads model_path for the diffusion pipeline)
             docs_path:  Unused — present for loader.py compatibility
             model_path: Unused for image gen (LLM not needed) — present for compatibility
             secrets:    Optional API keys (not used for local diffusion)
         """
         self.config = config
         self.docs_path = docs_path
-        self.model_path = model_path
         self.secrets = secrets
-
-        # Resolved at init time; pipeline itself loaded lazily in predict()
-        self.image_model_path = config.get(
-            "image_model_path",
-            "/home/jovyan/local/flux1-dev",
+        # model_path passed explicitly (from loader.py) takes priority;
+        # fall back to model_path in config (set by image_gen.yaml or loader.py).
+        self.model_path = model_path or config.get(
+            "model_path", "/home/jovyan/local/flux1-dev"
         )
         self._pipeline = None  # Populated on first predict() call
 
@@ -149,12 +147,12 @@ class ImageGenModel:
         import base64
         from io import BytesIO
 
-        gguf_path = os.path.join(self.image_model_path, "flux1-dev-Q4_K_S.gguf")
+        gguf_path = os.path.join(self.model_path, "flux1-dev-Q4_K_S.gguf")
 
-        if not os.path.exists(self.image_model_path):
+        if not os.path.exists(self.model_path):
             return {
                 "answer": (
-                    f"❌ Image model directory not found at: {self.image_model_path}\n"
+                    f"❌ Image model directory not found at: {self.model_path}\n"
                     "Run project-setup.ipynb Cell 8 to download FLUX.1-dev.\n"
                     "See README.md → Prerequisites."
                 ),
@@ -171,7 +169,7 @@ class ImageGenModel:
             }
 
         transformer_config_path = os.path.join(
-            self.image_model_path, "transformer", "config.json"
+            self.model_path, "transformer", "config.json"
         )
         if not os.path.exists(transformer_config_path):
             return {
@@ -202,7 +200,7 @@ class ImageGenModel:
                 # transformer/config.json is downloaded by project-setup.ipynb (step 3c).
                 # Pass the directory so from_single_file() uses it directly.
                 transformer_config_dir = os.path.join(
-                    self.image_model_path, "transformer"
+                    self.model_path, "transformer"
                 )
 
                 logger.info(f"Loading FLUX.1-dev GGUF transformer from: {gguf_path}")
@@ -227,10 +225,10 @@ class ImageGenModel:
                 # The transformer is replaced with our GGUF version via the kwarg.
                 # local_files_only=True prevents any HuggingFace network calls.
                 logger.info(
-                    f"Loading FLUX.1-dev pipeline from: {self.image_model_path}"
+                    f"Loading FLUX.1-dev pipeline from: {self.model_path}"
                 )
                 self._pipeline = FluxPipeline.from_pretrained(
-                    self.image_model_path,
+                    self.model_path,
                     transformer=transformer,
                     torch_dtype=torch.bfloat16,
                     local_files_only=True,
