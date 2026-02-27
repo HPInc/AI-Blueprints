@@ -219,16 +219,19 @@ class ChatbotModel:
         )
         question = inp.question or "Hello!"
 
-        # Build the Zephyr prompt template
-        # Note: </s> is the end-of-sentence token used as end-of-turn delimiter
-        zephyr_prompt = (
-            f"<|system|>\n{system_prompt}</s>\n"
-            f"<|user|>\n{question}</s>\n"
-            f"<|assistant|>\n"
-        )
-
         logger.info(f"Chatbot: processing question ({len(question)} chars)")
-        answer = self.llm.invoke(zephyr_prompt)
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
+
+        # Zephyr 7B Beta chat template piped through StrOutputParser for safe string extraction
+        zephyr_template = (
+            "<|system|>\n{system_prompt}</s>\n"
+            "<|user|>\n{question}</s>\n"
+            "<|assistant|>\n"
+        )
+        prompt_template = PromptTemplate.from_template(zephyr_template)
+        chain = prompt_template | self.llm | StrOutputParser()
+        answer = chain.invoke({"system_prompt": system_prompt, "question": question})
 
         # Strip any trailing </s> that some Zephyr variants append to the response
         answer = answer.strip().rstrip("</s>").strip()

@@ -147,10 +147,15 @@ def get_response_from_llm(llm, system_prompt: str, user_prompt: str) -> str:
         A "prompt" is the text you send to an AI model as input. The model reads
         your prompt and generates a continuation (the "response").
 
-    Why the special formatting (<|begin_of_text|> etc.)?
-        Meta-Llama models were trained with specific "special tokens" as delimiters
-        between the system instruction, the user message, and the assistant reply.
-        Using the correct format improves response quality significantly.
+    Why ChatPromptTemplate instead of a raw f-string?
+        Raw f-strings embed user content directly into special tokens, which can
+        produce malformed prompts when the document text contains special characters.
+        ChatPromptTemplate validates and escapes variables before the model sees them,
+        following the same LCEL chain pattern used across all other blueprints.
+
+    Why StrOutputParser?
+        In LangChain 1.x, llm.invoke() may return a generation metadata object.
+        StrOutputParser guarantees a plain Python str, preventing downstream type errors.
 
     Args:
         llm: A LlamaCpp model instance (loaded in the notebook)
@@ -161,18 +166,21 @@ def get_response_from_llm(llm, system_prompt: str, user_prompt: str) -> str:
     Returns:
         The model's text response as a string
 
-    Learn more about prompt engineering:
-        https://huggingface.co/learn/nlp-course/chapter1/3
+    Learn more about LCEL chains:
+        https://python.langchain.com/docs/concepts/lcel/
     """
-    # Build the complete prompt in Meta-Llama's expected chat format
-    meta_llama_prompt = f"""
-    <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
 
-    {system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-    {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-    """
-    return llm.invoke(meta_llama_prompt)  # Call the model and return its text output
+    # Meta-Llama 3.1 chat template — same format used in vanilla-rag-with-langchain
+    meta_llama_template = (
+        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+        "{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
+        "{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    )
+    prompt = ChatPromptTemplate.from_template(meta_llama_template)
+    chain = prompt | llm | StrOutputParser()
+    return chain.invoke({"system_prompt": system_prompt, "user_prompt": user_prompt})
 
 
 def display_image(image_bytes: bytes, width: int = 400) -> None:
