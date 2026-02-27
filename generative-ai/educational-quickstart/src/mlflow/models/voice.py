@@ -226,6 +226,11 @@ class VoiceModel:
             2. Fall back to the CoquiTTS registry model name so that the
                assistant is still functional even if the artifact was not
                copied (CoquiTTS will download to ~/.local/share/tts/).
+
+        VRAM management (three models share ~8 GB VRAM):
+            • Pre-check: free VRAM is queried via torch.cuda.mem_get_info() before any
+              tensor is placed. Device (CUDA vs CPU) is decided once, deterministically.
+            • float16: synthesiser cast to fp16 unconditionally on CUDA (~1.8 GB → ~0.9 GB).
         """
         if self._tts_pipeline is not None:
             return self._tts_pipeline
@@ -242,12 +247,12 @@ class VoiceModel:
             config_path = os.path.join(tts_dir, "config.json") if tts_dir else ""
 
             if tts_dir and os.path.isdir(tts_dir) and os.path.exists(config_path):
-                self._tts_pipeline = TTS(
+                tts_obj = TTS(
                     model_path=tts_dir,
                     config_path=config_path,
                     progress_bar=False,
-                ).to(device)
-                logger.info("✅ XTTS v2 loaded from local path: %s", tts_dir)
+                )
+                source_desc = f"local path: {tts_dir}"
             else:
                 # Fall back to the CoquiTTS built-in registry download
                 logger.warning(
@@ -255,12 +260,39 @@ class VoiceModel:
                     "falling back to CoquiTTS registry download (~1.8 GB)",
                     tts_dir or "(not set)",
                 )
-                self._tts_pipeline = TTS(
+                tts_obj = TTS(
                     "tts_models/multilingual/multi-dataset/xtts_v2",
                     progress_bar=False,
-                ).to(device)
-                logger.info("✅ XTTS v2 loaded from CoquiTTS registry")
+                )
+                source_desc = "CoquiTTS registry"
 
+            # ── Determine target device before any allocation ─────────────────────
+            # Pre-check free VRAM using the CUDA allocator's own accounting so the
+            # device decision is made once, deterministically, before any tensor is
+            # placed.  XTTS v2 fp16 peak ≈ 0.9 GB; add a 256 MB safety margin.
+            _XTTS_VRAM_REQUIRED = int(1.15 * 1024**3)  # 1.15 GB in bytes
+            if device == "cuda":
+                free_vram, _ = torch.cuda.mem_get_info()
+                if free_vram < _XTTS_VRAM_REQUIRED:
+                    logger.warning(
+                        "⚠️ Insufficient free VRAM for XTTS (%d MB free, %d MB required)"
+                        " — loading on CPU",
+                        free_vram // (1024**2),
+                        _XTTS_VRAM_REQUIRED // (1024**2),
+                    )
+                    device = "cpu"
+
+            tts_obj.to(device)
+
+            # ── Cast synthesiser to float16 on CUDA ───────────────────────────────
+            # XTTS v2 always exposes synthesizer.tts_model and supports fp16
+            # inference.  Halves VRAM from ~1.8 GB to ~0.9 GB with no quality loss.
+            if device == "cuda":
+                tts_obj.synthesizer.tts_model = tts_obj.synthesizer.tts_model.half()
+                logger.info("✅ XTTS v2 cast to float16 (~0.9 GB VRAM)")
+
+            self._tts_pipeline = tts_obj
+            logger.info("✅ XTTS v2 loaded from %s on %s", source_desc, device.upper())
             return self._tts_pipeline
 
         except Exception as e:
@@ -337,6 +369,7 @@ class VoiceModel:
                         ta_err,
                     )
 
+                whisper_cpp = None
                 try:
                     whisper_cpp = WhisperCppModel(self.stt_model_path)
                     segments = whisper_cpp.transcribe(tmp_path)
@@ -346,6 +379,22 @@ class VoiceModel:
                     logger.info("Transcription: '%s...'", transcription[:60])
                 finally:
                     os.unlink(tmp_path)  # Always clean up the temp file
+
+                    # ── Release Whisper VRAM before LLM inference + XTTS load ────────────
+                    # Without explicit cleanup the GGUF model stays pinned in GPU RAM.
+                    # Peak with all three models live simultaneously:
+                    #   LLM ~6.6 GB + Whisper ~0.4 GB + XTTS ~1.8 GB ≈ 9.4-10.2 GB
+                    # That exceeds an 8 GB card and triggers a C-level CUDA OOM that
+                    # kills the kernel — not a catchable Python exception.
+                    if whisper_cpp is not None:
+                        del whisper_cpp
+                        import gc
+                        import torch as _torch
+
+                        gc.collect()
+                        if _torch.cuda.is_available():
+                            _torch.cuda.empty_cache()
+                        logger.info("✅ Whisper VRAM released")
 
             except Exception as e:
                 whisper_error = str(e)
