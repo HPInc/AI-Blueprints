@@ -106,14 +106,14 @@ def _load_pyfunc(data_path: str):
             if not config_val:
                 continue
             resolved = get_model_path(str(config_val))
-            if os.path.isfile(resolved):
+            if os.path.isfile(resolved) or os.path.isdir(resolved):
                 config[key] = resolved
                 logger.info(f"✅ {key} resolved from artifact: {resolved}")
                 if key == "model_path":
                     model_path = resolved
             else:
                 logger.warning(
-                    f"⚠️ {key} file not found in artifacts ({resolved}). "
+                    f"⚠️ {key} not found in artifacts ({resolved}). "
                     "Keeping original config value."
                 )
 

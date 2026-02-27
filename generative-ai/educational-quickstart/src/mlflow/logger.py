@@ -156,8 +156,14 @@ class Logger:
                         )
                         logger.info(f"Copied {config_key}: {os.path.basename(path)}")
                     else:
-                        shutil.copytree(path, models_temp_dir, dirs_exist_ok=True)
-                        logger.info(f"Copied {config_key} directory: {path}")
+                        # Copy directory as a named sub-directory of models/ so that
+                        # loader.py can resolve it via get_model_path() at serve time.
+                        # e.g. /home/jovyan/local/xtts-v2/ → models/xtts-v2/
+                        dest_dir = os.path.join(models_temp_dir, os.path.basename(path))
+                        shutil.copytree(path, dest_dir)
+                        logger.info(
+                            f"Copied {config_key} directory: {os.path.basename(path)}"
+                        )
                     copied_keys.append(config_key)
 
                 # Stamp the copied keys into config.yaml so the Loader can resolve

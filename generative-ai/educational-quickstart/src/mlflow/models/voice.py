@@ -39,12 +39,12 @@ Pipeline:
         ↓  XTTS v2 (CoquiTTS)
     Response audio (base64 WAV)
 
-Input schema (focused):
-    question      (str) — Text fallback when no audio is provided
-    audio_base64  (str) — Base64-encoded audio bytes (WAV, MP3, OGG, FLAC)
+Input schema:
+    question      (str) — Not used; present for schema backward-compatibility only.
+    audio_base64  (str) — Base64-encoded audio bytes (WAV, MP3, OGG, FLAC); required.
 
 Output schema:
-    answer         (str) — "[Transcription: ...]\\n\\n[Response: ...]"
+    answer         (str) — "Transcription: ...\\n\\nResponse: ..."
     messages       (str) — JSON-serialized pipeline messages
     response_audio (str) — Base64-encoded WAV of the spoken response (empty if TTS disabled)
 """
@@ -68,8 +68,8 @@ class VoiceInput(BaseModel):
     """
     Input schema for a single voice assistant request.
 
-    The model accepts EITHER audio (via audio_base64) OR text (via question),
-    making it testable without a microphone during development.
+    audio_base64 (base64-encoded WAV/MP3/OGG/FLAC) is required.
+    question is preserved in the schema for backward-compatibility but is not used.
     """
 
     question: str = ""  # Text command (used when no audio is provided)
@@ -81,12 +81,17 @@ class VoiceInput(BaseModel):
 
 class VoiceModel:
     """
-    Voice assistant powered by Whisper (speech recognition) + LlamaCpp (LLM).
+    Voice assistant powered by Whisper (speech recognition) + LlamaCpp (LLM) + XTTS v2 (TTS).
+
+    Accepts audio input only. The three-stage pipeline is:
+        1. Whisper GGUF (pywhispercpp) → transcribe audio to text
+        2. LlamaCpp (Llama 3.1 8B)    → generate a response
+        3. XTTS v2 (CoquiTTS)         → synthesise the response as speech
 
     Design principle — graceful degradation:
-        If Whisper model is missing → fall back to text-only mode
+        If Whisper model is missing → error with instructions to run project-setup
         If LLM is missing           → return transcription only
-        If audio is missing         → use 'question' field as text input
+        If TTS model is missing     → return text response with empty response_audio
     """
 
     def __init__(
@@ -197,13 +202,31 @@ class VoiceModel:
         return pd.DataFrame(results)
 
     def _process(self, inp: VoiceInput) -> dict:
-        """Route the request: transcribe audio OR handle text command."""
-        if inp.audio_base64:
-            return self._handle_audio(inp)
-        return self._handle_text(inp)
+        """Route the request to the audio pipeline; audio_base64 is required."""
+        if not inp.audio_base64:
+            return {
+                "answer": (
+                    "❌ No audio provided. Pass base64-encoded audio in the "
+                    "audio_base64 field (WAV, MP3, OGG, or FLAC)."
+                ),
+                "messages": json.dumps([]),
+                "response_audio": "",
+            }
+        return self._handle_audio(inp)
 
     def _load_tts(self):
-        """Lazily load the XTTS v2 TTS pipeline via CoquiTTS."""
+        """Lazily load the XTTS v2 TTS pipeline via CoquiTTS.
+
+        Loading strategy:
+            1. If tts_model_path points to a directory containing config.json,
+               load from that local path.  This works in both development
+               (/home/jovyan/local/xtts-v2/) and at MLflow serve time
+               (<artifact_models>/xtts-v2/) because loader.py resolves the
+               path from the bundled artifact before constructing this object.
+            2. Fall back to the CoquiTTS registry model name so that the
+               assistant is still functional even if the artifact was not
+               copied (CoquiTTS will download to ~/.local/share/tts/).
+        """
         if self._tts_pipeline is not None:
             return self._tts_pipeline
 
@@ -211,28 +234,33 @@ class VoiceModel:
             import torch
             from TTS.api import TTS
 
-            tts_dir = os.path.dirname(self.tts_model_path)
-            config_path = os.path.join(tts_dir, "config.json")
+            device = "cuda" if torch.cuda.is_available() else "cpu"
 
-            if os.path.exists(config_path):
-                # Load fully from the local GGUF directory
+            # tts_model_path is a directory (e.g. /home/jovyan/local/xtts-v2)
+            # containing config.json and model.pth from coqui/XTTS-v2.
+            tts_dir = self.tts_model_path
+            config_path = os.path.join(tts_dir, "config.json") if tts_dir else ""
+
+            if tts_dir and os.path.isdir(tts_dir) and os.path.exists(config_path):
                 self._tts_pipeline = TTS(
                     model_path=tts_dir,
                     config_path=config_path,
                     progress_bar=False,
-                ).to("cuda" if torch.cuda.is_available() else "cpu")
+                ).to(device)
+                logger.info("✅ XTTS v2 loaded from local path: %s", tts_dir)
             else:
-                # Fall back to the CoquiTTS built-in XTTS v2 weights
+                # Fall back to the CoquiTTS built-in registry download
                 logger.warning(
-                    "⚠️ XTTS config.json not found at %s — falling back to built-in XTTS v2",
-                    tts_dir,
+                    "⚠️ XTTS model directory not found at %s — "
+                    "falling back to CoquiTTS registry download (~1.8 GB)",
+                    tts_dir or "(not set)",
                 )
                 self._tts_pipeline = TTS(
                     "tts_models/multilingual/multi-dataset/xtts_v2",
                     progress_bar=False,
-                ).to("cuda" if torch.cuda.is_available() else "cpu")
+                ).to(device)
+                logger.info("✅ XTTS v2 loaded from CoquiTTS registry")
 
-            logger.info("✅ XTTS v2 TTS pipeline loaded")
             return self._tts_pipeline
 
         except Exception as e:
@@ -272,32 +300,6 @@ class VoiceModel:
         except Exception as e:
             logger.warning("⚠️ TTS synthesis failed: %s", e)
             return ""
-
-    def _handle_text(self, inp: VoiceInput) -> dict:
-        """Process a text command directly (no transcription needed)."""
-        from src.utils import get_response_from_llm
-
-        command = inp.question or inp.audio_base64 or "Hello!"
-
-        if self.llm:
-            response = get_response_from_llm(
-                self.llm,
-                "You are a helpful voice assistant. Respond clearly and concisely.",
-                command,
-            )
-        else:
-            response = "❌ LLM not loaded. Check model_path in configs/voice.yaml."
-
-        return {
-            "answer": f"[Text input]\nCommand: {command}\nResponse: {response}",
-            "messages": json.dumps(
-                [
-                    {"role": "user", "content": command},
-                    {"role": "assistant", "content": response},
-                ]
-            ),
-            "response_audio": self._synthesize_speech(response),
-        }
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
         """Transcribe audio with Whisper GGUF (pywhispercpp), then generate LLM response."""

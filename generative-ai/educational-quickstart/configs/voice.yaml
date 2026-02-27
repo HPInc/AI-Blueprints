@@ -14,9 +14,11 @@ model_path: "/home/jovyan/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q
 # Download via project-setup.ipynb Cell 8.
 stt_model_path: "/home/jovyan/local/whisper-large-v3-turbo/model_q4_1.gguf"
 
-# Path to the XTTS v2 GGUF model for text-to-speech synthesis.
-# Download via project-setup.ipynb Cell 8.
-tts_model_path: "/home/jovyan/local/xtts-v2/gguf/xtts_v2_f16.gguf"
+# Path to the XTTS v2 model directory for text-to-speech synthesis.
+# CoquiTTS uses its own native PyTorch format (.pth files), not GGUF.
+# Download via project-setup.ipynb Cell 9 (snapshot_download coqui/XTTS-v2).
+# At serve time the loader resolves this to <artifact_models>/xtts-v2/.
+tts_model_path: "/home/jovyan/local/xtts-v2"
 
 # Context window size (tokens). Transcribed audio is typically short,
 # so 8192 is more than sufficient for voice assistant responses.
