@@ -4,18 +4,20 @@ VoiceModel — Business Logic Layer for Voice Assistant.
 Architecture (v2.0.0):
     Focused on one capability: speech-to-text transcription + LLM response + text-to-speech.
     Implements a three-stage pipeline:
-        1. Whisper (transformers pipeline) → Transcribe audio bytes into text
-        2. LlamaCpp (Llama 3.1 8B)        → Process transcribed text through the LLM
-        3. XTTS v2 (CoquiTTS)             → Synthesise LLM response as audio
+        1. Whisper (AutoModelForSpeechSeq2Seq) → Transcribe audio bytes into text
+        2. LlamaCpp (Llama 3.1 8B)             → Process transcribed text through the LLM
+        3. XTTS v2 (CoquiTTS)                  → Synthesise LLM response as audio
 
     Zero MLflow imports — pure Python + transformers + LangChain + CoquiTTS business logic.
 
-What is the Whisper transformers pipeline?
-    Uses `transformers.pipeline("automatic-speech-recognition")` with the official
+Whisper STT — why AutoModelForSpeechSeq2Seq instead of pipeline()?
+    Uses `AutoProcessor` + `AutoModelForSpeechSeq2Seq` directly with the official
     openai/whisper-large-v3-turbo HuggingFace model (safetensors snapshot).
-    Pure Python/PyTorch — all errors are catchable Python exceptions (no C-level segfaults).
-    Accepts a float32 numpy array (16 kHz mono) directly, so no intermediate file is needed
-    beyond the initial base64 decode + librosa normalization step.
+    `transformers.pipeline("automatic-speech-recognition")` internally imports `torchaudio`
+    during preprocessing. In PyTorch >= 2.9, `torchaudio` auto-loads `torchcodec` C shared
+    libraries (.so files) that link against FFmpeg dev objects not present in this container.
+    Using model components directly completely bypasses the torchaudio/torchcodec import chain:
+    `WhisperFeatureExtractor` computes mel spectrograms with pure numpy/scipy — no torchaudio.
 
 What is XTTS v2?
     XTTS (Cross-lingual Text-to-Speech) v2 by Coqui is a zero-shot TTS model that can
@@ -29,7 +31,7 @@ Pipeline:
     Audio bytes (WAV/MP3/etc.)
         ↓  base64-decode + librosa normalize (16 kHz mono)
     float32 audio array
-        ↓  transformers.pipeline("automatic-speech-recognition")
+        ↓  AutoProcessor + AutoModelForSpeechSeq2Seq (no torchaudio)
         ↓
     Transcription text
         ↓  LlamaCpp (Llama 3.1 8B Q6_K_L)
@@ -332,21 +334,25 @@ class VoiceModel:
             return ""
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
-        """Transcribe audio with Whisper (transformers pipeline), then generate LLM response."""
+        """Transcribe audio with Whisper (AutoModelForSpeechSeq2Seq), then generate LLM response."""
         import base64
         import gc
         import torch
         from src.utils import get_response_from_llm
 
-        # ── 1. Whisper transcription (transformers pipeline) ──────────────────
+        # ── 1. Whisper transcription (AutoModelForSpeechSeq2Seq) ──────────────
+        # Uses model components directly to avoid the torchaudio→torchcodec import
+        # chain that transformers.pipeline() triggers on PyTorch >= 2.9.
+        # WhisperFeatureExtractor computes mel spectrograms via numpy/scipy only.
         transcription = ""
         whisper_error = None
-        stt = None
+        whisper_model = None
+        processor = None
 
         if os.path.isdir(self.stt_model_path):
             try:
                 import librosa
-                from transformers import pipeline as hf_pipeline
+                from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
                 audio_bytes = base64.b64decode(inp.audio_base64)
 
@@ -361,19 +367,40 @@ class VoiceModel:
                 finally:
                     os.unlink(tmp_path)
 
-                device = (
-                    0 if torch.cuda.is_available() else -1
-                )  # 0 = first GPU, -1 = CPU
-                stt = hf_pipeline(
-                    "automatic-speech-recognition",
-                    model=self.stt_model_path,
-                    device=device,
-                    torch_dtype=(
-                        torch.float16 if torch.cuda.is_available() else torch.float32
-                    ),
+                _dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+                _device = "cuda" if torch.cuda.is_available() else "cpu"
+
+                # AutoProcessor = WhisperFeatureExtractor + WhisperTokenizer
+                # No torchaudio import anywhere in this code path.
+                processor = AutoProcessor.from_pretrained(self.stt_model_path)
+                whisper_model = AutoModelForSpeechSeq2Seq.from_pretrained(
+                    self.stt_model_path,
+                    torch_dtype=_dtype,
+                ).to(_device)
+
+                # WhisperFeatureExtractor builds mel spectrograms with numpy/scipy
+                inputs = processor(audio_data, sampling_rate=16000, return_tensors="pt")
+                inputs = {
+                    k: (
+                        v.to(_device).to(_dtype)
+                        if v.is_floating_point()
+                        else v.to(_device)
+                    )
+                    for k, v in inputs.items()
+                }
+
+                # Force English transcription
+                forced_decoder_ids = processor.get_decoder_prompt_ids(
+                    language="english", task="transcribe"
                 )
-                result = stt(audio_data, generate_kwargs={"language": "english"})
-                transcription = result["text"].strip()
+                with torch.no_grad():
+                    predicted_ids = whisper_model.generate(
+                        **inputs,
+                        forced_decoder_ids=forced_decoder_ids,
+                    )
+                transcription = processor.batch_decode(
+                    predicted_ids, skip_special_tokens=True
+                )[0].strip()
                 logger.info("Transcription: '%s...'", transcription[:60])
 
             except Exception as e:
@@ -381,13 +408,16 @@ class VoiceModel:
                 logger.warning("⚠️ Whisper transcription failed: %s", e)
             finally:
                 # ── Release Whisper VRAM before LLM inference + XTTS load ────────────
-                # Without explicit cleanup, the Whisper model stays pinned in GPU RAM.
+                # Without explicit cleanup, Whisper stays pinned in GPU RAM.
                 # Peak with all three models live simultaneously:
                 #   LLM ~6.6 GB + Whisper ~1.2 GB + XTTS ~0.9 GB ≈ 8.7 GB
                 # Free Whisper before XTTS loads to stay within the VRAM budget.
-                if stt is not None:
-                    del stt
-                    stt = None
+                if whisper_model is not None:
+                    del whisper_model
+                    whisper_model = None
+                if processor is not None:
+                    del processor
+                    processor = None
                 gc.collect()
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
