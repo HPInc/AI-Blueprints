@@ -64,10 +64,8 @@ class Logger:
         config_path: str,
         docs_path: Optional[str] = None,
         secrets_dict: Optional[Dict] = None,
-        model_path: Optional[str] = None,
+        model_paths: Optional[Dict[str, str]] = None,
         demo_folder: Optional[str] = None,
-        stt_model_path: Optional[str] = None,
-        tts_model_path: Optional[str] = None,
     ) -> None:
         """
         Package all artifacts and call mlflow.pyfunc.log_model().
@@ -79,6 +77,7 @@ class Logger:
             ├── config.yaml          ← copied from config_path
             ├── secrets.yaml         ← generated from secrets_dict (if provided)
             ├── data/                ← copied from docs_path (if provided)
+            ├── models/              ← one entry per key in model_paths
             └── demo/                ← copied from demo_folder (if provided)
 
         MLflow then reads this directory via loader.py when loading the model.
@@ -93,8 +92,16 @@ class Logger:
             docs_path:     Optional path to a directory of documents (document analyzer).
             secrets_dict:  Optional dict of secrets to serialize as secrets.yaml.
                            These are written to disk temporarily and never committed to git.
-            model_path:    Full path to the .gguf model file used during inference.
-                           This is embedded into the logged config so loader.py can find it.
+            model_paths:   Optional dict mapping config key → filesystem path for every
+                           model file this capability needs.  All entries are copied into
+                           the artifact's models/ directory and resolved by loader.py at
+                           serve time using the same convention-based *_path lookup.
+
+                           Examples:
+                             {"model_path": "/path/to/llm.gguf"}
+                             {"model_path": "/path/llm.gguf",
+                              "stt_model_path": "/path/whisper.gguf",
+                              "tts_model_path": "/path/xtts.gguf"}
             demo_folder:   Optional path to the Streamlit demo folder (for CSS/logos).
         """
         # Use a fixed directory name "model_artifacts" so the container's main.py
@@ -134,27 +141,35 @@ class Logger:
                 shutil.copytree(demo_folder, demo_dest)
                 logger.info(f"✅ Copied demo: {demo_folder} → {demo_dest}")
 
-            # ✅ Handle model files -> /artifacts/data/models/
-            models_temp_dir = os.path.join(tmp_path, "models")
-            os.makedirs(models_temp_dir, exist_ok=True)
+            # ── 5. Copy model files → /artifacts/data/models/ ──────────────────────────
+            if model_paths:
+                models_temp_dir = os.path.join(tmp_path, "models")
+                os.makedirs(models_temp_dir, exist_ok=True)
+                copied_keys: list[str] = []
+                for config_key, path in model_paths.items():
+                    if not path or not os.path.exists(path):
+                        logger.info(f"{config_key}: not found at {path!r} — skipping")
+                        continue
+                    if os.path.isfile(path):
+                        shutil.copy2(
+                            path, os.path.join(models_temp_dir, os.path.basename(path))
+                        )
+                        logger.info(f"Copied {config_key}: {os.path.basename(path)}")
+                    else:
+                        shutil.copytree(path, models_temp_dir, dirs_exist_ok=True)
+                        logger.info(f"Copied {config_key} directory: {path}")
+                    copied_keys.append(config_key)
 
-            def _copy_model(path: Optional[str], label: str) -> None:
-                """Copy a single GGUF file or directory into models_temp_dir."""
-                if not path or not os.path.exists(path):
-                    logger.info(f"{label} not provided or doesn't exist — skipping")
-                    return
-                if os.path.isfile(path):
-                    shutil.copy2(
-                        path, os.path.join(models_temp_dir, os.path.basename(path))
-                    )
-                    logger.info(f"Copied {label}: {os.path.basename(path)}")
-                else:
-                    shutil.copytree(path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied {label} directory: {path}")
+                # Stamp the copied keys into config.yaml so the Loader can resolve
+                if copied_keys:
+                    import yaml
 
-            _copy_model(model_path, "LLM model")
-            _copy_model(stt_model_path, "Whisper STT model")
-            _copy_model(tts_model_path, "XTTS TTS model")
+                    with open(config_dest) as f:
+                        cfg = yaml.safe_load(f) or {}
+                    cfg["_artifact_model_keys"] = copied_keys
+                    with open(config_dest, "w") as f:
+                        yaml.dump(cfg, f, default_flow_style=False)
+                    logger.info(f"✅ Stamped _artifact_model_keys: {copied_keys}")
 
             # ── 6. Build pip requirements list ───────────────────────────────
             pip_reqs = "../requirements.txt"  # Path relative to where mlflow is run

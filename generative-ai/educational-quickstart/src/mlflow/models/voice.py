@@ -114,14 +114,8 @@ class VoiceModel:
         self.model_path = model_path
         self.secrets = secrets
 
-        self.stt_model_path = config.get(
-            "stt_model_path",
-            "/home/jovyan/local/whisper-large-v3-turbo/model_q4_1.gguf",
-        )
-        self.tts_model_path = config.get(
-            "tts_model_path",
-            "/home/jovyan/local/xtts-v2/gguf/xtts_v2_f16.gguf",
-        )
+        self.stt_model_path = config.get("stt_model_path", "")
+        self.tts_model_path = config.get("tts_model_path", "")
         self._tts_pipeline = None  # Lazy-loaded on first TTS call
 
         self._load_llm()

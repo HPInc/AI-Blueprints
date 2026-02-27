@@ -95,41 +95,36 @@ def _load_pyfunc(data_path: str):
         # Set env var so get_model_path() (and serving containers) can locate files.
         # This matches the pattern used by all non-educational blueprints.
         os.environ["MODEL_ARTIFACTS_PATH"] = artifact_models
-        # Resolve to the actual file, not the directory — LlamaCpp needs a file path.
         from src.utils import get_model_path
 
-        config_model_path = config.get("model_path", "")
-        if config_model_path:
-            resolved = get_model_path(config_model_path)
-            model_path = resolved if os.path.isfile(resolved) else artifact_models
-        else:
-            # No filename in config — scan for any .gguf file as fallback
+        # The Logger stamps "_artifact_model_keys" into config.yaml at log time,
+        # listing exactly which keys it copied into models/.
+        artifact_keys = config.get("_artifact_model_keys", [])
+        model_path = artifact_models  # default fallback (overwritten below)
+        for key in artifact_keys:
+            config_val = config.get(key, "")
+            if not config_val:
+                continue
+            resolved = get_model_path(str(config_val))
+            if os.path.isfile(resolved):
+                config[key] = resolved
+                logger.info(f"✅ {key} resolved from artifact: {resolved}")
+                if key == "model_path":
+                    model_path = resolved
+            else:
+                logger.warning(
+                    f"⚠️ {key} file not found in artifacts ({resolved}). "
+                    "Keeping original config value."
+                )
+
+        if model_path == artifact_models:
+            # model_path key was absent or unresolved — scan for any GGUF as fallback
             gguf_files = sorted(
                 f for f in os.listdir(artifact_models) if f.endswith(".gguf")
             )
-            model_path = (
-                os.path.join(artifact_models, gguf_files[0])
-                if gguf_files
-                else artifact_models
-            )
-        logger.info(f"✅ model_path resolved from artifact: {model_path}")
-
-        # For voice capability, also resolve STT and TTS model paths from the
-        # same artifacts directory so the deployed container does not fall back
-        # to the hardcoded /home/jovyan/local/... paths in voice.yaml.
-        if capability == "voice":
-            for key in ("stt_model_path", "tts_model_path"):
-                config_val = config.get(key, "")
-                if config_val:
-                    resolved = get_model_path(config_val)
-                    if os.path.isfile(resolved):
-                        config[key] = resolved
-                        logger.info(f"✅ {key} resolved from artifact: {resolved}")
-                    else:
-                        logger.warning(
-                            f"⚠️ {key} file not found in artifacts: {resolved}. "
-                            "Keeping original config value."
-                        )
+            if gguf_files:
+                model_path = os.path.join(artifact_models, gguf_files[0])
+                logger.info(f"✅ model_path resolved by GGUF scan: {model_path}")
     else:
         model_path = os.environ.get(
             "MODEL_ARTIFACTS_PATH", config.get("model_path", "")
