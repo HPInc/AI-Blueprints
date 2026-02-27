@@ -228,7 +228,7 @@ class ChatbotModel:
         )
 
         logger.info(f"Chatbot: processing question ({len(question)} chars)")
-        answer = self.llm(zephyr_prompt)
+        answer = self.llm.invoke(zephyr_prompt)
 
         # Strip any trailing </s> that some Zephyr variants append to the response
         answer = answer.strip().rstrip("</s>").strip()

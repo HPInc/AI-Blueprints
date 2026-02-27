@@ -172,7 +172,7 @@ def get_response_from_llm(llm, system_prompt: str, user_prompt: str) -> str:
 
     {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
     """
-    return llm(meta_llama_prompt)  # Call the model and return its text output
+    return llm.invoke(meta_llama_prompt)  # Call the model and return its text output
 
 
 def display_image(image_bytes: bytes, width: int = 400) -> None:
