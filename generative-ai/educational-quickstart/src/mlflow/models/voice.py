@@ -321,21 +321,19 @@ class VoiceModel:
                     tmp.write(audio_bytes)
                     tmp_path = tmp.name
 
-                # Normalize audio to 16 kHz mono WAV — required by Whisper (Spec 4.2.4)
+                # Normalize audio to 16 kHz mono WAV — required by Whisper.
+                # Uses librosa + soundfile instead of torchaudio to avoid
+                # the torchcodec C-extension dependency introduced in PyTorch 2.9.
                 try:
-                    import torchaudio
+                    import librosa
+                    import soundfile as sf
 
-                    waveform, sample_rate = torchaudio.load(tmp_path)
-                    if waveform.shape[0] > 1:  # Stereo → mono
-                        waveform = waveform.mean(dim=0, keepdim=True)
-                    if sample_rate != 16000:  # Resample to 16 kHz
-                        resampler = torchaudio.transforms.Resample(sample_rate, 16000)
-                        waveform = resampler(waveform)
-                    torchaudio.save(tmp_path, waveform, 16000)
-                    logger.info("✅ Audio normalized to 16 kHz mono via torchaudio")
+                    audio_data, _ = librosa.load(tmp_path, sr=16000, mono=True)
+                    sf.write(tmp_path, audio_data, 16000)
+                    logger.info("✅ Audio normalized to 16 kHz mono via librosa")
                 except Exception as ta_err:
                     logger.warning(
-                        "⚠️ torchaudio normalization failed (using raw audio): %s",
+                        "⚠️ librosa normalization failed (using raw audio): %s",
                         ta_err,
                     )
 
