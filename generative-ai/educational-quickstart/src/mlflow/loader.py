@@ -95,7 +95,9 @@ def _load_pyfunc(data_path: str):
         model_path = artifact_models
         logger.info(f"✅ model_path resolved from artifact: {model_path}")
     else:
-        model_path = os.environ.get("MODEL_ARTIFACTS_PATH", config.get("model_path", ""))
+        model_path = os.environ.get(
+            "MODEL_ARTIFACTS_PATH", config.get("model_path", "")
+        )
         if model_path:
             logger.info(f"ℹ️ Using model_path fallback: {model_path}")
         else:

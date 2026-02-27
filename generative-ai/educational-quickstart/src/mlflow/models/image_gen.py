@@ -199,9 +199,7 @@ class ImageGenModel:
 
                 # transformer/config.json is downloaded by project-setup.ipynb (step 3c).
                 # Pass the directory so from_single_file() uses it directly.
-                transformer_config_dir = os.path.join(
-                    self.model_path, "transformer"
-                )
+                transformer_config_dir = os.path.join(self.model_path, "transformer")
 
                 logger.info(f"Loading FLUX.1-dev GGUF transformer from: {gguf_path}")
 
@@ -224,9 +222,7 @@ class ImageGenModel:
                 # VAE, scheduler, tokenizers) from the local model directory.
                 # The transformer is replaced with our GGUF version via the kwarg.
                 # local_files_only=True prevents any HuggingFace network calls.
-                logger.info(
-                    f"Loading FLUX.1-dev pipeline from: {self.model_path}"
-                )
+                logger.info(f"Loading FLUX.1-dev pipeline from: {self.model_path}")
                 self._pipeline = FluxPipeline.from_pretrained(
                     self.model_path,
                     transformer=transformer,
