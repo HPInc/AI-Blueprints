@@ -53,64 +53,39 @@ with col3:
 st.markdown(
     '<div class="gradient-header">'
     "<h2>🎙️ Voice Assistant</h2>"
-    "<p>Speech recognition powered by Whisper large-v3 · LLM responses via LlamaCpp</p>"
+    "<p>Record or upload audio · Whisper large-v3 STT · Llama 3.1 8B LLM · XTTS v2 TTS</p>"
     "</div>",
     unsafe_allow_html=True,
 )
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
-st.sidebar.title("⚙️ Configuration")
+st.sidebar.title("⚙️ Usage")
 st.sidebar.markdown(
     """
-**MLflow Server**
-
-Start the voice model server before using this app:
-
-```bash
-mlflow models serve \\
-  -m models:/AIStudio-EQ-Voice/1 \\
-  -p 5002 --no-conda
-```
-
-**Pipeline**
-
-1. Upload WAV/MP3/OGG/FLAC audio
-2. Whisper transcribes the audio → text
-3. LlamaCpp generates a response
-4. Both transcript and response are shown
-
-**No microphone?**
-
-Use the text input below to send a command
-directly to the LLM, skipping Whisper.
+**Instructions:**
+1. Record with your microphone or upload an audio file.
+2. Whisper transcribes the audio to text.
+3. The LLM generates a response.
+4. XTTS v2 speaks the response aloud.
 """
 )
 
-endpoint_url = st.sidebar.text_input(
-    "API Endpoint URL",
-    value="http://localhost:5002/invocations",
-    help="The MLflow model server invocations endpoint.",
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "📚 [Blueprint README](../README.md) | [HP AI Studio](https://hp.com/ai-studio)"
-)
+endpoint_url = "http://localhost:5002/invocations"
 
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
 
-def call_model(question: str = "", audio_base64: str = "", timeout: int = 600) -> dict:
+def call_model(audio_base64: str, timeout: int = 600) -> dict:
     """
     Send a POST request to the VoiceModel's invocations endpoint.
 
     Payload schema — only the columns VoiceModel expects:
-        question      (str) — text fallback
+        question      (str) — always empty; audio is the only input path
         audio_base64  (str) — base64-encoded audio bytes
     """
     payload = {
-        "inputs": [{"question": question, "audio_base64": audio_base64}],
+        "inputs": [{"question": "", "audio_base64": audio_base64}],
         "params": {},
     }
     try:
@@ -145,7 +120,7 @@ def call_model(question: str = "", audio_base64: str = "", timeout: int = 600) -
 
 
 def render_result(result: dict) -> None:
-    """Display the voice assistant's response."""
+    """Display the voice assistant's response, including TTS audio if available."""
     if result["success"]:
         output = result["data"]
         st.markdown("### 🤖 Assistant Response")
@@ -153,6 +128,15 @@ def render_result(result: dict) -> None:
             f"<div class='result-box'>{output['answer']}</div>",
             unsafe_allow_html=True,
         )
+
+        # ── TTS playback ────────────────────────────────────────────────────
+        response_audio_b64 = output.get("response_audio", "")
+        if response_audio_b64:
+            st.markdown("### 🔊 Spoken Response (XTTS v2)")
+            audio_bytes = base64.b64decode(response_audio_b64)
+            st.audio(audio_bytes, format="audio/wav", autoplay=True)
+        # ────────────────────────────────────────────────────────────────────
+
         st.divider()
         with st.expander("🔍 View Pipeline Details"):
             try:
@@ -163,46 +147,34 @@ def render_result(result: dict) -> None:
         st.error(result["error"])
 
 
-# ───────────────────────────── Voice Form ──────────────────────────────────────
-st.markdown(
-    "### 🎤 Voice or Text Input\n\n"
-    "Upload an audio file to use speech recognition, or type a command directly."
-)
+# ───────────────────────────── Voice Input ─────────────────────────────────────
+st.markdown("### 🎤 Voice Input")
 
-with st.form("voice_form"):
-    audio_file = st.file_uploader(
-        "🎙️ Upload Audio File",
-        type=["wav", "mp3", "ogg", "flac"],
-        help="Whisper supports WAV, MP3, OGG, FLAC. Larger files take longer to process.",
-    )
+tab_mic, tab_upload = st.tabs(["🎙️ Record", "📁 Upload"])
 
-    st.markdown("**— or —**")
-
-    text_command = st.text_input(
-        "⌨️ Type a text command (skips transcription)",
-        placeholder="e.g., Explain what a transformer model is in simple terms",
-    )
-
-    submitted = st.form_submit_button("🎙️ Process", use_container_width=True)
-
-if submitted:
-    if audio_file is not None:
-        # Encode audio to base64 for JSON transport
-        audio_bytes = audio_file.read()
+with tab_mic:
+    st.markdown("Click **Record** to capture your question with the microphone.")
+    mic_audio = st.audio_input("Record your question")
+    if mic_audio is not None:
+        audio_bytes = mic_audio.read()
         audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-
-        st.info(
-            f"Processing audio: {audio_file.name} "
-            f"({len(audio_bytes) / 1024:.1f} KB)"
-        )
-        with st.spinner("Transcribing audio and generating response..."):
+        st.info(f"Recorded {len(audio_bytes) / 1024:.1f} KB")
+        with st.spinner("Transcribing and generating response..."):
             result = call_model(audio_base64=audio_b64)
         render_result(result)
 
-    elif text_command.strip():
-        with st.spinner("Processing text command..."):
-            result = call_model(question=text_command.strip())
-        render_result(result)
-
-    else:
-        st.warning("Please upload an audio file or type a text command.")
+with tab_upload:
+    st.markdown("Upload a WAV, MP3, OGG, or FLAC file to process.")
+    audio_file = st.file_uploader(
+        "Upload Audio File",
+        type=["wav", "mp3", "ogg", "flac"],
+        help="Whisper supports WAV, MP3, OGG, FLAC. Larger files take longer to process.",
+    )
+    if audio_file is not None:
+        audio_bytes = audio_file.read()
+        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+        st.info(f"Processing: {audio_file.name} ({len(audio_bytes) / 1024:.1f} KB)")
+        if st.button("🎙️ Process", use_container_width=True):
+            with st.spinner("Transcribing audio and generating response..."):
+                result = call_model(audio_base64=audio_b64)
+            render_result(result)

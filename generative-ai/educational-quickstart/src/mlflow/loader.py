@@ -113,6 +113,23 @@ def _load_pyfunc(data_path: str):
                 else artifact_models
             )
         logger.info(f"✅ model_path resolved from artifact: {model_path}")
+
+        # For voice capability, also resolve STT and TTS model paths from the
+        # same artifacts directory so the deployed container does not fall back
+        # to the hardcoded /home/jovyan/local/... paths in voice.yaml.
+        if capability == "voice":
+            for key in ("stt_model_path", "tts_model_path"):
+                config_val = config.get(key, "")
+                if config_val:
+                    resolved = get_model_path(config_val)
+                    if os.path.isfile(resolved):
+                        config[key] = resolved
+                        logger.info(f"✅ {key} resolved from artifact: {resolved}")
+                    else:
+                        logger.warning(
+                            f"⚠️ {key} file not found in artifacts: {resolved}. "
+                            "Keeping original config value."
+                        )
     else:
         model_path = os.environ.get(
             "MODEL_ARTIFACTS_PATH", config.get("model_path", "")

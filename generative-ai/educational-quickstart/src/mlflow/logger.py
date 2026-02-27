@@ -66,6 +66,8 @@ class Logger:
         secrets_dict: Optional[Dict] = None,
         model_path: Optional[str] = None,
         demo_folder: Optional[str] = None,
+        stt_model_path: Optional[str] = None,
+        tts_model_path: Optional[str] = None,
     ) -> None:
         """
         Package all artifacts and call mlflow.pyfunc.log_model().
@@ -133,20 +135,26 @@ class Logger:
                 logger.info(f"✅ Copied demo: {demo_folder} → {demo_dest}")
 
             # ✅ Handle model files -> /artifacts/data/models/
-            if model_path and os.path.exists(model_path):
-                models_temp_dir = os.path.join(tmp_path, "models")
-                os.makedirs(models_temp_dir, exist_ok=True)
-                if os.path.isfile(model_path):
+            models_temp_dir = os.path.join(tmp_path, "models")
+            os.makedirs(models_temp_dir, exist_ok=True)
+
+            def _copy_model(path: Optional[str], label: str) -> None:
+                """Copy a single GGUF file or directory into models_temp_dir."""
+                if not path or not os.path.exists(path):
+                    logger.info(f"{label} not provided or doesn't exist — skipping")
+                    return
+                if os.path.isfile(path):
                     shutil.copy2(
-                        model_path,
-                        os.path.join(models_temp_dir, os.path.basename(model_path)),
+                        path, os.path.join(models_temp_dir, os.path.basename(path))
                     )
-                    logger.info(f"Copied model file: {os.path.basename(model_path)}")
+                    logger.info(f"Copied {label}: {os.path.basename(path)}")
                 else:
-                    shutil.copytree(model_path, models_temp_dir, dirs_exist_ok=True)
-                    logger.info(f"Copied model directory: {model_path}")
-            else:
-                logger.info("Model path not provided or doesn't exist - skipping")
+                    shutil.copytree(path, models_temp_dir, dirs_exist_ok=True)
+                    logger.info(f"Copied {label} directory: {path}")
+
+            _copy_model(model_path, "LLM model")
+            _copy_model(stt_model_path, "Whisper STT model")
+            _copy_model(tts_model_path, "XTTS TTS model")
 
             # ── 6. Build pip requirements list ───────────────────────────────
             pip_reqs = "../requirements.txt"  # Path relative to where mlflow is run

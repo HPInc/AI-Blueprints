@@ -55,40 +55,17 @@ st.markdown(
 )
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
-st.sidebar.title("⚙️ Configuration")
+st.sidebar.title("⚙️ Usage")
 st.sidebar.markdown(
     """
-**MLflow Server**
-
-Start the document model server before using this app:
-
-```bash
-mlflow models serve \\
-  -m models:/AIStudio-EQ-Document/1 \\
-  -p 5002 --no-conda
-```
-
-**How it works**
-
-This model uses Retrieval-Augmented Generation (RAG):
-1. Splits your document into ~20-line chunks
-2. Asks the LLM about each chunk independently
-3. Synthesizes a final answer from all relevant chunks
-
-This approach works for documents of any length.
+**Instructions:**
+1. Paste or type your document text into the input field.
+2. Enter your question about the document.
+3. Click **Analyze Document** to receive an AI-generated answer.
 """
 )
 
-endpoint_url = st.sidebar.text_input(
-    "API Endpoint URL",
-    value="http://localhost:5002/invocations",
-    help="The MLflow model server invocations endpoint.",
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "📚 [Blueprint README](../README.md) | [HP AI Studio](https://hp.com/ai-studio)"
-)
+endpoint_url = "http://localhost:5002/invocations"
 
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────

@@ -58,37 +58,16 @@ st.markdown(
 )
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
-st.sidebar.title("⚙️ Configuration")
+st.sidebar.title("⚙️ Usage")
 st.sidebar.markdown(
     """
-**MLflow Server**
-
-Start the image gen model server before using this app:
-
-```bash
-mlflow models serve \\
-  -m models:/AIStudio-EQ-ImageGen/1 \\
-  -p 5002 --no-conda
-```
-
-**About SDXL-Turbo**
-
-SDXL-Turbo is a distilled diffusion model that generates
-high-quality images in 1-4 steps. Guidance scale is set
-to 0.0 (turbo mode — no classifier-free guidance).
+**Instructions:**
+1. Type a text prompt describing the image you want to generate.
+2. Click **Generate Image** to produce the result.
 """
 )
 
-endpoint_url = st.sidebar.text_input(
-    "API Endpoint URL",
-    value="http://localhost:5002/invocations",
-    help="The MLflow model server invocations endpoint.",
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "📚 [Blueprint README](../README.md) | [HP AI Studio](https://hp.com/ai-studio)"
-)
+endpoint_url = "http://localhost:5002/invocations"
 
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────

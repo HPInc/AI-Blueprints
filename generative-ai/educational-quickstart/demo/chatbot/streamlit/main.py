@@ -55,29 +55,14 @@ st.markdown(
 )
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
-st.sidebar.title("⚙️ Configuration")
+st.sidebar.title("⚙️ Usage")
 st.sidebar.markdown(
     """
-**MLflow Server**
-
-Start the chatbot model server before using this app:
-
-```bash
-mlflow models serve \\
-  -m models:/AIStudio-EQ-Chatbot/1 \\
-  -p 5002 --no-conda
-```
-
-**System Prompt**
-
-Customize the LLM's personality below.
+**Instructions:**
+1. (Optional) Customize the system prompt below.
+2. Type your question and click **Send**.
+3. The assistant will respond with an AI-generated answer.
 """
-)
-
-endpoint_url = st.sidebar.text_input(
-    "API Endpoint URL",
-    value="http://localhost:5002/invocations",
-    help="The MLflow model server invocations endpoint.",
 )
 
 system_prompt = st.sidebar.text_area(
@@ -89,10 +74,7 @@ system_prompt = st.sidebar.text_area(
     height=150,
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "📚 [Blueprint README](../README.md) | [HP AI Studio](https://hp.com/ai-studio)"
-)
+endpoint_url = "http://localhost:5002/invocations"
 
 
 # ───────────────────────────── Helper: API Call ────────────────────────────────
