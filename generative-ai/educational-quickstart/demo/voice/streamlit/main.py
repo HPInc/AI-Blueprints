@@ -119,6 +119,29 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
         return {"success": False, "error": f"Unexpected error: {e}"}
 
 
+def process_audio(audio_bytes: bytes, source_label: str) -> None:
+    """
+    Encode audio bytes to base64 and call the VoiceModel endpoint.
+
+    Shared by both the mic and upload tabs — the same encode → call → render
+    flow used in the notebook demo cell:
+        model.predict(pd.DataFrame([{"question": "", "audio_base64": audio_b64}]))
+    """
+    if not audio_bytes:
+        st.warning("No audio data received. Please try again.")
+        return
+
+    audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+    st.info(f"🎧 {source_label} ({len(audio_bytes) / 1024:.1f} KB)")
+
+    with st.spinner(
+        "Transcribing audio and generating response — this may take 30–90 seconds..."
+    ):
+        result = call_model(audio_base64=audio_b64)
+
+    render_result(result)
+
+
 def render_result(result: dict) -> None:
     """Display the voice assistant's response, including TTS audio if available."""
     if result["success"]:
@@ -147,6 +170,12 @@ def render_result(result: dict) -> None:
         st.error(result["error"])
 
 
+# ───────────────────────────── Session State ──────────────────────────────────
+# Tracks whether a model request is currently in-flight to prevent double-submit.
+if "voice_processing" not in st.session_state:
+    st.session_state.voice_processing = False
+
+
 # ───────────────────────────── Voice Input ─────────────────────────────────────
 st.markdown("### 🎤 Voice Input")
 
@@ -156,12 +185,8 @@ with tab_mic:
     st.markdown("Click **Record** to capture your question with the microphone.")
     mic_audio = st.audio_input("Record your question")
     if mic_audio is not None:
-        audio_bytes = mic_audio.read()
-        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-        st.info(f"Recorded {len(audio_bytes) / 1024:.1f} KB")
-        with st.spinner("Transcribing and generating response..."):
-            result = call_model(audio_base64=audio_b64)
-        render_result(result)
+        # Mic recording auto-processes immediately — no button needed.
+        process_audio(mic_audio.read(), "Recorded audio")
 
 with tab_upload:
     st.markdown("Upload a WAV, MP3, OGG, or FLAC file to process.")
@@ -172,9 +197,27 @@ with tab_upload:
     )
     if audio_file is not None:
         audio_bytes = audio_file.read()
-        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-        st.info(f"Processing: {audio_file.name} ({len(audio_bytes) / 1024:.1f} KB)")
-        if st.button("🎙️ Process", use_container_width=True):
-            with st.spinner("Transcribing audio and generating response..."):
-                result = call_model(audio_base64=audio_b64)
-            render_result(result)
+        if not audio_bytes:
+            st.warning("Uploaded file is empty. Please upload a valid audio file.")
+        else:
+            # Confirm upload and let the user preview the audio before processing.
+            st.success(
+                f"\u2705 Uploaded: **{audio_file.name}** ({len(audio_bytes) / 1024:.1f} KB)"
+            )
+            st.audio(
+                audio_bytes,
+                format=f"audio/{audio_file.name.rsplit('.', 1)[-1].lower()}",
+            )
+
+            # Button is disabled while a request is in-flight to prevent double-submit
+            # (clicking during a spinner would fire a second request → 400 error).
+            clicked = st.button(
+                "🎙️ Process Audio",
+                use_container_width=True,
+                disabled=st.session_state.voice_processing,
+            )
+
+            if clicked:
+                st.session_state.voice_processing = True
+                process_audio(audio_bytes, f"Uploaded: {audio_file.name}")
+                st.session_state.voice_processing = False
