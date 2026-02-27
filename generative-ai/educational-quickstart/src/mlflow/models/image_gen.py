@@ -27,12 +27,17 @@ FLUX inference parameters:
     guidance_scale: 3.5       (classifier-free guidance weight; 3-7 typical range)
     height / width: 1024      (FLUX native resolution)
 
-Input schema (focused):
-    prompt (str) — Text description of the image to generate
+Input schema:
+    prompt              (str)   — Text description of the image to generate
+    num_inference_steps (int)   — Denoising steps; higher = better quality, slower (default 28)
+    guidance_scale      (float) — How strongly the model follows the prompt (default 3.5)
+    height              (int)   — Output image height in pixels (default 1024)
+    width               (int)   — Output image width in pixels (default 1024)
+    seed                (int)   — Fixed seed for reproducibility; -1 = random (default -1)
 
 Output schema:
     answer   (str) — Base64-encoded PNG image (decoded and displayed by Streamlit)
-    messages (str) — JSON-serialized request metadata
+    messages (str) — JSON-serialized request metadata including parameters used
 """
 
 import json
@@ -57,9 +62,19 @@ class ImageGenInput(BaseModel):
         MLflow's pyfunc interface only supports string, number, and array columns.
         Base64 encodes binary image bytes as an ASCII string, making it JSON-safe.
         The Streamlit app decodes this string back into bytes for display.
+
+    Seed behaviour:
+        seed = -1  → random seed (different image every call)
+        seed ≥ 0   → deterministic: same prompt + same seed always produces the same image.
+                     Useful for iterating on a prompt while keeping composition stable.
     """
 
     prompt: str = "A beautiful mountain landscape, photorealistic, golden hour lighting"
+    num_inference_steps: int = 28  # 20–50 range; higher = better quality, slower
+    guidance_scale: float = 3.5  # 1.0–10.0; higher = more prompt-adherent
+    height: int = 1024  # Output height in pixels
+    width: int = 1024  # Output width in pixels
+    seed: int = -1  # -1 = random; ≥0 = fixed deterministic seed
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
@@ -112,31 +127,52 @@ class ImageGenModel:
         Generate an image for each row in model_input.
 
         How it works:
-            1. Load SDXL-Turbo pipeline (once, cached after first call)
-            2. Run text-to-image generation with 4 denoising steps
+            1. Load FLUX.1-dev pipeline (once, cached after first call)
+            2. Run text-to-image generation with the requested parameters
             3. Encode the resulting PIL image as base64 PNG
             4. Return the base64 string in the 'answer' column
 
         Args:
-            model_input: DataFrame with column: prompt
-            params:      Unused — present for MLflow pyfunc compatibility
+            model_input: DataFrame with required column: prompt.
+            params:      Optional dict of generation parameters (MLflow ParamSchema).
+                         These are batch-level defaults; any matching column in a
+                         DataFrame row overrides the param value for that row.
+                         Supported keys (all optional — ImageGenInput provides defaults):
+                           num_inference_steps (int)   default 28
+                           guidance_scale      (float) default 3.5
+                           height              (int)   default 1024
+                           width               (int)   default 1024
+                           seed                (int)   default -1 (random)
 
         Returns:
-            DataFrame with columns: answer (base64 PNG or error), messages (str)
+            DataFrame with columns: answer (base64 PNG or error string), messages (str)
+
+        Why use params instead of extra DataFrame columns?
+            MLflow's signature validation strips any DataFrame column not listed in the
+            input schema before calling predict(). Since only `prompt` is declared as
+            required, extra columns would be silently dropped.
+            The `params` dict bypasses schema validation and is always forwarded as-is,
+            making it the correct MLflow-native way to pass optional/defaulted inputs.
         """
+        # params dict supplies batch-level defaults for generation settings.
+        # Row-level DataFrame columns (if present) override params for that specific row.
+        batch_defaults = dict(params) if params else {}
+
         results = []
 
         for _, row in model_input.iterrows():
             try:
-                inp = ImageGenInput(
-                    **{
-                        k: str(v)
-                        for k, v in row.items()
-                        if v is not None and str(v).strip()
-                    }
-                )
+                # Merge: batch_defaults < row columns (row wins on conflict).
+                # Filter out None/blank-string entries to let ImageGenInput defaults apply.
+                row_data = {
+                    k: v for k, v in row.items() if v is not None and str(v).strip()
+                }
+                inp = ImageGenInput(**{**batch_defaults, **row_data})
             except Exception:
-                inp = ImageGenInput(prompt=str(row.get("prompt", "")))
+                inp = ImageGenInput(
+                    prompt=str(row.get("prompt", "")),
+                    **{k: v for k, v in batch_defaults.items() if k != "prompt"},
+                )
 
             results.append(self._generate(inp))
 
@@ -234,18 +270,33 @@ class ImageGenModel:
                 self._pipeline.enable_model_cpu_offload()
                 logger.info("✅ FLUX.1-dev pipeline loaded with CPU offload enabled")
 
+            import torch  # cached after first pipeline load — instant on subsequent calls
+
+            # Build a seeded generator for reproducibility, or None for random output.
+            if inp.seed >= 0:
+                generator = torch.Generator().manual_seed(inp.seed)
+                logger.info(f"Using fixed seed: {inp.seed}")
+            else:
+                generator = None
+                logger.info("Using random seed")
+
             prompt = (
                 inp.prompt
                 or "A beautiful mountain landscape, photorealistic, golden hour lighting"
             )
-            logger.info(f"Generating image for prompt: '{prompt[:60]}...'")
+            logger.info(
+                f"Generating image — prompt: '{prompt[:60]}...'"
+                f" steps={inp.num_inference_steps} guidance={inp.guidance_scale}"
+                f" {inp.width}x{inp.height} seed={inp.seed}"
+            )
 
             image = self._pipeline(
                 prompt=prompt,
-                num_inference_steps=28,  # FLUX.1-dev quality sweet-spot (20–50 range)
-                guidance_scale=3.5,  # Classifier-free guidance weight for FLUX
-                height=1024,  # FLUX native resolution
-                width=1024,
+                num_inference_steps=inp.num_inference_steps,
+                guidance_scale=inp.guidance_scale,
+                height=inp.height,
+                width=inp.width,
+                generator=generator,
             ).images[0]
 
             # Embed an invisible watermark to mark AI-generated content (Spec 4.2.3)
@@ -276,7 +327,21 @@ class ImageGenModel:
             logger.info("✅ Image generated successfully")
             return {
                 "answer": img_b64,
-                "messages": json.dumps([{"role": "user", "content": prompt}]),
+                "messages": json.dumps(
+                    [
+                        {
+                            "role": "user",
+                            "content": prompt,
+                            "params": {
+                                "num_inference_steps": inp.num_inference_steps,
+                                "guidance_scale": inp.guidance_scale,
+                                "height": inp.height,
+                                "width": inp.width,
+                                "seed": inp.seed,
+                            },
+                        }
+                    ]
+                ),
             }
 
         except Exception as e:

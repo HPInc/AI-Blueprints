@@ -58,12 +58,60 @@ st.markdown(
 )
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
-st.sidebar.title("⚙️ Usage")
+st.sidebar.title("⚙️ Generation Parameters")
+st.sidebar.markdown("Adjust these before clicking **Generate Image**.")
+st.sidebar.divider()
+
+num_inference_steps = st.sidebar.slider(
+    "🔁 Inference Steps",
+    min_value=10,
+    max_value=50,
+    value=28,
+    step=1,
+    help="More steps → higher quality, but slower. 28 is the FLUX.1-dev sweet-spot.",
+)
+
+guidance_scale = st.sidebar.slider(
+    "🎯 Guidance Scale",
+    min_value=1.0,
+    max_value=10.0,
+    value=3.5,
+    step=0.5,
+    help="How strictly the model follows your prompt. 3–5 is typical for FLUX.",
+)
+
+resolution = st.sidebar.selectbox(
+    "📐 Resolution (height × width)",
+    options=[512, 768, 1024],
+    index=2,
+    format_func=lambda v: f"{v} × {v} px",
+    help="FLUX native resolution is 1024. Lower values are faster.",
+)
+
+st.sidebar.divider()
+st.sidebar.markdown("**🎲 Seed Control**")
+use_fixed_seed = st.sidebar.checkbox(
+    "Use fixed seed",
+    value=False,
+    help="Enable to get reproducible images. Same prompt + same seed = same image.",
+)
+seed_value = st.sidebar.number_input(
+    "Seed value",
+    min_value=0,
+    max_value=2**32 - 1,
+    value=42,
+    step=1,
+    disabled=not use_fixed_seed,
+    help="Any integer ≥ 0. Only used when 'Use fixed seed' is checked.",
+)
+seed = int(seed_value) if use_fixed_seed else -1
+
+st.sidebar.divider()
 st.sidebar.markdown(
     """
 **Instructions:**
-1. Type a text prompt describing the image you want to generate.
-2. Click **Generate Image** to produce the result.
+1. Adjust parameters above.
+2. Type a prompt and click **Generate Image**.
 """
 )
 
@@ -73,16 +121,34 @@ endpoint_url = "http://localhost:5002/invocations"
 # ───────────────────────────── Helper: API Call ────────────────────────────────
 
 
-def call_model(prompt: str, timeout: int = 600) -> dict:
+def call_model(
+    prompt: str,
+    num_inference_steps: int = 28,
+    guidance_scale: float = 3.5,
+    height: int = 1024,
+    width: int = 1024,
+    seed: int = -1,
+    timeout: int = 600,
+) -> dict:
     """
     Send a POST request to the ImageGenModel's invocations endpoint.
 
-    Payload schema — only the column ImageGenModel expects:
-        prompt (str)
+    Payload schema:
+        prompt              (str)   — Image description
+        num_inference_steps (int)   — Denoising steps
+        guidance_scale      (float) — Prompt adherence weight
+        height / width      (int)   — Output resolution
+        seed                (int)   — -1 = random; ≥0 = fixed seed
     """
     payload = {
         "inputs": [{"prompt": prompt}],
-        "params": {},
+        "params": {
+            "num_inference_steps": num_inference_steps,
+            "guidance_scale": guidance_scale,
+            "height": height,
+            "width": width,
+            "seed": seed,
+        },
     }
     try:
         response = requests.post(
@@ -139,8 +205,19 @@ if submitted:
     if not prompt.strip():
         st.warning("Please enter an image prompt.")
     else:
-        with st.spinner("Generating image (this may take 30–60 seconds)..."):
-            result = call_model(prompt)
+        seed_label = f"seed={seed}" if seed >= 0 else "random seed"
+        with st.spinner(
+            f"Generating image — {num_inference_steps} steps, "
+            f"guidance {guidance_scale}, {resolution}×{resolution}px, {seed_label}…"
+        ):
+            result = call_model(
+                prompt,
+                num_inference_steps=num_inference_steps,
+                guidance_scale=guidance_scale,
+                height=resolution,
+                width=resolution,
+                seed=seed,
+            )
 
         if result["success"]:
             answer = result["data"]["answer"]
@@ -149,11 +226,20 @@ if submitted:
             # Base64 PNG strings are typically >200 chars and don't start with ❌.
             if len(answer) > 200 and not answer.startswith("❌"):
                 try:
+                    from io import BytesIO
+
                     img_bytes = base64.b64decode(answer)
                     st.markdown("### 🖼️ Generated Image")
                     st.image(
                         img_bytes,
                         caption=f'"{prompt[:80]}..."',
+                        use_container_width=True,
+                    )
+                    st.download_button(
+                        label="📥 Download PNG",
+                        data=img_bytes,
+                        file_name="generated_image.png",
+                        mime="image/png",
                         use_container_width=True,
                     )
                     st.divider()
