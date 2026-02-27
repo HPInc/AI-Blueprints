@@ -60,6 +60,12 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+# GGUF file magic — first 4 bytes of every valid GGUF model file (little-endian ASCII).
+# Validated before passing the file path to the whisper.cpp C library, which returns
+# a NULL context (not a Python exception) on bad data.  A later .transcribe() call on
+# a null context causes a C-level segfault that kills the Jupyter kernel.
+_GGUF_MAGIC: bytes = b"GGUF"
+
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
 
@@ -371,7 +377,38 @@ class VoiceModel:
 
                 whisper_cpp = None
                 try:
+                    # ── Validate GGUF magic before calling the C library ───────────────
+                    # whisper_init_from_file() is called inside the WhisperCppModel
+                    # constructor.  If the file header is invalid, the C library logs
+                    # "bad magic", returns NULL, and stores it as self._ctx — no Python
+                    # exception is raised.  A subsequent .transcribe() dereferences the
+                    # null pointer → C-level segfault → Jupyter kernel killed.
+                    # Reading 4 bytes here keeps all validation in Python.
+                    with open(self.stt_model_path, "rb") as _mf:
+                        _file_magic = _mf.read(4)
+                    if _file_magic != _GGUF_MAGIC:
+                        raise ValueError(
+                            f"Invalid Whisper model file — expected GGUF magic "
+                            f"{_GGUF_MAGIC!r}, got {_file_magic!r}. "
+                            f"The file at '{self.stt_model_path}' is corrupted or "
+                            f"only partially downloaded. Re-run "
+                            f"project-setup.ipynb Cell 8 to redownload it."
+                        )
+
                     whisper_cpp = WhisperCppModel(self.stt_model_path)
+
+                    # ── Guard against null context ─────────────────────────────────────
+                    # pywhispercpp stores the return value of whisper_init_from_file()
+                    # directly as self._ctx without a null check.  If the C library
+                    # returns NULL for any reason beyond the magic check above (e.g.
+                    # version mismatch), calling .transcribe() will segfault.
+                    if getattr(whisper_cpp, "_ctx", None) is None:
+                        raise RuntimeError(
+                            "pywhispercpp returned a null model context — "
+                            "the GGUF file may be incompatible with the installed "
+                            "whisper.cpp version. Re-run project-setup.ipynb Cell 8."
+                        )
+
                     segments = whisper_cpp.transcribe(tmp_path)
                     transcription = " ".join(
                         seg.text.strip() for seg in segments
