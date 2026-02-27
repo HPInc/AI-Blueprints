@@ -4,19 +4,18 @@ VoiceModel — Business Logic Layer for Voice Assistant.
 Architecture (v2.0.0):
     Focused on one capability: speech-to-text transcription + LLM response + text-to-speech.
     Implements a three-stage pipeline:
-        1. Whisper (GGUF, pywhispercpp) → Transcribe audio bytes into text
-        2. LlamaCpp (Llama 3.1 8B)      → Process transcribed text through the LLM
-        3. XTTS v2 (CoquiTTS)           → Synthesise LLM response as audio
+        1. Whisper (transformers pipeline) → Transcribe audio bytes into text
+        2. LlamaCpp (Llama 3.1 8B)        → Process transcribed text through the LLM
+        3. XTTS v2 (CoquiTTS)             → Synthesise LLM response as audio
 
-    Zero MLflow imports — pure Python + whisper.cpp + LangChain + CoquiTTS business logic.
+    Zero MLflow imports — pure Python + transformers + LangChain + CoquiTTS business logic.
 
-What is pywhispercpp?
-    pywhispercpp is a Python binding for whisper.cpp — the highly optimised C++ port
-    of OpenAI's Whisper speech recognition model. It loads Whisper in GGUF format,
-    enabling GPU-accelerated transcription with a much smaller memory footprint than
-    the original PyTorch implementation.
-
-    Key advantage: the GGUF model is a single file vs. the multi-file HuggingFace snapshot.
+What is the Whisper transformers pipeline?
+    Uses `transformers.pipeline("automatic-speech-recognition")` with the official
+    openai/whisper-large-v3-turbo HuggingFace model (safetensors snapshot).
+    Pure Python/PyTorch — all errors are catchable Python exceptions (no C-level segfaults).
+    Accepts a float32 numpy array (16 kHz mono) directly, so no intermediate file is needed
+    beyond the initial base64 decode + librosa normalization step.
 
 What is XTTS v2?
     XTTS (Cross-lingual Text-to-Speech) v2 by Coqui is a zero-shot TTS model that can
@@ -28,10 +27,9 @@ What is XTTS v2?
 
 Pipeline:
     Audio bytes (WAV/MP3/etc.)
-        ↓  base64-decode
-    Raw audio bytes
-        ↓  write to temp .wav file (pywhispercpp needs a file path)
-    WhisperCpp(gguf_path).transcribe(wav_path)
+        ↓  base64-decode + librosa normalize (16 kHz mono)
+    float32 audio array
+        ↓  transformers.pipeline("automatic-speech-recognition")
         ↓
     Transcription text
         ↓  LlamaCpp (Llama 3.1 8B Q6_K_L)
@@ -60,12 +58,6 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-# GGUF file magic — first 4 bytes of every valid GGUF model file (little-endian ASCII).
-# Validated before passing the file path to the whisper.cpp C library, which returns
-# a NULL context (not a Python exception) on bad data.  A later .transcribe() call on
-# a null context causes a C-level segfault that kills the Jupyter kernel.
-_GGUF_MAGIC: bytes = b"GGUF"
-
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
 
@@ -90,9 +82,9 @@ class VoiceModel:
     Voice assistant powered by Whisper (speech recognition) + LlamaCpp (LLM) + XTTS v2 (TTS).
 
     Accepts audio input only. The three-stage pipeline is:
-        1. Whisper GGUF (pywhispercpp) → transcribe audio to text
-        2. LlamaCpp (Llama 3.1 8B)    → generate a response
-        3. XTTS v2 (CoquiTTS)         → synthesise the response as speech
+        1. Whisper (transformers pipeline) → transcribe audio to text
+        2. LlamaCpp (Llama 3.1 8B)        → generate a response
+        3. XTTS v2 (CoquiTTS)             → synthesise the response as speech
 
     Design principle — graceful degradation:
         If Whisper model is missing → error with instructions to run project-setup
@@ -340,112 +332,77 @@ class VoiceModel:
             return ""
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
-        """Transcribe audio with Whisper GGUF (pywhispercpp), then generate LLM response."""
+        """Transcribe audio with Whisper (transformers pipeline), then generate LLM response."""
         import base64
+        import gc
+        import torch
         from src.utils import get_response_from_llm
 
-        # ── 1. Whisper GGUF transcription ─────────────────────────────────────
+        # ── 1. Whisper transcription (transformers pipeline) ──────────────────
         transcription = ""
         whisper_error = None
+        stt = None
 
-        if os.path.exists(self.stt_model_path):
+        if os.path.isdir(self.stt_model_path):
             try:
-                from pywhispercpp.model import Model as WhisperCppModel
+                import librosa
+                from transformers import pipeline as hf_pipeline
 
                 audio_bytes = base64.b64decode(inp.audio_base64)
 
-                # pywhispercpp requires a file path — write to a temp WAV file
+                # Write raw audio to temp file, then normalize to 16 kHz mono
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
                     tmp.write(audio_bytes)
                     tmp_path = tmp.name
 
-                # Normalize audio to 16 kHz mono WAV — required by Whisper.
-                # Uses librosa + soundfile instead of torchaudio to avoid
-                # the torchcodec C-extension dependency introduced in PyTorch 2.9.
                 try:
-                    import librosa
-                    import soundfile as sf
-
                     audio_data, _ = librosa.load(tmp_path, sr=16000, mono=True)
-                    sf.write(tmp_path, audio_data, 16000)
                     logger.info("✅ Audio normalized to 16 kHz mono via librosa")
-                except Exception as ta_err:
-                    logger.warning(
-                        "⚠️ librosa normalization failed (using raw audio): %s",
-                        ta_err,
-                    )
-
-                whisper_cpp = None
-                try:
-                    # ── Validate GGUF magic before calling the C library ───────────────
-                    # whisper_init_from_file() is called inside the WhisperCppModel
-                    # constructor.  If the file header is invalid, the C library logs
-                    # "bad magic", returns NULL, and stores it as self._ctx — no Python
-                    # exception is raised.  A subsequent .transcribe() dereferences the
-                    # null pointer → C-level segfault → Jupyter kernel killed.
-                    # Reading 4 bytes here keeps all validation in Python.
-                    with open(self.stt_model_path, "rb") as _mf:
-                        _file_magic = _mf.read(4)
-                    if _file_magic != _GGUF_MAGIC:
-                        raise ValueError(
-                            f"Invalid Whisper model file — expected GGUF magic "
-                            f"{_GGUF_MAGIC!r}, got {_file_magic!r}. "
-                            f"The file at '{self.stt_model_path}' is corrupted or "
-                            f"only partially downloaded. Re-run "
-                            f"project-setup.ipynb Cell 8 to redownload it."
-                        )
-
-                    whisper_cpp = WhisperCppModel(self.stt_model_path)
-
-                    # ── Guard against null context ─────────────────────────────────────
-                    # pywhispercpp stores the return value of whisper_init_from_file()
-                    # directly as self._ctx without a null check.  If the C library
-                    # returns NULL for any reason beyond the magic check above (e.g.
-                    # version mismatch), calling .transcribe() will segfault.
-                    if getattr(whisper_cpp, "_ctx", None) is None:
-                        raise RuntimeError(
-                            "pywhispercpp returned a null model context — "
-                            "the GGUF file may be incompatible with the installed "
-                            "whisper.cpp version. Re-run project-setup.ipynb Cell 8."
-                        )
-
-                    segments = whisper_cpp.transcribe(tmp_path)
-                    transcription = " ".join(
-                        seg.text.strip() for seg in segments
-                    ).strip()
-                    logger.info("Transcription: '%s...'", transcription[:60])
                 finally:
-                    os.unlink(tmp_path)  # Always clean up the temp file
+                    os.unlink(tmp_path)
 
-                    # ── Release Whisper VRAM before LLM inference + XTTS load ────────────
-                    # Without explicit cleanup the GGUF model stays pinned in GPU RAM.
-                    # Peak with all three models live simultaneously:
-                    #   LLM ~6.6 GB + Whisper ~0.4 GB + XTTS ~1.8 GB ≈ 9.4-10.2 GB
-                    # That exceeds an 8 GB card and triggers a C-level CUDA OOM that
-                    # kills the kernel — not a catchable Python exception.
-                    if whisper_cpp is not None:
-                        del whisper_cpp
-                        import gc
-                        import torch as _torch
-
-                        gc.collect()
-                        if _torch.cuda.is_available():
-                            _torch.cuda.empty_cache()
-                        logger.info("✅ Whisper VRAM released")
+                device = (
+                    0 if torch.cuda.is_available() else -1
+                )  # 0 = first GPU, -1 = CPU
+                stt = hf_pipeline(
+                    "automatic-speech-recognition",
+                    model=self.stt_model_path,
+                    device=device,
+                    torch_dtype=(
+                        torch.float16 if torch.cuda.is_available() else torch.float32
+                    ),
+                )
+                result = stt(audio_data, generate_kwargs={"language": "english"})
+                transcription = result["text"].strip()
+                logger.info("Transcription: '%s...'", transcription[:60])
 
             except Exception as e:
                 whisper_error = str(e)
                 logger.warning("⚠️ Whisper transcription failed: %s", e)
+            finally:
+                # ── Release Whisper VRAM before LLM inference + XTTS load ────────────
+                # Without explicit cleanup, the Whisper model stays pinned in GPU RAM.
+                # Peak with all three models live simultaneously:
+                #   LLM ~6.6 GB + Whisper ~1.2 GB + XTTS ~0.9 GB ≈ 8.7 GB
+                # Free Whisper before XTTS loads to stay within the VRAM budget.
+                if stt is not None:
+                    del stt
+                    stt = None
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                logger.info("✅ Whisper VRAM released")
         else:
-            whisper_error = f"Whisper GGUF not found at {self.stt_model_path}"
+            whisper_error = f"Whisper model directory not found: {self.stt_model_path}"
             logger.warning("⚠️ %s", whisper_error)
 
         if not transcription:
             return {
                 "answer": (
                     f"❌ Transcription failed: {whisper_error}\n"
-                    "Run project-setup.ipynb Cell 8 to download the model "
-                    "into /home/jovyan/local/. See README.md → Prerequisites."
+                    "Run project-setup.ipynb Cell 9 to download the Whisper model "
+                    "into /home/jovyan/local/whisper-large-v3-turbo/. "
+                    "See README.md → Prerequisites."
                 ),
                 "messages": json.dumps([]),
                 "response_audio": "",

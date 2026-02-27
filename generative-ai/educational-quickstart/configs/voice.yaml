@@ -9,10 +9,10 @@ capability: "voice"
 # Download via project-setup.ipynb Cell 8.
 model_path: "/home/jovyan/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf"
 
-# Path to the Whisper Large V3 Turbo GGUF model for speech-to-text.
-# Loaded via pywhispercpp (whisper.cpp Python binding).
-# Download via project-setup.ipynb Cell 8.
-stt_model_path: "/home/jovyan/local/whisper-large-v3-turbo/model_q4_1.gguf"
+# Path to the Whisper Large V3 Turbo HuggingFace snapshot directory for speech-to-text.
+# Loaded via transformers.pipeline("automatic-speech-recognition").
+# Download via project-setup.ipynb Cell 9.
+stt_model_path: "/home/jovyan/local/whisper-large-v3-turbo"
 
 # Path to the XTTS v2 model directory for text-to-speech synthesis.
 # CoquiTTS uses its own native PyTorch format (.pth files), not GGUF.
