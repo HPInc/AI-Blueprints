@@ -44,7 +44,7 @@ def _load_pyfunc(data_path: str):
         data_path/
         ├── config.yaml       ← blueprint configuration
         ├── secrets.yaml      ← optional: API keys, tokens (not committed to git)
-        ├── docs/             ← optional: sample documents for document analyzer
+        ├── data/             ← optional: sample documents for document analyzer
         ├── demo/             ← Streamlit assets (CSS, logos, etc.)
         └── models/           ← optional: small specialized models
 
@@ -80,7 +80,7 @@ def _load_pyfunc(data_path: str):
         )
 
     # ── 3. Resolve docs path ──────────────────────────────────────────────────
-    docs_path_candidate = data_path / "docs"
+    docs_path_candidate = data_path / "data"
     docs_path = str(docs_path_candidate) if docs_path_candidate.exists() else None
 
     # ── 4. Resolve model path ─────────────────────────────────────────────────
@@ -92,7 +92,26 @@ def _load_pyfunc(data_path: str):
     artifact_models = os.path.join(data_path, "models")
 
     if os.path.exists(artifact_models) and os.listdir(artifact_models):
-        model_path = artifact_models
+        # Set env var so get_model_path() (and serving containers) can locate files.
+        # This matches the pattern used by all non-educational blueprints.
+        os.environ["MODEL_ARTIFACTS_PATH"] = artifact_models
+        # Resolve to the actual file, not the directory — LlamaCpp needs a file path.
+        from src.utils import get_model_path
+
+        config_model_path = config.get("model_path", "")
+        if config_model_path:
+            resolved = get_model_path(config_model_path)
+            model_path = resolved if os.path.isfile(resolved) else artifact_models
+        else:
+            # No filename in config — scan for any .gguf file as fallback
+            gguf_files = sorted(
+                f for f in os.listdir(artifact_models) if f.endswith(".gguf")
+            )
+            model_path = (
+                os.path.join(artifact_models, gguf_files[0])
+                if gguf_files
+                else artifact_models
+            )
         logger.info(f"✅ model_path resolved from artifact: {model_path}")
     else:
         model_path = os.environ.get(

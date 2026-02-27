@@ -30,7 +30,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import mlflow
 
@@ -66,7 +66,6 @@ class Logger:
         secrets_dict: Optional[Dict] = None,
         model_path: Optional[str] = None,
         demo_folder: Optional[str] = None,
-        extra_pip_requirements: Optional[List[str]] = None,
     ) -> None:
         """
         Package all artifacts and call mlflow.pyfunc.log_model().
@@ -77,7 +76,7 @@ class Logger:
             temp_dir/
             ├── config.yaml          ← copied from config_path
             ├── secrets.yaml         ← generated from secrets_dict (if provided)
-            ├── docs/                ← copied from docs_path (if provided)
+            ├── data/                ← copied from docs_path (if provided)
             └── demo/                ← copied from demo_folder (if provided)
 
         MLflow then reads this directory via loader.py when loading the model.
@@ -95,7 +94,6 @@ class Logger:
             model_path:    Full path to the .gguf model file used during inference.
                            This is embedded into the logged config so loader.py can find it.
             demo_folder:   Optional path to the Streamlit demo folder (for CSS/logos).
-            extra_pip_requirements: Additional pip packages beyond requirements.txt.
         """
         # Use a fixed directory name "model_artifacts" so the container's main.py
         # can reliably find artifacts at .../artifacts/data/model_artifacts/config.yaml.
@@ -124,16 +122,13 @@ class Logger:
 
             # ── 3. Optionally copy docs directory ────────────────────────────
             if docs_path and Path(docs_path).exists():
-                docs_dest = tmp_path / "docs"
+                docs_dest = tmp_path / "data"
                 shutil.copytree(docs_path, docs_dest)
                 logger.info(f"✅ Copied docs: {docs_path} → {docs_dest}")
 
             # ── 4. Optionally copy demo assets ───────────────────────────────
-            # Always store under demo/streamlit/ so the serving container can
-            # find assets at the expected path regardless of the source folder name
-            # (e.g. demo/image_gen, demo/chatbot → demo/streamlit).
             if demo_folder and Path(demo_folder).exists():
-                demo_dest = tmp_path / "demo" / "streamlit"
+                demo_dest = tmp_path / "demo"
                 shutil.copytree(demo_folder, demo_dest)
                 logger.info(f"✅ Copied demo: {demo_folder} → {demo_dest}")
 
