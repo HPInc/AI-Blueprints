@@ -70,11 +70,11 @@ class ImageGenInput(BaseModel):
     """
 
     prompt: str = "A beautiful mountain landscape, photorealistic, golden hour lighting"
-    num_inference_steps: int = 28    # 20–50 range; higher = better quality, slower
-    guidance_scale: float = 3.5      # 1.0–10.0; higher = more prompt-adherent
-    height: int = 1024               # Output height in pixels
-    width: int = 1024                # Output width in pixels
-    seed: int = -1                   # -1 = random; ≥0 = fixed deterministic seed
+    num_inference_steps: int = 28  # 20–50 range; higher = better quality, slower
+    guidance_scale: float = 3.5  # 1.0–10.0; higher = more prompt-adherent
+    height: int = 1024  # Output height in pixels
+    width: int = 1024  # Output width in pixels
+    seed: int = -1  # -1 = random; ≥0 = fixed deterministic seed
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
@@ -165,9 +165,7 @@ class ImageGenModel:
                 # Merge: batch_defaults < row columns (row wins on conflict).
                 # Filter out None/blank-string entries to let ImageGenInput defaults apply.
                 row_data = {
-                    k: v
-                    for k, v in row.items()
-                    if v is not None and str(v).strip()
+                    k: v for k, v in row.items() if v is not None and str(v).strip()
                 }
                 inp = ImageGenInput(**{**batch_defaults, **row_data})
             except Exception:
@@ -329,19 +327,21 @@ class ImageGenModel:
             logger.info("✅ Image generated successfully")
             return {
                 "answer": img_b64,
-                "messages": json.dumps([
-                    {
-                        "role": "user",
-                        "content": prompt,
-                        "params": {
-                            "num_inference_steps": inp.num_inference_steps,
-                            "guidance_scale": inp.guidance_scale,
-                            "height": inp.height,
-                            "width": inp.width,
-                            "seed": inp.seed,
-                        },
-                    }
-                ]),
+                "messages": json.dumps(
+                    [
+                        {
+                            "role": "user",
+                            "content": prompt,
+                            "params": {
+                                "num_inference_steps": inp.num_inference_steps,
+                                "guidance_scale": inp.guidance_scale,
+                                "height": inp.height,
+                                "width": inp.width,
+                                "seed": inp.seed,
+                            },
+                        }
+                    ]
+                ),
             }
 
         except Exception as e:

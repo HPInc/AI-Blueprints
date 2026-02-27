@@ -144,10 +144,10 @@ def call_model(
         "inputs": [{"prompt": prompt}],
         "params": {
             "num_inference_steps": num_inference_steps,
-            "guidance_scale":      guidance_scale,
-            "height":              height,
-            "width":               width,
-            "seed":                seed,
+            "guidance_scale": guidance_scale,
+            "height": height,
+            "width": width,
+            "seed": seed,
         },
     }
     try:
@@ -227,6 +227,7 @@ if submitted:
             if len(answer) > 200 and not answer.startswith("❌"):
                 try:
                     from io import BytesIO
+
                     img_bytes = base64.b64decode(answer)
                     st.markdown("### 🖼️ Generated Image")
                     st.image(
