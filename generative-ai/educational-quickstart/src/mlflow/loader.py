@@ -24,11 +24,108 @@ v2.0.0 Architecture Reminder:
     It has zero inference code — just routing and instantiation.
 """
 
+import ctypes
+import glob
 import logging
 import os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+# ─────── CUDA library preload ────────────────────────────────────────────────
+# Why here, not in voice.py / image_gen.py?
+#   loader.py is the *first blueprint code* that MLflow imports when it starts the
+#   model server.  Both voice and image_gen import torch lazily inside method bodies,
+#   so by the time any predict() call arrives torch has NOT been imported yet.
+#   Preloading the nvidia pip-package shared libraries here — once, at server startup —
+#   puts them into the process's global symbol table (RTLD_GLOBAL) before torch's own
+#   dlopen() calls happen.  That lets torch's linker resolve CUDA 12.8 symbols from
+#   the pip-package libs instead of the older system CUDA at /usr/local/cuda/lib64/.
+#
+# Why ctypes, not LD_LIBRARY_PATH?
+#   glibc caches LD_LIBRARY_PATH at process start.  Modifying os.environ after the
+#   process is already running has zero effect on subsequent dlopen() calls.  ctypes
+#   with RTLD_GLOBAL is the only way to inject new symbol bindings into a live process.
+#
+# Load order matters:
+#   nvJitLink must load before cusparse (cusparse links against nvJitLink symbols).
+#   We achieve deterministic ordering with an explicit priority list and a fallback
+#   lexicographic sort for everything else.
+
+_NVIDIA_SITE_PATHS = [
+    # nvidia pip packages in the base conda env (confirmed location on AI Studio)
+    "/opt/conda/lib/python3.12/site-packages/nvidia",
+    # same packages if installed inside the aistudio venv
+    "/opt/conda/envs/aistudio/lib/python3.12/site-packages/nvidia",
+]
+
+# Lower index = loaded first.  Libraries that others depend on must appear earlier.
+_LOAD_ORDER_PRIORITY = [
+    "nvjitlink",  # nvJitLink — required by cusparse
+    "cublas",  # cuBLAS — required by many torch ops
+    "cusparse",  # cuSPARSE — requires nvJitLink
+    "cusparselt",  # cuSPARSELt — requires cusparse
+    "cudnn",  # cuDNN — requires cublas
+    "cufft",  # cuFFT
+    "curand",  # cuRAND
+    "cusolver",  # cuSOLVER
+    "nccl",  # NCCL (multi-GPU comms)
+]
+
+
+def _lib_sort_key(path: str) -> tuple:
+    """Return (priority_index, path) so foundational libs sort before dependents."""
+    name = os.path.basename(path).lower()
+    for i, token in enumerate(_LOAD_ORDER_PRIORITY):
+        if token in name:
+            return (i, path)
+    return (len(_LOAD_ORDER_PRIORITY), path)
+
+
+def _preload_nvidia_libs() -> None:
+    """
+    Preload all nvidia pip-package shared libraries with RTLD_GLOBAL.
+
+    Called once at module import time (server startup).  Silently skips libs that
+    cannot be loaded (e.g., wrong architecture or already loaded by another path).
+    """
+    collected: list[str] = []
+    for site_root in _NVIDIA_SITE_PATHS:
+        # Each nvidia-*-cu12 package installs .so files under nvidia/<pkg>/lib/
+        pattern = os.path.join(site_root, "*", "lib", "*.so*")
+        collected.extend(glob.glob(pattern))
+
+    if not collected:
+        logger.info(
+            "ℹ️ No nvidia pip-package .so files found — "
+            "CUDA library preload skipped (expected in non-GPU or CI environments)"
+        )
+        return
+
+    # Deduplicate while preserving sort order
+    seen: set[str] = set()
+    unique = [p for p in sorted(set(collected), key=_lib_sort_key) if p not in seen and not seen.add(p)]  # type: ignore[func-returns-value]
+
+    loaded, skipped = 0, 0
+    for so_path in unique:
+        try:
+            ctypes.CDLL(so_path, mode=ctypes.RTLD_GLOBAL)
+            loaded += 1
+        except OSError:
+            skipped += 1
+
+    logger.info(
+        "🔧 CUDA preload: %d libs loaded, %d skipped (already mapped or incompatible)",
+        loaded,
+        skipped,
+    )
+
+
+_preload_nvidia_libs()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 def _load_pyfunc(data_path: str):

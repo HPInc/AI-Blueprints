@@ -29,7 +29,7 @@ PyMuPDF==1.27.1
 pdfplumber==0.11.9
 python-docx==1.2.0
 Markdown==3.10.1
-pillow==12.1.0
+pillow
 opencv-python-headless==4.13.0.92
 invisible-watermark==0.2.0
 
