@@ -79,6 +79,103 @@ _LOAD_ORDER_PRIORITY = [
 _SKIP_LIBS: set[str] = {"nvblas"}
 
 
+def _write_nvblas_config() -> None:
+    """
+    Write a minimal nvblas.conf and set NVBLAS_CONFIG_FILE before any CUDA libs load.
+
+    Why this is necessary:
+        libnvblas.so is a BLAS interceptor.  Even though _preload_nvidia_libs() skips
+        it from direct loading, the dynamic linker still maps it as a *transitive
+        dependency* of libcublas.so (cublas has an RPATH/DT_NEEDED reference to
+        libnvblas).  Once mapped with RTLD_GLOBAL, NVBLAS hooks every BLAS sgemm /
+        dgemm call in the process.
+
+        Without a valid nvblas.conf that names a CPU BLAS fallback library, any matrix
+        operation that NVBLAS routes to the CPU path (e.g., small batch sizes, non-
+        contiguous layouts) returns CUBLAS_STATUS_INVALID_VALUE instead of computing.
+        This is exactly the error Whisper hits during transcription.
+
+    What this function does:
+        1. Discovers an available CPU BLAS shared library (cblas / openblas / mkl_rt).
+        2. Writes a minimal nvblas.conf to a temp file:
+               NVBLAS_CPU_BLAS_LIB /path/to/libcblas.so.3
+               NVBLAS_GPU_LIST ALL
+        3. Sets NVBLAS_CONFIG_FILE env var so that libnvblas.so reads it when loaded.
+
+    Must be called *before* _preload_nvidia_libs() so the env var is in place before
+    libcublas.so is opened (and triggers the transitive load of libnvblas.so).
+    """
+    import subprocess
+    import tempfile
+
+    # No-op if already configured externally.
+    if os.environ.get("NVBLAS_CONFIG_FILE"):
+        logger.info("ℹ️ NVBLAS_CONFIG_FILE already set — skipping auto-config")
+        return
+
+    # ── Discover a CPU BLAS shared library ────────────────────────────────────
+    blas_lib: str | None = None
+
+    # Strategy 1: scan the ldconfig cache — most reliable on Linux.
+    _BLAS_SONAMES = ["libcblas.so", "libopenblas.so", "libblas.so", "libmkl_rt.so"]
+    try:
+        ldconfig_out = subprocess.check_output(
+            ["ldconfig", "-p"], text=True, stderr=subprocess.DEVNULL, timeout=5
+        )
+        for soname in _BLAS_SONAMES:
+            for line in ldconfig_out.splitlines():
+                if soname in line and "=>" in line:
+                    blas_lib = line.split("=>")[-1].strip()
+                    break
+            if blas_lib:
+                break
+    except Exception:
+        pass  # ldconfig not available or timed out; fall through to hardcoded paths
+
+    # Strategy 2: hardcoded common paths as fallback.
+    if not blas_lib:
+        _BLAS_CANDIDATES = [
+            "/opt/conda/lib/libcblas.so.3",
+            "/opt/conda/lib/libcblas.so",
+            "/opt/conda/lib/libopenblas.so",
+            "/opt/conda/lib/libopenblas.so.0",
+            "/opt/conda/lib/libmkl_rt.so",
+            "/opt/conda/envs/aistudio/lib/libcblas.so.3",
+            "/opt/conda/envs/aistudio/lib/libcblas.so",
+            "/opt/conda/envs/aistudio/lib/libopenblas.so",
+            "/usr/lib/x86_64-linux-gnu/libcblas.so.3",
+            "/usr/lib/x86_64-linux-gnu/libopenblas.so.0",
+            "/usr/lib/libcblas.so",
+        ]
+        blas_lib = next((p for p in _BLAS_CANDIDATES if os.path.exists(p)), None)
+
+    if blas_lib:
+        logger.info("🔧 NVBLAS CPU BLAS library resolved to: %s", blas_lib)
+    else:
+        logger.warning(
+            "⚠️ No CPU BLAS library found for nvblas.conf — "
+            "NVBLAS fallback path will remain unconfigured; "
+            "cuBLAS failures may still occur for small matrix operations"
+        )
+
+    # ── Write nvblas.conf ──────────────────────────────────────────────────────
+    conf_lines = []
+    if blas_lib:
+        conf_lines.append(f"NVBLAS_CPU_BLAS_LIB {blas_lib}")
+    conf_lines.append("NVBLAS_GPU_LIST ALL")
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".conf", prefix="nvblas_", delete=False
+        ) as f:
+            f.write("\n".join(conf_lines) + "\n")
+            conf_path = f.name
+        os.environ["NVBLAS_CONFIG_FILE"] = conf_path
+        logger.info("🔧 NVBLAS_CONFIG_FILE → %s", conf_path)
+    except Exception as exc:
+        logger.warning("⚠️ Could not write nvblas.conf (%s) — NVBLAS unconfigured", exc)
+
+
 def _lib_sort_key(path: str) -> tuple:
     """Return (priority_index, path) so foundational libs sort before dependents."""
     name = os.path.basename(path).lower()
@@ -131,7 +228,8 @@ def _preload_nvidia_libs() -> None:
     )
 
 
-_preload_nvidia_libs()
+_write_nvblas_config()  # Must run first — sets NVBLAS_CONFIG_FILE before cublas loads
+_preload_nvidia_libs()  # libcublas.so loads libnvblas.so transitively; conf must exist first
 
 
 # ─────────────────────────────────────────────────────────────────────────────
