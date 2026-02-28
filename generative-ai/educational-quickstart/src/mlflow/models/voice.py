@@ -391,7 +391,7 @@ class VoiceModel:
                 processor = AutoProcessor.from_pretrained(self.stt_model_path)
                 whisper_model = AutoModelForSpeechSeq2Seq.from_pretrained(
                     self.stt_model_path,
-                    torch_dtype=_dtype,
+                    dtype=_dtype,
                 ).to(_device)
 
                 # WhisperFeatureExtractor builds mel spectrograms with numpy/scipy

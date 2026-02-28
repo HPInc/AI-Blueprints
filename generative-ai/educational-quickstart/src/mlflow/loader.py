@@ -73,6 +73,11 @@ _LOAD_ORDER_PRIORITY = [
     "nccl",  # NCCL (multi-GPU comms)
 ]
 
+# Libraries that must NOT be loaded with RTLD_GLOBAL.
+# libnvblas.so is a BLAS interceptor that hooks sgemm/dgemm/etc. process-wide;
+# without nvblas.conf it breaks every cuBLAS GEMM with CUBLAS_STATUS_INVALID_VALUE.
+_SKIP_LIBS: set[str] = {"nvblas"}
+
 
 def _lib_sort_key(path: str) -> tuple:
     """Return (priority_index, path) so foundational libs sort before dependents."""
@@ -109,6 +114,10 @@ def _preload_nvidia_libs() -> None:
 
     loaded, skipped = 0, 0
     for so_path in unique:
+        basename = os.path.basename(so_path).lower()
+        if any(skip in basename for skip in _SKIP_LIBS):
+            skipped += 1
+            continue
         try:
             ctypes.CDLL(so_path, mode=ctypes.RTLD_GLOBAL)
             loaded += 1
