@@ -49,7 +49,6 @@ Output schema:
     response_audio (str) — Base64-encoded WAV of the spoken response (empty if TTS disabled)
 """
 
-import ctypes
 import json
 import logging
 import os
@@ -60,47 +59,6 @@ import pandas as pd
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-
-
-# ─────── CUDA library preload ────────────────────────────────────────────────
-# PyTorch 2.9+ unconditionally loads libcusparseLt.so.0 during `from torch._C
-# import *`.  In AI Studio the nvidia-cusparselt-cu12 pip package is installed
-# in the *base* conda env (/opt/conda/lib/python3.12/site-packages/) but torch
-# runs inside the *aistudio* env (/opt/conda/envs/aistudio/).  LD_LIBRARY_PATH
-# only covers /usr/local/cuda/lib64 so the base-env path is invisible to the
-# dynamic linker.  Pre-loading the .so via ctypes.RTLD_GLOBAL makes the symbols
-# visible process-wide; torch's subsequent dlopen("libcusparseLt.so.0") then
-# finds them already resident in memory and succeeds.
-
-_CUSPARSELT_SEARCH_PATHS = [
-    # nvidia pip package in the base conda env (confirmed location on AI Studio)
-    "/opt/conda/lib/python3.12/site-packages/nvidia/cusparselt/lib",
-    # same package if installed in the aistudio conda env
-    "/opt/conda/envs/aistudio/lib/python3.12/site-packages/nvidia/cusparselt/lib",
-    # standard CUDA toolkit paths
-    "/usr/local/cuda/lib64",
-    "/usr/lib/x86_64-linux-gnu",
-]
-
-
-def _preload_cusparselt() -> None:
-    """Find and RTLD_GLOBAL-preload libcusparseLt.so.0 before any torch import."""
-    for directory in _CUSPARSELT_SEARCH_PATHS:
-        so_path = os.path.join(directory, "libcusparseLt.so.0")
-        if os.path.isfile(so_path):
-            try:
-                ctypes.CDLL(so_path, mode=ctypes.RTLD_GLOBAL)
-                logger.info("✅ Preloaded %s", so_path)
-                return
-            except OSError as exc:
-                logger.warning("⚠️ Found %s but failed to preload: %s", so_path, exc)
-    logger.info(
-        "ℹ️ libcusparseLt.so.0 not found in known paths — "
-        "torch will succeed only if the library is already on LD_LIBRARY_PATH"
-    )
-
-
-_preload_cusparselt()
 
 
 # ─────── Input Schema ────────────────────────────────────────────────────────

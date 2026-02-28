@@ -40,7 +40,6 @@ Output schema:
     messages (str) — JSON-serialized request metadata including parameters used
 """
 
-import ctypes
 import json
 import logging
 import os
@@ -50,33 +49,6 @@ import pandas as pd
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-
-
-# ─────── CUDA library preload ────────────────────────────────────────────────
-# See voice.py for full explanation.  Same fix applied here because image_gen
-# also imports torch at inference time (FLUX diffusers pipeline).
-
-_CUSPARSELT_SEARCH_PATHS = [
-    "/opt/conda/lib/python3.12/site-packages/nvidia/cusparselt/lib",
-    "/opt/conda/envs/aistudio/lib/python3.12/site-packages/nvidia/cusparselt/lib",
-    "/usr/local/cuda/lib64",
-    "/usr/lib/x86_64-linux-gnu",
-]
-
-
-def _preload_cusparselt() -> None:
-    for directory in _CUSPARSELT_SEARCH_PATHS:
-        so_path = os.path.join(directory, "libcusparseLt.so.0")
-        if os.path.isfile(so_path):
-            try:
-                ctypes.CDLL(so_path, mode=ctypes.RTLD_GLOBAL)
-                logger.info("✅ Preloaded %s", so_path)
-                return
-            except OSError as exc:
-                logger.warning("⚠️ Found %s but failed to preload: %s", so_path, exc)
-
-
-_preload_cusparselt()
 
 
 # ─────── Input Schema ────────────────────────────────────────────────────────
