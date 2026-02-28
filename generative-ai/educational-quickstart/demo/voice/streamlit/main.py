@@ -86,7 +86,6 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
     """
     payload = {
         "inputs": [{"question": "", "audio_base64": audio_base64}],
-        "params": {},
     }
     try:
         response = requests.post(
@@ -95,8 +94,14 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
             verify=False,
             timeout=timeout,
         )
+        # Capture body before raise_for_status() so error details are not lost.
+        response_text = response.text
+        try:
+            response_json = response.json()
+        except Exception:
+            response_json = None
         response.raise_for_status()
-        return {"success": True, "data": response.json()["predictions"][0]}
+        return {"success": True, "data": response_json["predictions"][0]}
     except requests.exceptions.ConnectionError:
         return {
             "success": False,
@@ -113,6 +118,13 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
             "success": False,
             "error": "Request timed out — audio transcription can take 30–90 seconds.",
         }
+    except requests.exceptions.HTTPError as e:
+        detail = ""
+        if response_json and isinstance(response_json, dict):
+            detail = response_json.get("detail") or response_json.get("message") or ""
+        if not detail:
+            detail = response_text[:500] if response_text else "(no response body)"
+        return {"success": False, "error": f"HTTP {response.status_code}: {detail}"}
     except requests.exceptions.RequestException as e:
         return {"success": False, "error": f"Request failed: {e}"}
     except Exception as e:

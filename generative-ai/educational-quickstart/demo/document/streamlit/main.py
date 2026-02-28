@@ -81,7 +81,6 @@ def call_model(question: str, input_text: str, timeout: int = 600) -> dict:
     """
     payload = {
         "inputs": [{"question": question, "input_text": input_text}],
-        "params": {},
     }
     try:
         response = requests.post(
