@@ -80,7 +80,7 @@ def call_model(question: str, input_text: str, timeout: int = 600) -> dict:
         input_text (str)
     """
     payload = {
-        "inputs": [{"question": question, "input_text": input_text}],
+        "dataframe_records": [{"question": question, "input_text": input_text}],
     }
     try:
         response = requests.post(

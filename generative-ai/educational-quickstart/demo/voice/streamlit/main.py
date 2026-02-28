@@ -85,7 +85,7 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
         audio_base64  (str) — base64-encoded audio bytes
     """
     payload = {
-        "inputs": [{"question": "", "audio_base64": audio_base64}],
+        "dataframe_records": [{"question": "", "audio_base64": audio_base64}],
     }
     try:
         response = requests.post(
@@ -101,7 +101,11 @@ def call_model(audio_base64: str, timeout: int = 600) -> dict:
         except Exception:
             response_json = None
         response.raise_for_status()
-        return {"success": True, "data": response_json["predictions"][0]}
+        predictions = (response_json or {}).get("predictions")
+        return {
+            "success": True,
+            "data": predictions[0] if predictions else response_json,
+        }
     except requests.exceptions.ConnectionError:
         return {
             "success": False,

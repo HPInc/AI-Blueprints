@@ -89,7 +89,7 @@ def call_model(question: str, system_prompt: str, timeout: int = 600) -> dict:
         system_prompt (str)
     """
     payload = {
-        "inputs": [{"question": question, "system_prompt": system_prompt}],
+        "dataframe_records": [{"question": question, "system_prompt": system_prompt}],
     }
     try:
         response = requests.post(

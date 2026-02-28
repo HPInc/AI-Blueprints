@@ -150,23 +150,27 @@ class VoiceModel:
             return
 
         logger.info(f"Loading LLM: {self.model_path}")
-        self.llm = LlamaCpp(
-            model_path=self.model_path,
-            n_gpu_layers=-1,
-            n_batch=512,
-            n_ctx=context_window,
-            max_tokens=max_tokens,
-            f16_kv=True,
-            use_mmap=False,
-            low_vram=False,
-            temperature=0.0,
-            repeat_penalty=1.0,
-            streaming=False,
-            seed=42,
-            num_threads=multiprocessing.cpu_count(),
-            verbose=False,
-        )
-        logger.info("✅ LLM loaded successfully")
+        try:
+            self.llm = LlamaCpp(
+                model_path=self.model_path,
+                n_gpu_layers=-1,
+                n_batch=512,
+                n_ctx=context_window,
+                max_tokens=max_tokens,
+                f16_kv=True,
+                use_mmap=False,
+                low_vram=False,
+                temperature=0.0,
+                repeat_penalty=1.0,
+                streaming=False,
+                seed=42,
+                num_threads=multiprocessing.cpu_count(),
+                verbose=False,
+            )
+            logger.info("✅ LLM loaded successfully")
+        except Exception as e:
+            logger.error("❌ LlamaCpp failed to load: %s", e)
+            self.llm = None
 
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
@@ -183,23 +187,35 @@ class VoiceModel:
         Returns:
             DataFrame with columns: answer (str), messages (str)
         """
-        results = []
+        try:
+            results = []
 
-        for _, row in model_input.iterrows():
-            try:
-                inp = VoiceInput(
-                    **{
-                        k: str(v)
-                        for k, v in row.items()
-                        if v is not None and str(v).strip()
+            for _, row in model_input.iterrows():
+                try:
+                    inp = VoiceInput(
+                        **{
+                            k: str(v)
+                            for k, v in row.items()
+                            if v is not None and str(v).strip()
+                        }
+                    )
+                except Exception:
+                    inp = VoiceInput(question=str(row.get("question", "")))
+
+                results.append(self._process(inp))
+
+            return pd.DataFrame(results)
+        except Exception as e:
+            logger.exception("VoiceModel.predict() raised an unexpected error: %s", e)
+            return pd.DataFrame(
+                [
+                    {
+                        "answer": f"❌ VoiceModel error ({type(e).__name__}): {e}",
+                        "messages": json.dumps([]),
+                        "response_audio": "",
                     }
-                )
-            except Exception:
-                inp = VoiceInput(question=str(row.get("question", "")))
-
-            results.append(self._process(inp))
-
-        return pd.DataFrame(results)
+                ]
+            )
 
     def _process(self, inp: VoiceInput) -> dict:
         """Route the request to the audio pipeline; audio_base64 is required."""
