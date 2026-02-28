@@ -383,7 +383,7 @@ class VoiceModel:
                 finally:
                     os.unlink(tmp_path)
 
-                _dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+                _dtype = torch.float32
                 _device = "cuda" if torch.cuda.is_available() else "cpu"
 
                 # AutoProcessor = WhisperFeatureExtractor + WhisperTokenizer
@@ -396,14 +396,7 @@ class VoiceModel:
 
                 # WhisperFeatureExtractor builds mel spectrograms with numpy/scipy
                 inputs = processor(audio_data, sampling_rate=16000, return_tensors="pt")
-                inputs = {
-                    k: (
-                        v.to(_device).to(_dtype)
-                        if v.is_floating_point()
-                        else v.to(_device)
-                    )
-                    for k, v in inputs.items()
-                }
+                inputs = {k: v.to(_device) for k, v in inputs.items()}
 
                 # Force English transcription
                 forced_decoder_ids = processor.get_decoder_prompt_ids(
@@ -413,6 +406,7 @@ class VoiceModel:
                     predicted_ids = whisper_model.generate(
                         **inputs,
                         forced_decoder_ids=forced_decoder_ids,
+                        attention_mask=inputs.get("attention_mask"),
                     )
                 transcription = processor.batch_decode(
                     predicted_ids, skip_special_tokens=True
