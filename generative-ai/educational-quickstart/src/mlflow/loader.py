@@ -73,10 +73,13 @@ _LOAD_ORDER_PRIORITY = [
     "nccl",  # NCCL (multi-GPU comms)
 ]
 
-# Libraries that must NOT be loaded with RTLD_GLOBAL.
-# libnvblas.so is a BLAS interceptor that hooks sgemm/dgemm/etc. process-wide;
-# without nvblas.conf it breaks every cuBLAS GEMM with CUBLAS_STATUS_INVALID_VALUE.
-_SKIP_LIBS: set[str] = {"nvblas"}
+# Only preload the libraries that are actually needed to fix missing-symbol errors.
+# The original issues were cusparse-related: libcusparseLt.so.0 missing and
+# libcusparse.so.12 symbol mismatch.  Everything else (cublas, cudnn, etc.) must
+# NOT be preloaded — PyTorch loads them through its own mechanism, and force-loading
+# cublas with RTLD_GLOBAL before torch imports corrupts cuBLAS handle state, causing
+# CUBLAS_STATUS_INVALID_VALUE on every sgemm/dgemm call.
+_ALLOW_LIBS: set[str] = {"nvjitlink", "cusparse", "cusparselt"}
 
 
 def _write_nvblas_config() -> None:
@@ -212,7 +215,7 @@ def _preload_nvidia_libs() -> None:
     loaded, skipped = 0, 0
     for so_path in unique:
         basename = os.path.basename(so_path).lower()
-        if any(skip in basename for skip in _SKIP_LIBS):
+        if not any(token in basename for token in _ALLOW_LIBS):
             skipped += 1
             continue
         try:
