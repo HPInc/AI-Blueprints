@@ -79,7 +79,7 @@ _LOAD_ORDER_PRIORITY = [
 # NOT be preloaded — PyTorch loads them through its own mechanism, and force-loading
 # cublas with RTLD_GLOBAL before torch imports corrupts cuBLAS handle state, causing
 # CUBLAS_STATUS_INVALID_VALUE on every sgemm/dgemm call.
-_ALLOW_LIBS: set[str] = {"nvjitlink", "cusparse", "cusparselt"}
+_ALLOW_LIBS: set[str] = {"nvjitlink", "cusparse", "cusparselt", "nccl"}
 
 
 def _write_nvblas_config() -> None:
