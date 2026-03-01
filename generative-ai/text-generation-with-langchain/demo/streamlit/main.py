@@ -82,7 +82,9 @@ st.markdown(
 )
 
 # ────────────────────────── sidebar (settings) ─────────────────────────
-api_url = "http://localhost:5002/invocations"
+# Standardized MLflow endpoint for containerized deployment
+MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
+api_url = MLFLOW_ENDPOINT
 
 with st.sidebar:
     st.header("⚙️ Settings")
@@ -129,7 +131,7 @@ if st.button("🚀 Run"):
     generation_prompt_final = generation_prompt.strip() or DEFAULT_SCRIPT_PROMPT
 
     payload = {
-        "inputs": [
+        "dataframe_records": [
             {
                 "query": str(query),
                 "max_results": int(max_results),
@@ -141,17 +143,33 @@ if st.button("🚀 Run"):
                 "analysis_prompt": str(analysis_prompt),
                 "generation_prompt": str(generation_prompt_final),
             }
-        ],
-        "params": {},
+        ]
     }
 
     # ─────────────────────── HTTP request ────────────────────────
     try:
         t0 = time.perf_counter()
         with st.spinner("Processing…"):
-            response = requests.post(api_url, json=payload, verify=False, timeout=600)
+            response = requests.post(api_url, json=payload, timeout=600)
 
-            response.raise_for_status()
+            if response.status_code >= 400:
+                try:
+                    detail = response.json()
+                except ValueError:
+                    detail = response.text.strip()
+
+                st.error(
+                    f"Request failed: {response.status_code} {response.reason} for URL: {api_url}"
+                )
+                if detail:
+                    pretty = (
+                        json.dumps(detail, indent=2, ensure_ascii=False)
+                        if isinstance(detail, (dict, list))
+                        else str(detail)
+                    )
+                    st.code(pretty, language="json")
+                st.stop()
+
             try:
                 result = response.json()
             except json.JSONDecodeError as e:

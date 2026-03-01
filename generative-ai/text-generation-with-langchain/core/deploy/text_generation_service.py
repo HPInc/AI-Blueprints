@@ -153,15 +153,31 @@ class TextGenerationService(mlflow.pyfunc.PythonModel):
         path = Path(".vectordb") / uid
         path.mkdir(parents=True, exist_ok=True)
 
+        embeddings = None
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
 
             embeddings = HuggingFaceEmbeddings()
-        except ImportError:
-            raise ImportError(
-                "Could not import HuggingFaceEmbeddings. Please ensure sentence-transformers "
-                "is installed with: pip install sentence-transformers"
+        except (ImportError, ValueError) as e:
+            # Fallback to FastEmbed when HuggingFace is unavailable or misconfigured.
+            logging.warning(
+                "HuggingFace embeddings unavailable; attempting FastEmbed fallback: %s",
+                e,
             )
+            try:
+                from langchain_community.embeddings import FastEmbedEmbeddings
+
+                embeddings = FastEmbedEmbeddings()
+                logging.info("FastEmbedEmbeddings initialised successfully.")
+            except ImportError as fast_embed_error:
+                # No embedding backend is left to try; raise a clear runtime error.
+                raise RuntimeError(
+                    "Unable to initialise an embedding backend. Install either "
+                    "langchain-huggingface or langchain-community[fastembed]."
+                ) from fast_embed_error
+
+        if embeddings is None:
+            raise RuntimeError("Embedding backend failed to initialise.")
 
         if any(path.iterdir()):
             return Chroma(persist_directory=str(path), embedding_function=embeddings)
