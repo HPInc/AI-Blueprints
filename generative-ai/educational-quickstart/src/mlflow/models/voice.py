@@ -233,15 +233,10 @@ class VoiceModel:
     def _load_tts(self):
         """Lazily load the XTTS v2 TTS pipeline via CoquiTTS.
 
-        Loading strategy:
-            1. If tts_model_path points to a directory containing config.json,
-               load from that local path.  This works in both development
-               (/home/jovyan/local/xtts-v2/) and at MLflow serve time
-               (<artifact_models>/xtts-v2/) because loader.py resolves the
-               path from the bundled artifact before constructing this object.
-            2. Fall back to the CoquiTTS registry model name so that the
-               assistant is still functional even if the artifact was not
-               copied (CoquiTTS will download to ~/.local/share/tts/).
+        Loads from the local tts_model_path directory (config.json + model.pth).
+        Works in both development (/home/jovyan/local/xtts-v2/) and at MLflow
+        serve time (<artifact_models>/xtts-v2/) because loader.py resolves the
+        path from the bundled artifact before constructing this object.
 
         VRAM management (three models share ~8 GB VRAM):
             • Pre-check: free VRAM is queried via torch.cuda.mem_get_info() before any
@@ -260,27 +255,13 @@ class VoiceModel:
             # tts_model_path is a directory (e.g. /home/jovyan/local/xtts-v2)
             # containing config.json and model.pth from coqui/XTTS-v2.
             tts_dir = self.tts_model_path
-            config_path = os.path.join(tts_dir, "config.json") if tts_dir else ""
+            config_path = os.path.join(tts_dir, "config.json")
 
-            if tts_dir and os.path.isdir(tts_dir) and os.path.exists(config_path):
-                tts_obj = TTS(
-                    model_path=tts_dir,
-                    config_path=config_path,
-                    progress_bar=False,
-                )
-                source_desc = f"local path: {tts_dir}"
-            else:
-                # Fall back to the CoquiTTS built-in registry download
-                logger.warning(
-                    "⚠️ XTTS model directory not found at %s — "
-                    "falling back to CoquiTTS registry download (~1.8 GB)",
-                    tts_dir or "(not set)",
-                )
-                tts_obj = TTS(
-                    "tts_models/multilingual/multi-dataset/xtts_v2",
-                    progress_bar=False,
-                )
-                source_desc = "CoquiTTS registry"
+            tts_obj = TTS(
+                model_path=tts_dir,
+                config_path=config_path,
+                progress_bar=False,
+            )
 
             # ── Determine target device before any allocation ─────────────────────
             # Pre-check free VRAM using the CUDA allocator's own accounting so the
@@ -308,46 +289,42 @@ class VoiceModel:
                 logger.info("✅ XTTS v2 cast to float16 (~0.9 GB VRAM)")
 
             self._tts_pipeline = tts_obj
-            logger.info("✅ XTTS v2 loaded from %s on %s", source_desc, device.upper())
+            logger.info("✅ XTTS v2 loaded from %s on %s", tts_dir, device.upper())
             return self._tts_pipeline
 
         except Exception as e:
-            logger.warning("⚠️ TTS not loaded: %s", e)
-            return None
+            raise RuntimeError(
+                f"❌ Failed to load XTTS v2 from '{self.tts_model_path}'. "
+                "Ensure project-setup.ipynb has been run and TTS is installed. "
+                f"Original error: {e}"
+            ) from e
 
     def _synthesize_speech(self, text: str) -> str:
         """Synthesize speech from text using XTTS v2. Returns base64-encoded WAV."""
         import base64
 
         tts = self._load_tts()
-        if tts is None:
-            return ""
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = tmp.name
 
         try:
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                tmp_path = tmp.name
+            # Cap length for educational demos; pick first built-in speaker if available
+            kwargs: dict = {
+                "text": text[:500],
+                "language": "en",
+                "file_path": tmp_path,
+            }
+            speakers = getattr(tts, "speakers", None)
+            if speakers:
+                kwargs["speaker"] = speakers[0]
 
-            try:
-                # Cap length for educational demos; pick first built-in speaker if available
-                kwargs: dict = {
-                    "text": text[:500],
-                    "language": "en",
-                    "file_path": tmp_path,
-                }
-                speakers = getattr(tts, "speakers", None)
-                if speakers:
-                    kwargs["speaker"] = speakers[0]
+            tts.tts_to_file(**kwargs)
 
-                tts.tts_to_file(**kwargs)
-
-                with open(tmp_path, "rb") as f:
-                    return base64.b64encode(f.read()).decode("utf-8")
-            finally:
-                os.unlink(tmp_path)
-
-        except Exception as e:
-            logger.warning("⚠️ TTS synthesis failed: %s", e)
-            return ""
+            with open(tmp_path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        finally:
+            os.unlink(tmp_path)
 
     def _handle_audio(self, inp: VoiceInput) -> dict:
         """Transcribe audio with Whisper (AutoModelForSpeechSeq2Seq), then generate LLM response."""
