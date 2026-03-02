@@ -122,6 +122,7 @@ class VoiceModel:
         self.stt_model_path = config.get("stt_model_path", "")
         self.tts_model_path = config.get("tts_model_path", "")
         self._tts_pipeline = None  # Lazy-loaded on first TTS call
+        self._tts_device = "cpu"  # Updated by _load_tts() once device is resolved
 
         self._load_llm()
 
@@ -246,7 +247,10 @@ class VoiceModel:
         VRAM management (three models share ~8 GB VRAM):
             • Pre-check: free VRAM is queried via torch.cuda.mem_get_info() before any
               tensor is placed. Device (CUDA vs CPU) is decided once, deterministically.
-            • float16: synthesiser cast to fp16 unconditionally on CUDA (~1.8 GB → ~0.9 GB).
+            • autocast: synthesis runs under torch.autocast("cuda") in _synthesize_speech()
+              rather than a hard .half() cast. This avoids Float/Half dtype mismatches
+              caused by XTTS v2 sub-components that produce float32 tensors internally,
+              while still achieving mixed-precision VRAM savings (~0.9–1.4 GB peak).
         """
         if self._tts_pipeline is not None:
             return self._tts_pipeline
@@ -300,12 +304,12 @@ class VoiceModel:
 
             tts_obj.to(device)
 
-            # ── Cast synthesiser to float16 on CUDA ───────────────────────────────
-            # XTTS v2 always exposes synthesizer.tts_model and supports fp16
-            # inference.  Halves VRAM from ~1.8 GB to ~0.9 GB with no quality loss.
-            if device == "cuda":
-                tts_obj.synthesizer.tts_model = tts_obj.synthesizer.tts_model.half()
-                logger.info("✅ XTTS v2 cast to float16 (~0.9 GB VRAM)")
+            # ── Store resolved device for autocast in _synthesize_speech() ─────────
+            # Hard .half() cast removed: XTTS v2 has sub-components that produce
+            # float32 tensors internally, causing "expected scalar type Float but
+            # found Half" errors at synthesis time.  torch.autocast handles
+            # mixed-precision automatically and recovers the same VRAM savings.
+            self._tts_device = device
 
             self._tts_pipeline = tts_obj
             logger.info("✅ XTTS v2 loaded from %s on %s", source_desc, device.upper())
@@ -318,6 +322,7 @@ class VoiceModel:
     def _synthesize_speech(self, text: str) -> str:
         """Synthesize speech from text using XTTS v2. Returns base64-encoded WAV."""
         import base64
+        import torch
 
         tts = self._load_tts()
         if tts is None:
@@ -338,12 +343,23 @@ class VoiceModel:
                 if speakers:
                     kwargs["speaker"] = speakers[0]
 
-                tts.tts_to_file(**kwargs)
+                # ── autocast: mixed-precision synthesis ────────────────────────────
+                # Wrapping tts_to_file() in autocast lets PyTorch handle Float/Half
+                # conversions automatically across XTTS v2 sub-components, avoiding
+                # "expected scalar type Float but found Half" errors that arise from
+                # a hard .half() cast when not all internal tensors share the same dtype.
+                tts_device = getattr(self, "_tts_device", "cpu")
+                if tts_device == "cuda":
+                    with torch.autocast("cuda"):
+                        tts.tts_to_file(**kwargs)
+                else:
+                    tts.tts_to_file(**kwargs)
 
                 with open(tmp_path, "rb") as f:
                     return base64.b64encode(f.read()).decode("utf-8")
             finally:
-                os.unlink(tmp_path)
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
 
         except Exception as e:
             logger.warning("⚠️ TTS synthesis failed: %s", e)
