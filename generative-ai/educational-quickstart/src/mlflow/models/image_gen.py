@@ -242,12 +242,6 @@ class ImageGenModel:
                 except ImportError:
                     from diffusers.utils import GGUFQuantizationConfig
 
-                # Force all HuggingFace Hub calls to use only local files.
-                # This prevents from_single_file() fetching the transformer config
-                # remotely when all model files are already present on disk.
-                os.environ["HF_HUB_OFFLINE"] = "1"
-                os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
                 # transformer/config.json is downloaded by project-setup.ipynb (step 3c).
                 # Pass the directory so from_single_file() uses it directly.
                 transformer_config_dir = os.path.join(self.model_path, "transformer")
