@@ -2,8 +2,7 @@
    AI Learning Playground — Custom Streamlit Styles (Light Theme)
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* ── Animated light gradient background ── */
-/* `body` alone is overridden by Streamlit's theme — target .stApp (the real root) too */
+/* ── App root & gradient background ── */
 body,
 .stApp {
     background: linear-gradient(135deg, #e0f2ff, #a1c4fd, #c8d8ff, #b8daff) !important;
@@ -19,7 +18,12 @@ body,
 [data-testid="stAppViewContainer"],
 section[data-testid="stMain"],
 [data-testid="stMainBlockContainer"],
-[data-testid="stHeader"] {
+[data-testid="stHeader"],
+[data-testid="stVerticalBlock"],
+[data-testid="stHorizontalBlock"],
+[data-testid="column"],
+.stForm,
+[data-testid="stForm"] {
     background: transparent !important;
 }
 
@@ -37,6 +41,32 @@ section[data-testid="stMain"],
     }
 }
 
+/* ── Global text color — force dark text on all widget labels and markdown ── */
+[data-testid="stMarkdownContainer"],
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] h1,
+[data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3,
+[data-testid="stMarkdownContainer"] strong,
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label,
+[data-testid="InputInstructions"],
+[data-testid="stFileUploaderDropzone"] p,
+[data-testid="stFileUploaderDropzone"] span,
+[data-testid="stExpander"] summary p,
+[data-testid="stNumberInput"] label,
+[data-testid="stSelectbox"] label,
+[data-testid="stMultiSelect"] label,
+[data-testid="stSlider"] label,
+[data-testid="stCheckbox"] label,
+[data-testid="stRadio"] label,
+[data-testid="stFileUploader"] label,
+[data-testid="stDateInput"] label,
+[data-testid="stTimeInput"] label {
+    color: #1a2332 !important;
+}
+
 /* ── Gradient header banner ── */
 .gradient-header {
     background: linear-gradient(90deg, #005AA7, #c8e8f8);
@@ -48,7 +78,7 @@ section[data-testid="stMain"],
 }
 
 .gradient-header h2 {
-    color: #ffffff;
+    color: #ffffff !important;
     font-size: 2rem;
     font-weight: 700;
     margin: 0 0 8px 0;
@@ -56,19 +86,19 @@ section[data-testid="stMain"],
 }
 
 .gradient-header p {
-    color: #e0f2ff;
+    color: #e0f2ff !important;
     font-size: 1.05rem;
     margin: 0;
 }
 
 /* ── Result box ── */
 .result-box {
-    background-color: #f4f8fc;
+    background-color: #f4f8fc !important;
     border: 1px solid #c2d9ef;
     border-left: 4px solid #005AA7;
     border-radius: 8px;
     padding: 20px 24px;
-    color: #1a2332;
+    color: #1a2332 !important;
     font-size: 1rem;
     line-height: 1.65;
     margin: 12px 0;
@@ -113,9 +143,10 @@ section[data-testid="stMain"],
     color: #ffffff;
 }
 
-/* ── Form / input styling ── */
+/* ── Text / number inputs ── */
 .stTextArea textarea,
-.stTextInput input {
+.stTextInput input,
+[data-testid="stNumberInput"] input {
     background-color: #ffffff !important;
     color: #1a2332 !important;
     border-color: #90bce0 !important;
@@ -123,13 +154,71 @@ section[data-testid="stMain"],
 }
 
 .stTextArea textarea:focus,
-.stTextInput input:focus {
+.stTextInput input:focus,
+[data-testid="stNumberInput"] input:focus {
     border-color: #005AA7 !important;
     box-shadow: 0 0 0 2px rgba(0, 90, 167, 0.2) !important;
 }
 
-/* ── Submit button ── */
-.stFormSubmitButton button {
+/* ── Select box ── */
+[data-testid="stSelectbox"] [data-baseweb="select"]>div,
+[data-baseweb="select"]>div {
+    background-color: #ffffff !important;
+    color: #1a2332 !important;
+    border-color: #90bce0 !important;
+}
+
+[data-baseweb="popover"] [data-baseweb="menu"],
+[role="listbox"] {
+    background-color: #ffffff !important;
+    border: 1px solid #c2d9ef !important;
+    border-radius: 6px !important;
+}
+
+[data-baseweb="option"],
+[role="option"] {
+    background-color: #ffffff !important;
+    color: #1a2332 !important;
+}
+
+[data-baseweb="option"]:hover {
+    background-color: #ddeeff !important;
+}
+
+/* ── File uploader ── */
+[data-testid="stFileUploaderDropzone"] {
+    background-color: #f0f7ff !important;
+    border: 2px dashed #90bce0 !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stFileUploaderDropzone"] * {
+    color: #1a2332 !important;
+}
+
+/* ── Audio input ── */
+[data-testid="stAudioInput"]>div {
+    background-color: #f0f7ff !important;
+    border: 1px solid #90bce0 !important;
+    border-radius: 8px !important;
+}
+
+/* ── Expander ── */
+[data-testid="stExpander"] {
+    background-color: rgba(255, 255, 255, 0.55) !important;
+    border: 1px solid #c2d9ef !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stExpander"] details,
+[data-testid="stExpander"] summary {
+    background: transparent !important;
+    color: #1a2332 !important;
+}
+
+/* ── Submit / form buttons ── */
+.stFormSubmitButton button,
+[data-testid="stFormSubmitButton"] button {
     background: linear-gradient(135deg, #005AA7, #0096d6) !important;
     color: #ffffff !important;
     border: none !important;
@@ -143,14 +232,33 @@ section[data-testid="stMain"],
     filter: brightness(1.1);
 }
 
+/* ── Regular buttons ── */
+.stButton>button {
+    background-color: #005AA7 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    transition: filter 0.2s ease;
+}
+
+.stButton>button:hover {
+    filter: brightness(1.1);
+}
+
 /* ── Sidebar ── */
 .css-1d391kg,
-[data-testid="stSidebar"] {
+[data-testid="stSidebar"],
+[data-testid="stSidebarContent"] {
     background-color: #f0f4f8 !important;
 }
 
-[data-testid="stSidebar"] .stMarkdown {
-    color: #1a2332;
+[data-testid="stSidebar"] *,
+[data-testid="stSidebar"] .stMarkdown,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label {
+    color: #1a2332 !important;
 }
 
 /* ── Divider ── */
@@ -159,7 +267,22 @@ hr {
     margin: 20px 0;
 }
 
-/* ── Info / warning / error boxes ── */
-.stAlert {
+/* ── Alerts ── */
+.stAlert,
+[data-testid="stAlert"] {
+    background-color: #f0f7ff !important;
     border-radius: 8px !important;
+}
+
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] span {
+    color: #1a2332 !important;
+}
+
+/* ── Code blocks ── */
+code,
+pre {
+    background-color: #e8f0f8 !important;
+    color: #1a2332 !important;
+    border-radius: 4px !important;
 }
