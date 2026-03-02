@@ -69,7 +69,9 @@ def get_gpu_stats() -> dict:
             round((memory_used / memory_total) * 100, 1) if memory_total > 0 else 0.0
         )
 
-        # Try to get utilization and temperature via GPUtil (requires nvidia-smi)
+        # Try to get utilization, temperature, and real memory via GPUtil (requires nvidia-smi)
+        # GPUtil reads from nvidia-smi, so it captures VRAM used by ALL processes —
+        # including LlamaCpp, which bypasses PyTorch's allocator entirely.
         try:
             import GPUtil  # Third-party library that wraps nvidia-smi output
 
@@ -81,6 +83,14 @@ def get_gpu_stats() -> dict:
                 )  # GPUtil returns 0.0–1.0
                 stats["temperature"] = round(gpu.temperature, 1)
                 stats["power_draw"] = round(getattr(gpu, "powerDraw", 0) or 0, 1)
+                # Override PyTorch allocator values with nvidia-smi values so that
+                # non-PyTorch consumers (e.g. LlamaCpp) are included in the reading.
+                if gpu.memoryTotal and gpu.memoryTotal > 0:
+                    stats["memory_used_mb"] = round(gpu.memoryUsed, 1)
+                    stats["memory_total_mb"] = round(gpu.memoryTotal, 1)
+                    stats["memory_percent"] = round(
+                        (gpu.memoryUsed / gpu.memoryTotal) * 100, 1
+                    )
         except ImportError:
             logger.warning(
                 "⚠️ GPUtil not installed — utilization/temperature unavailable."
