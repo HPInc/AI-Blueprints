@@ -46,7 +46,7 @@ Input schema:
 Output schema:
     answer         (str) — "Transcription: ...\\n\\nResponse: ..."
     messages       (str) — JSON-serialized pipeline messages
-    response_audio (str) — Base64-encoded WAV of the spoken response (empty if TTS disabled)
+    response_audio (str) — Base64-encoded WAV of the spoken response
 """
 
 import json
@@ -91,7 +91,6 @@ class VoiceModel:
     Design principle — graceful degradation:
         If Whisper model is missing → error with instructions to run project-setup
         If LLM is missing           → return transcription only
-        If TTS model is missing     → return text response with empty response_audio
     """
 
     def __init__(
@@ -233,10 +232,15 @@ class VoiceModel:
     def _load_tts(self):
         """Lazily load the XTTS v2 TTS pipeline via CoquiTTS.
 
-        Loads from the local tts_model_path directory (config.json + model.pth).
-        Works in both development (/home/jovyan/local/xtts-v2/) and at MLflow
-        serve time (<artifact_models>/xtts-v2/) because loader.py resolves the
-        path from the bundled artifact before constructing this object.
+        Loading strategy:
+            1. If tts_model_path points to a directory containing config.json,
+               load from that local path.  This works in both development
+               (/home/jovyan/local/xtts-v2/) and at MLflow serve time
+               (<artifact_models>/xtts-v2/) because loader.py resolves the
+               path from the bundled artifact before constructing this object.
+            2. Fall back to the CoquiTTS registry model name so that the
+               assistant is still functional even if the artifact was not
+               copied (CoquiTTS will download to ~/.local/share/tts/).
 
         VRAM management (three models share ~8 GB VRAM):
             • Pre-check: free VRAM is queried via torch.cuda.mem_get_info() before any
@@ -246,58 +250,64 @@ class VoiceModel:
         if self._tts_pipeline is not None:
             return self._tts_pipeline
 
-        try:
-            import torch
-            from TTS.api import TTS
+        import torch
+        from TTS.api import TTS
 
-            device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
-            # tts_model_path is a directory (e.g. /home/jovyan/local/xtts-v2)
-            # containing config.json and model.pth from coqui/XTTS-v2.
-            tts_dir = self.tts_model_path
-            config_path = os.path.join(tts_dir, "config.json")
+        # tts_model_path is a directory (e.g. /home/jovyan/local/xtts-v2)
+        # containing config.json and model.pth from coqui/XTTS-v2.
+        tts_dir = self.tts_model_path
+        config_path = os.path.join(tts_dir, "config.json") if tts_dir else ""
 
+        if tts_dir and os.path.isdir(tts_dir) and os.path.exists(config_path):
             tts_obj = TTS(
                 model_path=tts_dir,
                 config_path=config_path,
                 progress_bar=False,
             )
+            source_desc = f"local path: {tts_dir}"
+        else:
+            # Fall back to the CoquiTTS built-in registry download
+            logger.warning(
+                "⚠️ XTTS model directory not found at %s — "
+                "falling back to CoquiTTS registry download (~1.8 GB)",
+                tts_dir or "(not set)",
+            )
+            tts_obj = TTS(
+                "tts_models/multilingual/multi-dataset/xtts_v2",
+                progress_bar=False,
+            )
+            source_desc = "CoquiTTS registry"
 
-            # ── Determine target device before any allocation ─────────────────────
-            # Pre-check free VRAM using the CUDA allocator's own accounting so the
-            # device decision is made once, deterministically, before any tensor is
-            # placed.  XTTS v2 fp16 peak ≈ 0.9 GB; add a 256 MB safety margin.
-            _XTTS_VRAM_REQUIRED = int(1.15 * 1024**3)  # 1.15 GB in bytes
-            if device == "cuda":
-                free_vram, _ = torch.cuda.mem_get_info()
-                if free_vram < _XTTS_VRAM_REQUIRED:
-                    logger.warning(
-                        "⚠️ Insufficient free VRAM for XTTS (%d MB free, %d MB required)"
-                        " — loading on CPU",
-                        free_vram // (1024**2),
-                        _XTTS_VRAM_REQUIRED // (1024**2),
-                    )
-                    device = "cpu"
+        # ── Determine target device before any allocation ─────────────────────
+        # Pre-check free VRAM using the CUDA allocator's own accounting so the
+        # device decision is made once, deterministically, before any tensor is
+        # placed.  XTTS v2 fp16 peak ≈ 0.9 GB; add a 256 MB safety margin.
+        _XTTS_VRAM_REQUIRED = int(1.15 * 1024**3)  # 1.15 GB in bytes
+        if device == "cuda":
+            free_vram, _ = torch.cuda.mem_get_info()
+            if free_vram < _XTTS_VRAM_REQUIRED:
+                logger.warning(
+                    "⚠️ Insufficient free VRAM for XTTS (%d MB free, %d MB required)"
+                    " — loading on CPU",
+                    free_vram // (1024**2),
+                    _XTTS_VRAM_REQUIRED // (1024**2),
+                )
+                device = "cpu"
 
-            tts_obj.to(device)
+        tts_obj.to(device)
 
-            # ── Cast synthesiser to float16 on CUDA ───────────────────────────────
-            # XTTS v2 always exposes synthesizer.tts_model and supports fp16
-            # inference.  Halves VRAM from ~1.8 GB to ~0.9 GB with no quality loss.
-            if device == "cuda":
-                tts_obj.synthesizer.tts_model = tts_obj.synthesizer.tts_model.half()
-                logger.info("✅ XTTS v2 cast to float16 (~0.9 GB VRAM)")
+        # ── Cast synthesiser to float16 on CUDA ───────────────────────────────
+        # XTTS v2 always exposes synthesizer.tts_model and supports fp16
+        # inference.  Halves VRAM from ~1.8 GB to ~0.9 GB with no quality loss.
+        if device == "cuda":
+            tts_obj.synthesizer.tts_model = tts_obj.synthesizer.tts_model.half()
+            logger.info("✅ XTTS v2 cast to float16 (~0.9 GB VRAM)")
 
-            self._tts_pipeline = tts_obj
-            logger.info("✅ XTTS v2 loaded from %s on %s", tts_dir, device.upper())
-            return self._tts_pipeline
-
-        except Exception as e:
-            raise RuntimeError(
-                f"❌ Failed to load XTTS v2 from '{self.tts_model_path}'. "
-                "Ensure project-setup.ipynb has been run and TTS is installed. "
-                f"Original error: {e}"
-            ) from e
+        self._tts_pipeline = tts_obj
+        logger.info("✅ XTTS v2 loaded from %s on %s", source_desc, device.upper())
+        return self._tts_pipeline
 
     def _synthesize_speech(self, text: str) -> str:
         """Synthesize speech from text using XTTS v2. Returns base64-encoded WAV."""
