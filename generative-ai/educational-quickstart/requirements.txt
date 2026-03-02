@@ -38,6 +38,7 @@ sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
 PyAudio==0.2.14
+coqui-tts
 
 # ─── Agentic AI & RAG ───
 langchain==1.0.0a12
