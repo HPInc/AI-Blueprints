@@ -37,16 +37,17 @@ if css_path.exists():
     st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
 
 # ───────────────────────────── Logo Bar ────────────────────────────────────────
-col1, col2, col3 = st.columns(3)
-with col1:
-    if Path("static/HP-logo.png").exists():
-        st.image("static/HP-logo.png", width=100)
-with col2:
-    if Path("static/Z-logo.png").exists():
-        st.image("static/Z-logo.png", width=100)
-with col3:
-    if Path("static/AIS-logo.png").exists():
-        st.image("static/AIS-logo.png", width=100)
+_logo_paths = [
+    ("static/HP-logo.png", "HP"),
+    ("static/Z-logo.png", "Z by HP"),
+    ("static/AIS-logo.png", "AI Studio"),
+]
+_logo_imgs = "".join(
+    f'<img src="data:image/png;base64,{base64.b64encode(Path(p).read_bytes()).decode()}" alt="{label}">'
+    for p, label in _logo_paths
+    if Path(p).exists()
+)
+st.markdown(f'<div class="logo-bar">{_logo_imgs}</div>', unsafe_allow_html=True)
 
 # ───────────────────────────── Header ──────────────────────────────────────────
 st.markdown(
