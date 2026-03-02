@@ -38,7 +38,7 @@ sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
 PyAudio==0.2.14
-coqui-tts
+coqui-tts[codec] @ git+https://github.com/idiap/coqui-ai-TTS # we need to bypass the python version check for this package, which is not yet compatible with Python 3.12
 
 # ─── Agentic AI & RAG ───
 langchain==1.0.0a12
