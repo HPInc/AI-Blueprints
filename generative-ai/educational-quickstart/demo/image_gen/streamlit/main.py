@@ -57,6 +57,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ───────────────────────────── Session State Initialization ──────────────────
+if "generating" not in st.session_state:
+    st.session_state["generating"] = False
+if "pending" not in st.session_state:
+    st.session_state["pending"] = False
+if "last_result" not in st.session_state:
+    st.session_state["last_result"] = None
+if "last_prompt" not in st.session_state:
+    st.session_state["last_prompt"] = ""
+if "gen_params" not in st.session_state:
+    st.session_state["gen_params"] = {}
+
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
 st.sidebar.title("⚙️ Generation Parameters")
 st.sidebar.markdown("Adjust these before clicking **Generate Image**.")
@@ -69,6 +81,7 @@ num_inference_steps = st.sidebar.slider(
     value=28,
     step=1,
     help="More steps → higher quality, but slower. 28 is the FLUX.1-dev sweet-spot.",
+    disabled=st.session_state["generating"],
 )
 
 guidance_scale = st.sidebar.slider(
@@ -78,6 +91,7 @@ guidance_scale = st.sidebar.slider(
     value=3.5,
     step=0.5,
     help="How strictly the model follows your prompt. 3–5 is typical for FLUX.",
+    disabled=st.session_state["generating"],
 )
 
 resolution = st.sidebar.selectbox(
@@ -86,6 +100,7 @@ resolution = st.sidebar.selectbox(
     index=2,
     format_func=lambda v: f"{v} × {v} px",
     help="FLUX native resolution is 1024. Lower values are faster.",
+    disabled=st.session_state["generating"],
 )
 
 st.sidebar.divider()
@@ -94,6 +109,7 @@ use_fixed_seed = st.sidebar.checkbox(
     "Use fixed seed",
     value=False,
     help="Enable to get reproducible images. Same prompt + same seed = same image.",
+    disabled=st.session_state["generating"],
 )
 seed_value = st.sidebar.number_input(
     "Seed value",
@@ -101,7 +117,7 @@ seed_value = st.sidebar.number_input(
     max_value=2**32 - 1,
     value=42,
     step=1,
-    disabled=not use_fixed_seed,
+    disabled=not use_fixed_seed or st.session_state["generating"],
     help="Any integer ≥ 0. Only used when 'Use fixed seed' is checked.",
 )
 seed = int(seed_value) if use_fixed_seed else -1
@@ -198,61 +214,86 @@ with st.form("image_form"):
             "e.g., Abstract visualization of a neural network, glowing blue nodes, "
             "dark background, digital art style"
         ),
+        disabled=st.session_state["generating"],
     )
-    submitted = st.form_submit_button("🎨 Generate Image", use_container_width=True)
+    submitted = st.form_submit_button(
+        "🎨 Generate Image",
+        use_container_width=True,
+        disabled=st.session_state["generating"],
+    )
 
-if submitted:
+
+if submitted and not st.session_state["generating"]:
     if not prompt.strip():
         st.warning("Please enter an image prompt.")
     else:
-        seed_label = f"seed={seed}" if seed >= 0 else "random seed"
-        with st.spinner(
-            f"Generating image — {num_inference_steps} steps, "
-            f"guidance {guidance_scale}, {resolution}×{resolution}px, {seed_label}…"
-        ):
-            result = call_model(
-                prompt,
-                num_inference_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                height=resolution,
-                width=resolution,
-                seed=seed,
-            )
+        st.session_state["generating"] = True
+        st.session_state["pending"] = True
+        st.session_state["last_prompt"] = prompt
+        st.session_state["last_result"] = None
+        st.session_state["gen_params"] = {
+            "num_inference_steps": num_inference_steps,
+            "guidance_scale": guidance_scale,
+            "height": resolution,
+            "width": resolution,
+            "seed": seed,
+        }
+        st.rerun()
 
-        if result["success"]:
-            answer = result["data"]["answer"]
+# ───────────────────────────── Generation Execution ───────────────────────────
+if st.session_state["pending"]:
+    st.session_state["pending"] = False
+    params = st.session_state["gen_params"]
+    prompt_to_use = st.session_state["last_prompt"]
+    seed_label = f"seed={params['seed']}" if params["seed"] >= 0 else "random seed"
+    with st.spinner(
+        f"Generating image — {params['num_inference_steps']} steps, "
+        f"guidance {params['guidance_scale']}, "
+        f"{params['height']}×{params['width']}px, {seed_label}…"
+    ):
+        result = call_model(prompt_to_use, **params)
+    st.session_state["last_result"] = result
+    st.session_state["generating"] = False
+    st.rerun()
 
-            # The model returns either a base64-encoded PNG or an error message string.
-            # Base64 PNG strings are typically >200 chars and don't start with ❌.
-            if len(answer) > 200 and not answer.startswith("❌"):
-                try:
-                    from io import BytesIO
+# ───────────────────────────── Result Display ─────────────────────────────────
+if st.session_state["last_result"] is not None:
+    result = st.session_state["last_result"]
+    prompt_to_use = st.session_state["last_prompt"]
+    params = st.session_state["gen_params"]
 
-                    img_bytes = base64.b64decode(answer)
-                    st.markdown("### 🖼️ Generated Image")
-                    st.image(
-                        img_bytes,
-                        caption=f'"{prompt[:80]}..."',
-                        width=resolution,
-                    )
-                    st.download_button(
-                        label="📥 Download PNG",
-                        data=img_bytes,
-                        file_name="generated_image.png",
-                        mime="image/png",
-                        use_container_width=True,
-                    )
-                    st.divider()
-                    with st.expander("📋 Request Details"):
-                        st.json(json.loads(result["data"].get("messages", "[]")))
-                except Exception as decode_err:
-                    st.error(f"Failed to decode image: {decode_err}")
-                    st.code(answer[:200])
-            else:
-                # Error message from the model
-                st.markdown(
-                    f"<div class='result-box'>{answer}</div>",
-                    unsafe_allow_html=True,
+    if result["success"]:
+        answer = result["data"]["answer"]
+
+        # The model returns either a base64-encoded PNG or an error message string.
+        # Base64 PNG strings are typically >200 chars and don't start with ❌.
+        if len(answer) > 200 and not answer.startswith("❌"):
+            try:
+                img_bytes = base64.b64decode(answer)
+                st.markdown("### 🖼️ Generated Image")
+                st.image(
+                    img_bytes,
+                    caption=f'"{prompt_to_use[:80]}..."',
+                    width=params["width"],
                 )
+                st.download_button(
+                    label="📥 Download PNG",
+                    data=img_bytes,
+                    file_name="generated_image.png",
+                    mime="image/png",
+                    use_container_width=True,
+                )
+                st.divider()
+                with st.expander("📋 Request Details"):
+                    st.json(json.loads(result["data"].get("messages", "[]")))
+            except Exception as decode_err:
+                st.error(f"Failed to decode image: {decode_err}")
+                st.code(answer[:200])
         else:
-            st.error(result["error"])
+            # Error message from the model
+            st.markdown(
+                f"<div class='result-box'>{answer}</div>",
+                unsafe_allow_html=True,
+            )
+    else:
+        st.error(result["error"])

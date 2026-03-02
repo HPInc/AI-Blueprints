@@ -43,6 +43,7 @@ Output schema:
 import json
 import logging
 import os
+import threading
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -121,6 +122,9 @@ class ImageGenModel:
             "model_path", "/home/jovyan/local/flux1-dev"
         )
         self._pipeline = None  # Populated on first predict() call
+        # Lock to serialise generation calls and prevent scheduler state corruption
+        # when a previous request was interrupted mid-denoising loop.
+        self._lock = threading.Lock()
 
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
@@ -179,7 +183,18 @@ class ImageGenModel:
         return pd.DataFrame(results)
 
     def _generate(self, inp: ImageGenInput) -> dict:
-        """Run one inference pass through the FLUX.1-dev GGUF pipeline."""
+        """Run one inference pass through the FLUX.1-dev GGUF pipeline.
+
+        A threading.Lock() prevents concurrent calls from corrupting the shared
+        scheduler state.  The lock also ensures that an interrupted request
+        (e.g., Streamlit rerun dropping the HTTP connection) finishes cleaning up
+        before the next generation begins.
+        """
+        with self._lock:
+            return self._generate_locked(inp)
+
+    def _generate_locked(self, inp: ImageGenInput) -> dict:
+        """Actual generation logic — must only be called while self._lock is held."""
         import base64
         from io import BytesIO
 
@@ -330,6 +345,17 @@ class ImageGenModel:
                 )
 
             import torch  # cached after first pipeline load — instant on subsequent calls
+
+            # Safety-reset the scheduler's step index before every generation.
+            # If a previous request was interrupted mid-denoising (e.g., client
+            # disconnected), _step_index may still hold a stale value.  Re-setting
+            # it to None forces set_timesteps() inside the pipeline call to
+            # reinitialise it cleanly, preventing "index N out of bounds" errors.
+            scheduler = self._pipeline.scheduler
+            if hasattr(scheduler, "_step_index"):
+                scheduler._step_index = None
+            if hasattr(scheduler, "_begin_index"):
+                scheduler._begin_index = None
 
             # Build a seeded generator for reproducibility, or None for random output.
             if inp.seed >= 0:
