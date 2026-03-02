@@ -233,7 +233,7 @@ if submitted:
                     st.image(
                         img_bytes,
                         caption=f'"{prompt[:80]}..."',
-                        use_container_width=True,
+                        width=resolution,
                     )
                     st.download_button(
                         label="📥 Download PNG",

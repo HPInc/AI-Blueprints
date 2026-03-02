@@ -254,21 +254,80 @@ class ImageGenModel:
                 )
                 logger.info("✅ FLUX GGUF transformer loaded")
 
-                # Step 2: Load the rest of the FLUX pipeline (T5 + CLIP text encoders,
+                # Step 2: Load the T5-XXL text encoder with 8-bit quantization.
+                # T5-XXL is ~9.9 GB in bfloat16 — the largest non-transformer component.
+                # Loading it in 8-bit (via bitsandbytes) reduces it to ~5 GB.
+                #
+                # IMPORTANT: device_map="auto" is required here.
+                # bitsandbytes 8-bit modules cannot be moved with .to() after loading,
+                # so we let bitsandbytes place the model directly on the GPU via device_map.
+                # This also means enable_model_cpu_offload() must NOT be called — it would
+                # attempt .to("cpu") on the quantized encoder and raise a RuntimeError.
+                from transformers import (
+                    T5EncoderModel,
+                    BitsAndBytesConfig as TF_BnBConfig,
+                )
+
+                t5_bnb_config = TF_BnBConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.bfloat16,  # compute in bfloat16 for quality
+                    bnb_4bit_use_double_quant=True,  # double quantization saves ~0.4 GB extra
+                    bnb_4bit_quant_type="nf4",  # NormalFloat4 — best quality for LLM weights
+                )
+                text_encoder_2 = T5EncoderModel.from_pretrained(
+                    self.model_path,
+                    subfolder="text_encoder_2",
+                    quantization_config=t5_bnb_config,
+                    torch_dtype=torch.bfloat16,
+                    device_map="auto",
+                    local_files_only=True,
+                )
+                logger.info(
+                    "✅ T5-XXL text encoder loaded (4-bit NF4, ~2.7 GB, placed by device_map)"
+                )
+
+                # Step 3: Load the rest of the FLUX pipeline (CLIP text encoder,
                 # VAE, scheduler, tokenizers) from the local model directory.
-                # The transformer is replaced with our GGUF version via the kwarg.
+                # The transformer and T5 encoder are replaced with our quantized versions.
                 # local_files_only=True prevents any HuggingFace network calls.
+                # NOTE: do NOT pass device_map or call .to(device) on the full pipeline —
+                # FluxPipeline does not support device_map, and calling .to("cuda") on the
+                # whole pipeline would fail because T5 (bitsandbytes 8-bit) cannot be moved.
                 logger.info(f"Loading FLUX.1-dev pipeline from: {self.model_path}")
                 self._pipeline = FluxPipeline.from_pretrained(
                     self.model_path,
                     transformer=transformer,
+                    text_encoder_2=text_encoder_2,
                     torch_dtype=torch.bfloat16,
                     local_files_only=True,
                 )
-                # CPU offload moves components to GPU only when needed, then back to CPU.
-                # This is necessary for FLUX on systems with < 24 GB VRAM.
-                self._pipeline.enable_model_cpu_offload()
-                logger.info("✅ FLUX.1-dev pipeline loaded with CPU offload enabled")
+
+                # Move each non-quantized component to GPU individually.
+                # T5 (text_encoder_2) is already on cuda:0 via device_map="auto" —
+                # calling .to() on it would raise a RuntimeError, so skip it.
+                # GGUF transformer and vanilla diffusers modules support .to() normally.
+                self._pipeline.text_encoder = self._pipeline.text_encoder.to("cuda")
+                self._pipeline.transformer = self._pipeline.transformer.to("cuda")
+                self._pipeline.vae = self._pipeline.vae.to("cuda")
+
+                # Reduce peak activation memory during inference.
+                # Static weights (T5 ~2.7 GB + transformer ~6.9 GB + CLIP/VAE ~0.8 GB = ~10.4 GB)
+                # are only part of the story — the diffusion loop generates large intermediate
+                # tensors (latents, attention maps, VAE decode buffers) for 1024×1024 that can
+                # spike an extra 4–6 GB. The options below cut those peaks significantly:
+                #
+                # vae.enable_slicing()  — decodes the latent image in vertical slices instead
+                #   of all at once, reducing VAE peak memory from ~2 GB to ~0.3 GB.
+                # vae.enable_tiling()   — tiles VAE encode/decode for very large images;
+                #   complements slicing for resolutions above 1024×1024.
+                # enable_attention_slicing() — splits attention computation into chunks,
+                #   trading a small speed penalty (~5%) for lower attention peak memory.
+                self._pipeline.vae.enable_slicing()
+                self._pipeline.vae.enable_tiling()
+                self._pipeline.enable_attention_slicing()
+                logger.info(
+                    "✅ FLUX.1-dev pipeline loaded — VAE slicing/tiling + attention slicing enabled"
+                )
 
             import torch  # cached after first pipeline load — instant on subsequent calls
 
@@ -323,6 +382,15 @@ class ImageGenModel:
             buffer = BytesIO()
             image.save(buffer, format="PNG")
             img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+            # Free activation memory (intermediate tensors from the diffusion steps).
+            # The pipeline itself stays cached for subsequent calls, but releasing
+            # unreferenced CUDA tensors here prevents VRAM from creeping up across
+            # multiple generations in the same session.
+            import gc
+
+            torch.cuda.empty_cache()
+            gc.collect()
 
             logger.info("✅ Image generated successfully")
             return {
