@@ -263,12 +263,16 @@ class ImageGenModel:
                 # so we let bitsandbytes place the model directly on the GPU via device_map.
                 # This also means enable_model_cpu_offload() must NOT be called — it would
                 # attempt .to("cpu") on the quantized encoder and raise a RuntimeError.
-                from transformers import T5EncoderModel, BitsAndBytesConfig as TF_BnBConfig
+                from transformers import (
+                    T5EncoderModel,
+                    BitsAndBytesConfig as TF_BnBConfig,
+                )
+
                 t5_bnb_config = TF_BnBConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=torch.bfloat16,  # compute in bfloat16 for quality
-                    bnb_4bit_use_double_quant=True,          # double quantization saves ~0.4 GB extra
-                    bnb_4bit_quant_type="nf4",               # NormalFloat4 — best quality for LLM weights
+                    bnb_4bit_use_double_quant=True,  # double quantization saves ~0.4 GB extra
+                    bnb_4bit_quant_type="nf4",  # NormalFloat4 — best quality for LLM weights
                 )
                 text_encoder_2 = T5EncoderModel.from_pretrained(
                     self.model_path,
@@ -278,7 +282,9 @@ class ImageGenModel:
                     device_map="auto",
                     local_files_only=True,
                 )
-                logger.info("✅ T5-XXL text encoder loaded (4-bit NF4, ~2.7 GB, placed by device_map)")
+                logger.info(
+                    "✅ T5-XXL text encoder loaded (4-bit NF4, ~2.7 GB, placed by device_map)"
+                )
 
                 # Step 3: Load the rest of the FLUX pipeline (CLIP text encoder,
                 # VAE, scheduler, tokenizers) from the local model directory.
@@ -301,8 +307,8 @@ class ImageGenModel:
                 # calling .to() on it would raise a RuntimeError, so skip it.
                 # GGUF transformer and vanilla diffusers modules support .to() normally.
                 self._pipeline.text_encoder = self._pipeline.text_encoder.to("cuda")
-                self._pipeline.transformer  = self._pipeline.transformer.to("cuda")
-                self._pipeline.vae          = self._pipeline.vae.to("cuda")
+                self._pipeline.transformer = self._pipeline.transformer.to("cuda")
+                self._pipeline.vae = self._pipeline.vae.to("cuda")
 
                 # Reduce peak activation memory during inference.
                 # Static weights (T5 ~2.7 GB + transformer ~6.9 GB + CLIP/VAE ~0.8 GB = ~10.4 GB)
@@ -319,7 +325,9 @@ class ImageGenModel:
                 self._pipeline.vae.enable_slicing()
                 self._pipeline.vae.enable_tiling()
                 self._pipeline.enable_attention_slicing()
-                logger.info("✅ FLUX.1-dev pipeline loaded — VAE slicing/tiling + attention slicing enabled")
+                logger.info(
+                    "✅ FLUX.1-dev pipeline loaded — VAE slicing/tiling + attention slicing enabled"
+                )
 
             import torch  # cached after first pipeline load — instant on subsequent calls
 
@@ -380,6 +388,7 @@ class ImageGenModel:
             # unreferenced CUDA tensors here prevents VRAM from creeping up across
             # multiple generations in the same session.
             import gc
+
             torch.cuda.empty_cache()
             gc.collect()
 
