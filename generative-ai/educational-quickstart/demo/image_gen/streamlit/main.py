@@ -52,7 +52,7 @@ with col3:
 st.markdown(
     '<div class="gradient-header">'
     "<h2>🎨 AI Image Generator</h2>"
-    "<p>Text-to-image generation powered by SDXL-Turbo — high quality in just 4 denoising steps</p>"
+    "<p>Text-to-image generation powered by Flux</p>"
     "</div>",
     unsafe_allow_html=True,
 )
