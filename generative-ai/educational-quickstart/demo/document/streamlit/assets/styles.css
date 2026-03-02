@@ -3,14 +3,24 @@
    ──────────────────────────────────────────────────────────────────────────── */
 
 /* ── Animated light gradient background ── */
-body {
-    background: linear-gradient(135deg, #e0f2ff, #a1c4fd, #c8d8ff, #b8daff);
-    background-attachment: fixed;
-    background-size: 400% 400%;
-    animation: gradientBG 20s ease infinite;
-    color: #1a2332;
+/* `body` alone is overridden by Streamlit's theme — target .stApp (the real root) too */
+body,
+.stApp {
+    background: linear-gradient(135deg, #e0f2ff, #a1c4fd, #c8d8ff, #b8daff) !important;
+    background-attachment: fixed !important;
+    background-size: 400% 400% !important;
+    animation: gradientBG 20s ease infinite !important;
+    color: #1a2332 !important;
     font-family: 'Segoe UI', sans-serif;
     font-size: 16px;
+}
+
+/* Make Streamlit's layout containers transparent so the gradient shows through */
+[data-testid="stAppViewContainer"],
+section[data-testid="stMain"],
+[data-testid="stMainBlockContainer"],
+[data-testid="stHeader"] {
+    background: transparent !important;
 }
 
 @keyframes gradientBG {
