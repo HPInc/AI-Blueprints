@@ -86,8 +86,11 @@ def _derive_title(messages: list) -> str:
     """Derive a short title from the first user message."""
     for msg in messages:
         if msg.get("role") == "user":
-            return msg["content"][:48].strip() + ("…" if len(msg["content"]) > 48 else "")
+            return msg["content"][:48].strip() + (
+                "…" if len(msg["content"]) > 48 else ""
+            )
     return "New Chat"
+
 
 def _build_prompt_history_html(conv: dict) -> str:
     """Build an HTML block showing system prompt + all conversation turns."""
@@ -98,7 +101,7 @@ def _build_prompt_history_html(conv: dict) -> str:
         f'<div class="ph-entry ph-system">'
         f'<span class="ph-role">system</span>'
         f'<div class="ph-content">{html.escape(system_prompt)}</div>'
-        f'</div>'
+        f"</div>"
     ]
     for msg in messages:
         role = msg.get("role", "user")
@@ -107,14 +110,19 @@ def _build_prompt_history_html(conv: dict) -> str:
             f'<div class="ph-entry ph-{role}">'
             f'<span class="ph-role">{role}</span>'
             f'<div class="ph-content">{content}</div>'
-            f'</div>'
+            f"</div>"
         )
 
-    body = "".join(entries) if messages else (
-        "".join(entries[:1])  # still show system prompt
-        + '<p class="ph-empty">No messages yet.</p>'
+    body = (
+        "".join(entries)
+        if messages
+        else (
+            "".join(entries[:1])  # still show system prompt
+            + '<p class="ph-empty">No messages yet.</p>'
+        )
     )
     return f'<div class="prompt-history-panel">{body}</div>'
+
 
 # ───────────────────────────── Session State Bootstrap ─────────────────────────
 if "conversations" not in st.session_state:
@@ -139,11 +147,12 @@ if "active_conv_id" not in st.session_state:
 
 # Purge any in-memory stale empty conversations that aren't the active one.
 _stale = [
-    cid for cid, conv in list(st.session_state.conversations.items())
+    cid
+    for cid, conv in list(st.session_state.conversations.items())
     if not conv.get("messages") and cid != st.session_state.active_conv_id
 ]
 for _cid in _stale:
-    delete_conversation(_cid)          # no-op if it was never persisted
+    delete_conversation(_cid)  # no-op if it was never persisted
     del st.session_state.conversations[_cid]
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
@@ -162,7 +171,9 @@ with st.sidebar:
     st.divider()
 
     # ── System prompt (editable, per conversation) ──
-    active_conv = st.session_state.conversations.get(st.session_state.active_conv_id, {})
+    active_conv = st.session_state.conversations.get(
+        st.session_state.active_conv_id, {}
+    )
     new_system_prompt = st.text_area(
         "System Prompt",
         value=active_conv.get("system_prompt", DEFAULT_SYSTEM_PROMPT),
@@ -179,14 +190,21 @@ with st.sidebar:
     st.divider()
 
     # ── New Chat button ──
-    if st.button("＋  New Chat", use_container_width=True, key="new_chat_btn", type="primary"):
-        current = st.session_state.conversations.get(st.session_state.active_conv_id, {})
+    if st.button(
+        "＋  New Chat", use_container_width=True, key="new_chat_btn", type="primary"
+    ):
+        current = st.session_state.conversations.get(
+            st.session_state.active_conv_id, {}
+        )
         if not current.get("messages"):
             # Already on an empty chat — nothing to do
             st.rerun()
         else:
             conv = new_conversation_local()
-            st.session_state.conversations = {conv["id"]: conv, **st.session_state.conversations}
+            st.session_state.conversations = {
+                conv["id"]: conv,
+                **st.session_state.conversations,
+            }
             st.session_state.active_conv_id = conv["id"]
             st.rerun()
 
@@ -194,8 +212,7 @@ with st.sidebar:
     st.markdown("**Conversations**")
     conv_ids = list(st.session_state.conversations.keys())
     listed_ids = [
-        cid for cid in conv_ids
-        if st.session_state.conversations[cid].get("messages")
+        cid for cid in conv_ids if st.session_state.conversations[cid].get("messages")
     ]
     if listed_ids:
         if st.session_state.active_conv_id not in listed_ids:
@@ -212,6 +229,7 @@ with st.sidebar:
         # Streamlit's radio can't distinguish them by displayed text and the
         # click gets swallowed.  Append a counter suffix to make them unique.
         from collections import Counter as _Counter
+
         _raw_labels = [
             st.session_state.conversations[cid].get("title") or "New Chat"
             for cid in listed_ids
@@ -242,14 +260,21 @@ with st.sidebar:
     st.divider()
     st.markdown('<div class="clear-all-marker"></div>', unsafe_allow_html=True)
     if not st.session_state.get("confirm_clear_all"):
-        if st.button("🗑  Clear All History", use_container_width=True, key="clear_all_btn"):
+        if st.button(
+            "🗑  Clear All History", use_container_width=True, key="clear_all_btn"
+        ):
             st.session_state["confirm_clear_all"] = True
             st.rerun()
     else:
         st.warning("This will permanently delete all conversations.")
         col_yes, col_no = st.columns(2)
         with col_yes:
-            if st.button("Delete all", key="confirm_yes", use_container_width=True, type="primary"):
+            if st.button(
+                "Delete all",
+                key="confirm_yes",
+                use_container_width=True,
+                type="primary",
+            ):
                 delete_all_conversations()
                 st.session_state.conversations = {}
                 conv = new_conversation_local()

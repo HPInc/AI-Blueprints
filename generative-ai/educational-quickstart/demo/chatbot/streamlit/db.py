@@ -57,6 +57,7 @@ def init_db() -> None:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 def load_all_conversations() -> dict:
     """
     Return all conversations as an ordered dict keyed by id, newest first.

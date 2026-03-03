@@ -46,7 +46,9 @@ class ChatbotInput(BaseModel):
 
     question: str = ""
     system_prompt: str = "You are a helpful and friendly AI assistant."
-    history: str = "[]"  # JSON array of prior {role, content} messages for multi-turn memory
+    history: str = (
+        "[]"  # JSON array of prior {role, content} messages for multi-turn memory
+    )
 
 
 # ─────── Model Class ──────────────────────────────────────────────────────────
