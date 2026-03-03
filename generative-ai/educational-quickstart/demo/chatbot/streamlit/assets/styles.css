@@ -260,7 +260,7 @@ hr {
     gap: 0;
 }
 
-[data-testid="stSidebar"] [data-testid="stRadio"] label {
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] {
     display: flex;
     align-items: center;
     padding: 6px 8px;
@@ -275,7 +275,7 @@ hr {
     width: 100%;
 }
 
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover {
     background-color: #d9ecf9;
 }
 
@@ -285,7 +285,7 @@ hr {
 }
 
 /* Highlight the selected row */
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) {
     background-color: #dbeeff;
     color: #005AA7 !important;
     font-weight: 600;

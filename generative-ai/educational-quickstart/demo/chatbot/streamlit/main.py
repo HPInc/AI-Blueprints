@@ -207,6 +207,15 @@ with st.sidebar:
             current_index = None
         else:
             current_index = listed_ids.index(st.session_state.active_conv_id)
+            # Sync the widget key only when it holds a stale value (not in
+            # the current option list).  When the user clicks a conversation,
+            # Streamlit updates conv_radio to that valid ID BEFORE the script
+            # reruns — overwriting it here would swallow the click.  A stale
+            # value (None, deleted ID, etc.) means active_conv_id was changed
+            # programmatically (e.g. first message on a new chat) and the
+            # widget needs to catch up.
+            if st.session_state.get("conv_radio") not in listed_ids:
+                st.session_state["conv_radio"] = st.session_state.active_conv_id
 
         # Build unique labels: when two conversations share the same title,
         # Streamlit's radio can't distinguish them by displayed text and the
