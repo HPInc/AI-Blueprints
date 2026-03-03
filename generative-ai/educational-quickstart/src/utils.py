@@ -368,18 +368,24 @@ def _isolated_predict_worker(
     """
     try:
         import sys
+
         sys.path.insert(0, src_path)
 
         import mlflow
         import pickle
 
         loaded = mlflow.pyfunc.load_model(model_uri=model_uri)
-        result = loaded.predict(input_df, params=params) if params else loaded.predict(input_df)
+        result = (
+            loaded.predict(input_df, params=params)
+            if params
+            else loaded.predict(input_df)
+        )
 
         with open(result_path, "wb") as f:
             pickle.dump(result, f)
     except Exception:
         import traceback
+
         error_queue.put(traceback.format_exc())
 
 
@@ -498,6 +504,7 @@ def _is_heavy(obj) -> bool:
     """
     try:
         import torch
+
         if isinstance(obj, torch.nn.Module):
             return True
     except ImportError:
@@ -580,6 +587,7 @@ def release_model_vram(*models, label: str = "model") -> None:
 
     try:
         import torch
+
         has_cuda = torch.cuda.is_available()
     except ImportError:
         has_cuda = False
@@ -598,9 +606,11 @@ def release_model_vram(*models, label: str = "model") -> None:
         torch.cuda.synchronize()
         torch.cuda.empty_cache()
         gc.collect()
-        used  = torch.cuda.memory_allocated() / 1024**3
+        used = torch.cuda.memory_allocated() / 1024**3
         total = torch.cuda.get_device_properties(0).total_memory / 1024**3
-        print(f"✅ Done — VRAM: {used:.1f} GB / {total:.1f} GB ({used / total * 100:.0f}% used)")
+        print(
+            f"✅ Done — VRAM: {used:.1f} GB / {total:.1f} GB ({used / total * 100:.0f}% used)"
+        )
     else:
         print("✅ Done — CUDA not available, CPU memory released via GC")
 
