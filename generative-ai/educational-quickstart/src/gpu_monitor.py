@@ -164,7 +164,7 @@ def create_gpu_dashboard(
             "Memory Usage (MB)",
             "Temperature (°C)",
             "Tokens / Second",
-            f"Current Stats — {gpu_name}",
+            "",
             "",
         ),
         specs=[
@@ -279,7 +279,10 @@ def create_gpu_dashboard(
         go.Indicator(
             mode="gauge+number",
             value=latest.get("utilization", 0),
-            title={"text": "Utilization %", "font": {"size": 11}},
+            title={
+                "text": f"Current Stats — {gpu_name}<br>Utilization %",
+                "font": {"size": 11},
+            },
             gauge={
                 "axis": {"range": [0, 100]},
                 "bar": {"color": "#4CAF50"},

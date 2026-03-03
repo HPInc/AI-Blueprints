@@ -170,6 +170,13 @@ If you need Hugging Face access for gated models, add your token:
 - Add a secret named `HF_TOKEN` with your Hugging Face access token
 - You can create or find your token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 
+> ⚠️ **FLUX.1-dev is a gated model — license acceptance required before downloading.**  
+> Visit **[huggingface.co/black-forest-labs/FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev)**,
+> click **"Access repository"**, and accept the license agreement.
+> Then complete the Hugging Face auth step in `00-project-setup.ipynb` (Cell 8) before running the
+> Model Download cell (Cell 9).
+> Skipping this step causes only the FLUX download to fail — all other models (Zephyr, Llama 3.1, Whisper, XTTS v2) download without any license gate.
+
 ### Step 4: Configuration
 
 Each capability has its own config file. Review the relevant file if you need to change model paths:
