@@ -105,3 +105,79 @@ hr {
     border-color: #c2d9ef;
     margin: 20px 0;
 }
+
+/* ── Sidebar New Chat button — always blue ── */
+[data-testid="stSidebar"] [data-testid="stButton"][key="new_chat_btn"] > button,
+[data-testid="stSidebar"] .stButton > button {
+    background-color: #005AA7;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.15s;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background-color: #0072cc;
+}
+
+/* ── Sidebar conversation radio list — hide circles, style as plain rows ── */
+[data-testid="stSidebar"] [data-testid="stRadio"] > div {
+    gap: 0;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #1a2332;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background-color: #d9ecf9;
+}
+
+/* Hide the radio circle dot */
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"] > div:first-child {
+    display: none !important;
+}
+
+/* Highlight the selected row with a left accent bar and tinted background.
+   Use :has(input:checked) because Streamlit sets aria-checked on the <input>
+   inside the container, not on the [data-baseweb="radio"] wrapper div. */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+    background-color: #dbeeff;
+    color: #005AA7 !important;
+    font-weight: 600;
+    border-left: 3px solid #005AA7;
+    padding-left: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 90, 167, 0.12);
+}
+
+/* ── Chat messages ── */
+[data-testid="stChatMessage"] {
+    border-radius: 10px;
+    margin-bottom: 4px;
+}
+
+/* ── Chat input box ── */
+[data-testid="stChatInputContainer"] {
+    background-color: #ffffff !important;
+    border: 2px solid #1a2332 !important;
+    border-radius: 12px;
+}
+
+[data-testid="stChatInput"] textarea {
+    border-radius: 8px;
+    border: none !important;
+    background-color: transparent !important;
+}
