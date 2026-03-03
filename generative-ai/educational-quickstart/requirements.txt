@@ -14,6 +14,7 @@ torch==2.9.1+cu128
 torchvision==0.24.1+cu128
 torchaudio==2.9.1+cu128
 nvidia-cusparselt-cu12==0.7.1
+numpy<2.3              # numba (CoquiTTS dep) requires NumPy ≤ 2.2; cap prevents breakage on Ubuntu
 
 # ─── Interface & Deployment ───
 huggingface_hub==0.36.2
