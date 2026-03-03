@@ -224,48 +224,25 @@ class ChatbotModel:
         )
         question = inp.question or "Hello!"
 
-        # Parse conversation history for multi-turn memory
-        try:
-            prior_messages = json.loads(inp.history or "[]")
-            if not isinstance(prior_messages, list):
-                prior_messages = []
-        except (json.JSONDecodeError, ValueError):
-            prior_messages = []
-
-        logger.info(
-            f"Chatbot: processing question ({len(question)} chars) "
-            f"with {len(prior_messages)} prior messages"
-        )
+        logger.info(f"Chatbot: processing question ({len(question)} chars)")
         from langchain_core.prompts import PromptTemplate
         from langchain_core.output_parsers import StrOutputParser
 
-        # Build the Zephyr 7B Beta chat template with full conversation history.
-        # Format:
-        #   <|system|>{system_prompt}</s>
-        #   <|user|>{msg}</s>
-        #   <|assistant|>{reply}</s>
-        #   ... (repeated for history turns)
-        #   <|user|>{current question}</s>
-        #   <|assistant|>           ← model generates from here
-        prompt_parts = [f"<|system|>\n{system_prompt}</s>\n"]
-        for msg in prior_messages:
-            role = msg.get("role", "")
-            content = msg.get("content", "")
-            if role == "user":
-                prompt_parts.append(f"<|user|>\n{content}</s>\n")
-            elif role == "assistant":
-                prompt_parts.append(f"<|assistant|>\n{content}</s>\n")
-        prompt_parts.append(f"<|user|>\n{question}</s>\n<|assistant|>\n")
-        full_prompt = "".join(prompt_parts)
-
-        answer = self.llm.invoke(full_prompt)
+        # Zephyr 7B Beta chat template piped through StrOutputParser for safe string extraction
+        zephyr_template = (
+            "<|system|>\n{system_prompt}</s>\n"
+            "<|user|>\n{question}</s>\n"
+            "<|assistant|>\n"
+        )
+        prompt_template = PromptTemplate.from_template(zephyr_template)
+        chain = prompt_template | self.llm | StrOutputParser()
+        answer = chain.invoke({"system_prompt": system_prompt, "question": question})
 
         # Strip any trailing </s> that some Zephyr variants append to the response
         answer = answer.strip().rstrip("</s>").strip()
 
-        # Build the updated messages list (history + new turn)
         messages = [
-            *prior_messages,
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
             {"role": "assistant", "content": answer},
         ]

@@ -19,8 +19,54 @@ body,
 [data-testid="stAppViewContainer"],
 section[data-testid="stMain"],
 [data-testid="stMainBlockContainer"],
+[data-testid="stMarkdownContainer"],
 [data-testid="stHeader"] {
     background: transparent !important;
+}
+
+/* ── Three-panel layout: fixed header / scrollable conversation / fixed input ── */
+
+/* Outermost shell — clip everything to the viewport */
+[data-testid="stAppViewContainer"] {
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
+/* stMain becomes a flex column so stBottom (chat input) sits as a natural sibling */
+section[data-testid="stMain"] {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+}
+
+/* stMainBlockContainer is the SCROLL zone — fills remaining space between header and input */
+[data-testid="stMainBlockContainer"] {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Restore horizontal padding for the conversation content only */
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Chat input (stBottom) — flex sibling that stays pinned at the bottom */
+[data-testid="stBottom"] {
+    flex: 0 0 auto !important;
+}
+
+/* Hide Streamlit's own top toolbar bar gap */
+[data-testid="stHeader"] {
+    height: 0 !important;
+    min-height: 0 !important;
 }
 
 @keyframes gradientBG {
@@ -37,12 +83,33 @@ section[data-testid="stMain"],
     }
 }
 
+/* ── Fixed top header wrapper — sticky within the scroll container ── */
+.fixed-header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: linear-gradient(135deg, #e0f2ff 0%, #c8d8ff 100%);
+    padding-bottom: 10px;
+    margin-bottom: 0;
+    /* bleed to full width, cancelling the 1rem padding restored on stVerticalBlock */
+    margin-left: -1rem;
+    margin-right: -1rem;
+    box-shadow: 0 3px 14px rgba(0, 90, 167, 0.13);
+}
+
+.chat-area-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a2332;
+    padding: 8px 32px 2px 32px;
+}
+
 /* ── Gradient header banner ── */
 .gradient-header {
     background: linear-gradient(90deg, #005AA7, #c8e8f8);
     padding: 24px 32px;
     border-radius: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     text-align: center;
     box-shadow: 0 4px 16px rgba(0, 90, 167, 0.18);
 }
@@ -106,18 +173,85 @@ hr {
     margin: 20px 0;
 }
 
-/* ── Sidebar New Chat button — always blue ── */
-[data-testid="stSidebar"] [data-testid="stButton"][key="new_chat_btn"] > button,
+/* ──────────────────────── Prompt History Panel ──────────────────────── */
+.prompt-history-panel {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid #c2d9ef;
+    border-radius: 10px;
+    padding: 12px 10px;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.ph-entry {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid #c2d9ef;
+}
+
+.ph-system {
+    background: #f3f0ff;
+    border-left-color: #7c3aed;
+}
+
+.ph-user {
+    background: #eff8ff;
+    border-left-color: #005AA7;
+}
+
+.ph-assistant {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+}
+
+.ph-role {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+
+.ph-system .ph-role  { background: #7c3aed; }
+.ph-user .ph-role    { background: #005AA7; }
+.ph-assistant .ph-role { background: #16a34a; }
+
+.ph-content {
+    color: #1a2332;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ph-empty {
+    color: #9ca3af;
+    font-style: italic;
+    text-align: center;
+    margin-top: 16px;
+}
+
+/* ── Sidebar buttons — base reset ── */
 [data-testid="stSidebar"] .stButton > button {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+/* Primary buttons (New Chat, delete confirm) — blue */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     background-color: #005AA7;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
     font-weight: 600;
-    transition: background-color 0.15s;
 }
 
-[data-testid="stSidebar"] .stButton > button:hover {
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
     background-color: #0072cc;
 }
 
@@ -150,9 +284,7 @@ hr {
     display: none !important;
 }
 
-/* Highlight the selected row with a left accent bar and tinted background.
-   Use :has(input:checked) because Streamlit sets aria-checked on the <input>
-   inside the container, not on the [data-baseweb="radio"] wrapper div. */
+/* Highlight the selected row */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
     background-color: #dbeeff;
     color: #005AA7 !important;
@@ -161,6 +293,19 @@ hr {
     padding-left: 5px;
     border-radius: 4px;
     box-shadow: 0 1px 4px rgba(0, 90, 167, 0.12);
+}
+
+/* ── Clear All History button — red destructive style ── */
+.clear-all-marker + div .stButton > button {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fca5a5 !important;
+    font-weight: 600;
+}
+
+.clear-all-marker + div .stButton > button:hover {
+    background-color: #fecaca !important;
+    border-color: #f87171 !important;
 }
 
 /* ── Chat messages ── */
