@@ -13,7 +13,7 @@ image_model_path: ""
 
 # model_path is unused by ImageGenModel (no LLM needed for image generation)
 # but kept for structural consistency across all config files.
-model_path: "/home/jovyan/local/flux1-dev"
+model_path: "~/local/flux1-dev"
 
 # Context window — not used by ImageGenModel, kept for structural consistency
 context_window: 8192

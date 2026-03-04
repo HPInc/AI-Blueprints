@@ -265,6 +265,15 @@ def get_model_path(model_name: str) -> str:
     return model_path
 
 
+def _expand_config_paths(obj):
+    """Recursively expand ~ and $ENV_VAR in string values so YAML paths are OS-agnostic."""
+    if isinstance(obj, dict):
+        return {k: _expand_config_paths(v) for k, v in obj.items()}
+    if isinstance(obj, str):
+        return os.path.expandvars(os.path.expanduser(obj))
+    return obj
+
+
 def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
     """
     Load configuration settings from a YAML file.
@@ -296,6 +305,8 @@ def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
                 # yaml.safe_load parses YAML without executing arbitrary code (secure)
                 config = yaml.safe_load(f)
             logger.info(f"✅ Configuration loaded from: {config_path}")
+            if config is not None:
+                config = _expand_config_paths(config)
             return config if config is not None else {}
         except yaml.YAMLError as e:
             logger.error(f"❌ Failed to parse YAML config at {config_path}: {e}")
