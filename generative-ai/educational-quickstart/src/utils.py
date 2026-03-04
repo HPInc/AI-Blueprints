@@ -5,6 +5,7 @@ import os  # Interacting with the operating system (file paths, environment vari
 import subprocess  # Running external commands like pip install
 import sys  # System-level utilities (Python version, path management)
 import time  # Measuring how long things take
+from pathlib import Path
 from functools import (
     wraps,
 )  # Helper for writing decorators (functions that wrap other functions)
@@ -272,6 +273,95 @@ def _expand_config_paths(obj):
     if isinstance(obj, str):
         return os.path.expandvars(os.path.expanduser(obj))
     return obj
+
+
+# ── Download utilities ────────────────────────────────────────────────────────
+
+# Completion marker written inside each model directory after a fully successful
+# download.  The same "done-marker" pattern is used by npm, conda, and pip to
+# distinguish a clean install from an interrupted one.
+DOWNLOAD_DONE_MARKER = ".download_complete"
+
+
+def ensure_downloaded(
+    label: str,
+    dest_dir,
+    download_fn,
+    verify_path,
+) -> tuple:
+    """
+    Robust, resumable model download built on top of HF Hub's built-in idempotency.
+
+    Strategy
+    --------
+    1. If ``dest_dir / DOWNLOAD_DONE_MARKER`` exists the download previously completed
+       successfully — skip immediately (fast path, no network I/O).
+    2. Otherwise call ``download_fn()``.  HF Hub internally checks each blob
+       against its cached etag, so only missing or corrupted files are
+       re-fetched.  This makes interrupted downloads automatically resumable
+       at zero extra bandwidth cost.
+    3. After ``download_fn`` returns, verify that ``verify_path`` exists.  This
+       final sanity check ensures the key weight file is present — not just
+       small metadata files that arrive early in a snapshot.
+    4. Write the completion marker only when the verify check passes.
+
+    Args:
+        label:       Human-readable description printed to the notebook output.
+        dest_dir:    Directory where the model files land (marker is written here).
+                     Accepts ``str`` or ``pathlib.Path``.
+        download_fn: Zero-argument callable that runs the HF Hub download.
+        verify_path: File that must exist after a successful download (e.g. the
+                     largest weight file, not a tiny config).
+                     Accepts ``str`` or ``pathlib.Path``.
+
+    Returns:
+        ``(label, success: bool, dest_dir_str: str)``
+    """
+    dest_dir = Path(dest_dir)
+    verify_path = Path(verify_path)
+    marker = dest_dir / DOWNLOAD_DONE_MARKER
+
+    # ── Fast path: previous run completed cleanly ─────────────────────────────
+    if marker.exists():
+        size_gb = (
+            sum(f.stat().st_size for f in dest_dir.rglob("*") if f.is_file()) / 1e9
+        )
+        print(f"  ⏭️  {label} — already complete ({size_gb:.2f} GB)")
+        return label, True, str(dest_dir)
+
+    # ── Download (or resume) ──────────────────────────────────────────────────
+    # HF Hub skips blobs whose local copy matches the remote etag, so re-running
+    # after an interruption only fetches the missing remainder.
+    print(f"  ⬇️  {label} — downloading (will resume if previously interrupted) ...")
+    t0 = time.time()
+    try:
+        download_fn()
+    except Exception as e:
+        print(f"  ❌ {label} — download call failed: {e}")
+        return label, False, str(dest_dir)
+
+    elapsed = time.time() - t0
+
+    # ── Verify the key weight file is present ─────────────────────────────────
+    if not verify_path.exists():
+        print(
+            f"  ❌ {label} — download finished but '{verify_path.name}' is missing.\n"
+            f"       Expected at: {verify_path}\n"
+            f"       Re-run the download cell to resume."
+        )
+        return label, False, str(dest_dir)
+
+    # ── Write completion marker (atomic on POSIX; best-effort on Windows) ─────
+    try:
+        marker.write_text(
+            f"completed at {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
+        )
+    except OSError:
+        pass  # Non-fatal: only affects the fast-path on the next run
+
+    size_gb = sum(f.stat().st_size for f in dest_dir.rglob("*") if f.is_file()) / 1e9
+    print(f"  ✅ {label} — done in {elapsed:.0f}s ({size_gb:.2f} GB)")
+    return label, True, str(dest_dir)
 
 
 def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
