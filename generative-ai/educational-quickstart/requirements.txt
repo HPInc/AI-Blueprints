@@ -34,11 +34,11 @@ opencv-python-headless==4.13.0.92
 invisible-watermark==0.2.0
 
 # ─── Audio & Voice Processing ───
+numpy==2.2.0
 sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
 PyAudio==0.2.14
-numba>=0.64
 coqui-tts[codec] @ https://github.com/idiap/coqui-ai-TTS/archive/refs/tags/v0.27.5.zip
 
 # ─── Agentic AI & RAG ───
