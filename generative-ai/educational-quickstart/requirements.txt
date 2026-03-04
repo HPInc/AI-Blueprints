@@ -39,7 +39,7 @@ sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
 PyAudio==0.2.14
-coqui-tts[codec] @ https://github.com/idiap/coqui-ai-TTS/archive/refs/tags/v0.27.5.zip # direct archive avoids git clone --filter=blob:none 500 error; also bypasses the Python 3.12 version check
+coqui-tts[codec] @ git+https://github.com/idiap/coqui-ai-TTS
 
 # ─── Agentic AI & RAG ───
 langchain==1.0.0a12
