@@ -14,7 +14,6 @@ torch==2.9.1+cu128
 torchvision==0.24.1+cu128
 torchaudio==2.9.1+cu128
 nvidia-cusparselt-cu12==0.7.1
-numpy<2.3
 
 # ─── Interface & Deployment ───
 huggingface_hub==0.36.2
@@ -39,7 +38,8 @@ sounddevice==0.5.5
 librosa==0.11.0
 soundfile==0.13.1
 PyAudio==0.2.14
-coqui-tts[codec] @ git+https://github.com/idiap/coqui-ai-TTS
+numba>=0.64
+coqui-tts[codec] @ https://github.com/idiap/coqui-ai-TTS/archive/refs/tags/v0.27.5.zip
 
 # ─── Agentic AI & RAG ───
 langchain==1.0.0a12
