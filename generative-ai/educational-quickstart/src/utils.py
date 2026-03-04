@@ -282,12 +282,26 @@ def _expand_config_paths(obj):
 # distinguish a clean install from an interrupted one.
 DOWNLOAD_DONE_MARKER = ".download_complete"
 
+# Pre-initialise tqdm's class-level lock before any threads are spawned.
+# Without this, concurrent ThreadPoolExecutor threads race on the lazy
+# initialisation and crash with:
+#   "type object 'tqdm' has no attribute '_lock'"
+# tqdm.get_lock() is idempotent — safe to call multiple times.
+try:
+    from tqdm.auto import tqdm as _tqdm_cls
+
+    _tqdm_cls.get_lock()
+except Exception:
+    pass
+
 
 def ensure_downloaded(
     label: str,
     dest_dir,
     download_fn,
     verify_path,
+    *,
+    _max_attempts: int = 3,
 ) -> tuple:
     """
     Robust, resumable model download built on top of HF Hub's built-in idempotency.
@@ -296,23 +310,23 @@ def ensure_downloaded(
     --------
     1. If ``dest_dir / DOWNLOAD_DONE_MARKER`` exists the download previously completed
        successfully — skip immediately (fast path, no network I/O).
-    2. Otherwise call ``download_fn()``.  HF Hub internally checks each blob
-       against its cached etag, so only missing or corrupted files are
-       re-fetched.  This makes interrupted downloads automatically resumable
-       at zero extra bandwidth cost.
+    2. Otherwise call ``download_fn()`` with up to ``_max_attempts`` retries using
+       exponential back-off (2 s, 4 s).  HF Hub's etag/blob cache means each retry
+       only re-fetches missing bytes — no wasted bandwidth.
     3. After ``download_fn`` returns, verify that ``verify_path`` exists.  This
        final sanity check ensures the key weight file is present — not just
        small metadata files that arrive early in a snapshot.
     4. Write the completion marker only when the verify check passes.
 
     Args:
-        label:       Human-readable description printed to the notebook output.
-        dest_dir:    Directory where the model files land (marker is written here).
-                     Accepts ``str`` or ``pathlib.Path``.
-        download_fn: Zero-argument callable that runs the HF Hub download.
-        verify_path: File that must exist after a successful download (e.g. the
-                     largest weight file, not a tiny config).
-                     Accepts ``str`` or ``pathlib.Path``.
+        label:         Human-readable description printed to the notebook output.
+        dest_dir:      Directory where the model files land (marker is written here).
+                       Accepts ``str`` or ``pathlib.Path``.
+        download_fn:   Zero-argument callable that runs the HF Hub download.
+        verify_path:   File that must exist after a successful download (e.g. the
+                       largest weight file, not a tiny config).
+                       Accepts ``str`` or ``pathlib.Path``.
+        _max_attempts: Number of tries before giving up (default 3).
 
     Returns:
         ``(label, success: bool, dest_dir_str: str)``
@@ -329,15 +343,31 @@ def ensure_downloaded(
         print(f"  ⏭️  {label} — already complete ({size_gb:.2f} GB)")
         return label, True, str(dest_dir)
 
-    # ── Download (or resume) ──────────────────────────────────────────────────
-    # HF Hub skips blobs whose local copy matches the remote etag, so re-running
-    # after an interruption only fetches the missing remainder.
+    # ── Download (or resume) with retry ───────────────────────────────────────
+    # HF Hub skips blobs whose local copy matches the remote etag, so each retry
+    # only fetches missing remainder — no wasted bandwidth.
     print(f"  ⬇️  {label} — downloading (will resume if previously interrupted) ...")
     t0 = time.time()
-    try:
-        download_fn()
-    except Exception as e:
-        print(f"  ❌ {label} — download call failed: {e}")
+    last_err = None
+    for attempt in range(1, _max_attempts + 1):
+        try:
+            download_fn()
+            last_err = None
+            break
+        except Exception as e:
+            last_err = e
+            if attempt < _max_attempts:
+                wait = 2**attempt  # 2 s, 4 s
+                print(
+                    f"  ⚠️  {label} — attempt {attempt}/{_max_attempts} failed "
+                    f"({e}), retrying in {wait}s ..."
+                )
+                time.sleep(wait)
+
+    if last_err is not None:
+        print(
+            f"  ❌ {label} — download failed after {_max_attempts} attempts: {last_err}"
+        )
         return label, False, str(dest_dir)
 
     elapsed = time.time() - t0
