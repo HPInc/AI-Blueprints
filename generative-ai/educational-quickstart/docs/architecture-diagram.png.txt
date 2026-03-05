@@ -16,10 +16,10 @@ The architecture diagram should show the following flow:
   │                        │                               │
   │              ┌─────────┴─────────┐                    │
   │              │   src/ modules    │                     │
-  │              │  (model_manager,  │                     │
-  │              │   gpu_monitor,    │                     │
+  │              │  ( gpu_monitor    │
   │              │   mlflow/)        │                     │
-  │              └─────────┬─────────┘                    │
+  │              └─────────┬─────────┘                      │
+  │                        │                               │
   │                        │                               │
   │              ┌─────────┴─────────┐                    │
   │              │  /datafabric/     │                     │

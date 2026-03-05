@@ -114,7 +114,6 @@ educational-quickstart/
     ├── __init__.py
     ├── utils.py                             # Shared utilities (load_config, log_asset_status)
     ├── gpu_monitor.py                       # Plotly GPU monitoring
-    ├── model_manager.py                     # Model loading helpers
     └── mlflow/                              # MLflow 3-layer architecture
         ├── __init__.py                      # Lazy-loading: ChatbotModel, ImageGenModel, …
         ├── loader.py                        # Config-driven loader (_load_pyfunc)
