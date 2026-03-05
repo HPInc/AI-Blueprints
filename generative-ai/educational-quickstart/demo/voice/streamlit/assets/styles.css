@@ -93,6 +93,12 @@ section[data-testid="stMain"],
     object-fit: contain;
 }
 
+/* ── Tab width ── */
+.stTabs [data-baseweb="tab"] {
+    min-width: 160px;
+    justify-content: center;
+}
+
 /* ── Active tab ── */
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(135deg, #005AA7, #0096d6);

@@ -226,7 +226,7 @@ def render_result(result: dict) -> None:
         if response_audio_b64:
             st.markdown("### 🔊 Spoken Response (XTTS v2)")
             audio_bytes = base64.b64decode(response_audio_b64)
-            st.audio(audio_bytes, format="audio/wav", autoplay=True)
+            st.audio(audio_bytes, format="audio/wav")
         # ────────────────────────────────────────────────────────────────────
 
         st.divider()
@@ -248,7 +248,7 @@ if "voice_processing" not in st.session_state:
 # ───────────────────────────── Voice Input ─────────────────────────────────────
 st.markdown("### 🎤 Voice Input")
 
-tab_mic, tab_upload = st.tabs(["   🎙️ Record   ", "   📁 Upload   "])
+tab_mic, tab_upload = st.tabs(["🎙️ Record", "📁 Upload"])
 
 with tab_mic:
     st.markdown("Click **Record** to capture your question with the microphone.")
