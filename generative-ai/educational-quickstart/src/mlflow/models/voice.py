@@ -370,6 +370,7 @@ class VoiceModel:
         import base64
         import gc
         import torch
+        from src.mlflow.models._cleanup import cuda_cleanup
         from src.utils import get_response_from_llm
 
         # ── 1. Whisper transcription (AutoModelForSpeechSeq2Seq) ──────────────
@@ -444,9 +445,7 @@ class VoiceModel:
                 if processor is not None:
                     del processor
                     processor = None
-                gc.collect()
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+                cuda_cleanup("voice-whisper")
                 logger.info("✅ Whisper VRAM released")
         else:
             whisper_error = f"Whisper model directory not found: {self.stt_model_path}"
@@ -474,8 +473,16 @@ class VoiceModel:
         else:
             response = "❌ LLM not loaded. Check model_path in configs/voice.yaml."
 
+        # Release LLM inference intermediates before XTTS allocates its tensors.
+        # Whisper is already freed above; this frees the LangChain chain objects
+        # and flushes the CUDA allocator cache so XTTS finds contiguous VRAM.
+        cuda_cleanup("voice-llm")
+
         # ── 3. TTS synthesis ──────────────────────────────────────────────────
         response_audio = self._synthesize_speech(response)
+
+        # Release TTS synthesis tensors so the next request starts clean.
+        cuda_cleanup("voice-tts")
 
         messages = [
             {"role": "user", "content": f"[Voice] {transcription}"},

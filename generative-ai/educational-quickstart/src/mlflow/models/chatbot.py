@@ -144,12 +144,12 @@ class ChatbotModel:
         self.llm = LlamaCpp(
             model_path=self.model_path,
             n_gpu_layers=-1,  # Offload ALL layers to GPU
-            n_batch=512,  # Tokens processed per batch
+            n_batch=512,
             n_ctx=context_window,  # Total context window size
             max_tokens=max_tokens,  # Max tokens in the response
             f16_kv=True,  # Float16 KV-cache (saves VRAM)
             use_mmap=False,  # Disable memory-mapped file I/O
-            low_vram=False,  # Full VRAM mode (Blackwell default)
+            low_vram=False,
             temperature=0.7,  # Conversational temperature (0.7 = natural variation)
             repeat_penalty=1.1,  # Light repetition penalty for natural chat
             streaming=False,  # Return complete response
@@ -238,7 +238,14 @@ class ChatbotModel:
         )
         prompt_template = PromptTemplate.from_template(zephyr_template)
         chain = prompt_template | self.llm | StrOutputParser()
+
+        from src.mlflow.models._cleanup import cuda_cleanup, log_vram_pre_inference
+
+        log_vram_pre_inference("chatbot")
         answer = chain.invoke({"system_prompt": system_prompt, "question": question})
+        # Release intermediate tensors (LangChain chain objects, KV-cache scratch
+        # buffers in the CUDA allocator) before the next request can arrive.
+        cuda_cleanup("chatbot")
 
         # Strip any trailing </s> that some Zephyr variants append to the response
         answer = answer.strip().rstrip("</s>").strip()

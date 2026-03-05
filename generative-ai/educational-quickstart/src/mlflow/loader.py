@@ -231,8 +231,62 @@ def _preload_nvidia_libs() -> None:
     )
 
 
+def _configure_cuda_allocator() -> None:
+    """
+    Configure PyTorch's CUDA caching allocator for multi-model deployments.
+
+    Must be called before the first PyTorch CUDA allocation in this process so
+    that the allocator reads the settings at initialisation time.  Setting
+    PYTORCH_CUDA_ALLOC_CONF has no effect once the CUDA context is live.
+
+    No-op if PYTORCH_CUDA_ALLOC_CONF is already set externally (e.g. via a
+    container environment variable), so users can always override these defaults.
+
+    Settings applied
+    ----------------
+    expandable_segments:True
+        Uses CUDA virtual-memory segments that grow and shrink on demand instead
+        of fixed-size block pools.  Eliminates the fragmentation pattern where
+        FLUX.1-dev cannot assemble a large contiguous latent buffer even though
+        enough total VRAM is free, because that free memory is split across many
+        small non-contiguous cached blocks left by prior LLM inferences.
+
+    max_split_size_mb:256
+        Prevents the allocator from splitting cached blocks larger than 256 MB
+        into smaller pieces.  Preserves the large contiguous regions needed by
+        FLUX denoising steps (1024×1024 latents ≈ 4-6 GB of intermediate tensors).
+
+    garbage_collection_threshold:0.6
+        Proactively frees cached blocks once 60 % of allocator capacity is in
+        use, instead of waiting for an OOM.  Reduces fragmentation growth across
+        successive inferences from multiple co-resident model servers.
+
+    Note: these settings affect only PyTorch-managed CUDA allocations.
+    llama.cpp uses its own GGML CUDA allocator and is not governed by this env var.
+    LlamaCpp VRAM is instead controlled via ``n_batch`` and ``low_vram`` tuning
+    in each model's YAML config (see ``multi_model`` flag).
+    """
+    if os.environ.get("PYTORCH_CUDA_ALLOC_CONF"):
+        logger.info(
+            "ℹ️ PYTORCH_CUDA_ALLOC_CONF already set externally: %s",
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"],
+        )
+        return
+
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+        "expandable_segments:True,"
+        "max_split_size_mb:256,"
+        "garbage_collection_threshold:0.6"
+    )
+    logger.info(
+        "🔧 PYTORCH_CUDA_ALLOC_CONF → %s",
+        os.environ["PYTORCH_CUDA_ALLOC_CONF"],
+    )
+
+
 _write_nvblas_config()  # Must run first — sets NVBLAS_CONFIG_FILE before cublas loads
 _preload_nvidia_libs()  # libcublas.so loads libnvblas.so transitively; conf must exist first
+_configure_cuda_allocator()  # Set PyTorch allocator config before any CUDA allocation
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -369,6 +369,23 @@ class ImageGenModel:
                 f" {inp.width}x{inp.height} seed={inp.seed}"
             )
 
+            from src.mlflow.models._cleanup import cuda_cleanup, log_vram_pre_inference
+
+            log_vram_pre_inference("image_gen")
+            # Pre-generation VRAM check: if the allocator cache is holding freed
+            # blocks from other co-resident model servers and the available
+            # contiguous region may be too small for FLUX latent tensors
+            # (~4-6 GB for 1024×1024 × 28 denoising steps), flush the cache
+            # proactively rather than letting the allocator silently fall back
+            # to a fragmented allocation that corrupts diffusion state.
+            _free_b, _ = torch.cuda.mem_get_info()
+            if _free_b < 6 * 1024**3:  # < 6 GB free
+                logger.warning(
+                    "⚠️ Low VRAM before generation (%.1f GB free) — flushing allocator cache",
+                    _free_b / 1024**3,
+                )
+                cuda_cleanup("image_gen-preflight")
+
             image = self._pipeline(
                 prompt=prompt,
                 num_inference_steps=inp.num_inference_steps,
@@ -403,14 +420,11 @@ class ImageGenModel:
             image.save(buffer, format="PNG")
             img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-            # Free activation memory (intermediate tensors from the diffusion steps).
-            # The pipeline itself stays cached for subsequent calls, but releasing
-            # unreferenced CUDA tensors here prevents VRAM from creeping up across
-            # multiple generations in the same session.
-            import gc
-
-            torch.cuda.empty_cache()
-            gc.collect()
+            # Release intermediate activation tensors from the denoising loop.
+            # The pipeline (weights) stays cached in VRAM for subsequent calls;
+            # only post-inference garbage is freed to make room for other
+            # co-resident model servers needing VRAM between requests.
+            cuda_cleanup("image_gen")
 
             logger.info("✅ Image generated successfully")
             return {

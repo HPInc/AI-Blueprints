@@ -185,6 +185,7 @@ class DocumentModel:
 
     def _analyze(self, inp: DocumentInput) -> dict:
         """Run chunk-based RAG analysis for one DocumentInput."""
+        from src.mlflow.models._cleanup import cuda_cleanup, log_vram_pre_inference
         from src.utils import get_response_from_llm
 
         if not self.llm:
@@ -235,6 +236,8 @@ class DocumentModel:
 
         logger.info(f"Document: {len(chunks)} chunks | Question: '{question[:60]}...'")
 
+        log_vram_pre_inference("document")
+
         # ── Per-chunk Q&A ─────────────────────────────────────────────────────
         ANALYST_SYSTEM = "You are a precise document analyst."
         chunk_answers = []
@@ -279,6 +282,11 @@ class DocumentModel:
             {"role": "user", "content": question},
             {"role": "assistant", "content": final_answer},
         ]
+
+        # Release intermediate tensors accumulated across all chunk + synthesis LLM
+        # calls before the next incoming request can arrive on this server.
+        cuda_cleanup("document")
+
         return {
             "answer": final_answer,
             "messages": json.dumps(messages, indent=2),
