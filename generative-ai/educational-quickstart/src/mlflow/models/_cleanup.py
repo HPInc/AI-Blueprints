@@ -1,31 +1,12 @@
 """
 Shared post-inference VRAM cleanup utilities for EQ model classes.
 
-Why this module exists
-----------------------
-When four MLflow model servers (chatbot, document, image_gen, voice) run
-simultaneously on the same GPU, each server's PyTorch CUDA caching allocator
-retains freed memory blocks instead of returning them to the CUDA driver.
-Over successive inferences this causes:
-
-  1. **VRAM fragmentation** — PyTorch cannot assemble a large contiguous region
-     for FLUX.1-dev latent tensors (1024×1024 × 28 steps), so the allocator
-     attempts a fallback that silently corrupts diffusion state → irrelevant images.
-
-  2. **llama.cpp KV-cache starvation** — when the driver cannot satisfy a large
-     KV-cache allocation because PyTorch's cached blocks occupy the needed VRAM,
-     llama.cpp falls back to a truncated or partially-offloaded KV-cache.  The
-     attention mechanism degrades and the model outputs degenerate tokens
-     (the classic "!!!..." repetition pattern).
-
 This module provides two lightweight helpers that every Model class calls at the
 boundary of each inference request:
 
   ``cuda_cleanup(label)``           — flushes post-inference garbage
   ``log_vram_pre_inference(label)`` — debug-level VRAM snapshot before inference
 
-These are intentionally NOT ``release_model_vram()`` from ``src.utils``.
-That function destroys model weights entirely (used between notebook sections).
 These helpers only release *intermediate tensors* that accumulated during one
 inference pass; the model stays warm and resident in VRAM.
 
