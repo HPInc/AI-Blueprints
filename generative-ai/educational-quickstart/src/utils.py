@@ -746,6 +746,94 @@ def release_model_vram(*models, label: str = "model") -> None:
         print("✅ Done — CUDA not available, CPU memory released via GC")
 
 
+# WebM/Matroska EBML magic bytes — first 4 bytes of every WebM file.
+_WEBM_MAGIC = b"\x1a\x45\xdf\xa3"
+
+
+def remux_to_wav(audio_bytes: bytes) -> bytes:
+    """
+    Re-encode WebM/Opus audio bytes to WAV using ffmpeg.
+
+    On Ubuntu, JupyterLab and Streamlit's ``st.audio_input`` widget both capture
+    audio via the browser's HTML5 MediaRecorder API, which wraps recordings in a
+    WebM/Opus container.  Chromium and Firefox on Linux have a documented bug
+    where the muxer writes corrupt sample-start timestamps (negative values or
+    out-of-chronological-order timecodes) while keeping the stream duration
+    correct.  HTML5 audio players and ``IPython.display.Audio`` both rely on
+    strictly sequential timestamps, so playback silently fails or skips.
+
+    This function detects the WebM magic bytes at offset 0 and re-muxes the
+    stream through ffmpeg, which rewrites timestamps from the raw PCM samples
+    rather than trusting the container metadata.  The output is a standard
+    16 kHz mono PCM WAV — Whisper's native sample rate — so no further
+    resampling is needed downstream.
+
+    Non-WebM inputs (WAV, MP3, OGG, FLAC) pass through unchanged.
+
+    Args:
+        audio_bytes: Raw audio bytes as received from the browser or file upload.
+
+    Returns:
+        WAV bytes if remux succeeded; original bytes otherwise (with a logged
+        warning if ffmpeg is unavailable or returned a non-zero exit code).
+
+    Example::
+
+        from src.utils import remux_to_wav
+
+        with open("recording.webm", "rb") as f:
+            raw = f.read()
+
+        clean = remux_to_wav(raw)  # WAV bytes; no-op if already WAV/MP3/OGG
+        result = model.predict(pd.DataFrame([{
+            "question":     "",
+            "audio_base64": base64.b64encode(clean).decode("utf-8"),
+        }]))
+    """
+    if not audio_bytes or audio_bytes[:4] != _WEBM_MAGIC:
+        return audio_bytes
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        "pipe:0",
+        "-vn",  # strip any video stream
+        "-acodec",
+        "pcm_s16le",  # PCM 16-bit little-endian
+        "-ar",
+        "16000",  # 16 kHz — Whisper's native sample rate
+        "-ac",
+        "1",  # mono
+        "-f",
+        "wav",
+        "pipe:1",
+    ]
+    _log = logging.getLogger(__name__)
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=audio_bytes,
+            capture_output=True,
+            timeout=30,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            return proc.stdout
+        _log.warning(
+            "ffmpeg remux returned rc=%s: %s",
+            proc.returncode,
+            proc.stderr.decode("utf-8", errors="replace")[:300],
+        )
+    except FileNotFoundError:
+        _log.warning(
+            "ffmpeg not found — WebM audio returned unchanged. "
+            "Install with: sudo apt install ffmpeg"
+        )
+    except Exception as exc:
+        _log.warning("remux_to_wav failed: %s", exc)
+    return audio_bytes
+
+
 def pip_install(*args) -> Tuple[int, str]:
     """
     Run pip install with the current Python interpreter.

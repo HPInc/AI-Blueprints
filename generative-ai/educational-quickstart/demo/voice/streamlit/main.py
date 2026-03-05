@@ -20,10 +20,58 @@ Then launch this app:
 
 import base64
 import json
+import subprocess
 from pathlib import Path
 
 import requests
 import streamlit as st
+
+# WebM/Matroska EBML magic bytes — first 4 bytes of every WebM file.
+_WEBM_MAGIC = b"\x1a\x45\xdf\xa3"
+
+
+def remux_to_wav(audio_bytes: bytes) -> bytes:
+    """
+    Re-encode WebM/Opus bytes to WAV via ffmpeg.
+
+    On Ubuntu, ``st.audio_input`` records via the browser's MediaRecorder API,
+    which produces WebM/Opus with corrupt timestamps (a known Chromium/Firefox
+    bug on Linux).  This causes Whisper to receive a malformed container and
+    may produce garbled or empty transcriptions.
+
+    WebM is detected by its EBML magic bytes; all other formats pass through
+    unchanged.  If ffmpeg is unavailable the original bytes are returned with
+    a warning so the request still reaches Whisper rather than breaking silently.
+    """
+    if not audio_bytes or audio_bytes[:4] != _WEBM_MAGIC:
+        return audio_bytes
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        "pipe:0",
+        "-vn",
+        "-acodec",
+        "pcm_s16le",
+        "-ar",
+        "16000",
+        "-ac",
+        "1",
+        "-f",
+        "wav",
+        "pipe:1",
+    ]
+    try:
+        proc = subprocess.run(cmd, input=audio_bytes, capture_output=True, timeout=30)
+        if proc.returncode == 0 and proc.stdout:
+            return proc.stdout
+    except FileNotFoundError:
+        pass  # ffmpeg not installed — fall through
+    except Exception:
+        pass
+    return audio_bytes
+
 
 # ───────────────────────────── Page Configuration ─────────────────────────────
 st.set_page_config(
@@ -147,6 +195,10 @@ def process_audio(audio_bytes: bytes, source_label: str) -> None:
     if not audio_bytes:
         st.warning("No audio data received. Please try again.")
         return
+
+    # On Ubuntu, st.audio_input produces WebM/Opus with corrupt timestamps.
+    # Remux to WAV before encoding so Whisper receives a clean container.
+    audio_bytes = remux_to_wav(audio_bytes)
 
     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
     st.info(f"🎧 {source_label} ({len(audio_bytes) / 1024:.1f} KB)")
