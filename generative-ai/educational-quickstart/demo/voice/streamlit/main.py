@@ -196,7 +196,7 @@ if "voice_processing" not in st.session_state:
 # ───────────────────────────── Voice Input ─────────────────────────────────────
 st.markdown("### 🎤 Voice Input")
 
-tab_mic, tab_upload = st.tabs(["🎙️ Record", "📁 Upload"])
+tab_mic, tab_upload = st.tabs(["   🎙️ Record   ", "   📁 Upload   "])
 
 with tab_mic:
     st.markdown("Click **Record** to capture your question with the microphone.")
