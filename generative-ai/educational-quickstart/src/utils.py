@@ -277,10 +277,12 @@ def _expand_config_paths(obj):
 
 # ── Download utilities ────────────────────────────────────────────────────────
 
-# Completion marker written inside each model directory after a fully successful
-# download.  The same "done-marker" pattern is used by npm, conda, and pip to
-# distinguish a clean install from an interrupted one.
-DOWNLOAD_DONE_MARKER = ".download_complete"
+# Completion marker prefix written inside each model directory after a fully
+# successful download.  The full marker name is derived from the verify_path
+# filename (e.g. ".done_model_index.json") so that two tasks sharing the same
+# dest_dir — like the FLUX GGUF and the FLUX pipeline components both landing
+# in ``flux1-dev/`` — each get an independent marker and never skip each other.
+DOWNLOAD_DONE_MARKER_PREFIX = ".done_"
 
 # Pre-initialise tqdm's class-level lock before any threads are spawned.
 # Without this, concurrent ThreadPoolExecutor threads race on the lazy
@@ -308,8 +310,10 @@ def ensure_downloaded(
 
     Strategy
     --------
-    1. If ``dest_dir / DOWNLOAD_DONE_MARKER`` exists the download previously completed
-       successfully — skip immediately (fast path, no network I/O).
+    1. If ``dest_dir / ".done_<verify_filename>"`` exists the download previously
+       completed successfully — skip immediately (fast path, no network I/O).
+       The marker name is derived from ``verify_path`` so that two tasks sharing
+       the same ``dest_dir`` (e.g. FLUX GGUF + FLUX pipeline) stay independent.
     2. Otherwise call ``download_fn()`` with up to ``_max_attempts`` retries using
        exponential back-off (2 s, 4 s).  HF Hub's etag/blob cache means each retry
        only re-fetches missing bytes — no wasted bandwidth.
@@ -333,7 +337,10 @@ def ensure_downloaded(
     """
     dest_dir = Path(dest_dir)
     verify_path = Path(verify_path)
-    marker = dest_dir / DOWNLOAD_DONE_MARKER
+    # Marker is unique per verify_path so two tasks that share the same dest_dir
+    # (e.g. the FLUX GGUF and the FLUX pipeline both writing into flux1-dev/)
+    # will not treat each other's completion as their own.
+    marker = dest_dir / (DOWNLOAD_DONE_MARKER_PREFIX + verify_path.name)
 
     # ── Fast path: previous run completed cleanly ─────────────────────────────
     if marker.exists():
