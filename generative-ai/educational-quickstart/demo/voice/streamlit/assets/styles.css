@@ -1,0 +1,113 @@
+/* ──────────────────────────────────────────────────────────────────────────────
+   AI Learning Playground — Custom Streamlit Styles
+   Widget theming (colors, backgrounds) is handled by .streamlit/config.toml.
+   This file only adds the animated gradient and styles custom HTML elements.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ── Animated gradient background ──
+   config.toml sets backgroundColor = #e0f2ff as a solid light fallback.
+   These rules replace it with the animated gradient. */
+body,
+.stApp {
+    background: linear-gradient(135deg, #e0f2ff, #a1c4fd, #c8d8ff, #b8daff) !important;
+    background-attachment: fixed !important;
+    background-size: 400% 400% !important;
+    animation: gradientBG 20s ease infinite !important;
+}
+
+/* Streamlit's layout skeleton — transparent so gradient shows through */
+[data-testid="stAppViewContainer"],
+section[data-testid="stMain"],
+[data-testid="stMainBlockContainer"],
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ── Gradient header banner ── */
+.gradient-header {
+    background: linear-gradient(90deg, #005AA7, #c8e8f8);
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 90, 167, 0.18);
+}
+
+.gradient-header h2 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.03em;
+}
+
+.gradient-header p {
+    color: #e0f2ff;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+/* ── Result box ── */
+.result-box {
+    background-color: #f4f8fc;
+    border: 1px solid #c2d9ef;
+    border-left: 4px solid #005AA7;
+    border-radius: 8px;
+    padding: 20px 24px;
+    color: #1a2332;
+    font-size: 1rem;
+    line-height: 1.65;
+    margin: 12px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: 0 2px 8px rgba(0, 90, 167, 0.08);
+}
+
+/* ── Logo bar ── */
+.logo-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 16px 0;
+    margin-bottom: 8px;
+}
+
+.logo-bar img {
+    max-height: 52px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ── Tab width ── */
+.stTabs [data-baseweb="tab"] {
+    min-width: 160px;
+    justify-content: center;
+}
+
+/* ── Active tab ── */
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, #005AA7, #0096d6);
+    color: #ffffff;
+    border-radius: 6px;
+}
+
+/* ── Divider ── */
+hr {
+    border-color: #c2d9ef;
+    margin: 20px 0;
+}

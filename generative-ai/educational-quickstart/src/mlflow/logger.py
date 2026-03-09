@@ -1,0 +1,203 @@
+"""
+MLflow Registry Layer — Logger class.
+
+What is this file for?
+    The Logger class is responsible for packaging all the pieces of your AI project
+    (code, config, models, demo assets) and saving them to the MLflow Model Registry.
+
+    Once logged, you can:
+    - Version and compare different model configurations
+    - Load the model by name (e.g., `mlflow.pyfunc.load_model("models:/educational-quickstart/1")`)
+    - Serve the model as a REST API (`mlflow models serve ...`)
+    - Track experiments and compare runs in the MLflow UI
+
+    Learn more about the MLflow Model Registry:
+    https://mlflow.org/docs/latest/model-registry.html
+
+v2.0.0 Architecture Summary:
+    This is the third (outermost) layer. It has ONE job: packaging and logging.
+
+           loader.py          ← how MLflow reconstructs the model at serving time
+           model.py           ← inference logic (framework-agnostic)
+    >>>    logger.py          ← how to save the model + artifacts to MLflow (you are here)
+
+    No inference code lives here. No loading code lives in model.py.
+    Separation of concerns makes each file simple and testable.
+"""
+
+import logging
+import os
+import shutil
+import tempfile
+from pathlib import Path
+from typing import Dict, Optional
+
+import mlflow
+
+logger = logging.getLogger(__name__)
+
+
+class Logger:
+    """
+    Packages and logs the Educational Quickstart model to MLflow.
+
+    Usage (from register-model.ipynb):
+
+        with mlflow.start_run(run_name="educational-quickstart-v1"):
+            Logger.log_model(
+                signature=signature,
+                artifact_path="educational-quickstart",
+                config_path="../configs/config.yaml",
+                docs_path="../data/input",
+                secrets_dict={},
+                model_path="/home/jovyan/datafabric/meta-llama3.1-8b-Q8/...",
+                demo_folder="../demo/streamlit",
+            )
+            mlflow.register_model(...)
+    """
+
+    @classmethod
+    def log_model(
+        cls,
+        signature,
+        artifact_path: str,
+        config_path: str,
+        docs_path: Optional[str] = None,
+        secrets_dict: Optional[Dict] = None,
+        model_paths: Optional[Dict[str, str]] = None,
+        demo_folder: Optional[str] = None,
+    ) -> None:
+        """
+        Package all artifacts and call mlflow.pyfunc.log_model().
+
+        This method creates a temporary directory containing everything MLflow
+        needs to reconstruct and serve the model later:
+
+            temp_dir/
+            ├── config.yaml          ← copied from config_path
+            ├── secrets.yaml         ← generated from secrets_dict (if provided)
+            ├── data/                ← copied from docs_path (if provided)
+            ├── models/              ← one entry per key in model_paths
+            └── demo/                ← copied from demo_folder (if provided)
+
+        MLflow then reads this directory via loader.py when loading the model.
+
+        Args:
+            signature:    MLflow ModelSignature — defines input/output schema.
+                          Create with: mlflow.models.infer_signature(sample_input, sample_output)
+                          Learn more: https://mlflow.org/docs/latest/models.html#model-signature
+            artifact_path: The name under which this model is stored in MLflow runs.
+                           This appears as a folder in the MLflow artifacts UI.
+            config_path:   Path to configs/config.yaml to embed with the model.
+            docs_path:     Optional path to a directory of documents (document analyzer).
+            secrets_dict:  Optional dict of secrets to serialize as secrets.yaml.
+                           These are written to disk temporarily and never committed to git.
+            model_paths:   Optional dict mapping config key → filesystem path for every
+                           model file this capability needs.  All entries are copied into
+                           the artifact's models/ directory and resolved by loader.py at
+                           serve time using the same convention-based *_path lookup.
+
+                           Examples:
+                             {"model_path": "/path/to/llm.gguf"}
+                             {"model_path": "/path/llm.gguf",
+                              "stt_model_path": "/path/whisper.gguf",
+                              "tts_model_path": "/path/xtts.gguf"}
+            demo_folder:   Optional path to the Streamlit demo folder (for CSS/logos).
+        """
+        # Use a fixed directory name "model_artifacts" so the container's main.py
+        # can reliably find artifacts at .../artifacts/data/model_artifacts/config.yaml.
+        # A random tempfile name (e.g. /tmp/tmpXXXXXX) would cause MLflow to store
+        # the files under .../artifacts/data/tmpXXXXXX/ which the container cannot find.
+        tmp_dir = os.path.join(tempfile.gettempdir(), "model_artifacts")
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
+        os.makedirs(tmp_dir)
+        tmp_path = Path(tmp_dir)
+
+        try:
+            # ── 1. Copy config.yaml ──────────────────────────────────────────
+            config_dest = tmp_path / "config.yaml"
+            shutil.copy2(config_path, config_dest)
+            logger.info(f"✅ Copied config: {config_path} → {config_dest}")
+
+            # ── 2. Optionally write secrets.yaml ─────────────────────────────
+            if secrets_dict:
+                import yaml
+
+                secrets_dest = tmp_path / "secrets.yaml"
+                with open(secrets_dest, "w") as f:
+                    yaml.dump(secrets_dict, f, default_flow_style=False)
+                logger.info("✅ Wrote secrets.yaml (contents not logged for security)")
+
+            # ── 3. Optionally copy docs directory ────────────────────────────
+            if docs_path and Path(docs_path).exists():
+                docs_dest = tmp_path / "data"
+                shutil.copytree(docs_path, docs_dest)
+                logger.info(f"✅ Copied docs: {docs_path} → {docs_dest}")
+
+            # ── 4. Optionally copy demo assets ───────────────────────────────
+            if demo_folder and Path(demo_folder).exists():
+                demo_dest = tmp_path / "demo"
+                shutil.copytree(demo_folder, demo_dest)
+                logger.info(f"✅ Copied demo: {demo_folder} → {demo_dest}")
+
+            # ── 5. Copy model files → /artifacts/data/models/ ──────────────────────────
+            if model_paths:
+                models_temp_dir = os.path.join(tmp_path, "models")
+                os.makedirs(models_temp_dir, exist_ok=True)
+                copied_keys: list[str] = []
+                for config_key, path in model_paths.items():
+                    if not path or not os.path.exists(path):
+                        logger.info(f"{config_key}: not found at {path!r} — skipping")
+                        continue
+                    if os.path.isfile(path):
+                        shutil.copy2(
+                            path, os.path.join(models_temp_dir, os.path.basename(path))
+                        )
+                        logger.info(f"Copied {config_key}: {os.path.basename(path)}")
+                    else:
+                        # Copy directory as a named sub-directory of models/ so that
+                        # loader.py can resolve it via get_model_path() at serve time.
+                        # e.g. /home/jovyan/local/xtts-v2/ → models/xtts-v2/
+                        dest_dir = os.path.join(models_temp_dir, os.path.basename(path))
+                        shutil.copytree(path, dest_dir)
+                        logger.info(
+                            f"Copied {config_key} directory: {os.path.basename(path)}"
+                        )
+                    copied_keys.append(config_key)
+
+                # Stamp the copied keys into config.yaml so the Loader can resolve
+                if copied_keys:
+                    import yaml
+
+                    with open(config_dest) as f:
+                        cfg = yaml.safe_load(f) or {}
+                    cfg["_artifact_model_keys"] = copied_keys
+                    with open(config_dest, "w") as f:
+                        yaml.dump(cfg, f, default_flow_style=False)
+                    logger.info(f"✅ Stamped _artifact_model_keys: {copied_keys}")
+
+            # ── 6. Build pip requirements list ───────────────────────────────
+            pip_reqs = "../requirements.txt"  # Path relative to where mlflow is run
+
+            # ── 7. Log the model to MLflow ────────────────────────────────────
+            # This is the key call that actually saves everything.
+            # See: https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#mlflow.pyfunc.log_model
+            logger.info(f"📦 Logging model to MLflow artifact path: '{artifact_path}'")
+            mlflow.pyfunc.log_model(
+                name=artifact_path,  # Name in the MLflow UI
+                loader_module="src.mlflow.loader",  # Which module implements _load_pyfunc
+                data_path=str(tmp_path),  # The temp dir we built above
+                code_paths=["../src"],  # Python source code to bundle
+                signature=signature,  # Input/output schema
+                pip_requirements=pip_reqs,  # Dependencies
+                registered_model_name=None,  # Register separately (see notebook)
+            )
+            logger.info("✅ Model logged to MLflow successfully")
+        except Exception as e:
+            logger.error(f"❌ Error during model logging: {str(e)}")
+            raise
+        finally:
+            if os.path.exists(tmp_dir):
+                shutil.rmtree(tmp_dir)
+                logger.info("🧹 Cleaned up temporary directory")

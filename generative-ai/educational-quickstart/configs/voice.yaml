@@ -1,0 +1,52 @@
+# Voice Assistant Configuration
+# Registers as: AIStudio-EQ-Voice
+
+# Capability identifier — read by loader.py to select VoiceModel
+capability: "voice"
+
+# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q6_K_L)
+# Shared with the document analyzer — no extra download needed.
+# Download via project-setup.ipynb Cell 8.
+model_path: "~/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf"
+
+# Path to the Whisper Large V3 Turbo HuggingFace snapshot directory for speech-to-text.
+# Loaded via transformers.pipeline("automatic-speech-recognition").
+# Download via project-setup.ipynb Cell 9.
+stt_model_path: "~/local/whisper-large-v3-turbo"
+
+# Path to the XTTS v2 model directory for text-to-speech synthesis.
+# CoquiTTS uses its own native PyTorch format (.pth files), not GGUF.
+# Download via project-setup.ipynb Cell 9 (snapshot_download coqui/XTTS-v2).
+# At serve time the loader resolves this to <artifact_models>/xtts-v2/.
+tts_model_path: "~/local/xtts-v2"
+
+# Context window size (tokens). Transcribed audio is typically short,
+# so 8192 is more than sufficient for voice assistant responses.
+context_window: 8192
+
+# UI Configuration — AI Studio reads this to serve the right Streamlit frontend
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 600
+
+  # Number of health check retries
+  health_check_retries: 5

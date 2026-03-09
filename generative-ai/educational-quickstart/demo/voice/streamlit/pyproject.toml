@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "educational-quickstart-voice-webapp"
+version = "0.1.0"
+description = "Streamlit front-end for the AIStudio-EQ-Voice Blueprint"
+authors = ["HP AI Studio <ai-studio@hp.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+streamlit = ">=1.43.1,<2.0.0"
+pillow = ">=10.4.0,<12.0"
+urllib3 = ">=2.5.0"
+requests = ">=2.32.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
