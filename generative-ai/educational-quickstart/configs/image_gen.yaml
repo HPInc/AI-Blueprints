@@ -1,0 +1,46 @@
+# Image Generation Configuration
+# Registers as: AIStudio-EQ-ImageGen
+
+# Capability identifier — read by loader.py to select ImageGenModel
+capability: "image_gen"
+
+# Path to the FLUX.1-dev model directory.
+# Contains: GGUF transformer (flux1-dev-Q4_K_S.gguf) + pipeline components.
+# Download via project-setup.ipynb Cell 8, or:
+# huggingface-cli download city96/FLUX.1-dev-gguf flux1-dev-Q4_K_S.gguf
+# huggingface-cli download black-forest-labs/FLUX.1-dev --ignore-patterns "transformer/*"
+image_model_path: ""
+
+# model_path is unused by ImageGenModel (no LLM needed for image generation)
+# but kept for structural consistency across all config files.
+model_path: "~/local/flux1-dev"
+
+# Context window — not used by ImageGenModel, kept for structural consistency
+context_window: 8192
+
+# UI Configuration — AI Studio reads this to serve the right Streamlit frontend
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 600
+
+  # Number of health check retries
+  health_check_retries: 5

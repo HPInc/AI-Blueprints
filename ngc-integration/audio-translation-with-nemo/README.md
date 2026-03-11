@@ -63,7 +63,7 @@ All steps are GPU-accelerated, and the full workflow is integrated with **MLflow
 Ensure your environment meets the minimum hardware requirements for smooth model inference:
 
 - RAM: 16 GB
-- VRAM: 8 GB
+- VRAM: 4 GB
 - GPU: NVIDIA GPU
 
 ### 1 ▪ Create an AI Studio Project

@@ -47,7 +47,7 @@ In this project, we provide notebooks to compare the execution time of dataset o
 Ensure your environment meets the minimum compute requirements for smooth dashboard rendering and cuDF performance:
 
 - **RAM**: 16 GB
-- **VRAM**: 4 GB
+- **VRAM**: 2 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1: Create an AI Studio Project

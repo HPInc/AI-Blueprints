@@ -1,0 +1,41 @@
+# Document Analyzer Configuration
+# Registers as: AIStudio-EQ-Document
+
+# Capability identifier — read by loader.py to select DocumentModel
+capability: "document"
+
+# Path to the local LLM file (Meta-Llama-3.1-8B quantized to Q6_K_L)
+# Download via project-setup.ipynb Cell 8, or:
+# huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf
+model_path: "~/local/meta-llama3.1-8b-Q6/Meta-Llama-3.1-8B-Instruct-Q6_K_L.gguf"
+
+# Context window size (tokens). 8192 supports documents up to ~6000 words per chunk.
+# Larger context windows allow bigger chunks and less synthesis overhead.
+context_window: 8192
+
+# UI Configuration — AI Studio reads this to serve the right Streamlit frontend
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+  mlflow_timeout: 600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 600
+
+  # Number of health check retries
+  health_check_retries: 5

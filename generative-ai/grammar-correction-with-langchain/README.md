@@ -63,7 +63,7 @@ This project demonstrates how to perform English grammar correction in GitHub Ma
 Ensure your environment meets the minimum compute requirements for smooth image classification performance:
 
 - **RAM**: 32 GB
-- **VRAM**: 12 GB
+- **VRAM**: 8 GB
 - **GPU**: NVIDIA GPU
 
 ### Step 1 ▪ Create an AI Studio Project

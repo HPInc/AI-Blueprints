@@ -86,7 +86,7 @@ ui:
 To ensure smooth execution, make sure your system meets the following minimum hardware specifications:
 
 - RAM: 32 GB
-- VRAM: 6 GB
+- VRAM: 8 GB
 - GPU: NVIDIA GPU
 
 ### Quickstart
