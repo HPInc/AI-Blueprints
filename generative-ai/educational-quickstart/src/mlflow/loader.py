@@ -272,12 +272,10 @@ def _configure_cuda_allocator() -> None:
             os.environ["PYTORCH_CUDA_ALLOC_CONF"],
         )
         return
-
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
-        "expandable_segments:True,"
-        "max_split_size_mb:256,"
-        "garbage_collection_threshold:0.6"
-    )
+    
+    from src.utils import configure_cuda_for_environment
+    configure_cuda_for_environment()
+  
     logger.info(
         "🔧 PYTORCH_CUDA_ALLOC_CONF → %s",
         os.environ["PYTORCH_CUDA_ALLOC_CONF"],
