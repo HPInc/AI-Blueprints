@@ -272,10 +272,11 @@ def _configure_cuda_allocator() -> None:
             os.environ["PYTORCH_CUDA_ALLOC_CONF"],
         )
         return
-    
+
     from src.utils import configure_cuda_for_environment
+
     configure_cuda_for_environment()
-  
+
     logger.info(
         "🔧 PYTORCH_CUDA_ALLOC_CONF → %s",
         os.environ["PYTORCH_CUDA_ALLOC_CONF"],

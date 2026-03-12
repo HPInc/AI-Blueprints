@@ -14,7 +14,9 @@ from typing import (
     Any,
     Tuple,
 )
-from unittest import result  # Type hints — help editors and readers understand what a function expects
+from unittest import (
+    result,
+)  # Type hints — help editors and readers understand what a function expects
 
 # ─────── Third-Party Package Imports ───────
 from IPython.display import (
@@ -911,19 +913,22 @@ def configure_cuda_for_environment() -> None:
     import ctypes
 
     _logger = logging.getLogger(__name__)
-    result: dict = {"wsl2": False, "alloc_conf": "", "driver_preloaded": False, "driver_path": None}
+    result: dict = {
+        "wsl2": False,
+        "alloc_conf": "",
+        "driver_preloaded": False,
+        "driver_path": None,
+    }
 
     wsl = is_wsl2()
     result["wsl2"] = wsl
-    
 
     # ── 1. PYTORCH_CUDA_ALLOC_CONF ────────────────────────────────────────────
     if not os.environ.get("PYTORCH_CUDA_ALLOC_CONF"):
         if wsl:
             os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
-                    "max_split_size_mb:256,"
-                    "garbage_collection_threshold:0.6"
-            )            
+                "max_split_size_mb:256," "garbage_collection_threshold:0.6"
+            )
         else:
             os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
                 "expandable_segments:True,"
@@ -948,7 +953,6 @@ def configure_cuda_for_environment() -> None:
             "(expandable_segments disabled: VMM not supported on WSL2)",
             result["alloc_conf"],
         )
-   
 
 
 def pip_install(*args) -> Tuple[int, str]:
