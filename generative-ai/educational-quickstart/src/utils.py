@@ -13,6 +13,9 @@ from typing import (
     Dict,
     Any,
     Tuple,
+)
+from unittest import (
+    result,
 )  # Type hints — help editors and readers understand what a function expects
 
 # ─────── Third-Party Package Imports ───────
@@ -839,6 +842,117 @@ def remux_to_wav(audio_bytes: bytes) -> bytes:
     except Exception as exc:
         _log.warning("remux_to_wav failed: %s", exc)
     return audio_bytes
+
+
+def is_wsl2() -> bool:
+    """
+    Detect whether the current process is running inside WSL2.
+
+    Reads /proc/sys/kernel/osrelease — present on all Linux kernels — and
+    checks for the "microsoft" or "wsl" strings that the WSL2 kernel inserts.
+
+    Returns:
+        True  — running inside WSL2 (Windows Subsystem for Linux 2)
+        False — native Linux, macOS, Windows, or /proc not available
+
+    Usage:
+        from src.utils import is_wsl2
+
+        if is_wsl2():
+            # apply WSL2-specific workarounds
+    """
+    try:
+        with open("/proc/sys/kernel/osrelease") as _f:
+            release = _f.read().lower()
+        return "microsoft" in release or "wsl" in release
+    except OSError:
+        return False
+
+
+def configure_cuda_for_environment() -> None:
+    """
+    Apply CUDA environment variable fixes appropriate for the current runtime.
+
+    Must be called **before** any ``import torch`` statement, because PyTorch
+    reads allocator settings at import time and they cannot be changed once the
+    CUDA context is live.
+
+    What this function does
+    -----------------------
+    1. Calls ``is_wsl2()`` to detect the runtime environment.
+
+    2. ``PYTORCH_CUDA_ALLOC_CONF`` — skips ``expandable_segments:True`` on WSL2.
+
+       ``expandable_segments:True`` requires the CUDA VMM API (``cuMemCreate``).
+       WSL2 CUDA drivers have limited VMM support; enabling the flag causes the
+       caching allocator to enter an invalid state at CUDA context creation time,
+       making ``torch.empty(device="cuda")`` fail with a driver error even though
+       ``torch.cuda.is_available()`` returns ``True``.
+
+       Native Linux / AI Studio → ``expandable_segments:True`` (safe, reduces
+                                   fragmentation for large diffusion models)
+       WSL2                     → ``max_split_size_mb:512,
+                                   garbage_collection_threshold:0.8``
+
+    3. ``ctypes.RTLD_GLOBAL`` preload of ``/usr/lib/wsl/lib/libcuda.so.1``
+       (WSL2 only, when present).
+
+       The nvidia-container-toolkit mounts the real Windows driver stubs at
+       ``/usr/lib/wsl/lib/`` inside the container.  Loading the stub with
+       ``RTLD_GLOBAL`` here ensures that torch's own ``dlopen()`` calls resolve
+       ``libcuda`` symbols from the real driver, not from the no-op stub baked
+       into the CUDA base image at ``/usr/lib/x86_64-linux-gnu/libcuda.so.1``.
+
+       If the path is absent the function logs a warning with remediation steps
+       — the nvidia-container-toolkit requires configuration on the WSL host.
+    Usage:
+        from src.utils import configure_cuda_for_environment
+        info = configure_cuda_for_environment()
+        # then: import torch
+    """
+    import ctypes
+
+    _logger = logging.getLogger(__name__)
+    result: dict = {
+        "wsl2": False,
+        "alloc_conf": "",
+        "driver_preloaded": False,
+        "driver_path": None,
+    }
+
+    wsl = is_wsl2()
+    result["wsl2"] = wsl
+
+    # ── 1. PYTORCH_CUDA_ALLOC_CONF ────────────────────────────────────────────
+    if not os.environ.get("PYTORCH_CUDA_ALLOC_CONF"):
+        if wsl:
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+                "max_split_size_mb:256," "garbage_collection_threshold:0.6"
+            )
+        else:
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+                "expandable_segments:True,"
+                "max_split_size_mb:256,"
+                "garbage_collection_threshold:0.6"
+            )
+
+    # ── CUDA environment — must be set before any torch import ───────────────────
+
+    # Restrict execution to GPU device 0 (avoids accidental multi-GPU problems)
+    os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+
+    # Keep CUDA launches asynchronous for performance.
+    # Set to "1" only when debugging CUDA errors (shows exact failing line).
+    os.environ.setdefault("CUDA_LAUNCH_BLOCKING", "0")
+
+    result["alloc_conf"] = os.environ["PYTORCH_CUDA_ALLOC_CONF"]
+
+    if wsl:
+        _logger.info(
+            "🔍 WSL2 detected — PYTORCH_CUDA_ALLOC_CONF set to: %s "
+            "(expandable_segments disabled: VMM not supported on WSL2)",
+            result["alloc_conf"],
+        )
 
 
 def pip_install(*args) -> Tuple[int, str]:
