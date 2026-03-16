@@ -1,0 +1,47 @@
+# Blueprint Configuration
+# This file configures the UI mode and ports for the model service
+
+# model_source can be one of the following: local, hugging-face-cloud, or hugging-face-local
+# When set to "local", the system will try to use datafabric models first
+model_source: "local"
+
+# Local model paths in datafabric (standard AI Studio pattern)
+# These paths will be checked first before attempting any downloads
+qwen_model_path: "/home/jovyan/datafabric/Qwen2.5-Omni-7B/"
+clap_model_path: "/home/jovyan/datafabric/clap-htsat-unfused/"
+
+# Default HuggingFace repositories (used as fallback if local models not found)
+clap_repo: "laion/clap-htsat-unfused"
+
+# Proxy is used to set the HTTPS_PROXY environment variable when necessary.
+# For example, if you need to access external services from a restricted network,
+# you should specify the proxy in this config.yaml file.
+# proxy: "http://web-proxy.austin.hp.com:8080"
+
+# UI Configuration
+ui:
+  # UI mode: gradio, streamlit, or static
+  mode: "streamlit"
+
+# Port Configuration
+ports:
+  # External port exposed by Envoy proxy
+  external: 5000
+
+  # Internal port mappings for different UI types
+  internal:
+    gradio: 7860
+    streamlit: 8501
+    static: 5001
+
+# Service Configuration
+service:
+  # MLflow model server timeout (seconds)
+
+  mlflow_timeout: 3600
+
+  # Health check timeout for service startup (seconds)
+  health_check_timeout: 3600
+
+  # Number of health check retries
+  health_check_retries: 5
