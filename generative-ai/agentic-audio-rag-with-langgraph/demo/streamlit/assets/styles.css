@@ -1,0 +1,45 @@
+/* Main background with a clean blue gradient */
+body {
+    background: linear-gradient(135deg, #e0f2ff, #a1c4fd, #70a1ff, #4a69bd);
+    background-attachment: fixed;
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+    color: #000000;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+}
+
+/* Animate the gradient background */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.main {
+    font-size: 16px;
+}
+.gradient-header {
+    background: linear-gradient(90deg, #005AA7, #FFFDE4);
+    color: black;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+.result-box {
+    background-color: #f4f4f4;
+    border-left: 5px solid #005AA7;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+}
+.logo-bar {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.logo-bar img {
+    max-height: 60px;
+}
