@@ -5,7 +5,7 @@ ipython==8.10.0
 protobuf>=4.25,<5
 pandas==1.5.3
 wandb>=0.16,<0.17
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.8.0rc0 #TODO: remove me when you finish
 optimum==1.14.0
 onnxruntime>=1.14.1
 huggingface_hub>=0.20.0
