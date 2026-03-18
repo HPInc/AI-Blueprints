@@ -5,7 +5,7 @@ numpy>=1.21,<1.24
 pandas==1.5.3
 setuptools>=65.6
 protobuf>=4.25.8,<5
-mlflow==3.1.0
+mlflow==3.8.0rc0
 optimum==1.14.0
 onnxruntime>=1.14.1
 huggingface_hub>=0.20.0
