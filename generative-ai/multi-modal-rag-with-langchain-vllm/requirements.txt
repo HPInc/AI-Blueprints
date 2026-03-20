@@ -7,7 +7,7 @@ torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
 chromadb==1.0.15
 langchain==0.3.26
 langchain_community==0.3.26
-langchain_core==0.3.66
+langchain_core==1.2.11
 langchain_huggingface==0.3.0
 hf-xet==1.1.4
 opencv-python-headless==4.11.0.86
@@ -24,4 +24,4 @@ rank-bm25==0.2.2
 qwen-vl-utils==0.0.11
 vllm==0.9.2
 flashinfer-python==0.4.0
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.9.0rc0 #TODO: remove me when you finish
