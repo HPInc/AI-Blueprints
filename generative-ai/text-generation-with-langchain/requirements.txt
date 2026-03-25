@@ -7,7 +7,7 @@ listparser==0.20
 chromadb>=0.4.0
 PyYAML>=6.0
 requests>=2.25.0
-mlflow==3.1.0
+mlflow==3.9.0rc0
 
 langchain==0.3.27
 langchain-core==0.3.76

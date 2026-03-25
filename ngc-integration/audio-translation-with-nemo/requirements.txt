@@ -1,5 +1,5 @@
 # Create the workspace using the RAPIDS Notebooks image within Z by HP AI Studio.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
-mlflow==3.5.1
+mlflow==3.9.0rc0
 onnxruntime==1.24.4
 huggingface_hub==0.34.4

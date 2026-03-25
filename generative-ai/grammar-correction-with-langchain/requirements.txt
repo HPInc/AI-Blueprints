@@ -14,7 +14,7 @@ transformers==4.53.0
 
 # Added to fix version mismatches
 scikit-learn==1.6.1
-mlflow==3.1.0
+mlflow==3.9.0rc0
 
 # Pinned to resolve dependency conflicts from logs
 numpy~=1.26.4
