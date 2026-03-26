@@ -1,1 +1,1 @@
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.9.0rc0 #TODO: remove me when you finish
