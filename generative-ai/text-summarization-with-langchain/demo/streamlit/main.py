@@ -81,12 +81,10 @@ def extract_text_from_file(uploaded_file) -> str:
 
 st.title("📄✨ Text Summarization with AI Studio")
 
-st.markdown(
-    """
+st.markdown("""
 Upload a **document** (TXT, PDF, DOCX) or paste text directly to generate an AI-powered summary.
 Adjust the parameters in the sidebar, then press **Summarize**.
-"""
-)
+""")
 
 # Initialize session state
 if "extracted_text" not in st.session_state:
