@@ -5,7 +5,6 @@ import base64
 import json
 from pathlib import Path
 
-
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
 # --- Streamlit Page Configuration ---
@@ -218,15 +217,13 @@ if st.button("🔍 Get Answer"):
             except requests.exceptions.RequestException as e:
                 st.error("❌ Error connecting to the MLflow endpoint.")
                 st.error(f"Details: {str(e)}")
-                st.info(
-                    """
+                st.info("""
                 **Troubleshooting Tips:**
                 - Ensure the MLflow model is deployed and running
                 - Check that the endpoint URL is correct
                 - Verify the model is registered in MLflow
                 - Make sure the service is accessible on port 5002
-                """
-                )
+                """)
             except Exception as e:
                 st.error(f"❌ An unexpected error occurred: {str(e)}")
 
