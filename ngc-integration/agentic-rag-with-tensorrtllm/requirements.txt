@@ -3,7 +3,7 @@
 
 langchain==0.3.25
 langchain_community==0.3.24
-langchain_core==0.3.60
+langchain_core==1.2.22
 langchain_huggingface==0.2.0
 promptquality==1.11.1
 PyYAML==6.0.2
