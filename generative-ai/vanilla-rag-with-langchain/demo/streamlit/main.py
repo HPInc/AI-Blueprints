@@ -19,12 +19,10 @@ st.markdown(
 # ─── Sidebar with Instructions ────────────────────────────────────────────────
 with st.sidebar:
     st.header("📝 Instructions")
-    st.markdown(
-        """
+    st.markdown("""
     1. (Optional) Upload a PDF to enrich the knowledge base.
     2. Type your query and an optional prompt, then Submit.
-    """
-    )
+    """)
 
 # ─── Session State ────────────────────────────────────────────────────────────
 if "history" not in st.session_state:

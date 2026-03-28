@@ -58,15 +58,13 @@ st.markdown(
 # ─── Sidebar Instructions ────────────────────────────────────────────────────
 with st.sidebar:
     st.header("How to Use")
-    st.markdown(
-        """
+    st.markdown("""
     1. The model endpoint is automatically configured for deployment.
 
     2. Type or paste the type of vacation you would like to be recommended.
 
     3. Click **Get Recommendations** to see the result.
-    """
-    )
+    """)
 
 # ─── MLflow Endpoint Configuration ───────────────────────────────────────────
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
