@@ -7,6 +7,7 @@ Streamlit front-end for the **Paper-to-Script** MLflow service.
   short presentation script.
 • The back-end must expose the standard MLflow `/invocations` endpoint.
 """
+
 from __future__ import annotations
 
 import json

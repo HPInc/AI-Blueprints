@@ -159,14 +159,12 @@ for _cid in _stale:
 with st.sidebar:
     # ── Usage instructions ──
     st.title("⚙️ Usage")
-    st.markdown(
-        """
+    st.markdown("""
 **Instructions:**
 1. (Optional) Customize the system prompt below.
 2. Type your question and press **Enter**.
 3. The assistant will respond with an AI-generated answer.
-"""
-    )
+""")
 
     st.divider()
 

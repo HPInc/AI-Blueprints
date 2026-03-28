@@ -48,13 +48,11 @@ st.markdown(
 # ------------------------- SIDEBAR CONFIG -------------------------
 st.sidebar.title("⚙️ Usage")
 
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **Instructions:**
 1. Fill out the topic, question, repo url, and folder path.
 2. Click **Run Analysis** to receive an AI-generated answer from your analyzed repo.
-"""
-)
+""")
 
 endpoint_url = "http://localhost:5002/invocations"
 

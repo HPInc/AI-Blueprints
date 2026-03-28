@@ -37,8 +37,7 @@ def generate_meeting_audio(media_path: Path) -> None:
     SAMPLE_BASE.parent.mkdir(parents=True, exist_ok=True)
     MASTER_WAV = SAMPLE_BASE.with_suffix(".wav")
 
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         Hello everyone, and welcome to the Project Helios kickoff.
         I'm Alex, the product lead. Also joining: Ben from engineering, Carla from design, and Diego from data.
         Our goal is to ship a private beta by August fifth, focused on the voice search experience.
@@ -67,8 +66,7 @@ def generate_meeting_audio(media_path: Path) -> None:
         Our next review is on Monday at ten A M central.
 
         That’s the plan—ask me anything about this meeting.
-    """
-    ).strip()
+    """).strip()
 
     if not MASTER_WAV.exists():
         engine = pyttsx3.init()
