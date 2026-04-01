@@ -74,22 +74,22 @@ st.markdown(
 # ─── Sidebar Instructions ────────────────────────────────────────────────────
 with st.sidebar:
     st.header("How to Use")
-    st.markdown(
-        """
+    st.markdown("""
     1. The model endpoint is automatically configured for deployment.
 
     2. Type or paste the text to translate.
 
     3. Click **Translate** to see the result.
-    """
-    )
+    """)
 
 # ─── MLflow Endpoint Configuration ───────────────────────────────────────────
 MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 
 # ─── Text Input ───────────────────────────────────────────────────────────────
 text_to_translate = st.text_area(
-    "✏️ Enter text to translate", height=200, placeholder="Type your source text here..."
+    "✏️ Enter text to translate",
+    height=200,
+    placeholder="Type your source text here...",
 )
 
 # ─── Translate Button ─────────────────────────────────────────────────────────
