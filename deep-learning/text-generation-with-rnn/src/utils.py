@@ -22,7 +22,6 @@ from botocore import UNSIGNED  # Disable request signing
 from botocore.config import Config  # Botocore configuration
 from IPython.display import HTML, display  # Rich HTML display utilities (Jupyter)
 
-
 # Color and emoji mapping per level
 STYLE_MAP = {
     logging.DEBUG: {"bg": "#1e90ff", "fg": "white", "icon": "🔍"},
