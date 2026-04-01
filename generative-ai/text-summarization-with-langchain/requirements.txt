@@ -6,11 +6,11 @@ langchain-huggingface==0.2.0
 pyyaml
 pandas
 sentence-transformers
-langchain_core
+langchain_core==1.2.22
 langchain_huggingface
 tokenizers>=0.13.0
 httpx>=0.24.0
-mlflow==3.1.0
+mlflow==3.9.0rc0
 
 langchain==0.3.27
 langchain-core==0.3.76
