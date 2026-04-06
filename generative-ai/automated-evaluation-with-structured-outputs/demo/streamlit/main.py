@@ -55,12 +55,10 @@ except Exception as e:
 # ─────────────────────────────────────────────────────────────
 st.title("⚙️📊🦙 Automated Evaluation with Structured Outputs")
 
-st.markdown(
-    """
+st.markdown("""
 Upload a **CSV** (or paste table) containing at least the chosen
 *key column* and *text column*. Adjust the parameters in the sidebar, then press **Evaluate**.
-"""
-)
+""")
 
 uploaded = st.file_uploader("Upload CSV", type=["csv"])
 raw_text = st.text_area("…or paste CSV/TSV content here", height=150)

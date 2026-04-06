@@ -30,7 +30,6 @@ from src.utils import (
     get_model_cache_dir,
 )
 
-
 _CONFIG_FILENAMES = {
     "multi": "default_config_multi-gpu.yaml",
     "single": "default_config_one-gpu.yaml",

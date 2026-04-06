@@ -124,13 +124,11 @@ seed_value = st.sidebar.number_input(
 seed = int(seed_value) if use_fixed_seed else -1
 
 st.sidebar.divider()
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **Instructions:**
 1. Adjust parameters above.
 2. Type a prompt and click **Generate Image**.
-"""
-)
+""")
 
 endpoint_url = "http://localhost:5002/invocations"
 

@@ -24,7 +24,6 @@ from IPython.display import (
     display,
 )  # Rich HTML display utilities — lets us show styled text and images inside Jupyter notebooks
 
-
 # ─────── Log Level Styles ────────────────────────────────────────────────────
 # Each log level (DEBUG, INFO, WARNING, etc.) gets its own background color and emoji icon.
 # This makes notebook output much easier to read at a glance.

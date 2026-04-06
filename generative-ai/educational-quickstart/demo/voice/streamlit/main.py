@@ -109,15 +109,13 @@ st.markdown(
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
 st.sidebar.title("⚙️ Usage")
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **Instructions:**
 1. Record with your microphone or upload an audio file.
 2. Whisper transcribes the audio to text.
 3. The LLM generates a response.
 4. XTTS v2 speaks the response aloud.
-"""
-)
+""")
 
 endpoint_url = "http://localhost:5002/invocations"
 
