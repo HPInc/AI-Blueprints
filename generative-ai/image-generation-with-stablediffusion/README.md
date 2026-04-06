@@ -1,217 +1,240 @@
-# DreamBooth Inference with Stable Diffusion 2.1
+# 🎓 Educational Quickstart
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
-![Jupyter](https://img.shields.io/badge/Jupyter-supported-orange.svg?logo=jupyter)
-![Stable Diffusion](https://img.shields.io/badge/Stable%20Diffusion-2.1-blue.svg)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-used-ff6f00.svg?logo=tensorflow)
-![DreamBooth](https://img.shields.io/badge/DreamBooth-fine--tuning-lightgreen.svg)
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)
+![MLflow](https://img.shields.io/badge/MLflow-Model_Deployment-orange.svg?logo=mlflow)
+![Streamlit](https://img.shields.io/badge/Streamlit-Frontend_App-ff4b4b.svg?logo=streamlit)
+![PyTorch](https://img.shields.io/badge/PyTorch-GPU_Accelerated-red.svg?logo=pytorch)
+![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-F37626.svg?logo=jupyter)
 
 </div>
 
-### Content
+---
 
-- [🧠 Overview](#overview)
-- [🗂 Project Structure](#project-structure)
-- [⚙️ Setup](#setup)
-- [🚀 Usage](#usage)
-- [📞 Contact and Support](#contact-and-support)
+## 📚 Contents
 
-## Overview
+* [🧠 Overview](#-overview)
+* [🎯 Learning Objectives](#-learning-objectives)
+* [📖 Prerequisites & Background Reading](#-prerequisites--background-reading)
+* [📁 Project Structure](#-project-structure)
+* [⚙️ Setup](#️-setup)
+* [🚀 Usage](#-usage)
+* [📞 Contact & Support](#-contact--support)
 
-This notebook performs image generation inference using the Stable Diffusion architecture, with support for both standard and DreamBooth fine-tuned models. It loads configuration and secrets from YAML files, enables local or deployed inference execution, and calculates custom image quality metrics, such as entropy and complexity. The pipeline is modular, supports Hugging Face model loading, and integrates with advanced evaluation capabilities.
+---
 
-## Project Structure
+## 🧠 Overview
 
-```text
-├── configs
-│   └── config.yaml                                                     # Blueprint configuration (UI mode, ports, service settings)
-├── core
-│   ├── common/                                                         # Common utilities
-│   ├── custom_metrics/                                                 # Custom metrics implementations
-│   ├── deploy/                                                         # Deployment utilities
-│   ├── dreambooth_inference/                                           # DreamBooth inference modules
-│   ├── local_inference/                                                # Local inference implementations
-│   └── train/                                                          # Training modules
-├── data
-│   ├── inputs/                                                         # Input data directory
-│   └── outputs/                                                        # Generated images directory
-├── demo/
-│   ├── streamlit/                                                    # Streamlit UI for deployment
-│   │   ├── assets/                                                   # Logo assets
-│   │   ├── main.py                                                   # Streamlit application
-│   │   └── ...                                                       # Additional Streamlit files
-├── docs
-│   ├── Diagram dreambooth.png                                          # DreamBooth architecture diagram
-│   └── successful-swagger-ui-image-generation-result.pdf               # Swagger UI documentation
-│   └── streamlit-ui-image-generation.pdf                               # Streamlit UI documentation
-├── notebooks
-│   ├── register-model.ipynb                                            # Model registration notebook
-│   └── run-workflow.ipynb                                              # Main image generation notebook
-├── src
-│   ├── __init__.py
-│   └── utils.py                                                        # Utility functions for config loading
-├── README.md
-└── requirements.txt
+The **Educational Quickstart** is a pre-configured, multi-capability AI development environment designed for learning AI and machine learning concepts hands-on. No prior AI experience is required.
+
+It provides:
+
+* 🤖 **Chatbot Starter** — Conversational AI using LLMs with streaming, system prompt support, and conversation memory
+* 🎨 **Image Generation Starter** — Text-to-image generation using diffusion models with parameter controls
+* 📄 **Document Analyzer Starter** — PDF/Markdown upload and analysis with question-answering capability
+* 🎙️ **Voice Assistant Starter** — Speech-to-text input, command processing, and text-to-speech response
+* 📊 **Interactive GPU Monitoring** — Real-time Plotly dashboards for GPU utilization, memory, and performance tracking
+* 📦 **MLflow Deployment** — Full model packaging, registration, and REST API deployment pipeline
+* 🌐 **Streamlit UI** — Interactive web interface for deployed model inference
+
+This blueprint eliminates the 2–4 hour manual environment setup, enabling you to produce your first AI output within 20 minutes.
+
+---
+
+## 🎯 What You Will Build
+
+By working through this blueprint, you will:
+
+1. **Understand what Large Language Models (LLMs) are** and how text generation works at a high level
+2. **Run a real AI model on GPU hardware** and observe the effect of GPU acceleration on inference speed
+3. **Generate images from text prompts** using diffusion model pipelines
+4. **Build a document Q&A system** using Retrieval-Augmented Generation (RAG) concepts
+5. **Transcribe speech to text** with OpenAI Whisper and combine it with an LLM for a voice assistant
+6. **Package and deploy an AI model** using MLflow so it can be called as a REST API
+7. **Build an interactive web UI** using Streamlit to interact with your deployed model
+
+---
+
+## 📖 Prerequisites & Background Reading
+
+You don't need any of these resources before starting — the notebooks are self-contained. But if you want to go deeper on any topic, these free resources are excellent:
+
+| Topic | Resource |
+|-------|----------|
+| Python basics | [Python Official Tutorial](https://docs.python.org/3/tutorial/) |
+| Intro to AI/ML | [Google Machine Learning Crash Course](https://developers.google.com/machine-learning/crash-course) |
+| Understanding LLMs | [Hugging Face NLP Course](https://huggingface.co/learn/nlp-course/chapter1/1) |
+| Diffusion models | [Hugging Face Diffusion Models Course](https://huggingface.co/learn/diffusion-models-course/unit1/introduction) |
+| Whisper (speech AI) | [OpenAI Whisper on GitHub](https://github.com/openai/whisper) |
+| PyTorch (GPU framework) | [PyTorch Tutorials](https://pytorch.org/tutorials/) |
+| MLflow (model tracking) | [MLflow Quickstart](https://mlflow.org/docs/latest/getting-started/intro-quickstart/index.html) |
+| Streamlit (web apps) | [Streamlit Documentation](https://docs.streamlit.io/) |
+| CUDA (GPU programming) | [NVIDIA CUDA Overview](https://developer.nvidia.com/cuda-toolkit) |
+
+---
+
+## 📁 Project Structure
+
+```bash
+educational-quickstart/
+├── configs/                                 # Per-capability configuration files
+│   ├── chatbot.yaml                         # capability: chatbot — LLM conversational AI
+│   ├── document.yaml                        # capability: document — RAG document Q&A
+│   ├── image_gen.yaml                       # capability: image_gen — SDXL-Turbo
+│   └── voice.yaml                           # capability: voice — Whisper + LLM
+├── data/                                    # Sample input data
+│   └── input/
+│       ├── sample_feedback.txt              # Sample text for document analyzer
+│       └── sample_prompts.txt               # Sample prompts for chatbot/image gen
+├── demo/                                    # Per-capability Streamlit UIs
+│   ├── chatbot/                             # Conversational Q&A frontend
+│   │   ├── assets/styles.css
+│   │   ├── static/                          # HP, Z, AIS logos
+│   │   ├── main.py
+│   │   ├── pyproject.toml
+│   │   └── README.md
+│   ├── document/                            # Document analyzer frontend
+│   │   └── ...                             # same structure as chatbot/
+│   ├── image_gen/                           # Image generation frontend
+│   │   └── ...
+│   └── voice/                              # Voice assistant frontend
+│       └── ...
+├── docs/                                    # Screenshots and architecture diagrams
+│   ├── streamlit-ss.png
+│   └── architecture-diagram.png
+├── notebooks/                               # One-click starter notebooks
+│   ├── chatbot-starter.ipynb                # Conversational AI: setup → demo → register
+│   ├── image-gen-starter.ipynb              # Image generation: setup → demo → register
+│   ├── document-analyzer-starter.ipynb      # Document analysis: setup → demo → register
+│   └── voice-assistant-starter.ipynb        # Voice assistant: setup → demo → register
+├── requirements.txt                         # All required packages
+├── README.md                                # Project documentation
+└── src/                                     # Core Python modules
+    ├── __init__.py
+    ├── utils.py                             # Shared utilities (load_config, log_asset_status)
+    ├── gpu_monitor.py                       # Plotly GPU monitoring
+    └── mlflow/                              # MLflow 3-layer architecture
+        ├── __init__.py                      # Lazy-loading: ChatbotModel, ImageGenModel, …
+        ├── loader.py                        # Config-driven loader (_load_pyfunc)
+        ├── logger.py                        # MLflow registration (Logger.log_model)
+        └── models/                          # Per-capability model classes
+            ├── __init__.py                  # MODEL_REGISTRY dict
+            ├── chatbot.py                   # ChatbotModel — LlamaCpp + system prompt
+            ├── document.py                  # DocumentModel — chunk-based RAG
+            ├── image_gen.py                 # ImageGenModel — SDXL-Turbo pipeline
+            └── voice.py                     # VoiceModel — Whisper STT + LlamaCpp
 ```
 
 ---
 
-## Configuration
-
-The blueprint uses a centralized configuration system through `configs/config.yaml`:
-
-```yaml
-ui:
-  mode: streamlit # UI mode: streamlit or static
-  ports:
-    external: 8501 # External port for UI access
-    internal: 8501 # Internal container port
-  service:
-    timeout: 30 # Service timeout in seconds
-    health_check_interval: 5 # Health check interval in seconds
-    max_retries: 3 # Maximum retry attempts
-```
-
----
-
-## Setup
+## ⚙️ Setup
 
 ### Step 0: Minimum Hardware Requirements
 
-Ensure your environment meets the minimum hardware requirements for smooth model inference:
-
-- RAM: 16 GB
-- VRAM: 8 GB
-- GPU: NVIDIA GPU
+* ✅ **GPU**: NVIDIA GPU with 8 GB VRAM (48 GB+ recommended for image generation and large models)
+* ✅ **RAM**: 32–64 GB system memory
+* ✅ **Disk**: ≥ 20 GB free space
 
 ### Step 1: Create an AI Studio Project
 
-1. Create a **New Project** in AI Studio.
-2. (Optional) Add a description and relevant tags.
+1. Go to [HP AI Studio](https://hp.com/ai-studio) and create a new project.
+2. Use the base image: `Local GenAI`
 
-### Step 2: Create a Workspace
+### Step 2: Add Required Assets
 
-1. Select **Local GenAI** as the base image.
-2. Upload the requirements.txt file and install dependencies.
+Download the following model(s) via the Models tab:
 
-### Step 3: Verify Project Files
+**Required (Text Generation):**
+- **Model Name**: `meta-llama3.1-8b-Q8`
+- **Model Source**: `AWS S3`
+- **S3 URI**: `s3://149536453923-hpaistudio-public-assets/Meta-Llama-3.1-8B-Instruct-Q8_0`
+- **Resource Type**: `public`
+- **Bucket Region**: `us-west-2`
 
-1. Clone the GitHub repository:
-   ```
-   git clone https://github.com/HPInc/AI-Blueprints.git
-   ```
-2. Make sure the folder `generative-ai/image-generation-with-stablediffusion` is present inside your workspace.
+**Optional (Image Generation):**
+- **Model Name**: `sdxl-turbo`
+- Download from Hugging Face: `stabilityai/sdxl-turbo`
 
-### Step 4: Use a Custom Kernel for Notebooks
+**Optional (Speech-to-Text):**
+- **Model Name**: `whisper-large-v3`
+- Download from Hugging Face: `openai/whisper-large-v3`
 
-1. In Jupyter notebooks, select the **aistudio kernel** to ensure compatibility.
+Make sure that each model is in the `datafabric` folder inside your workspace. If a model does not appear after downloading, please restart your workspace.
 
-> ⚠️ **GPU Compatibility Notice**
-> If you are using an older GPU architecture (e.g., **pre-Pascal**, such as **Maxwell or earlier**, like the GTX TITAN X), you may experience CUDA timeout errors during inference or training due to hardware limitations.
-> To ensure stable execution, uncomment the line below at the beginning of your script or notebook to force synchronous CUDA execution:
+### Step 3: Configure Secrets (if needed)
 
-```python
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-```
+If you need Hugging Face access for gated models, add your token:
+- Go to **Project Settings → Secrets**
+- Add a secret named `HF_TOKEN` with your Hugging Face access token
+- You can create or find your token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 
-### Step 5: Configure Secrets
+> ⚠️ **FLUX.1-dev is a gated model — license acceptance required before downloading.**
+> Visit **[huggingface.co/black-forest-labs/FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev)**,
+> click **"Access repository"**, and accept the license agreement.
+> Then complete the Hugging Face auth step in `00-project-setup.ipynb` (Cell 8) before running the
+> Model Download cell (Cell 9).
+> Skipping this step causes only the FLUX download to fail — all other models (Zephyr, Llama 3.1, Whisper, XTTS v2) download without any license gate.
 
-- **Configure Secrets in YAML file (Freemium users):**
-  - Create a `secrets.yaml` file in the `configs` folder and list your API keys there:
-    - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
+### Step 4: Configuration
 
-- **Configure Secrets in Secrets Manager (Premium users):**
-  - Add your API keys to the project's Secrets Manager vault, located in the `Project Setup` tab -> `Setup` -> `Project Secrets`:
-    - `HUGGINGFACE_API_KEY`: Required to use Hugging Face-hosted models instead of a local LLaMA model.
-  - In `Secrets Name` field add: `HUGGINGFACE_API_KEY`
-  - In the `Secret Value` field, paste your corresponding key generated by Hugging Face.
+Each capability has its own config file. Review the relevant file if you need to change model paths:
 
-  <br>
-
-  **Note: If both options (YAML option and Secrets Manager) are used, the Secrets Manager option will override the YAML option.**
-
-### Step 6: Setup Configuration
-
-- Edit `config.yaml` with relevant configuration details:
-  - `model_source`: Choose between `local`, `hugging-face-cloud`, or `hugging-face-local`
-  - `ui.mode`: Set UI mode to `streamlit` or `static`
-  - `ports`: Configure external and internal port mappings
-  - `service`: Adjust MLflow timeout and health check settings
-  - `proxy`: Set proxy settings if needed for restricted networks
-
-
-## Usage
-
-### Step 1: Run the Workflow Notebook
-
-Execute the notebook inside the `notebooks` folder:
-
-```bash
-notebooks/run-workflow.ipynb
-```
-
-1. The `stable-diffusion-2-1` model is downloaded automatically from Hugging Face.
-2. In the Training DreamBooth section of the notebook:
-  - Train your DreamBooth model.
-
-**Disclaimer**: The number of training steps has been intentionally reduced to optimize computational efficiency and minimize training time. However, this parameter can be adjusted if further model performance improvements are desired.
-
-### Step 2: Run the Register Notebook
-
-Execute the notebook inside the `notebooks` folder:
-
-```bash
-notebooks/register-model.ipynb
-```
-
-This will:
-
-- Monitor metrics using the **Monitor tab**, MLflow, and TensorBoard.
-- Register the model in MLflow
-
-
-### Step 2: Deploy the Image Generation Service:
-
-1. After running the entire notebook, go to **Deployments > New Service** in AI Studio.
-2. Create a service named as desired and select the **ImageGenerationLogger** model.
-3. Choose a model version and enable **GPU acceleration**.
-4. Deploy the service.
-5. Once deployed, open the Service URL to access the Swagger API page.
-6. How to use the API.
-
-| Field                 | Description                                                                |
-| --------------------- | -------------------------------------------------------------------------- |
-| `prompt`              | Your input prompt                                                          |
-| `use_finetuning`      | `True` to use your fine-tuned DreamBooth model, `False` for the base model |
-| `height`, `width`     | Image dimensions                                                           |
-| `num_images`          | Number of images to generate                                               |
-| `num_inference_steps` | Number of denoising steps used by Stable Diffusion                         |
-
-8. The API will return a base64-encoded image. You can convert it to a visual image using: https://base64.guru/converter/decode/image
-
-### Step 3: Launch the Streamlit Web App
-
-1. After completing the local deployment, open the Streamlit web app using the deployment URL provided by AI Studio.
-2. For additional details on how the Streamlit app works, refer to the `README.md` file in the `demo/streamlit` folder.
-
-### Streamlit Preview
-
-![Streamlit Screenshot](docs/streamlit-ss.png)
-
-
+| Config file | Capability | Key field |
+|---|---|---|
+| `configs/chatbot.yaml` | Conversational AI | `model_path` |
+| `configs/image_gen.yaml` | Image generation | `image_model_path` |
+| `configs/document.yaml` | Document Q&A | `model_path` |
+| `configs/voice.yaml` | Voice assistant | `model_path`, `stt_model_path` |
 
 ---
 
-## Contact and Support
+## 🚀 Usage
 
-- Issues & Bugs: Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+### One-Click Workflow
 
-- Docs: [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+Each starter notebook is completely self-contained — open any one and **Run All Cells**:
 
-- Community: Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+| Notebook | Capability | Registers As |
+|----------|-----------|--------------|
+| `chatbot-starter.ipynb` | Conversational AI with LLM | `AIStudio-EQ-Chatbot` |
+| `image-gen-starter.ipynb` | Text-to-image (SDXL-Turbo) | `AIStudio-EQ-ImageGen` |
+| `document-analyzer-starter.ipynb` | Document RAG Q&A | `AIStudio-EQ-Document` |
+| `voice-assistant-starter.ipynb` | Whisper STT + LLM | `AIStudio-EQ-Voice` |
+
+Each notebook performs these steps automatically:
+1. Install dependencies (`requirements.txt`)
+2. Verify GPU, load config, check for model files
+3. Initialize the capability-specific model class
+4. Run an interactive demo with Plotly charts
+5. Register the model to MLflow and verify the deployment
+
+### 🌐 Launch the Streamlit Web App
+
+After a notebook completes registration, deploy the matching UI from its `demo/` folder:
+
+| Registered Model | Demo UI |
+|---|---|
+| `AIStudio-EQ-Chatbot` | `demo/chatbot/` |
+| `AIStudio-EQ-ImageGen` | `demo/image_gen/` |
+| `AIStudio-EQ-Document` | `demo/document/` |
+| `AIStudio-EQ-Voice` | `demo/voice/` |
+
+Open the deployment URL provided by AI Studio to launch the Streamlit app.
+For Streamlit app details, refer to the `README.md` inside each demo folder.
 
 ---
 
-> Built with ❤️ using [**Z by HP AI Studio**](https://www.hp.com/us-en/workstations/ai-studio.html)
+## 📞 Contact & Support
+
+  - **Troubleshooting:** Refer to the [**Troubleshooting**](https://github.com/HPInc/AI-Blueprints/tree/main?tab=readme-ov-file#troubleshooting) section of the main README in our public AI-Blueprints GitHub repo for solutions to common issues.
+
+  - **Issues & Bugs:** Open a new issue in our [**AI-Blueprints GitHub repo**](https://github.com/HPInc/AI-Blueprints).
+
+  - **Docs:** [**AI Studio Documentation**](https://zdocs.datascience.hp.com/docs/aistudio/overview).
+
+  - **Community:** Join the [**HP AI Creator Community**](https://community.datascience.hp.com/) for questions and help.
+
+---
+
+> Built with ❤️ using [**HP AI Studio**](https://hp.com/ai-studio)

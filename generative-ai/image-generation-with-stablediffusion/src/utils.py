@@ -1,917 +1,986 @@
-"""
-Utility functions for AI Studio Templates.
-
-This module contains common functions used across notebooks in the project,
-including configuration loading, model initialization, and integration setup.
-"""
-
-import os
-import yaml
-import importlib.util
+# ─────── Standard Library Imports ───────
+import base64  # Encoding binary data (images) as text for display in browsers
+import logging  # Python's built-in system for printing status messages with severity levels
+import os  # Interacting with the operating system (file paths, environment variables)
+import subprocess  # Running external commands like pip install
+import sys  # System-level utilities (Python version, path management)
+import time  # Measuring how long things take
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Tuple
+from functools import (
+    wraps,
+)  # Helper for writing decorators (functions that wrap other functions)
+from typing import (
+    Dict,
+    Any,
+    Tuple,
+)
+from unittest import (
+    result,
+)  # Type hints — help editors and readers understand what a function expects
 
-try:
-    # First try absolute import
-    from trt_llm_langchain import TensorRTLangchain
-except ImportError:
-    # If that fails, try adding the src directory to path and import
-    import sys
-
-    src_dir = str(Path(__file__).parent)
-    if src_dir not in sys.path:
-        sys.path.insert(0, src_dir)
-    from trt_llm_langchain import TensorRTLangchain
+# ─────── Third-Party Package Imports ───────
+from IPython.display import (
+    HTML,
+    display,
+)  # Rich HTML display utilities — lets us show styled text and images inside Jupyter notebooks
 
 
-# Simple path utilities for project-relative paths
-def get_model_path(model_name: str) -> str:
+# ─────── Log Level Styles ────────────────────────────────────────────────────
+# Each log level (DEBUG, INFO, WARNING, etc.) gets its own background color and emoji icon.
+# This makes notebook output much easier to read at a glance.
+STYLE_MAP = {
+    logging.DEBUG: {
+        "bg": "#1e90ff",
+        "fg": "white",
+        "icon": "🔍",
+    },  # Blue  — detailed debug info
+    logging.INFO: {
+        "bg": "#228B22",
+        "fg": "white",
+        "icon": "✅",
+    },  # Green — normal progress messages
+    logging.WARNING: {
+        "bg": "#ffcc00",
+        "fg": "black",
+        "icon": "⚠️",
+    },  # Yellow — something to be aware of
+    logging.ERROR: {
+        "bg": "#cc0000",
+        "fg": "white",
+        "icon": "❌",
+    },  # Red   — something went wrong
+    logging.CRITICAL: {
+        "bg": "#8B0000",
+        "fg": "white",
+        "icon": "🔥",
+    },  # Dark red — serious failure
+}
+
+
+class EmojiStyledJupyterHandler(logging.Handler):
     """
-    Get the full path to the model file using the artifacts path and model name.
+    A custom log handler that displays log messages as styled HTML in Jupyter notebooks.
+
+    Why this exists:
+        Plain Python `print()` statements don't show color or severity context.
+        This handler wraps every log message in colored HTML so you can
+        instantly see whether something is informational (green ✅) or an error (red ❌).
+
+    How it works:
+        Python's `logging` module calls `emit()` every time a log message is created.
+        Here we override `emit()` to render the message as HTML instead of plain text.
+
+    Learn more about Python logging:
+        https://docs.python.org/3/library/logging.html
+    """
+
+    def emit(self, record):
+        # Look up the color/icon for this log level (default to white/💬 if unknown)
+        style = STYLE_MAP.get(
+            record.levelno, {"bg": "white", "fg": "black", "icon": "💬"}
+        )
+        # Format the log record into a string (e.g., "2026-01-01 12:00:00 - INFO - message")
+        formatted = self.format(record)
+        # Wrap the message in an HTML div with the appropriate colors
+        html = f"""
+        <div style="background-color: {style['bg']}; color: {style['fg']};
+                    padding: 4px 8px; font-family: monospace; border-radius: 4px;">
+            {style["icon"]} {formatted}
+        </div>
+        """
+        # Display the HTML in the Jupyter cell output
+        display(HTML(html))
+
+
+# ─────── Module-Level Logger ─────────────────────────────────────────────────
+# Create a logger named "AIS_logger" that all modules in this project share.
+# The logger collects messages and routes them through the EmojiStyledJupyterHandler.
+logger = logging.getLogger("AIS_logger")
+logger.setLevel(logging.DEBUG)  # Accept all message levels (DEBUG and above)
+logger.handlers.clear()  # Remove any previously attached handlers to avoid duplicates
+
+# Define the timestamp format for log messages
+formatter = logging.Formatter(
+    fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+# Attach our custom HTML handler to the logger
+handler = EmojiStyledJupyterHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+
+# ─────── Utility Functions ───────────────────────────────────────────────────
+
+
+def log_timing(func):
+    """
+    A decorator that automatically logs how long a function takes to run.
+
+    What is a decorator?
+        A decorator is a function that wraps another function to add extra behavior.
+        You apply it with the '@' symbol above a function definition.
+
+    Example usage:
+        @log_timing
+        def train_model():
+            ...  # This will now automatically log its runtime
+
+    Learn more about Python decorators:
+        https://docs.python.org/3/glossary.html#term-decorator
+    """
+
+    @wraps(func)  # Preserve the original function's name and docstring
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()  # Record start timestamp (high-precision)
+        result = func(*args, **kwargs)  # Run the original function
+        end_time = time.perf_counter()  # Record end timestamp
+        logger.info(
+            f"Function '{func.__name__}' took {end_time - start_time:.4f} seconds."
+        )
+        return result
+
+    return wrapper
+
+
+def get_response_from_llm(llm, system_prompt: str, user_prompt: str) -> str:
+    """
+    Format and send a prompt to a Meta-Llama LLM and return the response.
+
+    What is a prompt?
+        A "prompt" is the text you send to an AI model as input. The model reads
+        your prompt and generates a continuation (the "response").
+
+    Why ChatPromptTemplate instead of a raw f-string?
+        Raw f-strings embed user content directly into special tokens, which can
+        produce malformed prompts when the document text contains special characters.
+        ChatPromptTemplate validates and escapes variables before the model sees them,
+        following the same LCEL chain pattern used across all other blueprints.
+
+    Why StrOutputParser?
+        In LangChain 1.x, llm.invoke() may return a generation metadata object.
+        StrOutputParser guarantees a plain Python str, preventing downstream type errors.
 
     Args:
-        model_name: Name of the model file or full path (will extract filename)
+        llm: A LlamaCpp model instance (loaded in the notebook)
+        system_prompt: The instruction telling the AI how to behave
+                       (e.g., "You are a helpful assistant")
+        user_prompt: The actual question or input from the user
 
     Returns:
-        Full path to the model file
+        The model's text response as a string
+
+    Learn more about LCEL chains:
+        https://python.langchain.com/docs/concepts/lcel/
     """
-    # Extract just the filename if model_name contains a path
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
+
+    # Meta-Llama 3.1 chat template — same format used in vanilla-rag-with-langchain
+    meta_llama_template = (
+        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+        "{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
+        "{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    )
+    prompt = ChatPromptTemplate.from_template(meta_llama_template)
+    chain = prompt | llm | StrOutputParser()
+    return chain.invoke({"system_prompt": system_prompt, "user_prompt": user_prompt})
+
+
+def display_image(image_bytes: bytes, width: int = 400) -> None:
+    """
+    Display image bytes as inline HTML in a Jupyter notebook.
+
+    Why base64 encoding?
+        Jupyter notebooks are HTML-based. To show an image inline, we need to embed
+        the raw image data directly in HTML using base64 encoding — a way of
+        converting binary data (bytes) into a text-safe string.
+
+    Args:
+        image_bytes: Raw image data in PNG or JPEG format
+        width: Display width in pixels (default 400)
+
+    Learn more about base64:
+        https://docs.python.org/3/library/base64.html
+    """
+    # Convert raw bytes to a base64 text string
+    decoded_img_bytes = base64.b64encode(image_bytes).decode("utf-8")
+    # Build an HTML <img> tag with the image data embedded directly
+    html = f'<img src="data:image/png;base64,{decoded_img_bytes}" style="width: {width}px;" />'
+    display(HTML(html))  # Render the HTML in the Jupyter cell output
+
+
+def json_schema_from_type(input_type: type) -> dict:
+    """
+    Convert a Python type to a basic JSON schema dictionary.
+
+    What is a JSON schema?
+        JSON Schema is a standard for describing the shape/structure of data.
+        MLflow uses it to document what types of inputs and outputs a model expects.
+
+    Args:
+        input_type: A Python type (str, int, float, or bool)
+
+    Returns:
+        A dict like {"type": "string"} representing the JSON schema
+
+    Learn more about JSON Schema:
+        https://json-schema.org/understanding-json-schema/
+    """
+    mapping = {
+        str: {"type": "string"},  # Text data
+        int: {"type": "integer"},  # Whole numbers
+        float: {"type": "number"},  # Decimal numbers
+        bool: {"type": "boolean"},  # True/False values
+    }
+    return mapping.get(
+        input_type, {"type": "string"}
+    )  # Default to string if type unknown
+
+
+def get_model_path(model_name: str) -> str:
+    """
+    Resolve the full path to a model file using the MODEL_ARTIFACTS_PATH environment variable.
+
+    Why use an environment variable for paths?
+        Model files live in different places depending on whether the model is running
+        locally (e.g., in datafabric) or inside an MLflow deployment container.
+        Using an environment variable keeps paths flexible without changing code.
+
+    Args:
+        model_name: The filename or full path of the model file
+                    (e.g., "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
+
+    Returns:
+        The full resolved path to the model file
+
+    Learn more about environment variables in Python:
+        https://docs.python.org/3/library/os.html#os.environ
+    """
+    # If model_name is a full path like "/home/jovyan/datafabric/.../model.gguf",
+    # extract just the filename ("model.gguf")
     filename = os.path.basename(model_name)
 
+    # Read the base directory from the environment variable (set by the loader at deploy time)
     artifacts_path = os.environ.get("MODEL_ARTIFACTS_PATH", "")
+    # Join the base directory with the filename to get the full path
     model_path = os.path.join(artifacts_path, filename)
 
     return model_path
 
 
-def get_project_root():
-    """Get the project root directory (image-generation-with-stablediffusion)"""
-    return Path(__file__).parent.parent
+def _expand_config_paths(obj):
+    """Recursively expand ~ and $ENV_VAR in string values so YAML paths are OS-agnostic."""
+    if isinstance(obj, dict):
+        return {k: _expand_config_paths(v) for k, v in obj.items()}
+    if isinstance(obj, str):
+        return os.path.expandvars(os.path.expanduser(obj))
+    return obj
 
 
-def get_config_dir():
-    """Get the config directory"""
-    return get_project_root() / "configs"
+# ── Download utilities ────────────────────────────────────────────────────────
+
+# Completion marker prefix written inside each model directory after a fully
+# successful download.  The full marker name is derived from the verify_path
+# filename (e.g. ".done_model_index.json") so that two tasks sharing the same
+# dest_dir — like the FLUX GGUF and the FLUX pipeline components both landing
+# in ``flux1-dev/`` — each get an independent marker and never skip each other.
+DOWNLOAD_DONE_MARKER_PREFIX = ".done_"
+
+# Pre-initialise tqdm's class-level lock before any threads are spawned.
+# Without this, concurrent ThreadPoolExecutor threads race on the lazy
+# initialisation and crash with:
+#   "type object 'tqdm' has no attribute '_lock'"
+# tqdm.get_lock() is idempotent — safe to call multiple times.
+try:
+    from tqdm.auto import tqdm as _tqdm_cls
+
+    _tqdm_cls.get_lock()
+except Exception:
+    pass
 
 
-def get_output_dir():
-    """Get or create the output directory for generated images"""
-    output_dir = get_project_root() / "output"
-    output_dir.mkdir(exist_ok=True)
-    return output_dir
-
-
-def get_default_model_path():
-    """Get the default model path, preferring local models directory"""
-    # First, check if we have a local models directory with the model
-    local_model_path = get_project_root() / "models" / "stable-diffusion-2-1"
-    if local_model_path.exists():
-        return str(local_model_path)
-    # Fall back to HuggingFace model identifier (will be downloaded automatically)
-    return "stabilityai/stable-diffusion-2-1"
-
-
-def get_model_cache_dir():
-    """Get the directory for caching downloaded models"""
-    cache_dir = get_project_root() / "models"
-    cache_dir.mkdir(exist_ok=True)
-    return cache_dir
-
-
-def setup_dreambooth_model():
+def ensure_downloaded(
+    label: str,
+    dest_dir,
+    download_fn,
+    verify_path,
+    *,
+    _max_attempts: int = 3,
+) -> tuple:
     """
-    Setup and validate DreamBooth model path.
-    Returns the model path if valid, raises an error otherwise.
-    """
-    # Use the correct model path from the project's output directory
-    dreambooth_model_path = str(get_output_dir() / "dreambooth")
-    print(f"Loading DreamBooth model from: {dreambooth_model_path}")
+    Robust, resumable model download built on top of HF Hub's built-in idempotency.
 
-    # Check if the model exists
-    if not os.path.exists(dreambooth_model_path):
-        print(f"DreamBooth model not found at {dreambooth_model_path}")
-        print(
-            "Please run the DreamBooth training first, or use a different model path."
-        )
-        print("Available files in output directory:")
-        output_dir = get_output_dir()
-        if output_dir.exists():
-            for item in os.listdir(output_dir):
-                print(f"  - {item}")
-        raise FileNotFoundError(
-            f"DreamBooth model not found at {dreambooth_model_path}"
-        )
-
-    return dreambooth_model_path
-
-
-# Default models to be loaded in our examples:
-DEFAULT_MODELS = {
-    "local": str(
-        get_project_root()
-        / "models"
-        / "meta-llama3.1-8b-Q8"
-        / "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-    ),
-    "tensorrt": "",
-    "hugging-face-local": "meta-llama/Llama-3.2-3B-Instruct",
-    "hugging-face-cloud": "mistralai/Mistral-7B-Instruct-v0.3",
-}
-
-# Context window sizes for various models
-MODEL_CONTEXT_WINDOWS = {
-    # LlamaCpp models
-    "ggml-model-f16-Q5_K_M.gguf": 4096,
-    "ggml-model-7b-q4_0.bin": 4096,
-    "gguf-model-7b-4bit.bin": 4096,
-    # HuggingFace models
-    "mistralai/Mistral-7B-Instruct-v0.3": 8192,
-    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B": 4096,
-    "meta-llama/Llama-2-7b-chat-hf": 4096,
-    "meta-llama/Llama-3-8b-chat-hf": 8192,
-    "google/flan-t5-base": 512,
-    "google/flan-t5-large": 512,
-    "TheBloke/WizardCoder-Python-7B-V1.0-GGUF": 4096,
-    # OpenAI models
-    "gpt-3.5-turbo": 16385,
-    "gpt-4": 8192,
-    "gpt-4-32k": 32768,
-    "gpt-4-turbo": 128000,
-    "gpt-4o": 128000,
-    # Anthropic models
-    "claude-3-opus-20240229": 200000,
-    "claude-3-sonnet-20240229": 180000,
-    "claude-3-haiku-20240307": 48000,
-    # Other models
-    "qwen/Qwen-7B": 8192,
-    "microsoft/phi-2": 2048,
-    "tiiuae/falcon-7b": 4096,
-    "meta-llama/Llama-3.2-3B-Instruct": 128000,
-    "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf": 4096,
-}
-
-
-def configure_hf_cache(cache_dir: str = None) -> None:
-    """
-    Configure HuggingFace cache directories to persist models locally.
+    Strategy
+    --------
+    1. If ``dest_dir / ".done_<verify_filename>"`` exists the download previously
+       completed successfully — skip immediately (fast path, no network I/O).
+       The marker name is derived from ``verify_path`` so that two tasks sharing
+       the same ``dest_dir`` (e.g. FLUX GGUF + FLUX pipeline) stay independent.
+    2. Otherwise call ``download_fn()`` with up to ``_max_attempts`` retries using
+       exponential back-off (2 s, 4 s).  HF Hub's etag/blob cache means each retry
+       only re-fetches missing bytes — no wasted bandwidth.
+    3. After ``download_fn`` returns, verify that ``verify_path`` exists.  This
+       final sanity check ensures the key weight file is present — not just
+       small metadata files that arrive early in a snapshot.
+    4. Write the completion marker only when the verify check passes.
 
     Args:
-        cache_dir: Base directory for HuggingFace cache. If None, uses project's models/cache directory.
-    """
-    if cache_dir is None:
-        cache_dir = str(get_project_root() / "models" / "cache" / "hugging_face")
-    os.environ["HF_HOME"] = cache_dir
-    os.environ["HF_HUB_CACHE"] = os.path.join(cache_dir, "hub")
-
-
-def load_secrets(
-    secret_keys: Optional[List[str]] = None,
-) -> Dict[str, Any]:
-    """
-    Load secrets from secrets environment variables.
-
-    Args:
-        secret_keys: List of expected secret names.
-        If None, every project environment variable with 'AIS' prefix is returned.
+        label:         Human-readable description printed to the notebook output.
+        dest_dir:      Directory where the model files land (marker is written here).
+                       Accepts ``str`` or ``pathlib.Path``.
+        download_fn:   Zero-argument callable that runs the HF Hub download.
+        verify_path:   File that must exist after a successful download (e.g. the
+                       largest weight file, not a tiny config).
+                       Accepts ``str`` or ``pathlib.Path``.
+        _max_attempts: Number of tries before giving up (default 3).
 
     Returns:
-        Dictionary containing all secrets for the project.
-
-    ValueError:
-        Requested secret(s) are missing or none found with AIS- prefix.
+        ``(label, success: bool, dest_dir_str: str)``
     """
-    # Build secrets from environment
-    if secret_keys is None:
-        secrets = {
-            k: v for k, v in os.environ.items() if k.isupper() and k.startswith("AIS_")
-        }
-        if not secrets:
-            raise ValueError(
-                "No environment variables found with prefix 'AIS_'. "
-                "Please set your required project secrets in AIS Secrets Manager."
-            )
-    else:
-        secrets = {k: os.environ.get(k) for k in secret_keys}
-        missing = [k for k, v in secrets.items() if v is None]
-        if missing:
-            raise ValueError(
-                f"Provided secrets are missing as environment variables for this project: {', '.join(missing)}"
-            )
-    return secrets
+    dest_dir = Path(dest_dir)
+    verify_path = Path(verify_path)
+    # Marker is unique per verify_path so two tasks that share the same dest_dir
+    # (e.g. the FLUX GGUF and the FLUX pipeline both writing into flux1-dev/)
+    # will not treat each other's completion as their own.
+    marker = dest_dir / (DOWNLOAD_DONE_MARKER_PREFIX + verify_path.name)
 
+    # ── Fast path: previous run completed cleanly ─────────────────────────────
+    if marker.exists():
+        size_gb = (
+            sum(f.stat().st_size for f in dest_dir.rglob("*") if f.is_file()) / 1e9
+        )
+        print(f"  ⏭️  {label} — already complete ({size_gb:.2f} GB)")
+        return label, True, str(dest_dir)
 
-def load_secrets_to_env(secrets_path: str = "../configs/secrets.yaml") -> None:
-    """
-    Loads secrets from a YAML file and sets them as environment variables.
-
-    Parameters:
-    - secrets_path (str): Path to the secrets YAML file.
-    """
-    secrets_file = Path(secrets_path).resolve()
-
-    if not secrets_file.exists():
-        raise FileNotFoundError(f"Secrets file not found: {secrets_file}")
-
-    with secrets_file.open("r", encoding="utf-8") as file:
+    # ── Download (or resume) with retry ───────────────────────────────────────
+    # HF Hub skips blobs whose local copy matches the remote etag, so each retry
+    # only fetches missing remainder — no wasted bandwidth.
+    print(f"  ⬇️  {label} — downloading (will resume if previously interrupted) ...")
+    t0 = time.time()
+    last_err = None
+    for attempt in range(1, _max_attempts + 1):
         try:
-            secrets = yaml.safe_load(file)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Failed to parse YAML: {e}")
+            download_fn()
+            last_err = None
+            break
+        except Exception as e:
+            last_err = e
+            if attempt < _max_attempts:
+                wait = 2**attempt  # 2 s, 4 s
+                print(
+                    f"  ⚠️  {label} — attempt {attempt}/{_max_attempts} failed "
+                    f"({e}), retrying in {wait}s ..."
+                )
+                time.sleep(wait)
 
-    if not isinstance(secrets, dict):
-        raise ValueError("Secrets file must contain a top-level dictionary.")
+    if last_err is not None:
+        print(
+            f"  ❌ {label} — download failed after {_max_attempts} attempts: {last_err}"
+        )
+        return label, False, str(dest_dir)
 
-    for key, value in secrets.items():
-        if not isinstance(key, str):
-            raise TypeError(
-                f"Environment variable key must be a string. Got: {type(key)}"
-            )
-        # We are adding "AIS_" prefix for compatibility with HP AI Studio Secrets Manager.
-        env_key = key if key.upper().startswith("AIS_") else f"AIS_{key.upper()}"
-        os.environ[env_key] = str(value)
+    elapsed = time.time() - t0
 
-    print(f"✅ Loaded {len(secrets)} secrets into environment variables.")
+    # ── Verify the key weight file is present ─────────────────────────────────
+    if not verify_path.exists():
+        print(
+            f"  ❌ {label} — download finished but '{verify_path.name}' is missing.\n"
+            f"       Expected at: {verify_path}\n"
+            f"       Re-run the download cell to resume."
+        )
+        return label, False, str(dest_dir)
+
+    # ── Write completion marker (atomic on POSIX; best-effort on Windows) ─────
+    try:
+        marker.write_text(
+            f"completed at {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
+        )
+    except OSError:
+        pass  # Non-fatal: only affects the fast-path on the next run
+
+    size_gb = sum(f.stat().st_size for f in dest_dir.rglob("*") if f.is_file()) / 1e9
+    print(f"  ✅ {label} — done in {elapsed:.0f}s ({size_gb:.2f} GB)")
+    return label, True, str(dest_dir)
 
 
-def load_config(config_path: str = "../../configs/config.yaml") -> Dict[str, Any]:
+def load_config(config_path: str = "../configs/config.yaml") -> Dict[str, Any]:
     """
-    Alias for load_configuration for backward compatibility.
+    Load configuration settings from a YAML file.
+
+    What is YAML?
+        YAML (YAML Ain't Markup Language) is a human-readable format for configuration files.
+        It uses indentation and key: value pairs, making it easy to read and edit.
+        Our config.yaml stores model paths, port numbers, and other settings.
 
     Args:
-        config_path: Path to the configuration YAML file.
+        config_path: Path to the YAML configuration file
+                     (default: "../configs/config.yaml" relative to the notebook)
 
     Returns:
-        Dictionary containing the project configurations.
+        A dictionary with all configuration keys and values.
+        Returns an empty dict {} if the file is not found (safe fallback).
+
+    Learn more about YAML in Python:
+        https://pyyaml.org/wiki/PyYAMLDocumentation
     """
-    return load_configuration(config_path)
+    import yaml  # PyYAML library for parsing YAML files
 
-
-def load_configuration(
-    config_path: str = "../../configs/config.yaml",
-) -> Dict[str, Any]:
-    """
-    Load configuration from YAML file.
-
-    Args:
-        config_path: Path to the configuration YAML file.
-
-    Returns:
-        Dictionary containing the project configurations.
-
-    Raises:
-        FileNotFoundError: If the config file is not found.
-    """
-    # Convert to absolute paths if needed
+    # Convert to absolute path so relative path issues don't cause failures
     config_path = os.path.abspath(config_path)
 
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"config.yaml file not found in path: {config_path}")
-
-    with open(config_path) as file:
-        config = yaml.safe_load(file)
-
-    return config
-
-
-def configure_proxy(config: Dict[str, Any]) -> None:
-    """
-    Configure proxy settings based on provided configuration.
-
-    Args:
-        config: Configuration dictionary that may contain a "proxy" key.
-    """
-    if "proxy" in config and config["proxy"]:
-        os.environ["HTTPS_PROXY"] = config["proxy"]
-
-
-def initialize_llm(
-    model_source: str = "local",
-    secrets: Optional[Dict[str, Any]] = None,
-    local_model_path: str = DEFAULT_MODELS["local"],
-    hf_repo_id: str = "",
-) -> Any:
-    """
-    Initialize a language model based on specified source.
-
-    Args:
-        model_source: Source of the model. Options are "local", "hugging-face-local", or "hugging-face-cloud".
-        secrets: Dictionary containing API keys for cloud services.
-        local_model_path: Path to local model file.
-
-    Returns:
-        Initialized language model object.
-
-    Raises:
-        ImportError: If required libraries are not installed.
-        ValueError: If an unsupported model_source is provided.
-    """
-    # Check dependencies
-    missing_deps = []
-    for module in [
-        "langchain_huggingface",
-        "langchain_core.callbacks",
-        "langchain_community.llms",
-    ]:
-        if not importlib.util.find_spec(module):
-            missing_deps.append(module)
-
-    if missing_deps:
-        raise ImportError(f"Missing required dependencies: {', '.join(missing_deps)}")
-
-    # Import required libraries
-    from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint
-    from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
-    from langchain_community.llms import LlamaCpp
-
-    # Fix for Pydantic model rebuild issue
-    if hasattr(LlamaCpp, "model_rebuild"):
-        LlamaCpp.model_rebuild()
-
-    model = None
-    context_window = None
-
-    # Initialize based on model source
-    if model_source == "hugging-face-cloud":
-        if hf_repo_id == "":
-            repo_id = DEFAULT_MODELS["hugging-face-cloud"]
-        else:
-            repo_id = hf_repo_id
-        if not secrets or "AIS_HUGGINGFACE_API_KEY" not in secrets:
-            raise ValueError("HuggingFace API key is required for cloud model access")
-
-        huggingfacehub_api_token = secrets["AIS_HUGGINGFACE_API_KEY"]
-        # Get context window from our lookup table
-        if repo_id in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[repo_id]
-
-        model = HuggingFaceEndpoint(
-            huggingfacehub_api_token=huggingfacehub_api_token,
-            repo_id=repo_id,
-        )
-
-    elif model_source == "hugging-face-local":
-        from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-
-        if "AIS_HUGGINGFACE_API_KEY" in secrets:
-            os.environ["HF_TOKEN"] = secrets["AIS_HUGGINGFACE_API_KEY"]
-        if hf_repo_id == "":
-            model_id = DEFAULT_MODELS["hugging-face-local"]
-        else:
-            model_id = hf_repo_id
-        # Get context window from our lookup table
-        if model_id in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[model_id]
-
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-        hf_model = AutoModelForCausalLM.from_pretrained(model_id)
-
-        # If tokenizer has model_max_length, that's our context window
-        if hasattr(
-            tokenizer, "model_max_length"
-        ) and tokenizer.model_max_length not in (None, -1):
-            context_window = tokenizer.model_max_length
-
-        pipe = pipeline(
-            "text-generation",
-            model=hf_model,
-            tokenizer=tokenizer,
-            max_new_tokens=100,
-            device=0,
-        )
-        model = HuggingFacePipeline(pipeline=pipe)
-
-    elif model_source == "tensorrt":
-        # If a Hugging Face model is specified, it will be used - otherwise, it will try loading the model from local_path
+    if os.path.exists(config_path):
         try:
-            import tensorrt_llm
-
-            sampling_params = tensorrt_llm.SamplingParams(
-                temperature=0.1, top_p=0.95, max_tokens=512
-            )
-            if hf_repo_id != "":
-                return TensorRTLangchain(
-                    model_path=hf_repo_id, sampling_params=sampling_params
-                )
-            else:
-                model_config = os.path.join(local_model_path, "config.json")
-                if os.path.isdir(local_model_path) and os.path.isfile(model_config):
-                    return TensorRTLangchain(
-                        model_path=local_model_path, sampling_params=sampling_params
-                    )
-                else:
-                    raise Exception("Model format incompatible with TensorRT LLM")
-        except ImportError:
-            raise ImportError(
-                "Could not import tensorrt-llm library. "
-                "Please make sure tensorrt-llm is installed properly, or "
-                "consider using workspaces based on the NeMo Framework"
-            )
-    elif model_source == "local":
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        # For LlamaCpp, get the context window from the filename
-        model_filename = os.path.basename(local_model_path)
-        if model_filename in MODEL_CONTEXT_WINDOWS:
-            context_window = MODEL_CONTEXT_WINDOWS[model_filename]
-        else:
-            # Default context window for LlamaCpp models (explicitly set)
-            context_window = 4096
-
-        model = LlamaCpp(
-            model_path=local_model_path,
-            n_gpu_layers=-1,
-            n_batch=512,
-            n_ctx=context_window,
-            max_tokens=1024,
-            f16_kv=True,
-            callback_manager=callback_manager,
-            verbose=False,
-            stop=[],
-            streaming=False,
-            temperature=0.2,
-            use_mmap=False,
-        )
+            with open(config_path, "r") as f:
+                # yaml.safe_load parses YAML without executing arbitrary code (secure)
+                config = yaml.safe_load(f)
+            logger.info(f"✅ Configuration loaded from: {config_path}")
+            if config is not None:
+                config = _expand_config_paths(config)
+            return config if config is not None else {}
+        except yaml.YAMLError as e:
+            logger.error(f"❌ Failed to parse YAML config at {config_path}: {e}")
+            return {}
+        except Exception as e:
+            logger.error(f"❌ Failed to load config from {config_path}: {e}")
+            return {}
     else:
-        raise ValueError(f"Unsupported model source: {model_source}")
-
-    # Store context window as model attribute for easy access
-    if model and hasattr(model, "__dict__"):
-        model.__dict__["_context_window"] = context_window
-
-    return model
+        logger.warning(f"⚠️ Config file not found at: {config_path}, using defaults")
+        return {}
 
 
-def login_huggingface(secrets: Dict[str, Any]) -> None:
+def log_asset_status(asset_path_or_assets, asset_name: str = "") -> None:
     """
-    Login to Hugging Face using token from secrets.
+    Check whether a file or directory exists and log a pass/fail status message.
+
+    Accepts two calling styles:
+
+    1. List of asset dicts (as used in starter notebooks)::
+
+        log_asset_status([
+            {"name": "SDXL-Turbo model", "path": image_model_path, "required": True},
+            {"name": "Config YAML",      "path": "../configs/image_gen.yaml"},
+        ])
+
+    2. Two-argument form for a single asset (backward-compatible)::
+
+        log_asset_status("/path/to/model.gguf", "LLaMA Model File")
 
     Args:
-        secrets: Dictionary containing the Hugging Face token.
-
-    Raises:
-        ValueError: If the token is missing.
+        asset_path_or_assets: Either a list of asset dicts (each with "name" and "path" keys)
+                              or a string path to check (used with asset_name).
+        asset_name:           Human-readable label used only in the two-argument form.
     """
-    from huggingface_hub import login
-
-    token = secrets.get("AIS_HUGGINGFACE_API_KEY")
-    if not token:
-        raise ValueError("❌ Hugging Face token not found in secrets.yaml.")
-
-    login(token=token)
-    print("✅ Logged into Hugging Face successfully.")
-
-
-def clean_code(result: str) -> str:
-    """
-    Clean code extraction function that handles various formats.
-
-    Args:
-        result: The raw text output from an LLM that may contain code.
-
-    Returns:
-        str: Cleaned code without markdown formatting or explanatory text.
-    """
-    if not result or not isinstance(result, str):
-        return ""
-
-    # Remove common prefixes and wrapper text
-    prefixes = [
-        "Answer:",
-        "Expected Answer:",
-        "Expected Output:",
-        "Python code:",
-        "Here's the code:",
-        "My Response:",
-        "Response:",
-    ]
-    for prefix in prefixes:
-        if result.lstrip().startswith(prefix):
-            result = result.replace(prefix, "", 1)
-
-    # Handle markdown code blocks
-    if "```python" in result or "```" in result:
-        # Extract code between markdown code blocks
-        code_blocks = []
-        in_code_block = False
-        lines = result.split("\n")
-        current_block = []
-
-        for line in lines:
-            if line.strip().startswith("```"):
-                if in_code_block:
-                    # End of block, add it to our list
-                    code_blocks.append("\n".join(current_block))
-                    current_block = []
-                in_code_block = not in_code_block
-                continue
-
-            if in_code_block:
-                current_block.append(line)
-
-        if code_blocks:
-            # Use the longest code block found
-            result = max(code_blocks, key=len)
+    if isinstance(asset_path_or_assets, list):
+        for asset in asset_path_or_assets:
+            _path = asset.get("path", "")
+            _name = asset.get("name", _path)
+            if os.path.exists(_path):
+                logger.info(f"[FOUND]   {_name}")
+            else:
+                logger.error(f"[MISSING] {_name} → {_path}")
+    else:
+        asset_path = asset_path_or_assets
+        if os.path.exists(asset_path):
+            logger.info(f"[FOUND]   {asset_name}")
         else:
-            # Fallback to simple replacement if block extraction fails
-            result = result.replace("```python", "").replace("```", "")
-
-    # Remove any remaining explanatory text before or after the code
-    lines = result.split("\n")
-    code_lines = []
-    in_code_block = False
-
-    # First, look for the first actual code line
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped and (
-            stripped.startswith("import ")
-            or stripped.startswith("from ")
-            or stripped.startswith("def ")
-            or stripped.startswith("class ")
-        ):
-            in_code_block = True
-            lines = lines[i:]  # Start from this line
-            break
-
-    # Now process all the lines
-    for line in lines:
-        stripped = line.strip()
-        # Skip empty lines at the beginning
-        if not stripped and not code_lines:
-            continue
-
-        # Ignore lines that appear to be LLM "thinking" or explanations
-        if any(
-            text in stripped.lower()
-            for text in ["here's", "i'll", "please provide", "this code will"]
-        ):
-            if not any(
-                code_indicator in stripped
-                for code_indicator in ["import ", "def ", "class ", "="]
-            ):
-                continue
-
-        # If we see code-like content, include it
-        if stripped and (
-            stripped.startswith("import ")
-            or stripped.startswith("from ")
-            or stripped.startswith("def ")
-            or stripped.startswith("class ")
-            or "=" in stripped
-            or stripped.startswith("#")
-            or "(" in stripped
-            or "." in stripped
-            and not stripped.endswith(".")
-            or stripped.startswith("with ")
-            or stripped.startswith("if ")
-            or stripped.startswith("for ")
-            or stripped.startswith("while ")
-            or stripped.startswith("@")
-        ):
-            in_code_block = True
-            code_lines.append(line)
-        # Include indented lines or lines continuing code
-        elif stripped and (
-            in_code_block or line.startswith(" ") or line.startswith("\t")
-        ):
-            code_lines.append(line)
-
-    cleaned_code = "\n".join(code_lines).strip()
-
-    # One last check - if the cleaned code starts with text that looks like a response,
-    # try to find the first actual code statement
-    first_lines = cleaned_code.split("\n", 5)
-    for i, line in enumerate(first_lines):
-        if line.strip().startswith(("import ", "from ", "def ", "class ")):
-            if i > 0:
-                cleaned_code = "\n".join(first_lines[i:] + cleaned_code.split("\n")[5:])
-            break
-
-    return cleaned_code
+            logger.error(f"[MISSING] {asset_name} → {asset_path}")
 
 
-def generate_code_with_retries(
-    chain, example_input, callbacks=None, max_attempts=3, min_code_length=10
+def _isolated_predict_worker(
+    model_uri: str,
+    input_df,
+    params,
+    src_path: str,
+    result_path: str,
+    error_queue,
+) -> None:
+    """
+    Worker function that runs inside a spawned subprocess.
+
+    Must be a module-level function (not a lambda or nested def) so that Python's
+    multiprocessing 'spawn' context can pickle and send it to the child process.
+
+    Why write to a temp file instead of using a Queue?
+        Large results (e.g. base64-encoded images, several MB) overflow the OS
+        pipe buffer that backs a multiprocessing.Queue. When that happens the
+        child blocks on queue.put() while the parent blocks on p.join() —
+        a classic deadlock. Writing to a temp file bypasses the pipe entirely.
+    """
+    try:
+        import sys
+
+        sys.path.insert(0, src_path)
+
+        import mlflow
+        import pickle
+
+        loaded = mlflow.pyfunc.load_model(model_uri=model_uri)
+        result = (
+            loaded.predict(input_df, params=params)
+            if params
+            else loaded.predict(input_df)
+        )
+
+        with open(result_path, "wb") as f:
+            pickle.dump(result, f)
+    except Exception:
+        import traceback
+
+        error_queue.put(traceback.format_exc())
+
+
+def run_isolated_mlflow_predict(
+    model_uri: str,
+    input_df,
+    params=None,
+    src_path: str = "..",
+    timeout: int = 600,
 ):
     """
-    Execute a chain with retry logic for empty or short responses.
+    Load an MLflow model and run ``predict()`` inside an isolated subprocess.
+
+    Why subprocess instead of loading directly?
+        When ``mlflow.pyfunc.load_model()`` is called in the same notebook process,
+        the model's CUDA tensors remain in VRAM until Python's garbage collector
+        decides to free them — which is unpredictable. With a subprocess, the CUDA
+        driver reclaims **all** VRAM the instant the child process exits, with zero
+        manual cleanup required.
+
+    Why ``spawn`` and not ``fork``?
+        CUDA explicitly forbids ``fork`` after device initialization — it corrupts
+        the GPU context in the child. ``spawn`` starts a completely fresh Python
+        interpreter with no inherited CUDA state, which is safe.
+
+    Why a temp file for the result instead of a Queue?
+        Large payloads (e.g. base64-encoded images) overflow the OS pipe buffer
+        that backs a multiprocessing.Queue, causing a deadlock where the child
+        blocks on put() and the parent blocks on join(). A temp file has no size
+        limit and avoids the issue entirely.
 
     Args:
-        chain: The LangChain chain to execute.
-        example_input: Input dictionary with query and question.
-        callbacks: Optional callbacks to pass to the chain.
-        max_attempts: Maximum number of attempts before giving up.
-        min_code_length: Minimum acceptable code length.
+        model_uri:  MLflow model URI (e.g. ``"runs:/<run_id>/artifact"``).
+        input_df:   ``pandas.DataFrame`` to pass to ``predict()``.
+        params:     Optional params dict forwarded to ``predict(params=...)``.
+        src_path:   Path inserted into ``sys.path`` so ``src.*`` imports work
+                    inside the subprocess (default: ``".."``).
+        timeout:    Seconds to wait before killing the subprocess (default 600).
 
     Returns:
-        tuple: (raw_output, clean_code_output)
+        The ``pandas.DataFrame`` returned by the model's ``predict()`` method.
+
+    Raises:
+        RuntimeError:  If the subprocess raises an exception.
+        TimeoutError:  If the subprocess exceeds ``timeout`` seconds.
+
+    Example::
+
+        result = run_isolated_mlflow_predict(
+            model_uri=model_uri,
+            input_df=pd.DataFrame([{"question": "What is AI?"}]),
+        )
+        print(result["answer"].iloc[0])
     """
-    import time
+    import multiprocessing as mp
+    import tempfile
+    import pickle
+    import os
 
-    attempts = 0
-    output = None
+    # Temp file to receive the DataFrame result from the subprocess
+    fd, result_path = tempfile.mkstemp(suffix=".pkl", prefix="mlflow_result_")
+    os.close(fd)
 
-    while attempts < max_attempts:
-        attempts += 1
-        try:
-            # Add a small delay before each attempt (only needed for retries)
-            if attempts > 1:
-                time.sleep(1)  # Small delay between retries
+    # 'spawn' starts a fresh interpreter — required for CUDA safety
+    ctx = mp.get_context("spawn")
+    error_queue = ctx.Queue()
 
-            # Invoke the chain
-            output = chain.invoke(
-                example_input, config=dict(callbacks=callbacks) if callbacks else {}
-            )
+    p = ctx.Process(
+        target=_isolated_predict_worker,
+        args=(model_uri, input_df, params, src_path, result_path, error_queue),
+    )
 
-            # Clean the code
-            clean_code_output = clean_code(output)
+    print("🚀 Starting isolated subprocess for MLflow inference...")
+    p.start()
+    p.join(timeout=timeout)
 
-            # Only continue with retry if we got no usable output
-            if clean_code_output and len(clean_code_output) > min_code_length:
-                break
-
-            print(f"Attempt {attempts}: Output too short or empty, retrying...")
-
-        except Exception as e:
-            print(f"Error in attempt {attempts}: {str(e)}")
-            if attempts == max_attempts:
-                raise
-
-    return output, clean_code_output
-
-
-def get_model_context_window(model) -> int:
-    """
-    Get context window using model identifier and lookup table.
-
-    This function simplifies context window resolution by using a lookup table
-
-    1. For LlamaCpp models: extract the filename from model_path and check in MODEL_CONTEXT_WINDOWS
-    2. For HuggingFace models: check the repo_id in MODEL_CONTEXT_WINDOWS
-    3. Fall back to explicit parameters if available
-    4. Try to get context window from a stored attribute (_context_window) on the model
-    5. Use a default conservative estimate if all else fails
-
-    Args:
-        model: Any language model object (LlamaCpp, HuggingFace, OpenAI, etc.)
-
-    Returns:
-        int: The determined context window size in tokens, defaulting to 2048 if detection fails
-    """
-    # Check if we already stored the context window in the model itself
-    if hasattr(model, "_context_window") and model._context_window is not None:
-        return model._context_window
-
-    # For LlamaCpp: extract filename from model_path
-    if hasattr(model, "model_path"):
-        model_filename = os.path.basename(model.model_path)
-        if model_filename in MODEL_CONTEXT_WINDOWS:
-            return MODEL_CONTEXT_WINDOWS[model_filename]
-
-    # For HuggingFace models: check repo_id
-    if hasattr(model, "repo_id"):
-        if model.repo_id in MODEL_CONTEXT_WINDOWS:
-            return MODEL_CONTEXT_WINDOWS[model.repo_id]
-
-    # Fall back to direct n_ctx attribute if available
-    if hasattr(model, "n_ctx"):
-        return model.n_ctx
-
-    # Check model_kwargs for context window parameters
-    if hasattr(model, "model_kwargs"):
-        kwargs = model.model_kwargs
-        for param_name in ["n_ctx", "max_tokens", "max_length", "context_window"]:
-            if param_name in kwargs and kwargs[param_name] is not None:
-                return kwargs[param_name]
-
-    # For HuggingFace pipeline models: check tokenizer
-    if (
-        hasattr(model, "pipeline")
-        and hasattr(model.pipeline, "tokenizer")
-        and hasattr(model.pipeline.tokenizer, "model_max_length")
-    ):
-        if (
-            model.pipeline.tokenizer.model_max_length > 0
-            and model.pipeline.tokenizer.model_max_length < 1000000000000000
-        ):
-            return model.pipeline.tokenizer.model_max_length
-
-    # Use a very conservative default if all detection methods fail
-    return 2048
-
-
-def get_context_window(model) -> int:
-    """
-    Get context window size from model.
-
-    This function first checks for the explicit _context_window attribute
-    that we set during initialization, then falls back to the more
-    complex detection logic if needed.
-
-    Args:
-        model: Any language model object
-
-    Returns:
-        int: The context window size in tokens
-    """
-    if hasattr(model, "_context_window") and model._context_window is not None:
-        return model._context_window
-
-    # Fall back to detection logic
-    return get_model_context_window(model)
-
-
-def dynamic_retriever(
-    query: str, collection, top_n: int = None, context_window: int = None
-) -> List:
-    """
-    Retrieve relevant documents with dynamic adaptation based on context window.
-
-    This function automatically determines how many documents to retrieve based on
-    the available context window, optimizing for the specific model being used.
-
-    Args:
-        query: The search query
-        collection: Vector database collection to search in
-        top_n: Number of documents to retrieve (if None, will be determined dynamically)
-        context_window: Size of the model's context window in tokens
-
-    Returns:
-        List: Document objects containing relevant content
-    """
-    from langchain.schema import Document
-
-    # Dynamically determine how many documents to retrieve based on context window
-    if top_n is None:
-        if context_window:
-            # Larger context windows can handle more documents
-            # Using a heuristic: 1 document per 1000 tokens of context
-            # with a minimum of 2 and maximum of 10
-            suggested_top_n = max(2, min(10, context_window // 1000))
-            top_n = suggested_top_n
-        else:
-            # Default if we can't determine context window
-            top_n = 3
-
-    # Check if collection is a Chroma vector store
-    if hasattr(collection, "as_retriever"):
-        # It's a LangChain Chroma vector store
-        retriever = collection.as_retriever(search_kwargs={"k": top_n})
-        documents = retriever.get_relevant_documents(query)
-    elif hasattr(collection, "_collection"):
-        # It's a direct ChromaDB collection
-        results = collection._collection.query(query_texts=[query], n_results=top_n)
-
-        # Convert to Document objects
-        documents = [
-            Document(
-                page_content=str(results["documents"][0][i]),
-                metadata=(
-                    results["metadatas"][0][i]
-                    if isinstance(results["metadatas"][0][i], dict)
-                    else results["metadatas"][0][i]
-                ),
-            )
-            for i in range(len(results["documents"][0]))
-        ]
-    else:
-        # Try direct query as a fallback
-        try:
-            results = collection.query(query_texts=[query], n_results=top_n)
-
-            # Convert to Document objects
-            documents = [
-                Document(
-                    page_content=str(results["documents"][i]),
-                    metadata=(
-                        results["metadatas"][i]
-                        if isinstance(results["metadatas"][i], dict)
-                        else results["metadatas"][i][0]
-                    ),
-                )
-                for i in range(len(results["documents"]))
-            ]
-        except AttributeError:
-            # If all else fails, raise a more helpful error
-            raise AttributeError(
-                "The collection object doesn't have required retrieval methods. "
-                "Expected a LangChain Chroma vector store or a ChromaDB collection."
-            )
-
-    return documents
-
-
-def format_docs_with_adaptive_context(docs, context_window: int = None) -> str:
-    """
-    Format retrieved documents using dynamic allocation based on model context window.
-
-    This function:
-    1. Adapts to the model's context window size
-    2. Keeps full content for the most relevant document when possible
-    3. Distributes remaining context based on document relevance
-    4. Preserves code structure by breaking at logical points
-    5. Provides diagnostics about context usage
-
-    Args:
-        docs: List of Document objects to format
-        context_window: Size of the model's context window in tokens (if provided)
-
-    Returns:
-        Formatted context string for the LLM
-    """
-    if not docs:
-        return ""
-
-    # Average characters per token (this is an approximation)
-    chars_per_token = 4
-
-    # Determine the maximum character budget based on context window
-    if context_window:
-        # Reserve 20% for the prompt and response
-        available_tokens = int(context_window * 0.8)
-        max_total_chars = available_tokens * chars_per_token
-    else:
-        # Default conservative estimate if we don't know the context window
-        max_total_chars = 8000
-
-    # Track metrics for diagnostic output
-    formatted_docs = []
-    total_chars = 0
-    doc_allocation = []
-
-    # Process documents by relevance order
-    for i, doc in enumerate(docs):
-        content = doc.page_content
-        original_length = len(content)
-
-        # Distribute context budget based on relevance
-        # First document gets up to 50% of remaining budget, but don't exceed its actual size
-        if i == 0:
-            # Give the first (most relevant) document up to 50% of the budget
-            budget_fraction = 0.5
-        else:
-            # Distribute remaining budget exponentially declining by relevance
-            budget_fraction = 0.5 / (2**i)
-
-        chars_to_allocate = min(
-            int(max_total_chars * budget_fraction),  # Relevance-based allocation
-            original_length,  # Don't allocate more than needed
-            max_total_chars - total_chars,  # Don't exceed remaining budget
+    if p.is_alive():
+        p.terminate()
+        p.join()
+        os.unlink(result_path)
+        raise TimeoutError(
+            f"Isolated predict subprocess timed out after {timeout}s.\n"
+            "Try increasing the `timeout` argument."
         )
 
-        # If we can fit the whole document, do it
-        if original_length <= chars_to_allocate:
-            formatted_docs.append(content)
-            used_chars = original_length
-            truncated = False
-        # Otherwise, truncate it
-        elif chars_to_allocate > 0:
-            # Try to break at a logical point like a line break
-            truncation_point = min(chars_to_allocate, original_length)
-
-            # Find a good break point - prefer newlines, then periods, then spaces
-            last_newline = content[:truncation_point].rfind("\n")
-            last_period = content[:truncation_point].rfind(".")
-            last_space = content[:truncation_point].rfind(" ")
-
-            # Use the best break point that's not too far from target (at least 80% of target)
-            threshold = truncation_point * 0.8
-            if last_newline > threshold:
-                truncation_point = last_newline + 1  # +1 to include the newline
-            elif last_period > threshold:
-                truncation_point = last_period + 1  # +1 to include the period
-            elif last_space > threshold:
-                truncation_point = last_space + 1  # +1 to include the space
-
-            formatted_content = f"{content[:truncation_point]}... (truncated)"
-            formatted_docs.append(formatted_content)
-            used_chars = truncation_point + 15  # +15 for the truncation message
-            truncated = True
-        else:
-            # No budget left for this document
-            break
-
-        # Track allocation for diagnostic output
-        doc_allocation.append(
-            {
-                "document": i + 1,
-                "original_chars": original_length,
-                "allocated_chars": used_chars,
-                "truncated": truncated,
-                "percent_used": (
-                    round(100 * used_chars / original_length, 1)
-                    if original_length > 0
-                    else 100
-                ),
-            }
+    if not error_queue.empty():
+        os.unlink(result_path)
+        raise RuntimeError(
+            f"Error inside isolated predict subprocess:\n{error_queue.get()}"
         )
 
-        total_chars += used_chars
+    try:
+        with open(result_path, "rb") as f:
+            result = pickle.load(f)
+        return result
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to read result from subprocess temp file: {e}\n"
+            f"Exit code: {p.exitcode}"
+        )
+    finally:
+        try:
+            os.unlink(result_path)
+        except OSError:
+            pass
 
-        # Stop if we've reached our budget
-        if total_chars >= max_total_chars:
-            break
 
-    # Join everything together with clear separators
-    formatted_text = "\n\n".join(formatted_docs)
+def _is_heavy(obj) -> bool:
+    """
+    Return True if ``obj`` is a heavyweight GPU/C++ object worth releasing.
 
-    return formatted_text
+    Covers:
+    - ``torch.nn.Module`` — any PyTorch layer, encoder, transformer, VAE, etc.
+    - Objects whose type name contains "llama" — llama_cpp C++ handles.
+    - Objects whose type name contains "pipeline" — diffusers Pipeline objects.
+    """
+    try:
+        import torch
+
+        if isinstance(obj, torch.nn.Module):
+            return True
+    except ImportError:
+        pass
+    type_name = type(obj).__name__.lower()
+    return any(kw in type_name for kw in ("llama", "pipeline", "diffusion"))
+
+
+def _release_inner(m) -> None:
+    """
+    Null out and delete every heavy sub-component found on a model object.
+
+    Instead of a hardcoded list of attribute names, this function inspects all
+    attributes dynamically and releases anything that looks like a GPU/C++ object
+    (``torch.nn.Module``, llama_cpp handles, diffusers pipelines).
+    Works on both direct model instances and nested objects like ``._pipeline``.
+    """
+    for attr in list(vars(m).keys()):
+        try:
+            obj = getattr(m, attr, None)
+        except Exception:
+            continue
+        if obj is None:
+            continue
+        # Recurse one level into known container attributes (e.g. ._pipeline)
+        if hasattr(obj, "__dict__") and not _is_heavy(obj):
+            _release_inner(obj)
+        if _is_heavy(obj):
+            try:
+                setattr(m, attr, None)
+                del obj
+            except Exception:
+                pass
+
+
+def release_model_vram(*models, label: str = "model") -> None:
+    """
+    Release GPU VRAM occupied by one or more model objects.
+
+    Use this between notebook sections to avoid CUDA Out-of-Memory errors when
+    loading a second model (e.g., after demo inference, before loading the
+    registered model from MLflow).
+
+    How it works:
+        1. For each model, nullifies heavy sub-components stored in ``_pipeline``
+           (text encoders, transformer, VAE) and the underlying C++ LLM client
+           so Python's garbage collector can reclaim the CUDA tensors immediately.
+        2. Unwraps MLflow ``PyFuncModel`` wrappers automatically — works the same
+           whether you pass a direct model or a ``mlflow.pyfunc.load_model()`` result.
+        3. Runs a multi-pass garbage collection and flushes the CUDA memory cache.
+
+    .. important::
+
+        After calling this function you **must** also ``del`` the variable in the
+        notebook cell::
+
+            release_model_vram(loaded_model, label="registered model")
+            del loaded_model   # ← required!
+
+        ``release_model_vram`` nulls the internal tensors, but only ``del`` in
+        the calling scope removes the last Python reference so the GC can
+        actually return the VRAM to the OS/driver.
+
+    Args:
+        *models: One or more model objects to release. Accepts direct model
+                 instances or ``mlflow.pyfunc.PyFuncModel`` wrappers.
+        label:   Human-readable name shown in the progress output (default "model").
+
+    Example::
+
+        # Before loading the registered model — avoids double VRAM usage:
+        release_model_vram(model, label="demo model")
+        del model
+
+        # After verification — free the registered model too:
+        release_model_vram(loaded_model, label="registered model")
+        del loaded_model
+    """
+    import gc
+
+    try:
+        import torch
+
+        has_cuda = torch.cuda.is_available()
+    except ImportError:
+        has_cuda = False
+
+    print(f"🧹 Releasing VRAM for: {label} ...")
+
+    for m in models:
+        _release_inner(m)
+        del m
+
+    # ── Multi-pass GC + CUDA flush ─────────────────────────────────────────
+    for _ in range(3):
+        gc.collect()
+
+    if has_cuda:
+        torch.cuda.synchronize()
+        torch.cuda.empty_cache()
+        gc.collect()
+        used = torch.cuda.memory_allocated() / 1024**3
+        total = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        print(
+            f"✅ Done — VRAM: {used:.1f} GB / {total:.1f} GB ({used / total * 100:.0f}% used)"
+        )
+    else:
+        print("✅ Done — CUDA not available, CPU memory released via GC")
+
+
+# WebM/Matroska EBML magic bytes — first 4 bytes of every WebM file.
+_WEBM_MAGIC = b"\x1a\x45\xdf\xa3"
+
+
+def remux_to_wav(audio_bytes: bytes) -> bytes:
+    """
+    Re-encode WebM/Opus audio bytes to WAV using ffmpeg.
+
+    On Ubuntu, JupyterLab and Streamlit's ``st.audio_input`` widget both capture
+    audio via the browser's HTML5 MediaRecorder API, which wraps recordings in a
+    WebM/Opus container.  Chromium and Firefox on Linux have a documented bug
+    where the muxer writes corrupt sample-start timestamps (negative values or
+    out-of-chronological-order timecodes) while keeping the stream duration
+    correct.  HTML5 audio players and ``IPython.display.Audio`` both rely on
+    strictly sequential timestamps, so playback silently fails or skips.
+
+    This function detects the WebM magic bytes at offset 0 and re-muxes the
+    stream through ffmpeg, which rewrites timestamps from the raw PCM samples
+    rather than trusting the container metadata.  The output is a standard
+    16 kHz mono PCM WAV — Whisper's native sample rate — so no further
+    resampling is needed downstream.
+
+    Non-WebM inputs (WAV, MP3, OGG, FLAC) pass through unchanged.
+
+    Args:
+        audio_bytes: Raw audio bytes as received from the browser or file upload.
+
+    Returns:
+        WAV bytes if remux succeeded; original bytes otherwise (with a logged
+        warning if ffmpeg is unavailable or returned a non-zero exit code).
+
+    Example::
+
+        from src.utils import remux_to_wav
+
+        with open("recording.webm", "rb") as f:
+            raw = f.read()
+
+        clean = remux_to_wav(raw)  # WAV bytes; no-op if already WAV/MP3/OGG
+        result = model.predict(pd.DataFrame([{
+            "question":     "",
+            "audio_base64": base64.b64encode(clean).decode("utf-8"),
+        }]))
+    """
+    if not audio_bytes or audio_bytes[:4] != _WEBM_MAGIC:
+        return audio_bytes
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        "pipe:0",
+        "-vn",  # strip any video stream
+        "-acodec",
+        "pcm_s16le",  # PCM 16-bit little-endian
+        "-ar",
+        "16000",  # 16 kHz — Whisper's native sample rate
+        "-ac",
+        "1",  # mono
+        "-f",
+        "wav",
+        "pipe:1",
+    ]
+    _log = logging.getLogger(__name__)
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=audio_bytes,
+            capture_output=True,
+            timeout=30,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            return proc.stdout
+        _log.warning(
+            "ffmpeg remux returned rc=%s: %s",
+            proc.returncode,
+            proc.stderr.decode("utf-8", errors="replace")[:300],
+        )
+    except FileNotFoundError:
+        _log.warning(
+            "ffmpeg not found — WebM audio returned unchanged. "
+            "Install with: sudo apt install ffmpeg"
+        )
+    except Exception as exc:
+        _log.warning("remux_to_wav failed: %s", exc)
+    return audio_bytes
+
+
+def is_wsl2() -> bool:
+    """
+    Detect whether the current process is running inside WSL2.
+
+    Reads /proc/sys/kernel/osrelease — present on all Linux kernels — and
+    checks for the "microsoft" or "wsl" strings that the WSL2 kernel inserts.
+
+    Returns:
+        True  — running inside WSL2 (Windows Subsystem for Linux 2)
+        False — native Linux, macOS, Windows, or /proc not available
+
+    Usage:
+        from src.utils import is_wsl2
+
+        if is_wsl2():
+            # apply WSL2-specific workarounds
+    """
+    try:
+        with open("/proc/sys/kernel/osrelease") as _f:
+            release = _f.read().lower()
+        return "microsoft" in release or "wsl" in release
+    except OSError:
+        return False
+
+
+def configure_cuda_for_environment() -> None:
+    """
+    Apply CUDA environment variable fixes appropriate for the current runtime.
+
+    Must be called **before** any ``import torch`` statement, because PyTorch
+    reads allocator settings at import time and they cannot be changed once the
+    CUDA context is live.
+
+    What this function does
+    -----------------------
+    1. Calls ``is_wsl2()`` to detect the runtime environment.
+
+    2. ``PYTORCH_CUDA_ALLOC_CONF`` — skips ``expandable_segments:True`` on WSL2.
+
+       ``expandable_segments:True`` requires the CUDA VMM API (``cuMemCreate``).
+       WSL2 CUDA drivers have limited VMM support; enabling the flag causes the
+       caching allocator to enter an invalid state at CUDA context creation time,
+       making ``torch.empty(device="cuda")`` fail with a driver error even though
+       ``torch.cuda.is_available()`` returns ``True``.
+
+       Native Linux / AI Studio → ``expandable_segments:True`` (safe, reduces
+                                   fragmentation for large diffusion models)
+       WSL2                     → ``max_split_size_mb:512,
+                                   garbage_collection_threshold:0.8``
+
+    3. ``ctypes.RTLD_GLOBAL`` preload of ``/usr/lib/wsl/lib/libcuda.so.1``
+       (WSL2 only, when present).
+
+       The nvidia-container-toolkit mounts the real Windows driver stubs at
+       ``/usr/lib/wsl/lib/`` inside the container.  Loading the stub with
+       ``RTLD_GLOBAL`` here ensures that torch's own ``dlopen()`` calls resolve
+       ``libcuda`` symbols from the real driver, not from the no-op stub baked
+       into the CUDA base image at ``/usr/lib/x86_64-linux-gnu/libcuda.so.1``.
+
+       If the path is absent the function logs a warning with remediation steps
+       — the nvidia-container-toolkit requires configuration on the WSL host.
+    Usage:
+        from src.utils import configure_cuda_for_environment
+        info = configure_cuda_for_environment()
+        # then: import torch
+    """
+    import ctypes
+
+    _logger = logging.getLogger(__name__)
+    result: dict = {
+        "wsl2": False,
+        "alloc_conf": "",
+        "driver_preloaded": False,
+        "driver_path": None,
+    }
+
+    wsl = is_wsl2()
+    result["wsl2"] = wsl
+
+    # ── 1. PYTORCH_CUDA_ALLOC_CONF ────────────────────────────────────────────
+    if not os.environ.get("PYTORCH_CUDA_ALLOC_CONF"):
+        if wsl:
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+                "max_split_size_mb:256," "garbage_collection_threshold:0.6"
+            )
+        else:
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+                "expandable_segments:True,"
+                "max_split_size_mb:256,"
+                "garbage_collection_threshold:0.6"
+            )
+
+    # ── CUDA environment — must be set before any torch import ───────────────────
+
+    # Restrict execution to GPU device 0 (avoids accidental multi-GPU problems)
+    os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+
+    # Keep CUDA launches asynchronous for performance.
+    # Set to "1" only when debugging CUDA errors (shows exact failing line).
+    os.environ.setdefault("CUDA_LAUNCH_BLOCKING", "0")
+
+    result["alloc_conf"] = os.environ["PYTORCH_CUDA_ALLOC_CONF"]
+
+    if wsl:
+        _logger.info(
+            "🔍 WSL2 detected — PYTORCH_CUDA_ALLOC_CONF set to: %s "
+            "(expandable_segments disabled: VMM not supported on WSL2)",
+            result["alloc_conf"],
+        )
+
+
+def pip_install(*args) -> Tuple[int, str]:
+    """
+    Run pip install with the current Python interpreter.
+
+    This utility function wraps subprocess.run to install Python packages
+    using the same interpreter that's running the notebook. This is safer
+    than calling system pip, which might target a different Python installation.
+
+    Args:
+        *args: Arguments to pass to pip install (e.g., "torch==2.5.1", "--index-url", "...")
+
+    Returns:
+        A tuple (return_code, stderr_output):
+            - return_code: 0 on success, non-zero on failure
+            - stderr_output: Error messages from pip (empty string if successful)
+
+    Example usage:
+        rc, err = pip_install("torch==2.5.1", "--index-url", "https://download.pytorch.org/whl/cu128")
+        if rc == 0:
+            print("✅ Installation successful")
+        else:
+            print(f"❌ Installation failed: {err}")
+    """
+    result = subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--quiet"] + list(args),
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode, result.stderr
