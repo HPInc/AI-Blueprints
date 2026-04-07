@@ -46,13 +46,11 @@ st.markdown(
 # ------------------------- SIDEBAR CONFIG -------------------------
 st.sidebar.title("⚙️ Usage")
 
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **Instructions:**
 1. Fill out the topic, question, and uploaded documents.
 2. Click **Run Analysis** to receive an AI-generated answer about your documents.
-"""
-)
+""")
 
 endpoint_url = "http://localhost:5002/invocations"
 

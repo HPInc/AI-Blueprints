@@ -322,7 +322,9 @@ def _load_pyfunc(data_path: str):
     # ── 1. Load configuration ────────────────────────────────────────────────
     config_path = data_path / "config.yaml"
     if not config_path.exists():
-        logger.warning(f"⚠️ config.yaml not found at {config_path}. Using empty config.")
+        logger.warning(
+            f"⚠️ config.yaml not found at {config_path}. Using empty config."
+        )
         config = {}
     else:
         config = load_config(str(config_path))

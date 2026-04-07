@@ -233,8 +233,7 @@ st.markdown(
 # ─────────────────────────────────────────────────────────────
 st.sidebar.title("⚙️ Configuration")
 
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **How to use:**
 1. Upload an audio or video file
 2. Wait for processing (embedding generation)
@@ -244,8 +243,7 @@ st.sidebar.markdown(
 **Supported Formats:**
 - Audio: MP3, WAV, OGG, FLAC, M4A
 - Video: MP4, MOV, AVI, MKV, WEBM
-"""
-)
+""")
 
 MLFLOW_ENDPOINT = st.sidebar.text_input(
     "MLflow Model Endpoint URL",

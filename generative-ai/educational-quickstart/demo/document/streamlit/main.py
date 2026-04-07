@@ -58,14 +58,12 @@ st.markdown(
 
 # ───────────────────────────── Sidebar ─────────────────────────────────────────
 st.sidebar.title("⚙️ Usage")
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
 **Instructions:**
 1. Paste or type your document text into the input field.
 2. Enter your question about the document.
 3. Click **Analyze Document** to receive an AI-generated answer.
-"""
-)
+""")
 
 endpoint_url = "http://localhost:5002/invocations"
 
