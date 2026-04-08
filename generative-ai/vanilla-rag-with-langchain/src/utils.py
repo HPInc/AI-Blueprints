@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Tuple
 from .trt_llm_langchain import TensorRTLangchain
 
-
 # Default models to be loaded in our examples:
 DEFAULT_MODELS = {
     "local": "/home/jovyan/datafabric/meta-llama3.1-8b-Q8/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
