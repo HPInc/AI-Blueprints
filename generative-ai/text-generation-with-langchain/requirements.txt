@@ -8,6 +8,7 @@ chromadb>=0.4.0
 PyYAML>=6.0
 requests>=2.25.0
 langchain==0.3.27
+langchain-core==0.3.76
 langchain-community==0.3.27
 langchain-text-splitters>=0.3.9
 langchain-huggingface==0.3.1
