@@ -12,7 +12,6 @@ from IPython.display import (
     display,
 )  # Rich HTML display utilities for Jupyter environments
 
-
 # Color and emoji mapping per level
 STYLE_MAP = {
     logging.DEBUG: {"bg": "#1e90ff", "fg": "white", "icon": "🔍"},

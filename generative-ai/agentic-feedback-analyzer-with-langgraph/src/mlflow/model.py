@@ -26,7 +26,6 @@ from pydantic import BaseModel
 from src.agentic_workflow import build_agentic_graph
 from src.simple_kv_memory import SimpleKVMemory
 
-
 # Set up logger
 logger = logging.getLogger(__name__)
 

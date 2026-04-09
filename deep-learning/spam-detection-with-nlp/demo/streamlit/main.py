@@ -6,7 +6,6 @@ import base64
 import numpy as np
 from pathlib import Path
 
-
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 # --- Streamlit Page Configuration ---
 st.set_page_config(
