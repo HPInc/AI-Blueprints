@@ -6,7 +6,7 @@ markdown-it-py==3.0.0
 beautifulsoup4==4.13.4
 langchain==0.3.27
 langchain_community==0.3.27
-langchain-core==0.3.76
+langchain-core==1.2.28
 langchain_huggingface==0.3.1
 torch==2.8.0
 PyYAML==6.0.2
@@ -14,7 +14,7 @@ transformers==4.53.0
 
 # Added to fix version mismatches
 scikit-learn==1.6.1
-mlflow==3.1.0
+mlflow==3.11.0rc1
 
 # Pinned to resolve dependency conflicts from logs
 numpy~=1.26.4
