@@ -5,7 +5,7 @@
 Get started instantly with **HP AI Studio** — run over 20 fully local AI Blueprint projects **with one click** in less than 5 minutes:
 
 * 📥 [Download HP AI Studio](https://zdocs.datascience.hp.com/downloads)
-* ✍️ [Create a free account](https://reinvent.hp.com/AI-Studio-Free-Sign-Up?jumpid=va_us_mu_mk_hc_r12139_aw_x_11824)
+* ✍️ [Create a free account](https://aistudio.oc.hp.com/v3/activation/account/free-account-start?jumpid=va_us_mu_mk_hc_r12139_aw_x_11824)
 
 
 
@@ -53,7 +53,7 @@ We’re actively expanding this collection. If you have ideas or want to suggest
 
 ## 🚀 Get Started with HP AI Studio
 
-To run any of these projects quickly and effortlessly, you can [**download HP AI Studio for free**](https://reinvent.hp.com/AI-Studio-Free-Sign-Up).
+To run any of these projects quickly and effortlessly, you can [**download HP AI Studio for free**](https://aistudio.oc.hp.com/v3/activation/account/free-account-start).
 
 
 ---
