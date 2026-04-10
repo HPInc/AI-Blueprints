@@ -3,7 +3,7 @@
 
 langchain==0.3.25
 langchain_community==0.3.24
-langchain_core==0.3.60
+langchain_core==1.2.28
 langchain_huggingface==0.2.0
 promptquality==1.11.1
 PyYAML==6.0.2
@@ -15,6 +15,6 @@ fastapi==0.115.4
 protobuf>=4.25.8,<5
 numpy>=1.24,<2
 zstandard==0.18.0
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.11.0rc1 #TODO: remove me when you finish
 hf_xet==1.1.3
 onnxruntime>=1.14.1

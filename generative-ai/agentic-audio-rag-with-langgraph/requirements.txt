@@ -5,7 +5,7 @@ langgraph==1.0.1
 unstructured==0.18.9
 tqdm>=4.66.4
 pydantic<3
-transformers==4.53.2
+transformers==5.0.0rc3
 accelerate==1.6.0
 pyttsx3
 torchaudio
@@ -15,10 +15,10 @@ qwen-omni-utils
 imageio-ffmpeg
 faiss-cpu>=1.8.0
 tabulate==0.9.0
-mlflow==3.1.0
+mlflow==3.11.0rc1
 
 langchain==0.3.27
-langchain-core==0.3.76
+langchain-core==1.2.28
 langchain-community==0.3.27
 langchain-text-splitters>=0.3.9
 langchain-huggingface==0.3.1
