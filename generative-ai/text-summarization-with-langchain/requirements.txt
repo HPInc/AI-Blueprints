@@ -2,16 +2,11 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 webvtt-py==0.5.1
-langchain-huggingface==0.2.0
-pyyaml
-pandas
-sentence-transformers
-langchain_core
-langchain_huggingface
+pyyaml==6.0.3
+pandas===2.2.3
 tokenizers>=0.13.0
 httpx>=0.24.0
 mlflow==3.1.0
-
 langchain==0.3.27
 langchain-core==0.3.76
 langchain-community==0.3.27
