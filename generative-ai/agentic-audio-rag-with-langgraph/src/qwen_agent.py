@@ -86,15 +86,27 @@ class QwenOmniAgent:
         if usable == 0:
             return {"answer": "Not found in audio.", "evidence": []}
 
+        # Qwen Omni requires this exact system prompt for correct audio processing.
+        # Custom instructions must go in the user turn, not the system prompt.
+        system_prompt = (
+            "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, "
+            "capable of perceiving auditory and visual inputs, as well as generating "
+            "text and speech."
+        )
+
+        # Prepend task instructions to the user content
+        user_content.insert(
+            0,
+            {
+                "type": "text",
+                "text": "You are a precise analyst. Listen to the audio clips and answer using only their content. Keep timestamps where helpful.\n",
+            },
+        )
+
         conversation = [
             {
                 "role": "system",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": "You are a precise analyst. Listen to the audio clips and answer using only their content. Keep timestamps where helpful.",
-                    }
-                ],
+                "content": [{"type": "text", "text": system_prompt}],
             },
             {"role": "user", "content": user_content},
         ]
@@ -138,7 +150,7 @@ class QwenOmniAgent:
                 eos_token_id=eos_id,
                 pad_token_id=pad_id,
                 return_dict_in_generate=True,
-                repetition_penalty=1.05,  # Light penalty to maintain coherence
+                repetition_penalty=1.2,  # Sufficient to prevent repetitive degenerate output
             )
 
         # Decode only the new tokens (exclude prompt)
