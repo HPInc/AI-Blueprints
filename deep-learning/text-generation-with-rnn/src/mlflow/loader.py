@@ -77,7 +77,7 @@ def _load_pyfunc(data_path: str):
             f"Character set loaded from encoder: {len(all_chars)} unique characters"
         )
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Initialize Model
     try:
