@@ -4,7 +4,9 @@ This module provides the _load_pyfunc function required by MLflow's models-from-
 """
 
 import os
+import sys
 import logging
+import torch
 from typing import Dict, Any, Optional
 
 # Set up logger
@@ -62,19 +64,20 @@ def _load_pyfunc(data_path: str):
     if os.path.exists(data_file_path):
         with open(data_file_path, "r", encoding="utf8") as f:
             text = f.read()
-        all_chars = set(text)
+        all_chars = sorted(list(set(text)))
         logger.info(
             f"Loaded character set from training data: {len(all_chars)} unique characters"
         )
     else:
         # Fallback: load from encoder keys if data file not available
-        import torch
 
         encoder_dict = torch.load(encoder_path)
-        all_chars = set(encoder_dict.keys())
+        all_chars = sorted(list(encoder_dict.keys()))
         logger.info(
-            f"Loaded character set from encoder: {len(all_chars)} unique characters"
+            f"Character set loaded from encoder: {len(all_chars)} unique characters"
         )
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"    
 
     # Initialize Model
     try:
@@ -84,6 +87,7 @@ def _load_pyfunc(data_path: str):
             decoder_path=decoder_path,
             encoder_path=encoder_path,
             all_chars=all_chars,
+            device=device,
         )
         logger.info("RNN Model initialized successfully")
         return model

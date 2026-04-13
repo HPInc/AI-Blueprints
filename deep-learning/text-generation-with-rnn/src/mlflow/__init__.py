@@ -5,7 +5,7 @@ This module provides the standardized universal structure for MLflow model loggi
 and loading using the models-from-code approach.
 """
 
-__all__ = ["Model", "Logger"]
+__all__ = ["Model", "Logger", "CharModel"]
 
 
 def __getattr__(name):
@@ -18,4 +18,8 @@ def __getattr__(name):
         from .logger import Logger
 
         return Logger
+    if name == "CharModel":
+        from .model import CharModel
+
+        return CharModel
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
