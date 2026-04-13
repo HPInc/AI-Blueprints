@@ -1,11 +1,11 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
-langchain-community==0.3.27
-langgraph==0.5.3
-unstructured==0.18.9
-pypdf==6.0.0
+langchain-community==0.4.1
+langgraph==1.0.10rc1
+unstructured==0.18.18
+pypdf==6.10.0
 python-docx==1.2.0
 msoffcrypto-tool==5.4.2
 openpyxl==3.1.5
-mlflow==3.1.0 #TODO: remove me when you finish
+mlflow==3.11.0rc1 #TODO: remove me when you finish
