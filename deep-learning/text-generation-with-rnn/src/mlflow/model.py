@@ -9,6 +9,7 @@ Business Logic Layer
 """
 
 import logging
+from pyexpat import model
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -31,6 +32,7 @@ class CharModel(nn.Module):
         num_layers=4,
         drop_prob=0.5,
         use_gpu=False,
+        device="cpu",
     ):
         """Initializes CharModel
 
@@ -49,6 +51,7 @@ class CharModel(nn.Module):
             self.num_layers = num_layers
             self.num_hidden = num_hidden
             self.use_gpu = use_gpu
+            self.device = device
 
             self.all_chars = all_chars
             self.decoder = torch.load(decoder)
@@ -67,6 +70,7 @@ class CharModel(nn.Module):
 
         except Exception as e:
             logger.error(f"Error initializing CharModel: {str(e)}")
+            raise
 
     def forward(self, x, hidden):
         """Implementation of the CharModel logic, in which, the input passes through every step of the arquiteture
@@ -105,14 +109,13 @@ class CharModel(nn.Module):
             with shape (num_layers, batch_size, num_hidden). Returns None if an exception occurs, and logs the error.
         """
         try:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             if self.use_gpu:
                 hidden = (
                     torch.zeros(self.num_layers, batch_size, self.num_hidden).to(
-                        device
+                        self.device
                     ),
                     torch.zeros(self.num_layers, batch_size, self.num_hidden).to(
-                        device
+                        self.device
                     ),
                 )
             else:
@@ -141,6 +144,7 @@ class Model:
         decoder_path: str,
         encoder_path: str,
         all_chars: set,
+        device: str,
     ):
         """
         Direct dependency injection - no MLflow context.
@@ -152,10 +156,12 @@ class Model:
             decoder_path: Path to the character decoder dictionary
             encoder_path: Path to the character encoder dictionary
             all_chars: Set of unique characters found in the training text
+            device: Device to run the model on ("cuda" or "cpu")
         """
         try:
             self.config = config
             self.all_chars = all_chars
+            self.device = device
 
             # Initialize the CharModel with architecture parameters
             self.model = CharModel(
@@ -163,9 +169,10 @@ class Model:
                 num_hidden=512,
                 num_layers=3,
                 drop_prob=0.5,
-                use_gpu=False,
+                use_gpu=True if device == "cuda" else False,
                 decoder=decoder_path,
                 encoder=encoder_path,
+                device=device,
             )
 
             # Load the trained model state dictionary
@@ -223,12 +230,16 @@ class Model:
             encoded_text = np.array([[encoded_text]])
             encoded_text = self.one_hot_encoder(encoded_text, len(self.model.all_chars))
             inputs = torch.from_numpy(encoded_text)
-            inputs = inputs.cpu()
+
+            if self.model.use_gpu:
+                inputs = inputs.to(self.device)
 
             hidden = tuple([state.data for state in hidden])
             lstm_out, hidden = self.model(inputs, hidden)
             probs = F.softmax(lstm_out, dim=1).data
-            probs = probs.cpu()
+
+            if self.model.use_gpu:
+                probs = probs.cpu()
 
             probs, index_positions = probs.topk(k)
             index_positions = index_positions.numpy().squeeze()
@@ -265,7 +276,10 @@ class Model:
             The full generated text including the seed and the newly predicted characters.
         """
         try:
-            self.model.cpu()
+            if self.model.use_gpu:
+                self.model.to(self.device)
+            else:
+                self.model.cpu()
 
             self.model.eval()
             output_chars = [c for c in seed]
@@ -306,7 +320,7 @@ class Model:
             size = model_input["size"][0]
             output = self.generate_text(seed=initial_word, size=size)
 
-            return output
+            return pd.DataFrame({"generated_text": [output]})
 
         except Exception as e:
             error_details = f"Predict method error: {str(e)}\nFull traceback:\n{traceback.format_exc()}"
