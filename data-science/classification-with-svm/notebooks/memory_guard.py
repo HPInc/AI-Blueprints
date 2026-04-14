@@ -6,7 +6,6 @@ import subprocess
 from dataclasses import dataclass
 from typing import Optional
 
-
 FREE_FRACTION_WARN_THRESHOLD = 0.30  # warn if free < 30% of total
 
 TROUBLESHOOTING_TEXT = (
@@ -25,8 +24,6 @@ WSL_NOTE_TEXT = (
     "Windows Task Manager."
     "</div>"
 )
-
-
 
 
 @dataclass(frozen=True)
@@ -54,14 +51,18 @@ class MemoryStatus:
 
     @property
     def available_fraction(self) -> float:
-        return 0.0 if self.total_gb <= 0 else self.effective_available_gb / self.total_gb
-
+        return (
+            0.0 if self.total_gb <= 0 else self.effective_available_gb / self.total_gb
+        )
 
 
 def _run_powershell(cmd: str) -> str:
     import shutil
 
-    ps = shutil.which("powershell.exe") or "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+    ps = (
+        shutil.which("powershell.exe")
+        or "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+    )
     return subprocess.check_output(
         [ps, "-NoProfile", "-Command", cmd],
         text=True,
@@ -110,6 +111,7 @@ def _check_host_ram_windows() -> Optional[MemoryStatus]:
             "ConvertTo-Json -Compress)"
         )
         import json
+
         obj = json.loads(out)
         total_kb = int(obj["TotalVisibleMemorySize"])
         free_kb = int(obj["FreePhysicalMemory"])
@@ -134,13 +136,18 @@ def _check_host_vram_windows() -> Optional[MemoryStatus]:
             return None
         free_mb = int(m.group(1))
         total_mb = int(m.group(2))
-        return MemoryStatus(free_gb=_mb_to_gb(free_mb), total_gb=_mb_to_gb(total_mb), available_gb=_mb_to_gb(free_mb),)
+        return MemoryStatus(
+            free_gb=_mb_to_gb(free_mb),
+            total_gb=_mb_to_gb(total_mb),
+            available_gb=_mb_to_gb(free_mb),
+        )
     except Exception:
         return None
 
 
 def _pct(x: float) -> str:
     return f"{x:.1f}%"
+
 
 def _bytes_to_gb(value: int) -> float:
     return round(value / (1024**3), 2)
@@ -172,9 +179,6 @@ def check_ram() -> MemoryStatus:
     )
 
 
-
-
-
 def _check_vram_torch() -> Optional[MemoryStatus]:
     try:
         import torch  # type: ignore
@@ -185,7 +189,7 @@ def _check_vram_torch() -> Optional[MemoryStatus]:
         return MemoryStatus(
             free_gb=_bytes_to_gb(int(free_b)),
             total_gb=_bytes_to_gb(int(total_b)),
-            available_gb=_bytes_to_gb(int(free_b)), 
+            available_gb=_bytes_to_gb(int(free_b)),
         )
     except Exception:
         return None
@@ -201,7 +205,7 @@ def _check_vram_pynvml() -> Optional[MemoryStatus]:
         return MemoryStatus(
             free_gb=_bytes_to_gb(int(mem.free)),
             total_gb=_bytes_to_gb(int(mem.total)),
-            available_gb=_bytes_to_gb(int(mem.free)), 
+            available_gb=_bytes_to_gb(int(mem.free)),
         )
     except Exception:
         return None
@@ -251,8 +255,6 @@ def check_vram() -> Optional[MemoryStatus]:
         return v
 
     return _check_vram_nvidia_smi()
-
-
 
 
 def _display_usage_pies(ram: MemoryStatus, vram: Optional[MemoryStatus]) -> None:
@@ -413,7 +415,7 @@ def run_memory_check_notebook(
             "</ul>"
             "</div>"
         )
-    
+
     if min_total_vram_gb > 0:
         if vram is None:
             total_fail_reasons.append(
@@ -437,7 +439,6 @@ def run_memory_check_notebook(
                 "</div>"
             )
 
-
     if total_fail_reasons:
         md = (
             "<div style='border-left:6px solid #d32f2f; padding:12px;'>"
@@ -445,14 +446,17 @@ def run_memory_check_notebook(
             "<div style='margin-top:10px;'>"
             + "\n\n".join(total_fail_reasons)
             + "</div>"
-            "<div style='margin-top:12px;'>"
-            + TROUBLESHOOTING_TEXT
-            + "</div></div>"
+            "<div style='margin-top:12px;'>" + TROUBLESHOOTING_TEXT + "</div></div>"
         )
         if display and Markdown:
             display(Markdown(md))
         else:
-            print("SYSTEM RESOURCE CHECK FAILED\n" + "\n\n".join(total_fail_reasons) + "\n" + TROUBLESHOOTING_TEXT)
+            print(
+                "SYSTEM RESOURCE CHECK FAILED\n"
+                + "\n\n".join(total_fail_reasons)
+                + "\n"
+                + TROUBLESHOOTING_TEXT
+            )
 
         # Kernel shutdown only for total hardware insufficiency (RED)
         _shutdown_kernel()
@@ -475,8 +479,12 @@ def run_memory_check_notebook(
             "</ul>"
             "</div>"
         )
-    
-    if min_total_vram_gb > 0 and vram is not None and vram.available_fraction < FREE_FRACTION_WARN_THRESHOLD:
+
+    if (
+        min_total_vram_gb > 0
+        and vram is not None
+        and vram.available_fraction < FREE_FRACTION_WARN_THRESHOLD
+    ):
         low_free_reasons.append(
             "<div style='margin-bottom:10px;'>"
             "<div style='font-weight:800; color:#f9a825;'>⚠️ Free VRAM may not be sufficient</div>"
@@ -489,22 +497,25 @@ def run_memory_check_notebook(
             "</div>"
         )
 
-
     # -------------------------
     # Render YELLOW or GREEN
     # -------------------------
     vram_lines = []
     if min_total_vram_gb > 0:
         if vram is None:
-            vram_lines.append(f"- Total VRAM: `Not detected` (Required: `>= {min_total_vram_gb} GB`)")
+            vram_lines.append(
+                f"- Total VRAM: `Not detected` (Required: `>= {min_total_vram_gb} GB`)"
+            )
         else:
-            vram_lines.append(f"- Free VRAM: `{vram.free_gb}/{vram.total_gb} GB` (Required Total: `>= {min_total_vram_gb} GB`)")
+            vram_lines.append(
+                f"- Free VRAM: `{vram.free_gb}/{vram.total_gb} GB` (Required Total: `>= {min_total_vram_gb} GB`)"
+            )
 
     ram_used_pct = ram.used_fraction * 100.0
     base_lines = [
         f"- <b>RAM</b>: Available  {ram.available_gb}/{ram.total_gb} GB | Used {_pct(ram_used_pct)} | Required Total ≥ {min_total_ram_gb} GB",
     ]
-    
+
     if min_total_vram_gb > 0:
         if vram is None:
             base_lines.append(
@@ -520,22 +531,23 @@ def run_memory_check_notebook(
         md = (
             "<div style='border-left:6px solid #f9a825; padding:12px;'>"
             "<h2 style='margin:0;'>⚠️ System Resource Check Warning</h2>"
-            "<div style='margin-top:10px;'>"
-            + "\n\n".join(low_free_reasons)
-            + "</div>"
+            "<div style='margin-top:10px;'>" + "\n\n".join(low_free_reasons) + "</div>"
             "<div style='margin-top:12px;'><b>Current Resources</b><br>"
             + "<br>".join(line.replace("- ", "") for line in base_lines)
             + WSL_NOTE_TEXT
             + "</div>"
-            "<div style='margin-top:12px;'>"
-            + TROUBLESHOOTING_TEXT
-            + "</div></div>"
+            "<div style='margin-top:12px;'>" + TROUBLESHOOTING_TEXT + "</div></div>"
         )
         if display and Markdown:
             display(Markdown(md))
             _render_usage_bars(ram, vram, min_total_ram_gb, min_total_vram_gb)
         else:
-            print("SYSTEM RESOURCE CHECK WARNING\n" + "\n\n".join(low_free_reasons) + "\n\n" + "\n".join(base_lines))
+            print(
+                "SYSTEM RESOURCE CHECK WARNING\n"
+                + "\n\n".join(low_free_reasons)
+                + "\n\n"
+                + "\n".join(base_lines)
+            )
         return
 
     md = (
