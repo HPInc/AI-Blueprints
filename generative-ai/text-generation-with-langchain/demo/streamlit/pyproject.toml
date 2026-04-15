@@ -13,7 +13,7 @@ dependencies = [
 
 [tool.poetry.dependencies]
 python = ">=3.11"
-streamlit = "1.45.0"
+streamlit = ">=1.43.1,<2.0.0"
 urllib3 = "2.5.0"
 pillow = "11.3.0"
 protobuf = "6.31.1"
