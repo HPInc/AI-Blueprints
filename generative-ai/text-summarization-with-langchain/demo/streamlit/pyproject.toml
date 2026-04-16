@@ -19,7 +19,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11"
-streamlit = ">=1.43.1,<2.0.0"
+streamlit = ">=1.54.0,<2.0.0"
 requests = "^2.31.0"
 pypdf2 = "^3.0.1"
 python-docx = "^0.8.11"
