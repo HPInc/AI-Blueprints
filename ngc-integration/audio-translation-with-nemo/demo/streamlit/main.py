@@ -150,7 +150,7 @@ if translate:
 
         except Exception as e:
             st.error(f"Translation request failed: {e}")
-            
+
 # ────────────────  FOOTER  ─────────────────
 
 st.warning(
