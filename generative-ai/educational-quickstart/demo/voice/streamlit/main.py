@@ -289,7 +289,7 @@ with tab_upload:
                 process_audio(audio_bytes, f"Uploaded: {audio_file.name}")
                 st.session_state.voice_processing = False
 
-#-------------------------FOOTER-----------------------------------------------------
+# -------------------------FOOTER-----------------------------------------------------
 st.warning(
     "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
     "It does not represent a fully optimized or production-grade solution. "

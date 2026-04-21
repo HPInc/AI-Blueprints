@@ -188,7 +188,7 @@ if submitted:
             else:
                 st.error(result["error"])
 
-#-------------------------FOOTER-----------------------------------------------------
+# -------------------------FOOTER-----------------------------------------------------
 st.warning(
     "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
     "It does not represent a fully optimized or production-grade solution. "
