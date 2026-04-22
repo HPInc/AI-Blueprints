@@ -1,1 +1,2 @@
-mlflow==3.1.0 #TODO: remove me when you finish
+ai-studio-blueprint-kit==0.1.1
+mlflow==3.10.1
