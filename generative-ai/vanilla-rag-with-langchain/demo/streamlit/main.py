@@ -144,3 +144,11 @@ if submit:
 
         except Exception as e:
             st.error(f"❌ Inference error: {e}")
+
+
+st.warning(
+    "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
+    "It does not represent a fully optimized or production-grade solution. "
+    "Outputs may not be accurate, complete, or suitable for real-world decision-making. "
+    "Results can often be improved by modifying the underlying code, models, data sources, and configuration."
+)
