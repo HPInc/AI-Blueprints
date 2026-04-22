@@ -159,6 +159,13 @@ if "enhanced_image" in st.session_state:
     )
 
 # --- Footer ---
+st.warning(
+    "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
+    "It does not represent a fully optimized or production-grade solution. "
+    "Outputs may not be accurate, complete, or suitable for real-world decision-making. "
+    "Results can often be improved by modifying the underlying code, models, data sources, and configuration."
+)
+
 st.markdown(
     """
     *🖼️ Image Super Resolution © 2025* local, private, super resolution + MLflow.
