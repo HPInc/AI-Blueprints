@@ -1,6 +1,9 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
+ai-studio-blueprint-kit==0.1.1
+mlflow==3.10.1
+
 requests==2.32.4
 markdown-it-py==3.0.0
 beautifulsoup4==4.13.4
@@ -14,7 +17,6 @@ transformers==4.53.0
 
 # Added to fix version mismatches
 scikit-learn==1.6.1
-mlflow==3.1.0
 
 # Pinned to resolve dependency conflicts from logs
 numpy~=1.26.4
