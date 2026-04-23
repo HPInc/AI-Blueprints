@@ -108,8 +108,8 @@ class CharModel(nn.Module):
             Tuple: A tuple containing the hidden state and cell state tensors
             with shape (num_layers, batch_size, num_hidden). Returns None if an exception occurs, and logs the error.
         """
-        try:            
-            if self.use_gpu:               
+        try:
+            if self.use_gpu:
                 hidden = (
                     torch.zeros(self.num_layers, batch_size, self.num_hidden).to(
                         self.device
@@ -169,10 +169,10 @@ class Model:
                 num_hidden=512,
                 num_layers=3,
                 drop_prob=0.5,
-                use_gpu=True if device=="cuda" else False,
+                use_gpu=True if device == "cuda" else False,
                 decoder=decoder_path,
                 encoder=encoder_path,
-                device=device
+                device=device,
             )
 
             # Load the trained model state dictionary
@@ -229,16 +229,16 @@ class Model:
             encoded_text = self.model.encoder[char]
             encoded_text = np.array([[encoded_text]])
             encoded_text = self.one_hot_encoder(encoded_text, len(self.model.all_chars))
-            inputs = torch.from_numpy(encoded_text)         
+            inputs = torch.from_numpy(encoded_text)
 
-            if(self.model.use_gpu):
-                inputs = inputs.to(self.device)              
+            if self.model.use_gpu:
+                inputs = inputs.to(self.device)
 
             hidden = tuple([state.data for state in hidden])
             lstm_out, hidden = self.model(inputs, hidden)
             probs = F.softmax(lstm_out, dim=1).data
-            
-            if(self.model.use_gpu):
+
+            if self.model.use_gpu:
                 probs = probs.cpu()
 
             probs, index_positions = probs.topk(k)
@@ -276,7 +276,7 @@ class Model:
             The full generated text including the seed and the newly predicted characters.
         """
         try:
-            if(self.model.use_gpu):
+            if self.model.use_gpu:
                 self.model.to(self.device)
             else:
                 self.model.cpu()

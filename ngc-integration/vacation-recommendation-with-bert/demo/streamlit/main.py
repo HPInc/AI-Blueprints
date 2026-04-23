@@ -120,3 +120,12 @@ if st.button("🔍 Get Recommendations"):
                     "❌ Error fetching recommendations. Please check your connection."
                 )
                 st.error(str(e))
+
+st.warning(
+    "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
+    "It does not represent a fully optimized or production-grade solution. "
+    "Outputs may not be accurate, complete, or suitable for real-world decision-making. "
+    "Results can often be improved by modifying the underlying code, models, data sources, and configuration."
+)
+
+st.write("Built with ❤️ using HP AI Studio")
