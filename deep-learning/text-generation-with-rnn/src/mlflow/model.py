@@ -144,7 +144,7 @@ class Model:
         decoder_path: str,
         encoder_path: str,
         all_chars: set,
-        device: str,
+        device: str
     ):
         """
         Direct dependency injection - no MLflow context.
@@ -293,7 +293,7 @@ class Model:
                 char, hidden = self.predict_next_char(output_chars[-1], hidden, k=k)
                 output_chars.append(char)
 
-            return "".join(output_chars)
+            return ''.join(output_chars)
 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
