@@ -5,9 +5,9 @@ ai-studio-blueprint-kit==0.1.1
 mlflow==3.10.1
 
 
-PyPDF
-pymupdf
-pyyaml
+pypdf>=4.0.0
+PyMuPDF>=1.24.0
+pyyaml>=6.0.2
 tokenizers>=0.13.0
 httpx>=0.24.0
 

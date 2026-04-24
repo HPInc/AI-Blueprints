@@ -10,7 +10,7 @@ python = ">=3.11,<4.0"
 streamlit = ">=1.43.1,<2.0.0"
 pillow = ">=10.4.0,<12.0"
 urllib3 = ">=2.5.0"
-requests = ">=2.32.0"
+requests = ">=2.32.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
