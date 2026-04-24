@@ -1,7 +1,7 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
-langgraph==1.0.1
+langgraph==1.0.10
 unstructured==0.18.18
 tqdm>=4.66.4
 pydantic<3
@@ -18,9 +18,9 @@ faiss-cpu>=1.8.0
 tabulate==0.9.0
 
 langchain==0.3.27
-langchain-core==0.3.81
+langchain-core==1.2.28
 langchain-community==0.3.27
-langchain-text-splitters>=0.3.9
+langchain-text-splitters>=1.1.2
 langchain-huggingface==0.3.1
 sentence-transformers==3.0.0
-mlflow==3.10.1
+mlflow==3.11.1

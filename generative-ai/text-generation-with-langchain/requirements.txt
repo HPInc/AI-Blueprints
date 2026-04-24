@@ -1,7 +1,7 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.10.1
+mlflow==3.11.1
 
 PyMuPDF==1.25.4
 feedparser==6.0.11
@@ -11,9 +11,9 @@ chromadb>=0.4.0
 PyYAML>=6.0
 requests>=2.33.0
 langchain==0.3.27
-langchain-core==0.3.81
+langchain-core==1.2.28
 langchain-community==0.3.27
-langchain-text-splitters>=0.3.9
+langchain-text-splitters>=1.1.2
 langchain-huggingface==0.3.1
 sentence-transformers==3.0.0
 llama-cpp-python==0.3.16

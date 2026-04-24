@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "streamlit>=1.28.0",
     "requests>=2.33.0",
-    "pypdf>=6.7.5",
+    "pypdf>=6.10.2",
     "python-docx>=1.1.0"
 ]
 
@@ -21,7 +21,7 @@ package-mode = false
 python = ">=3.11"
 streamlit = "1.45.0"
 requests = "^2.33.0"
-pypdf = "^6.7.5"
+pypdf = "^6.10.2"
 python-docx = "^1.1.0"
 pillow = "12.2.0"
 urllib3 = "2.5.0"

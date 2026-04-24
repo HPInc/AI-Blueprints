@@ -1,7 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu128
 
 # ─── Core ML/AI Frameworks ───
-mlflow==3.1.0
+mlflow==3.11.1
 transformers==5.0.0rc3
 diffusers==0.36.0
 accelerate==1.12.0
@@ -24,7 +24,7 @@ pydantic==2.12.5
 streamlit==1.54.0
 
 # ─── Document & Media Processing ───
-pypdf==6.7.5
+pypdf==6.10.2
 PyMuPDF==1.27.1
 pdfplumber==0.11.9
 python-docx==1.2.0
