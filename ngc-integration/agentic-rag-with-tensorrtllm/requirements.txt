@@ -9,10 +9,10 @@ promptquality==1.11.1
 PyYAML==6.0.2
 pymupdf==1.26.0
 langgraph==0.4.5
-unstructured==0.17.2
+unstructured==0.18.18
 chromadb==0.6.3
 fastapi==0.115.4
-protobuf>=4.25.8,<5
+protobuf>=5.29.6
 numpy>=1.24,<2
 zstandard==0.18.0
 mlflow==3.1.0 #TODO: remove me when you finish

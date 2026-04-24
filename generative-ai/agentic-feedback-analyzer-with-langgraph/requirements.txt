@@ -5,8 +5,8 @@ ai-studio-blueprint-kit==0.1.1
 mlflow==3.10.1
 langchain-community==0.3.27
 langgraph==0.5.3
-unstructured==0.18.9
-pypdf==6.0.0
+unstructured==0.18.18
+pypdf==6.7.5
 python-docx==1.2.0
 msoffcrypto-tool==5.4.2
 openpyxl==3.1.5

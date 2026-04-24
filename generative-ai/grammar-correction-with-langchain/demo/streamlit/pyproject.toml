@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "spam-detection-streamlit-webapp"
+name = "code-gen-streamlit-webapp"
 version = "0.1.0"
 description = ""
 authors = ["gabisponciano <gabriela.ponciano2016@gmail.com>"]
@@ -8,7 +8,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11"
-streamlit = ">=1.43.1,<2.0.0"
+streamlit = ">=1.54.0,<2.0.0"
 pillow = ">=12.2.0"
 urllib3 = ">=2.5.0"
 
