@@ -7,7 +7,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
-streamlit = ">=1.43.1,<2.0.0"
+streamlit = ">=1.54.0,<2.0.0"
 pillow = ">=11.3.0"
 urllib3 = ">=2.5.0"
 langchain = ">=0.3.26,<1.0.0"
