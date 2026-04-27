@@ -54,4 +54,4 @@ plotly==6.5.2
 psutil==7.2.1
 GPUtil==1.4.0
 PyYAML==6.0.3
-python-dotenv==1.2.1
+python-dotenv==1.2.2
