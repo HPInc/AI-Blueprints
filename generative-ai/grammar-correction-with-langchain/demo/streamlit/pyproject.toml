@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "text-generation-streamlit-webapp"
+name = "grammar-correction-langchain"
 version = "0.1.0"
 description = ""
-authors = ["gabisponciano <gabriela.ponciano2016@gmail.com>"]
+authors = ["danielruas <daniel.ruas@hp.com>"]
 readme = "README.md"
 package-mode = false
 
@@ -11,6 +11,7 @@ python = ">=3.11"
 streamlit = ">=1.54.0,<2.0.0"
 pillow = ">=11.3.0"
 urllib3 = ">=2.5.0"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
