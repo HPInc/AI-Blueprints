@@ -18,7 +18,7 @@ import pandas as pd
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.llms import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Fix for Pydantic model rebuild issue
 if hasattr(LlamaCpp, "model_rebuild"):
@@ -29,10 +29,10 @@ from langchain_huggingface import (
     HuggingFaceEndpoint,
 )
 from langchain_community.vectorstores import Chroma
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
-from langchain.schema.runnable import RunnablePassthrough, RunnableLambda, RunnableMap
-from langchain.schema.document import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda, RunnableMap
+from langchain_core.documents import Document
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 # Add the src directory to the path to import utilities

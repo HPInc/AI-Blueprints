@@ -5,7 +5,7 @@ This module provides improved prompt templates for RAG applications,
 with specialized handling for different model sources to prevent hallucination.
 """
 
-from langchain.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from typing import Dict, List, Any, Optional
 
 
