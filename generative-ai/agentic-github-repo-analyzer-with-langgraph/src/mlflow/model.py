@@ -19,7 +19,7 @@ from pathlib import Path  # Object-oriented filesystem paths
 from typing import Any, Dict, List  # Static typing support
 
 # ─────── Third-Party Package Imports ───────
-from langchain.docstore.document import (
+from langchain_core.documents import (
     Document,
 )  # Core document abstraction for LangChain
 from langchain_community.llms import LlamaCpp  # Local LLM interface for Llama.cpp
