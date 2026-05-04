@@ -411,4 +411,3 @@ def release_model_vram(*models, label: str = "model") -> None:
         )
     else:
         print("✅ Done — CUDA not available, CPU memory released via GC")
-
