@@ -288,3 +288,13 @@ with tab_upload:
                 st.session_state.voice_processing = True
                 process_audio(audio_bytes, f"Uploaded: {audio_file.name}")
                 st.session_state.voice_processing = False
+
+# -------------------------FOOTER-----------------------------------------------------
+st.warning(
+    "Disclaimer: This application is provided for demonstration and illustrative purposes only. "
+    "It does not represent a fully optimized or production-grade solution. "
+    "Outputs may not be accurate, complete, or suitable for real-world decision-making. "
+    "Results can often be improved by modifying the underlying code, models, data sources, and configuration."
+)
+
+st.write("Built with ❤️ using HP AI Studio")
