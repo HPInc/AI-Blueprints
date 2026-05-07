@@ -3,7 +3,7 @@ import json
 import io
 import requests
 import streamlit as st
-import PyPDF2
+import pypdf
 import docx
 from typing import Optional, Union
 
@@ -43,7 +43,7 @@ def extract_text_from_file(uploaded_file) -> str:
             return str(uploaded_file.read(), "utf-8")
 
         elif uploaded_file.type == "application/pdf":
-            pdf_reader = PyPDF2.PdfReader(uploaded_file)
+            pdf_reader = pypdf.PdfReader(uploaded_file)
             text_content = ""
             for page_num, page in enumerate(pdf_reader.pages, 1):
                 page_text = page.extract_text()
