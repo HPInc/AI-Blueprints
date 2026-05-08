@@ -3,7 +3,7 @@
 
 ai-studio-blueprint-kit==0.1.1
 mlflow==3.10.1
-langchain==1.0.4
+langchain==1.2.17
 langchain-core==1.3.2
 langchain-community==0.4.1
 langchain-text-splitters==1.1.2
