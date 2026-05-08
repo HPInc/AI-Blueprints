@@ -19,7 +19,7 @@ python = ">=3.11"
 streamlit = ">=1.54.0,<2.0.0"
 urllib3 = "2.5.0"
 protobuf = "6.31.1"
-pillow = "11.3.0"
+pillow = "12.2.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

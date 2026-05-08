@@ -8,7 +8,7 @@ from typing import (
 )  # Type annotations for structure, collections, and optional values
 
 # ─────── Third-Party Package Imports ───────
-from langchain.docstore.document import (
+from langchain_core.documents import (
     Document,
 )  # Core document abstraction used across LangChain
 from langchain_community.llms import (
