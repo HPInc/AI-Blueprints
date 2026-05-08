@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_community.llms import LlamaCpp
 from langgraph.graph import StateGraph
 from pydantic import BaseModel
@@ -181,7 +181,7 @@ class Model:
             pandas.DataFrame with columns: answer, messages
         """
         import json
-        from langchain.docstore.document import Document
+        from langchain_core.documents import Document
 
         results = []
 
