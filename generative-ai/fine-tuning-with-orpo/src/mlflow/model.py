@@ -385,8 +385,18 @@ class Model:
             # Load the appropriate model on-demand
             self._load_model_on_demand(use_ft)
 
-            # Prepare inputs with device handling
-            inputs = self.current_tokenizer(prompt, return_tensors="pt")
+            # Apply chat template if available (required for chat models like TinyLlama)
+            if (
+                hasattr(self.current_tokenizer, "apply_chat_template")
+                and self.current_tokenizer.chat_template is not None
+            ):
+                messages = [{"role": "user", "content": prompt}]
+                formatted = self.current_tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=True
+                )
+                inputs = self.current_tokenizer(formatted, return_tensors="pt")
+            else:
+                inputs = self.current_tokenizer(prompt, return_tensors="pt")
 
             # Move inputs to model device
             model_device = next(self.current_model.parameters()).device
@@ -423,8 +433,9 @@ class Model:
                         use_cache=True,
                     )
 
-            # Decode response
-            txt = self.current_tokenizer.decode(ids[0], skip_special_tokens=True)
+            # Decode only the newly generated tokens (exclude the input prompt)
+            input_len = inputs["input_ids"].shape[1]
+            txt = self.current_tokenizer.decode(ids[0][input_len:], skip_special_tokens=True)
             return pd.DataFrame({"response": [txt]})
 
         except Exception as e:
