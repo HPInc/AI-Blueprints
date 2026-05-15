@@ -6,7 +6,7 @@ with specialized handling for different question types, multi-document context,
 and model-specific formatting to prevent hallucination.
 """
 
-from langchain.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from typing import Dict, List, Any
 
 
