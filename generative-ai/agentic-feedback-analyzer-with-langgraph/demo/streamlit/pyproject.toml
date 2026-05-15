@@ -9,7 +9,7 @@ package-mode = false
 python = ">=3.11,<4.0"
 streamlit = ">=1.54.0,<2.0.0"
 pillow = "12.2.0"
-urllib3 = ">=2.5.0"
+urllib3 = ">=2.7.0"
 langchain = "1.2.17"
 langchain-community = "0.4.1"
 unstructured = "0.18.18"
@@ -19,7 +19,7 @@ msoffcrypto-tool = "5.4.2"
 openpyxl = "3.1.5"
 networkx = ">=3.2,<4.0"
 markdown = ">=3.5,<4.0"
-GitPython = "3.1.48"
+GitPython = "3.1.50"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
