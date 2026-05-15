@@ -1,5 +1,5 @@
 # ─── Core ML/AI Frameworks ───
-mlflow==3.10.1
+mlflow==3.12.0
 transformers==4.57.6
 diffusers==0.36.0
 accelerate==1.12.0
