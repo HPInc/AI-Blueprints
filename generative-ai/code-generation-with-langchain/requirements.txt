@@ -1,7 +1,7 @@
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.10.1
+mlflow==3.12.0
 chromadb
-gitpython==3.1.48
+gitpython==3.1.50
 pyyaml
 
 langchain==1.2.7
