@@ -9,7 +9,7 @@ package-mode = false
 python = ">=3.11,<4.0"
 streamlit = ">=1.54.0,<2.0.0"
 pillow = "12.2.0"
-urllib3 = ">=2.5.0"
+urllib3 = ">=2.7.0"
 requests = ">=2.32.0"
 
 [build-system]

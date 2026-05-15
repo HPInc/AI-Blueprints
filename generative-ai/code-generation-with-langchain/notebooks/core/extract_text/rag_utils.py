@@ -16,7 +16,7 @@ import re
 from typing import Dict, List, Optional, Tuple, Union, Any
 from pathlib import Path
 import logging
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -323,7 +323,7 @@ def retriever(
     Returns:
         List of Document objects containing relevant content
     """
-    from langchain.schema import Document
+    from langchain_core.documents import Document
 
     # Determine question types for query expansion
     question_types = identify_question_type(query)
@@ -360,7 +360,7 @@ def retriever(
         if hasattr(collection, "as_retriever"):
             # It's a LangChain Chroma vector store
             retriever = collection.as_retriever(search_kwargs={"k": initial_top_n})
-            documents = retriever.get_relevant_documents(expanded_query)
+            documents = retriever.invoke(expanded_query)
         elif hasattr(collection, "_collection"):
             # It's a direct ChromaDB collection
             results = collection._collection.query(
