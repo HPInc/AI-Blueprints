@@ -24,7 +24,7 @@ requests = "^2.33.0"
 pypdf = "6.10.2"
 python-docx = "^0.8.11"
 pillow = "12.2.0"
-urllib3 = "2.5.0"
+urllib3 = "2.7.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
