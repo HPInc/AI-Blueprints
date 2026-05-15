@@ -10,8 +10,8 @@ package-mode = false
 python = ">=3.11"
 streamlit = ">=1.54.0,<2.0.0"
 pillow = "12.2.0"
-urllib3 = ">=2.5.0"
-GitPython = "3.1.48"
+urllib3 = ">=2.7.0"
+GitPython = "3.1.50"
 
 
 [build-system]
