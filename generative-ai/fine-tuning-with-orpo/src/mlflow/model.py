@@ -435,7 +435,9 @@ class Model:
 
             # Decode only the newly generated tokens (exclude the input prompt)
             input_len = inputs["input_ids"].shape[1]
-            txt = self.current_tokenizer.decode(ids[0][input_len:], skip_special_tokens=True)
+            txt = self.current_tokenizer.decode(
+                ids[0][input_len:], skip_special_tokens=True
+            )
             return pd.DataFrame({"response": [txt]})
 
         except Exception as e:
