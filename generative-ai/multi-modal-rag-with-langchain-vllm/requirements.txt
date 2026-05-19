@@ -11,7 +11,7 @@ langchain-huggingface==1.2.2
 hf-xet==1.1.4
 opencv-python-headless==4.13.0.92
 jq==1.9.1
-transformers==4.53.1
+transformers==4.57.6
 sentence-transformers==3.0.0
 tf-keras==2.19.0
 einops==0.8.1
