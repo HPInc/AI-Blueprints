@@ -1,10 +1,11 @@
 import logging
 from typing import List, Optional
-from langchain.prompts import PromptTemplate
-from langchain.chat_models.base import BaseChatModel
-from langchain.schema import Document, StrOutputParser
-from langchain.schema.runnable import RunnablePassthrough, Runnable
-from langchain.vectorstores.base import VectorStoreRetriever
+from langchain_core.prompts import PromptTemplate
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough, Runnable
+from langchain_core.vectorstores import VectorStoreRetriever
 
 
 class ScientificPaperAnalyzer:
@@ -51,7 +52,7 @@ class ScientificPaperAnalyzer:
         return content
 
     def _query_retriever(self, query: str) -> List[Document]:
-        docs = self.retriever.get_relevant_documents(query)
+        docs = self.retriever.invoke(query)
         if self.logging_enabled:
             self.logger.info(f"Retrieved {len(docs)} documents for query: '{query}'")
         return docs
