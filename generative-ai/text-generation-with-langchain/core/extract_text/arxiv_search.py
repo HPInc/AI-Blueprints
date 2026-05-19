@@ -20,7 +20,7 @@ class ArxivSearcher:
         """
         self.query = query
         self.max_results = max_results
-        self.api_url = f"http://export.arxiv.org/api/query?search_query=all:{query}&start=0&max_results={max_results}"
+        self.api_url = f"https://export.arxiv.org/api/query?search_query=all:{query}&start=0&max_results={max_results}"
         self.namespace = "{http://www.w3.org/2005/Atom}"
         self.logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class ArxivSearcher:
         Returns:
             list[dict]: List of articles with 'title' and 'text'.
         """
-        response = requests.get(self.api_url)
+        response = requests.get(self.api_url, timeout=30)
         papers = []
 
         if response.status_code != 200:
@@ -82,7 +82,7 @@ class ArxivSearcher:
         return f"temp_{safe_title}.pdf"
 
     def _download_pdf(self, pdf_url, output_path):
-        response = requests.get(pdf_url)
+        response = requests.get(pdf_url, timeout=60)
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
