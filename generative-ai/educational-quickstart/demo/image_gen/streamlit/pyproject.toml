@@ -11,6 +11,8 @@ streamlit = ">=1.54.0,<2.0.0"
 pillow = "12.2.0"
 urllib3 = ">=2.7.0"
 requests = ">=2.32.0"
+GitPython = "3.1.50"
+idna = "3.15"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
