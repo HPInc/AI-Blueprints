@@ -14,7 +14,7 @@ dependencies = [
     "python-docx>=0.8.11",
     "GitPython==3.1.50",
     "idna==3.15"
-    
+
 ]
 
 [tool.poetry]
