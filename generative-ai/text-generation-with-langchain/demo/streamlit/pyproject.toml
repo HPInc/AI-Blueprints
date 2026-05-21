@@ -18,6 +18,7 @@ urllib3 = "2.7.0"
 pillow = "12.2.0"
 protobuf = "6.31.1"
 GitPython = "3.1.50"
+idna = "3.15"
 
 [tool.poetry]
 package-mode = false
