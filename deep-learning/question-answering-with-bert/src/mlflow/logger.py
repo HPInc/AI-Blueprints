@@ -103,7 +103,8 @@ class Logger:
                 logger.info("Saved model using trainer")
             elif source_pipeline is not None:
                 model_temp_dir = os.path.join(temp_dir, "model")
-                source_pipeline.save_pretrained(model_temp_dir)
+                source_pipeline.model.save_pretrained(model_temp_dir)
+                source_pipeline.tokenizer.save_pretrained(model_temp_dir)
                 logger.info("Saved model using pipeline")
             else:
                 logger.info(
