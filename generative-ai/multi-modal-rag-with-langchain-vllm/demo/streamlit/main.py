@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import requests
+import logging
 import json
 import pandas as pd
 import warnings
@@ -11,6 +12,15 @@ import base64
 # Ignore SSL warnings for local development
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
+BASE_DIR = Path(__file__).parent
+
+logger = logging.getLogger("multimodal_rag_logger")
+logger.setLevel(logging.INFO)
+
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
 
 # --- Page Configuration & Custom CSS ---
 
@@ -26,12 +36,12 @@ st.set_page_config(
 
 def call_model_api(api_url: str, command: str, data_payload: dict) -> dict:
     """Calls the MLflow model serving endpoint with a specific command."""
-    record = {"command": command, **data_payload}
+    record = {"query": command, **data_payload}
     payload = {"dataframe_records": [record]}
     headers = {"Content-Type": "application/json"}
 
     try:
-        timeout = 300 if command == "update_kb" else 120
+        timeout = 900 if command == "update_kb" else 120
         response = requests.post(
             api_url, json=payload, headers=headers, verify=False, timeout=timeout
         )
@@ -39,6 +49,7 @@ def call_model_api(api_url: str, command: str, data_payload: dict) -> dict:
         if response.status_code == 200:
             predictions = response.json().get("predictions", [])
             if predictions:
+                logger.info("api success")
                 return {"success": True, "data": predictions[0]}
             else:
                 return {"success": False, "error": "API returned an empty prediction."}
@@ -68,6 +79,7 @@ def main():
     with st.sidebar:
         st.markdown("## ⚙️ Endpoint Configuration")
         api_url = "http://localhost:5002/invocations"
+        logger.info(f"Calling MLFlow at {api_url}")
         st.markdown("---")
 
         with st.form("kb_form"):
@@ -91,6 +103,7 @@ def main():
                         "Connecting to ADO and building knowledge base... This may take several minutes."
                     ):
                         # Construct the payload for the 'update_kb' command
+
                         config_payload = {
                             "config": {
                                 "AZURE_DEVOPS_ORG": ado_org,
@@ -140,9 +153,9 @@ def main():
     # --- Main Page Branding ---
     logo_col1, logo_col2, _ = st.columns([1, 1, 10])
     with logo_col1:
-        st.image("assets/hp_logo.png", width=60)
+        st.image(str(BASE_DIR / "assets" / "hp_logo.png"), width=60)
     with logo_col2:
-        st.image("assets/ai_studio_helix.png", width=60)
+        st.image(str(BASE_DIR / "assets" / "ai_studio_helix.png"), width=60)
 
     st.markdown(
         "<h1 style='text-align: center;'>🤖 ADO Wiki AI Assistant</h1>",
@@ -195,9 +208,12 @@ def main():
             with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("🧠 Thinking..."):
                     query_payload = {
-                        "query": prompt,
-                        "force_regenerate": force_regenerate,
+                        "payload": json.dumps({
+                            "query": prompt,
+                            "force_regenerate": force_regenerate,
+                        })
                     }
+
                     response = call_model_api(api_url, "query", query_payload)
 
                     full_response_content, retrieved_images, assistant_metrics = (
@@ -234,15 +250,12 @@ def main():
                         except (json.JSONDecodeError, TypeError):
                             st.warning("Could not parse image data from API.")
 
-                        st.markdown("---")
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric(
-                            "Generation Time", f"{assistant_metrics['gen_time']:.2f} s"
-                        )
-                        c2.metric(
-                            "Faithfulness", f"{assistant_metrics['faithfulness']:.2f}"
-                        )
-                        c3.metric("Relevance", f"{assistant_metrics['relevance']:.2f}")
+                        if all(v is not None for v in [assistant_metrics.get('gen_time'), assistant_metrics.get('faithfulness'), assistant_metrics.get('relevance')]):
+                            st.markdown("---")
+                            c1, c2, c3 = st.columns(3)
+                            c1.metric("Generation Time", f"{assistant_metrics['gen_time']:.2f} s")
+                            c2.metric("Faithfulness", f"{assistant_metrics['faithfulness']:.2f}")
+                            c3.metric("Relevance", f"{assistant_metrics['relevance']:.2f}")
 
                     else:
                         full_response_content = f"**Error:** {response.get('error')}"
