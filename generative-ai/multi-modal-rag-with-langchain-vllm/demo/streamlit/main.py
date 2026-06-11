@@ -208,10 +208,12 @@ def main():
             with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("🧠 Thinking..."):
                     query_payload = {
-                        "payload": json.dumps({
-                            "query": prompt,
-                            "force_regenerate": force_regenerate,
-                        })
+                        "payload": json.dumps(
+                            {
+                                "query": prompt,
+                                "force_regenerate": force_regenerate,
+                            }
+                        )
                     }
 
                     response = call_model_api(api_url, "query", query_payload)
@@ -250,12 +252,27 @@ def main():
                         except (json.JSONDecodeError, TypeError):
                             st.warning("Could not parse image data from API.")
 
-                        if all(v is not None for v in [assistant_metrics.get('gen_time'), assistant_metrics.get('faithfulness'), assistant_metrics.get('relevance')]):
+                        if all(
+                            v is not None
+                            for v in [
+                                assistant_metrics.get("gen_time"),
+                                assistant_metrics.get("faithfulness"),
+                                assistant_metrics.get("relevance"),
+                            ]
+                        ):
                             st.markdown("---")
                             c1, c2, c3 = st.columns(3)
-                            c1.metric("Generation Time", f"{assistant_metrics['gen_time']:.2f} s")
-                            c2.metric("Faithfulness", f"{assistant_metrics['faithfulness']:.2f}")
-                            c3.metric("Relevance", f"{assistant_metrics['relevance']:.2f}")
+                            c1.metric(
+                                "Generation Time",
+                                f"{assistant_metrics['gen_time']:.2f} s",
+                            )
+                            c2.metric(
+                                "Faithfulness",
+                                f"{assistant_metrics['faithfulness']:.2f}",
+                            )
+                            c3.metric(
+                                "Relevance", f"{assistant_metrics['relevance']:.2f}"
+                            )
 
                     else:
                         full_response_content = f"**Error:** {response.get('error')}"
