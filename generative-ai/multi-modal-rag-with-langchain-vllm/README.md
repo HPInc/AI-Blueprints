@@ -70,7 +70,7 @@ multi-modal-rag-with-langchain-vllm/
 To ensure smooth execution and reliable model deployment, make sure your system meets the following minimum hardware specifications:
 
 - RAM: 32 GB
-- VRAM: 12 GB
+- VRAM: 24 GB
 - GPU: NVIDIA GPU
 
 #### Recommended Hardware Requirements
@@ -78,7 +78,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 For optimal performance, especially when working with larger models or datasets, consider the following recommended hardware specifications:
 
 - RAM: 64 GB
-- VRAM: 24 GB
+- VRAM: 48 GB
 - GPU: NVIDIA RTX A6000 or equivalent
 
 ### Step 1: Create an AI Studio Project
@@ -206,7 +206,7 @@ You can make a inference query in the Swagger UI by altering the string field to
 
 
 ### Step 4: Visualize the Multimodal RAG Service with Streamlit
-- Navigate to the `demo/streamlit-webapp/` folder.
+- Navigate to the `demo/streamlit/` folder.
 
 We have provided two options for visualizing the Multimodal RAG service:
 - **`main-for-cloud.py`**: This file is designed to run in the cloud and connects to the deployed service using ngrok. We recommend using this file for public cloud deployments as it does not require you to store any local private data.

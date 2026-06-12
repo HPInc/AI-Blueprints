@@ -24,4 +24,5 @@ qwen-vl-utils==0.0.11
 vllm==0.21.0
 flashinfer-python==0.6.8.post1
 mlflow==3.12.0
+streamlit==1.51.0
 opentelemetry-instrumentation-asgi==0.61b0

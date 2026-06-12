@@ -326,7 +326,7 @@ class Model:
             self.llm = LLM(
                 model=str(model_path),
                 quantization="gptq",
-                gpu_memory_utilization=0.80,
+                gpu_memory_utilization=0.60,
                 max_model_len=4096,
                 enforce_eager=True,
                 limit_mm_per_prompt={"image": 2},
