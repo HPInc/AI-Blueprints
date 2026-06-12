@@ -370,7 +370,6 @@ class Model:
             "--- Service initialized with all models loaded. KB will build on first sync. ---"
         )
 
-
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
         """
         Core business logic extracted from original service predict method.
@@ -408,10 +407,14 @@ class Model:
 
             # Validate input DataFrame
             if self.rag_pipeline is None:
-                return pd.DataFrame([{
-                    "status": "error",
-                    "message": "Knowledge base not loaded. Please sync first.",
-                }])
+                return pd.DataFrame(
+                    [
+                        {
+                            "status": "error",
+                            "message": "Knowledge base not loaded. Please sync first.",
+                        }
+                    ]
+                )
             if not self.llm:
                 return pd.DataFrame([{"status": "error", "message": "LLM not loaded."}])
 
@@ -422,16 +425,28 @@ class Model:
                 if self.judge:
                     context_str = "\n\n".join(
                         d.page_content
-                        for d in self.text_vector_store.similarity_search(actual_query, k=3)
+                        for d in self.text_vector_store.similarity_search(
+                            actual_query, k=3
+                        )
                     )
-                    eval_df = pd.DataFrame([{
-                        "questions": actual_query,
-                        "result": response_dict["reply"],
-                        "source_documents": context_str,
-                    }])
-                    response_dict["faithfulness"] = self.judge.evaluate_faithfulness(eval_df).iloc[0]
-                    response_dict["relevance"] = self.judge.evaluate_relevance(eval_df).iloc[0]
-                    response_dict["conciseness"] = self.judge.evaluate_conciseness(eval_df).iloc[0]
+                    eval_df = pd.DataFrame(
+                        [
+                            {
+                                "questions": actual_query,
+                                "result": response_dict["reply"],
+                                "source_documents": context_str,
+                            }
+                        ]
+                    )
+                    response_dict["faithfulness"] = self.judge.evaluate_faithfulness(
+                        eval_df
+                    ).iloc[0]
+                    response_dict["relevance"] = self.judge.evaluate_relevance(
+                        eval_df
+                    ).iloc[0]
+                    response_dict["conciseness"] = self.judge.evaluate_conciseness(
+                        eval_df
+                    ).iloc[0]
                 else:
                     response_dict["faithfulness"] = -1.0
                     response_dict["relevance"] = -1.0
@@ -467,7 +482,6 @@ class Model:
                     torch.cuda.empty_cache()
                     torch.cuda.synchronize()
 
-
     def _collect_image_vectors(self, mm_raw_docs: List[Document], image_dir: Path):
         """Scans raw docs and returns paths, IDs, and metadata for unique images."""
         img_paths, img_ids, img_meta = [], [], []
@@ -487,7 +501,6 @@ class Model:
                     img_ids.append(img_id)
                     img_meta.append({"source": src, "image": name})
         return img_paths, img_ids, img_meta
-
 
     def _chunk_docs(self, docs: List[Document]) -> List[Document]:
         """Takes a list of raw docs and performs chunking with unique IDs per doc."""
@@ -522,7 +535,6 @@ class Model:
                     doc_chunk_counter += 1
         return all_chunks
 
-
     def _initialize_kb(self, config: dict, secrets: dict) -> None:
         """Builds the knowledge base once and stores it persistently on the instance."""
         new_kb_dir = Path(tempfile.mkdtemp(prefix="kb_"))
@@ -535,7 +547,9 @@ class Model:
         image_dir = new_kb_dir / "images"
         wiki_metadata_path = new_kb_dir / "wiki_flat_structure.json"
         if not wiki_metadata_path.exists():
-            raise FileNotFoundError("Cloning failed: 'wiki_flat_structure.json' not found.")
+            raise FileNotFoundError(
+                "Cloning failed: 'wiki_flat_structure.json' not found."
+            )
 
         all_raw_docs = load_mm_docs_clean(wiki_metadata_path, image_dir)
         all_chunks = self._chunk_docs(all_raw_docs)
@@ -549,12 +563,16 @@ class Model:
             self.text_vector_store.add_documents(documents=all_chunks)
 
         # Wipe + repopulate image collection
-        img_paths, img_ids, img_meta = self._collect_image_vectors(all_raw_docs, image_dir)
+        img_paths, img_ids, img_meta = self._collect_image_vectors(
+            all_raw_docs, image_dir
+        )
         existing_image_ids = self.image_vector_store._collection.get(include=[])["ids"]
         if existing_image_ids:
             self.image_vector_store._collection.delete(ids=existing_image_ids)
         if img_paths:
-            self.image_vector_store.add_texts(texts=img_paths, metadatas=img_meta, ids=img_ids)
+            self.image_vector_store.add_texts(
+                texts=img_paths, metadatas=img_meta, ids=img_ids
+            )
 
         # BM25 + doc map live on the instance now
         unique_splits = list({doc.page_content: doc for doc in all_chunks}.values())
