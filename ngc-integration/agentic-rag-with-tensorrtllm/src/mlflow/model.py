@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, TypedDict
 import pandas as pd
 import tensorrt_llm
 import torch
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import StateGraph, START, END
 
@@ -279,7 +279,7 @@ class Model(mlflow.pyfunc.PythonModel):
 
     def _initialize_vectorstore(self, chroma_dir_path: Path) -> Chroma:
         """Initialize or create the Chroma vector database."""
-        from langchain.docstore.document import Document
+        from langchain_core.documents import Document
         from langchain_community.document_loaders import (
             UnstructuredMarkdownLoader,
             TextLoader,
@@ -540,7 +540,7 @@ class Model(mlflow.pyfunc.PythonModel):
             f"{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
             f"{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n"
         )
-        raw = self._llm(meta_llama_prompt)
+        raw = self._llm.invoke(meta_llama_prompt)
         # TensorRTLangchain returns a raw string; we can wrap into Response if needed
         return raw
 

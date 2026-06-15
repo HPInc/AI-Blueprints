@@ -14,7 +14,7 @@ from langchain_community.document_loaders import (
     UnstructuredExcelLoader,
     UnstructuredMarkdownLoader,
 )
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 # Set page config
 st.set_page_config(

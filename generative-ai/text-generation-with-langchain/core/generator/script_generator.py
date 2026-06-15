@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Callable, List, Optional
 
-from langchain.schema.runnable import Runnable
+from langchain_core.runnables import Runnable
 
 __all__ = ["ScriptGenerator"]
 
