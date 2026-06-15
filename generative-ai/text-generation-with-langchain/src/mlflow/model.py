@@ -68,8 +68,8 @@ class Model:
     def _initialize_llm(self):
         """Initialize LLM based on config and model_path."""
         from src.utils import configure_hf_cache, configure_proxy
-        from langchain.callbacks.manager import CallbackManager
-        from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+        from langchain_core.callbacks import CallbackManager
+        from langchain_core.callbacks import StreamingStdOutCallbackHandler
         from langchain_community.llms import LlamaCpp
         import glob
         import os

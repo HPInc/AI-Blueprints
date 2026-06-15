@@ -649,7 +649,7 @@ def dynamic_retriever(
     Returns:
         List: Document objects containing relevant content
     """
-    from langchain.schema import Document
+    from langchain_core.documents import Document
 
     # Dynamically determine how many documents to retrieve based on context window
     if top_n is None:
@@ -667,7 +667,7 @@ def dynamic_retriever(
     if hasattr(collection, "as_retriever"):
         # It's a LangChain Chroma vector store
         retriever = collection.as_retriever(search_kwargs={"k": top_n})
-        documents = retriever.get_relevant_documents(query)
+        documents = retriever.invoke(query)
     elif hasattr(collection, "_collection"):
         # It's a direct ChromaDB collection
         results = collection._collection.query(query_texts=[query], n_results=top_n)

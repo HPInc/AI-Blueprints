@@ -1,4 +1,4 @@
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 # Template for llama3-instruct format
 MARKDOWN_CORRECTION_TEMPLATE_LLAMA3 = """

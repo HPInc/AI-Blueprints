@@ -371,7 +371,7 @@ def get_response_from_llm(llm, system_prompt, user_prompt):
 
     {user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
     """
-    return llm(model_prompt)
+    return llm.invoke(model_prompt)
 
 
 # ─────── Helper Functions ───────
