@@ -6,8 +6,8 @@ in LangChain
 """
 
 from typing import Dict, Any
+from pydantic import model_validator
 from langchain_core.language_models import LLM
-from langchain_core.utils import pre_init
 
 
 class TensorRTLangchain(LLM):
@@ -15,7 +15,8 @@ class TensorRTLangchain(LLM):
     model_path: str
     sampling_params: Any = None
 
-    @pre_init
+    @model_validator(mode="before")
+    @classmethod
     def validate_environment(cls, values: Dict) -> Dict:
         try:
             import tensorrt_llm

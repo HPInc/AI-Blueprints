@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional, List, Union
 import mlflow
 from mlflow.pyfunc import PythonModel
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from src.utils import load_secrets_to_env
 
 # Add basic logging configuration
