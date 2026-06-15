@@ -133,7 +133,7 @@ class QwenVLMM:
                 if image_hits
                 else []
             ),
-            "image_files": (                                        # ADD THIS KEY
+            "image_files": (  # ADD THIS KEY
                 [hit.metadata.get("image", "Unknown") for hit in image_hits]
                 if image_hits
                 else []
