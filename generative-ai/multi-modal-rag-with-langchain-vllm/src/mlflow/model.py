@@ -133,6 +133,11 @@ class QwenVLMM:
                 if image_hits
                 else []
             ),
+            "image_files": (                                        # ADD THIS KEY
+                [hit.metadata.get("image", "Unknown") for hit in image_hits]
+                if image_hits
+                else []
+            ),
         }
 
     def generate(self, query: str) -> dict[str, any]:
@@ -143,6 +148,7 @@ class QwenVLMM:
         retrieval_results = self._retrieve_mm(query)
         documents = retrieval_results["documents"]
         images = retrieval_results["images"]
+        image_files = retrieval_results["image_files"]
         referenced_sources = list(
             set(retrieval_results["text_sources"] + retrieval_results["image_sources"])
         )
@@ -252,11 +258,13 @@ When answering:
             ):
                 images = []
                 referenced_sources = []
+                image_files = []
 
             return {
                 "reply": reply,
                 "used_images": images,
                 "referenced_sources": referenced_sources,
+                "image_files": image_files,
                 "generation_time_seconds": end_gen_time - start_gen_time,
             }
 
@@ -266,6 +274,7 @@ When answering:
                 "reply": f"Error during generation: {e}",
                 "used_images": images,
                 "referenced_sources": referenced_sources,
+                "image_files": image_files,
                 "generation_time_seconds": 0.0,
             }
 
@@ -464,6 +473,9 @@ class Model:
                 response_dict["used_images"] = json.dumps(base64_images)
                 response_dict["referenced_sources"] = json.dumps(
                     response_dict.get("referenced_sources", [])
+                )
+                response_dict["image_files"] = json.dumps(
+                    response_dict.get("image_files", [])
                 )
                 response_dict["total_pipeline_time_seconds"] = (
                     time.time() - pipeline_start_time

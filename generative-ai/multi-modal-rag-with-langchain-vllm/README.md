@@ -63,7 +63,7 @@ multi-modal-rag-with-langchain-vllm/
 
 ## Setup
 
-### Step 0: Hardware Requirements
+### Hardware Requirements
 
 #### Minimum Hardware Requirements
 
@@ -71,7 +71,7 @@ To ensure smooth execution and reliable model deployment, make sure your system 
 
 - RAM: 32 GB
 - VRAM: 24 GB
-- GPU: NVIDIA GPU
+- GPU: NVIDIA GPU with CUDA 12.1+
 
 #### Recommended Hardware Requirements
 
@@ -79,9 +79,9 @@ For optimal performance, especially when working with larger models or datasets,
 
 - RAM: 64 GB
 - VRAM: 48 GB
-- GPU: NVIDIA RTX A6000 or equivalent
+- GPU: NVIDIA RTX A6000 or equivalent with CUDA 12.1+
 
-### Step 1: Create an AI Studio Project
+### Step 1: Create a new AI Studio Project
 
 - Create a new project in [Z by HP AI Studio](https://zdocs.datascience.hp.com/docs/aistudio/overview).
 
@@ -89,22 +89,11 @@ For optimal performance, especially when working with larger models or datasets,
 
 - Choose **Local GenAI** as the base image.
 - Upload `requirements.txt` file from the project directory to the pip packages section of your AI Studio workspace.
+- Press **save**
 
-### Step 3: Clone the Repository
+### Step 3: Add the Model to the Workspace
 
-1. Clone the GitHub repository:
-
-   ```
-   git clone https://github.com/HPInc/AI-Blueprints.git
-   ```
-
-2. Navigate to `generative-ai/multimodal-rag-with-langchain-vllm` to ensure all files are cloned correctly after workspace creation.
-
-3. Configure the `requirements.txt` torch packages to your corresponding cuda version
-    - Verify cuda version by pasting `nvidia-smi` in your terminal
-    - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
-
-### Step 4: Add the Model to the Workspace
+- If the model is not added to the workspace it will be downloaded automatically to the `datafabric` folder when you run the notebook. No manual steps are required, but provided for your convenience.
 
 - Download the **Qwen2.5-VL-7B-Instruct-GPTQ-Int4** model from AWS S3 using the Models tab in your AI Studio project:
   - **Model Name**: `Qwen2.5-VL-7B-Instruct-GPTQ-Int4`
@@ -112,6 +101,8 @@ For optimal performance, especially when working with larger models or datasets,
   - **S3 URI**: `tbd`
   - **Bucket Region**: `us-west-2`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
+
+The notebook checks for the model at:
 
 ### Step 4: Manual Model Download to the Workspace
 
@@ -125,10 +116,29 @@ For optimal performance, especially when working with larger models or datasets,
   - **Model Path**: `C:\path_to_your_model\Qwen2.5-VL-7B-Instruct-GPTQ-Int4`
 - Make sure that the model is in the `datafabric` folder inside your jupyter notebook workspace. If the model does not appear after downloading, please restart your workspace.
 
-### Step 5: Configure Configs and Secrets Manager
+### Step 5: Clone the Repository
+
+1. Press `advantced options` in the project creation slide
+
+2. Use the link to clone the GitHub repository:
+
+   ```
+    https://github.com/HPInc/AI-Blueprints.git
+   ```
+
+2. Navigate to `AI-Blueprints/generative-ai/multimodal-rag-with-langchain-vllm` to ensure all files are cloned correctly after workspace creation.
+
+3. Configure the `requirements.txt` torch packages to your corresponding cuda version
+    - Verify cuda version by pasting `nvidia-smi` in your terminal
+    - Replace torch wheel with your corresponding cuda version `cu128` if using Cuda 1.28, i.e. `https://download.pytorch.org/whl/cu128`
+
+4. Select **Create Project**
+
+
+### Step 6: Configure Configs and Secrets Manager
 
 #### Config File Configuration
-- Edit `config.yaml` with relevant configurations below:
+- Edit `config.yaml` with the relevant configurations below:
 ```
 AZURE_DEVOPS_ORG: "your-organization-name"
 AZURE_DEVOPS_PROJECT: "your-project-name"
@@ -146,7 +156,7 @@ Using Secrets Manager (Premium User)
       - Guide on How to get your ADO PAT Token here: [Microsoft ADO PAT Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
 
 Using `secrets.yaml` (Freemium User)
-  - Navigate to `generative-ai/multimodal-rag-with-langchain-vllm\configs`
+  - Navigate to `AI-Blueprints/generative-ai/multimodal-rag-with-langchain-vllm/configs`
   - Create a `secrets.yaml` file with the following credentials below:
   ```
   AIS_ADO_TOKEN: "YOUR_PAT_TOKEN"
