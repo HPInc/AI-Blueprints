@@ -24,11 +24,11 @@ from PIL import Image as PILImage
 from rank_bm25 import BM25Okapi
 
 # LangChain and vectorstore imports
-from langchain.schema.document import Document
-from langchain.vectorstores import Chroma
+from langchain_core.documents import Document
+from langchain_community.vectorstores import Chorma
 import chromadb
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.text_splitter import (
+from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
 )

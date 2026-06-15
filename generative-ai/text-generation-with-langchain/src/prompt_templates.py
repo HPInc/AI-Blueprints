@@ -5,7 +5,7 @@ This module provides prompt templates for scientific paper analysis and text gen
 with model-specific formatting to prevent hallucination.
 """
 
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from typing import Optional
 
 

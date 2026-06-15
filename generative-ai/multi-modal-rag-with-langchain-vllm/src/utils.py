@@ -12,8 +12,8 @@ from pathlib import Path
 import json
 import logging
 from typing import Dict, Any, Optional, List
-from langchain.schema.document import Document
-from langchain.chat_models import ChatOpenAI
+from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI
 import mlflow
 import math
 import matplotlib.pyplot as plt
