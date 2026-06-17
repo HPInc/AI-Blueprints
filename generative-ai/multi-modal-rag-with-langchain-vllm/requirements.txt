@@ -3,10 +3,11 @@
 
 torch==2.11.0
 torchvision==0.26.0
-chromadb==1.0.15
+chromadb==1.5.9
 langchain==1.2.17
 langchain-community==0.4.1
-langchain-core==1.3.2
+langchain-classic==1.0.7
+langchain-core==1.3.3
 langchain-huggingface==1.2.2
 hf-xet==1.1.4
 opencv-python-headless==4.13.0.92
@@ -21,7 +22,11 @@ bitsandbytes==0.46.1
 GitPython==3.1.50
 rank-bm25==0.2.2
 qwen-vl-utils==0.0.11
-vllm==0.21.0
-flashinfer-python==0.6.8.post1
+vllm==0.22.0
+flashinfer-python==0.6.11.post2
 mlflow==3.12.0
-opentelemetry-instrumentation-asgi==0.61b0
+opentelemetry-instrumentation-asgi==0.63b1
+opentelemetry-instrumentation==0.63b1
+opentelemetry-semantic-conventions==0.63b1
+opentelemetry-util-http==0.63b1
+protobuf>=5.29.6

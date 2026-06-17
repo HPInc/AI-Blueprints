@@ -10,8 +10,9 @@ pandas===2.2.3
 tokenizers>=0.13.0
 httpx>=0.24.0
 langchain==1.0.4
-langchain-core==1.3.2
+langchain-core==1.3.3
 langchain-community==0.4.1
+langchain-classic==1.0.7
 langchain-text-splitters==1.1.2
 langchain-huggingface==1.2.2
 sentence-transformers==3.0.0
