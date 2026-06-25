@@ -13,7 +13,7 @@ import logging
 from typing import Dict, Any, Union, List
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from langchain_huggingface import HuggingFaceEndpoint, HuggingFacePipeline
 from langchain_community.llms import LlamaCpp
 

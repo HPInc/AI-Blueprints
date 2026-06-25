@@ -14,8 +14,8 @@ from typing import (
 
 # ─────── Third-Party Package Imports ───────
 from tqdm import tqdm  # Visual progress bar for iterables
-from langchain.docstore.document import Document  # Standardized document format
-from langchain.text_splitter import (
+from langchain_core.documents import Document  # Standardized document format
+from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
 )  # Text chunking utility
 
