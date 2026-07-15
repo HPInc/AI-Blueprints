@@ -11,6 +11,7 @@ Business Logic Layer
 import gc
 import json
 import base64
+import shutil
 import tempfile
 import threading
 import time
@@ -25,7 +26,7 @@ from rank_bm25 import BM25Okapi
 
 # LangChain and vectorstore imports
 from langchain_core.documents import Document
-from langchain_community.vectorstores import Chorma
+from langchain_community.vectorstores import Chroma
 import chromadb
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import (
@@ -71,6 +72,7 @@ class QwenVLMM:
         self.bm25_index = bm25_index
         self.doc_map = doc_map
 
+    # Retreval
     @staticmethod
     def _reciprocal_rank_fusion(
         results: list[list[Document]], k: int = 60
@@ -96,6 +98,7 @@ class QwenVLMM:
         ]
         return fused_results
 
+    # Retrieval
     def _retrieve_mm(
         self, query: str, k_text: int = 3, k_img: int = 2, recall_k: int = 20
     ) -> dict[str, any]:
@@ -130,6 +133,11 @@ class QwenVLMM:
                 if image_hits
                 else []
             ),
+            "image_files": (  # ADD THIS KEY
+                [hit.metadata.get("image", "Unknown") for hit in image_hits]
+                if image_hits
+                else []
+            ),
         }
 
     def generate(self, query: str) -> dict[str, any]:
@@ -140,6 +148,7 @@ class QwenVLMM:
         retrieval_results = self._retrieve_mm(query)
         documents = retrieval_results["documents"]
         images = retrieval_results["images"]
+        image_files = retrieval_results["image_files"]
         referenced_sources = list(
             set(retrieval_results["text_sources"] + retrieval_results["image_sources"])
         )
@@ -249,11 +258,13 @@ When answering:
             ):
                 images = []
                 referenced_sources = []
+                image_files = []
 
             return {
                 "reply": reply,
                 "used_images": images,
                 "referenced_sources": referenced_sources,
+                "image_files": image_files,
                 "generation_time_seconds": end_gen_time - start_gen_time,
             }
 
@@ -263,6 +274,7 @@ When answering:
                 "reply": f"Error during generation: {e}",
                 "used_images": images,
                 "referenced_sources": referenced_sources,
+                "image_files": image_files,
                 "generation_time_seconds": 0.0,
             }
 
@@ -323,7 +335,7 @@ class Model:
             self.llm = LLM(
                 model=str(model_path),
                 quantization="gptq",
-                gpu_memory_utilization=0.80,
+                gpu_memory_utilization=0.60,
                 max_model_len=4096,
                 enforce_eager=True,
                 limit_mm_per_prompt={"image": 2},
@@ -357,8 +369,14 @@ class Model:
             embedding_function=self.siglip_embed_model,
         )
 
+        # Persistent KB state
+        self.bm25_index = None
+        self.doc_map = None
+        self.kb_dir = None
+        self.rag_pipeline = None
+
         logger.info(
-            "--- Service initialized with all models loaded. Ready for queries. ---"
+            "--- Service initialized with all models loaded. KB will build on first sync. ---"
         )
 
     def predict(self, model_input: pd.DataFrame, params=None) -> pd.DataFrame:
@@ -367,178 +385,134 @@ class Model:
         Remove context parameter - use instance variables instead.
         Must return same pandas.DataFrame structure as original.
         """
-        with self.db_lock:
-            logger.info("Received new query. Lock acquired. Processing new request...")
-            pipeline_start_time = time.time()
+        query = model_input["query"].iloc[0]
+        payload = json.loads(model_input["payload"].iloc[0])
 
-            # Validate input DataFrame
-            query = model_input["query"].iloc[0]
-            payload = json.loads(model_input["payload"].iloc[0])
-            transient_kb, rag_pipeline = None, None
-
-            # Create a temporary directory for transient KB
-            with tempfile.TemporaryDirectory() as temp_dir:
+        # Build or refresh the kb
+        if query == "update_kb":
+            with self.db_lock:
                 try:
-                    # Ensure the temp directory exists
-                    temp_path = Path(temp_dir)
-                    transient_kb = self._build_transient_kb(
-                        config=payload["config"],
-                        secrets=payload["secrets"],
-                        temp_path=temp_path,
+                    self._initialize_kb(
+                        config=payload["config"], secrets=payload["secrets"]
                     )
 
-                    if not self.llm:
-                        raise RuntimeError(
-                            "LLM not loaded. Cannot proceed with generation."
-                        )
+                    # Warmup query to trigger Triton JIT compilation
+                    logger.info("Running warmup query to pre-compile Triton kernels...")
+                    self.rag_pipeline.generate("What is this wiki about?")
+                    logger.info("Warmup complete.")
 
-                    # Initialize the RAG pipeline with the transient KB
-                    rag_pipeline = QwenVLMM(
-                        llm=self.llm,
-                        tok=self.tok,
-                        image_processor=self.image_processor,
-                        device=self.device,
-                        **transient_kb,
+                    return pd.DataFrame(
+                        [{"status": "success", "message": "Knowledge base loaded."}]
                     )
-
-                    # Perform the generation
-                    response_dict = rag_pipeline.generate(query)
-
-                    logger.info("Performing self-evaluation with LocalGenAIJudge...")
-                    # Use the LocalGenAIJudge for self-evaluation
-                    if self.judge:
-                        context_str = "\n\n".join(
-                            d.page_content
-                            for d in transient_kb["text_db"].similarity_search(
-                                query, k=3
-                            )
-                        )
-                        eval_df = pd.DataFrame(
-                            [
-                                {
-                                    "questions": query,
-                                    "result": response_dict["reply"],
-                                    "source_documents": context_str,
-                                }
-                            ]
-                        )
-
-                        response_dict["faithfulness"] = (
-                            self.judge.evaluate_faithfulness(eval_df).iloc[0]
-                        )
-                        response_dict["relevance"] = self.judge.evaluate_relevance(
-                            eval_df
-                        ).iloc[0]
-                        response_dict["conciseness"] = self.judge.evaluate_conciseness(
-                            eval_df
-                        ).iloc[0]
-                    else:
-                        response_dict["faithfulness"] = -1.0
-                        response_dict["relevance"] = -1.0
-                        response_dict["conciseness"] = -1.0
-
-                    # Encode images to Base64 for the response
-                    base64_images = []
-                    for path in response_dict.get("used_images", []):
-                        try:
-                            with open(path, "rb") as img_file:
-                                base64_images.append(
-                                    base64.b64encode(img_file.read()).decode("utf-8")
-                                )
-                        except FileNotFoundError:
-                            logger.warning(f"Image file not found at temp path: {path}")
-                    response_dict["used_images"] = json.dumps(base64_images)
-
-                    sources = response_dict.get("referenced_sources", [])
-                    response_dict["referenced_sources"] = json.dumps(sources)
-
-                    pipeline_end_time = time.time()
-                    response_dict["total_pipeline_time_seconds"] = (
-                        pipeline_end_time - pipeline_start_time
-                    )
-
-                    logger.info("Request finished. Releasing lock.")
-                    return pd.DataFrame([response_dict])
-
                 except Exception as e:
-                    logger.error(
-                        f"Stateless RAG pipeline failed while lock was held: {e}",
-                        exc_info=True,
-                    )
+                    logger.error(f"KB initialization failed: {e}", exc_info=True)
                     return pd.DataFrame([{"status": "error", "message": str(e)}])
 
-                finally:
-                    logger.info("Cleaning up transient KB objects and VRAM...")
-                    del transient_kb, rag_pipeline
-                    gc.collect()
-                    if torch.cuda.is_available():
-                        torch.cuda.empty_cache()
-                        torch.cuda.synchronize()
-                    logger.info("Cleanup complete.")
+        # Process the query
+        with self.db_lock:
+            logger.info("Received new query. Lock acquired.")
+            pipeline_start_time = time.time()
+            actual_query = payload.get("query", query)
 
-    def _build_transient_kb(
-        self, config: dict, secrets: dict, temp_path: Path
-    ) -> Dict[str, Any]:
-        """Fetches, processes, and indexes data entirely in memory from a given temp path."""
-        logger.info("Cloning wiki to temporary directory...")
-        orchestrate_wiki_clone(
-            pat=secrets["AIS_ADO_TOKEN"], config=config, output_dir=temp_path
-        )
+            # Validate input DataFrame
+            if self.rag_pipeline is None:
+                return pd.DataFrame(
+                    [
+                        {
+                            "status": "error",
+                            "message": "Knowledge base not loaded. Please sync first.",
+                        }
+                    ]
+                )
+            if not self.llm:
+                return pd.DataFrame([{"status": "error", "message": "LLM not loaded."}])
 
-        image_dir = temp_path / "images"
-        wiki_metadata_path = temp_path / "wiki_flat_structure.json"
+            try:
+                response_dict = self.rag_pipeline.generate(actual_query)
 
-        if not wiki_metadata_path.exists():
-            raise FileNotFoundError(
-                "Cloning failed: 'wiki_flat_structure.json' not found."
-            )
+                logger.info("Performing self-evaluation with LocalGenAIJudge...")
+                if self.judge:
+                    context_str = "\n\n".join(
+                        d.page_content
+                        for d in self.text_vector_store.similarity_search(
+                            actual_query, k=3
+                        )
+                    )
+                    eval_df = pd.DataFrame(
+                        [
+                            {
+                                "questions": actual_query,
+                                "result": response_dict["reply"],
+                                "source_documents": context_str,
+                            }
+                        ]
+                    )
+                    response_dict["faithfulness"] = self.judge.evaluate_faithfulness(
+                        eval_df
+                    ).iloc[0]
+                    response_dict["relevance"] = self.judge.evaluate_relevance(
+                        eval_df
+                    ).iloc[0]
+                    response_dict["conciseness"] = self.judge.evaluate_conciseness(
+                        eval_df
+                    ).iloc[0]
+                else:
+                    response_dict["faithfulness"] = -1.0
+                    response_dict["relevance"] = -1.0
+                    response_dict["conciseness"] = -1.0
 
-        all_raw_docs = load_mm_docs_clean(wiki_metadata_path, image_dir)
-        all_chunks = self._chunk_docs(all_raw_docs)
+                base64_images = []
+                for path in response_dict.get("used_images", []):
+                    try:
+                        with open(path, "rb") as img_file:
+                            base64_images.append(
+                                base64.b64encode(img_file.read()).decode("utf-8")
+                            )
+                    except FileNotFoundError:
+                        logger.warning(f"Image file not found: {path}")
+                response_dict["used_images"] = json.dumps(base64_images)
+                response_dict["referenced_sources"] = json.dumps(
+                    response_dict.get("referenced_sources", [])
+                )
+                response_dict["image_files"] = json.dumps(
+                    response_dict.get("image_files", [])
+                )
+                response_dict["total_pipeline_time_seconds"] = (
+                    time.time() - pipeline_start_time
+                )
 
-        # 1. Wipe the text collection by deleting all existing documents by ID
-        existing_text_ids = self.text_vector_store._collection.get(include=[])["ids"]
-        if existing_text_ids:
-            logger.info(
-                f"Wiping {len(existing_text_ids)} documents from text collection."
-            )
-            self.text_vector_store._collection.delete(ids=existing_text_ids)
+                logger.info("Request finished. Releasing lock.")
+                return pd.DataFrame([response_dict])
 
-        # 2. Add new documents. LangChain handles the embeddings automatically.
-        if all_chunks:
-            self.text_vector_store.add_documents(documents=all_chunks)
-        logger.info(f"Populated text collection with {len(all_chunks)} chunks.")
+            except Exception as e:
+                logger.error(f"RAG pipeline failed: {e}", exc_info=True)
+                return pd.DataFrame([{"status": "error", "message": str(e)}])
 
-        # 3. Wipe the image collection
-        img_paths, img_ids, img_meta = self._collect_image_vectors(
-            all_raw_docs, image_dir
-        )
-        existing_image_ids = self.image_vector_store._collection.get(include=[])["ids"]
-        if existing_image_ids:
-            logger.info(
-                f"Wiping {len(existing_image_ids)} images from image collection."
-            )
-            self.image_vector_store._collection.delete(ids=existing_image_ids)
+            finally:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.synchronize()
 
-        # 4. Add new images
-        if img_paths:
-            self.image_vector_store.add_texts(
-                texts=img_paths, metadatas=img_meta, ids=img_ids
-            )
-        logger.info(f"Populated image collection with {len(img_paths)} images.")
+    def _collect_image_vectors(self, mm_raw_docs: List[Document], image_dir: Path):
+        """Scans raw docs and returns paths, IDs, and metadata for unique images."""
+        img_paths, img_ids, img_meta = [], [], []
+        seen = set()
 
-        # BM25 index is still built in memory per request
-        unique_splits = list({doc.page_content: doc for doc in all_chunks}.values())
-        corpus = [doc.page_content for doc in unique_splits]
-        bm25_index = BM25Okapi([doc.split(" ") for doc in corpus]) if corpus else None
-        doc_map = {doc.page_content: doc for doc in unique_splits}
-
-        return {
-            "text_db": self.text_vector_store,
-            "image_db": self.image_vector_store,
-            "bm25_index": bm25_index,
-            "doc_map": doc_map,
-        }
+        # Ensure the image directory exists, process all images in the directory
+        for doc in mm_raw_docs:
+            src = doc.metadata["source"]
+            for name in doc.metadata.get("images", []):
+                img_id = f"{src}::{name}"
+                if img_id in seen:
+                    continue
+                seen.add(img_id)
+                img_path = image_dir / name
+                if img_path.is_file():
+                    img_paths.append(str(img_path))
+                    img_ids.append(img_id)
+                    img_meta.append({"source": src, "image": name})
+        return img_paths, img_ids, img_meta
 
     def _chunk_docs(self, docs: List[Document]) -> List[Document]:
         """Takes a list of raw docs and performs chunking with unique IDs per doc."""
@@ -573,22 +547,65 @@ class Model:
                     doc_chunk_counter += 1
         return all_chunks
 
-    def _collect_image_vectors(self, mm_raw_docs: List[Document], image_dir: Path):
-        """Scans raw docs and returns paths, IDs, and metadata for unique images."""
-        img_paths, img_ids, img_meta = [], [], []
-        seen = set()
+    def _initialize_kb(self, config: dict, secrets: dict) -> None:
+        """Builds the knowledge base once and stores it persistently on the instance."""
+        new_kb_dir = Path(tempfile.mkdtemp(prefix="kb_"))
+        logger.info(f"Building persistent KB in {new_kb_dir}...")
 
-        # Ensure the image directory exists, process all images in the directory
-        for doc in mm_raw_docs:
-            src = doc.metadata["source"]
-            for name in doc.metadata.get("images", []):
-                img_id = f"{src}::{name}"
-                if img_id in seen:
-                    continue
-                seen.add(img_id)
-                img_path = image_dir / name
-                if img_path.is_file():
-                    img_paths.append(str(img_path))
-                    img_ids.append(img_id)
-                    img_meta.append({"source": src, "image": name})
-        return img_paths, img_ids, img_meta
+        orchestrate_wiki_clone(
+            pat=secrets["AIS_ADO_TOKEN"], config=config, output_dir=new_kb_dir
+        )
+
+        image_dir = new_kb_dir / "images"
+        wiki_metadata_path = new_kb_dir / "wiki_flat_structure.json"
+        if not wiki_metadata_path.exists():
+            raise FileNotFoundError(
+                "Cloning failed: 'wiki_flat_structure.json' not found."
+            )
+
+        all_raw_docs = load_mm_docs_clean(wiki_metadata_path, image_dir)
+        all_chunks = self._chunk_docs(all_raw_docs)
+        logger.info(f"Loaded {len(all_chunks)} text chunks")
+
+        # Wipe + repopulate text collection (makes update_kb a true refresh)
+        existing_text_ids = self.text_vector_store._collection.get(include=[])["ids"]
+        if existing_text_ids:
+            self.text_vector_store._collection.delete(ids=existing_text_ids)
+        if all_chunks:
+            self.text_vector_store.add_documents(documents=all_chunks)
+
+        # Wipe + repopulate image collection
+        img_paths, img_ids, img_meta = self._collect_image_vectors(
+            all_raw_docs, image_dir
+        )
+        existing_image_ids = self.image_vector_store._collection.get(include=[])["ids"]
+        if existing_image_ids:
+            self.image_vector_store._collection.delete(ids=existing_image_ids)
+        if img_paths:
+            self.image_vector_store.add_texts(
+                texts=img_paths, metadatas=img_meta, ids=img_ids
+            )
+
+        # BM25 + doc map live on the instance now
+        unique_splits = list({doc.page_content: doc for doc in all_chunks}.values())
+        corpus = [doc.page_content for doc in unique_splits]
+        self.bm25_index = BM25Okapi([d.split(" ") for d in corpus]) if corpus else None
+        self.doc_map = {doc.page_content: doc for doc in unique_splits}
+
+        # Build the RAG pipeline once, not per request
+        self.rag_pipeline = QwenVLMM(
+            llm=self.llm,
+            tok=self.tok,
+            image_processor=self.image_processor,
+            device=self.device,
+            text_db=self.text_vector_store,
+            image_db=self.image_vector_store,
+            bm25_index=self.bm25_index,
+            doc_map=self.doc_map,
+        )
+
+        # Swap in new KB dir, clean up the old one on refresh
+        if self.kb_dir and self.kb_dir.exists():
+            shutil.rmtree(self.kb_dir, ignore_errors=True)
+        self.kb_dir = new_kb_dir
+        logger.info("Knowledge base initialization complete.")
