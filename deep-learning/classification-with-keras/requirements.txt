@@ -4,3 +4,4 @@ onnxruntime>=1.15.0
 numpy>=1.21.0
 tf2onnx>=1.15.0
 mlflow==3.12.0
+tensorflow>=2.18.0
