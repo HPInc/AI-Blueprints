@@ -263,6 +263,7 @@ class VoiceModel:
             # imports it at module load time.  Restore it with the equivalent torch.isin
             # before TTS is imported so the module-level import does not raise ImportError.
             import transformers.pytorch_utils as _tpu
+
             if not hasattr(_tpu, "isin_mps_friendly"):
                 _tpu.isin_mps_friendly = torch.isin
 
