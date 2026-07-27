@@ -9,7 +9,6 @@ safetensors==0.8.0rc0
 sentencepiece==0.2.1
 vllm==0.24.0
 xformers==0.0.35
-torch==2.11.0
 torchvision==0.26.0
 torchaudio==2.11.0
 nvidia-cusparselt-cu12==0.7.1

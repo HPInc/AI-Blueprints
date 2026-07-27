@@ -8,7 +8,6 @@ pydantic<3
 transformers==5.5.0
 accelerate==1.6.0
 pyttsx3==2.99
-torch==2.11.0
 torchaudio==2.11.0
 torchvision==0.26.0
 soundfile==0.13.1
