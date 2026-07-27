@@ -17,7 +17,7 @@ python = ">=3.10"
 streamlit = ">=1.54.0,<2.0.0"
 pillow = ">=12.3.0"
 urllib3 = ">=2.7.0"
-GitPython = "3.1.52"
+GitPython = "3.1.54"
 idna = "3.15"
 
 [tool.poetry]
