@@ -20,7 +20,7 @@ msoffcrypto-tool = "5.4.2"
 openpyxl = "3.1.5"
 networkx = ">=3.2,<4.0"
 markdown = ">=3.5,<4.0"
-GitPython = "3.1.50"
+GitPython = "3.1.57"
 idna = "3.15"
 
 [build-system]
