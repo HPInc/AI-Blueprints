@@ -30,21 +30,32 @@ class ExtractiveQAPipeline:
     def __init__(self, model_checkpoint: str, device: int = -1):
         self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
-        self.device = torch.device("cuda" if device == 0 and torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda" if device == 0 and torch.cuda.is_available() else "cpu"
+        )
         self.model.to(self.device)
 
     def __call__(self, context: str, question: str) -> Dict[str, Any]:
-        inputs = self.tokenizer(question, context, return_tensors="pt", truncation=True).to(self.device)
+        inputs = self.tokenizer(
+            question, context, return_tensors="pt", truncation=True
+        ).to(self.device)
 
         with torch.no_grad():
             outputs = self.model(**inputs)
 
         start = outputs.start_logits.argmax()
         end = outputs.end_logits.argmax()
-        answer = self.tokenizer.decode(inputs["input_ids"][0][start : end + 1], skip_special_tokens=True)
+        answer = self.tokenizer.decode(
+            inputs["input_ids"][0][start : end + 1], skip_special_tokens=True
+        )
         score = torch.softmax(outputs.start_logits, dim=-1)[0, start].item()
 
-        return {"answer": answer, "score": score, "start": start.item(), "end": end.item()}
+        return {
+            "answer": answer,
+            "score": score,
+            "start": start.item(),
+            "end": end.item(),
+        }
 
 
 class Model:
