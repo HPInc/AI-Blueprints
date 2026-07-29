@@ -5,6 +5,8 @@ ai-studio-blueprint-kit==0.1.1
 mlflow==3.14.0
 
 
+chromadb==1.5.9
+posthog<4.0.0
 pypdf>=6.13.3
 pymupdf
 pyyaml
