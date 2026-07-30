@@ -12,10 +12,50 @@ import logging
 import os
 from typing import Dict, Any, Optional
 import torch
-from transformers import pipeline
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
 # Set up logger
 logger = logging.getLogger(__name__)
+
+
+class ExtractiveQAPipeline:
+    """
+    Lightweight replacement for the transformers `question-answering` pipeline,
+    which was removed in transformers v5 (only generative tasks remain in
+    `pipeline()`). It loads the model/tokenizer directly and exposes the same
+    `.model`, `.tokenizer` attributes and `__call__(context=..., question=...)`
+    interface the rest of this project relies on.
+    """
+
+    def __init__(self, model_checkpoint: str, device: int = -1):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+        self.model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
+        self.device = torch.device(
+            "cuda" if device == 0 and torch.cuda.is_available() else "cpu"
+        )
+        self.model.to(self.device)
+
+    def __call__(self, context: str, question: str) -> Dict[str, Any]:
+        inputs = self.tokenizer(
+            question, context, return_tensors="pt", truncation=True
+        ).to(self.device)
+
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+
+        start = outputs.start_logits.argmax()
+        end = outputs.end_logits.argmax()
+        answer = self.tokenizer.decode(
+            inputs["input_ids"][0][start : end + 1], skip_special_tokens=True
+        )
+        score = torch.softmax(outputs.start_logits, dim=-1)[0, start].item()
+
+        return {
+            "answer": answer,
+            "score": score,
+            "start": start.item(),
+            "end": end.item(),
+        }
 
 
 class Model:
@@ -47,30 +87,29 @@ class Model:
             raise RuntimeError(f"Model initialization failed: {str(e)}") from e
 
     def _load_model(self) -> None:
-        """Load the question-answering pipeline using the specified model checkpoint."""
+        """Load the question-answering model using the specified model checkpoint."""
         try:
-            # Initialize the pipeline with the model checkpoint
-            self.model = pipeline(
-                "question-answering",
-                model=self.model_checkpoint,
+            # Initialize the model/tokenizer with the model checkpoint
+            self.model = ExtractiveQAPipeline(
+                self.model_checkpoint,
                 device=(
                     0 if torch.cuda.is_available() else -1
                 ),  # GPU if available, otherwise CPU
             )
             logger.info(
-                f"Question-answering pipeline loaded successfully with model: {self.model_checkpoint}"
+                f"Question-answering model loaded successfully with model: {self.model_checkpoint}"
             )
         except Exception as e:
-            logger.error(f"Error loading the question-answering pipeline: {str(e)}")
-            # Try loading without device specification for compatibility
+            logger.error(f"Error loading the question-answering model: {str(e)}")
+            # Try loading on CPU only for compatibility
             try:
-                self.model = pipeline("question-answering", model=self.model_checkpoint)
+                self.model = ExtractiveQAPipeline(self.model_checkpoint, device=-1)
                 logger.info(
-                    "Question-answering pipeline loaded successfully (CPU fallback)"
+                    "Question-answering model loaded successfully (CPU fallback)"
                 )
             except Exception as fallback_error:
                 logger.error(
-                    f"Failed to load pipeline even with fallback: {str(fallback_error)}"
+                    f"Failed to load model even with fallback: {str(fallback_error)}"
                 )
                 raise
 

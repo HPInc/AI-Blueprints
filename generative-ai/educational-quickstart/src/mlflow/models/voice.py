@@ -257,6 +257,16 @@ class VoiceModel:
 
         try:
             import torch
+
+            # Compatibility shim: transformers 5.x removed isin_mps_friendly from
+            # pytorch_utils, but coqui-tts v0.27.5 (tortoise/autoregressive.py) still
+            # imports it at module load time.  Restore it with the equivalent torch.isin
+            # before TTS is imported so the module-level import does not raise ImportError.
+            import transformers.pytorch_utils as _tpu
+
+            if not hasattr(_tpu, "isin_mps_friendly"):
+                _tpu.isin_mps_friendly = torch.isin
+
             from TTS.api import TTS
 
             device = "cuda" if torch.cuda.is_available() else "cpu"

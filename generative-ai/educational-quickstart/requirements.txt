@@ -1,33 +1,32 @@
 # ─── Core ML/AI Frameworks ───
-mlflow==3.12.0
-transformers==4.57.6
+mlflow==3.14.0
+transformers==5.5.3
 diffusers==0.38.0
+gguf>=0.10.0
 accelerate==1.12.0
 bitsandbytes==0.49.2
 safetensors==0.8.0rc0
 sentencepiece==0.2.1
-vllm==0.22.0
+vllm==0.24.0
 xformers==0.0.35
-torch==2.11.0
 torchvision==0.26.0
 torchaudio==2.11.0
 nvidia-cusparselt-cu12==0.7.1
 
 # ─── Interface & Deployment ───
-huggingface_hub==0.34.0
 datasets==3.0.1
-fastapi==0.128.0
+fastapi==0.133.0
 uvicorn==0.40.0
 pydantic==2.12.5
 streamlit==1.54.0
 
 # ─── Document & Media Processing ───
-pypdf==6.12.0
+pypdf>=6.13.3
 PyMuPDF==1.27.1
 pdfplumber==0.11.9
 python-docx==1.2.0
 Markdown==3.10.1
-pillow==12.2.0
+pillow==12.3.0
 opencv-python-headless==4.13.0.92
 invisible-watermark==0.2.0
 
@@ -40,13 +39,13 @@ PyAudio==0.2.14
 coqui-tts[codec] @ https://github.com/idiap/coqui-ai-TTS/archive/refs/tags/v0.27.5.zip
 
 # ─── Agentic AI & RAG ───
-langchain==1.0.4
+langchain==1.3.9
 langchain-community==0.4.1
 langchain-classic==1.0.7
 llama_cpp_python==0.3.16
 chromadb==1.5.9
 faiss-gpu-cu12==1.13.2
-sentence-transformers==3.0.0
+sentence-transformers==5.6.1
 
 # ─── Monitoring & Visualization ───
 plotly==6.5.2

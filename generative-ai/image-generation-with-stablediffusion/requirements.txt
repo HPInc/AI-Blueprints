@@ -14,6 +14,6 @@
 # tensorflow==2.19.0
 # pillow>=12.2.0
 # pandas>=1.3.0
-# mlflow==3.12.0
+# mlflow==3.14.0
 
 # DEPRECATED BLUEPRINT, FOR NOW JUST COMMENTING THE REQUIREMENTS. WILL REVISIT IN THE FUTURE.

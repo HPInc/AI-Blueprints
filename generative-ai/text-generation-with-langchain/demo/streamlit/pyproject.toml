@@ -15,9 +15,9 @@ dependencies = [
 python = ">=3.11"
 streamlit = ">=1.54.0,<2.0.0"
 urllib3 = "2.7.0"
-pillow = "12.2.0"
+pillow = "12.3.0"
 protobuf = "6.31.1"
-GitPython = "3.1.50"
+GitPython = "3.1.54"
 idna = "3.15"
 
 [tool.poetry]
