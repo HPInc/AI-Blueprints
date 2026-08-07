@@ -20,7 +20,7 @@ streamlit = ">=1.54.0,<2.0.0"
 urllib3 = "2.7.0"
 protobuf = "6.31.1"
 pillow = "12.3.0"
-GitPython = "3.1.57"
+GitPython = "3.1.58"
 idna = "3.15"
 
 [build-system]
