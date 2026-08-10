@@ -250,109 +250,95 @@ MLFLOW_ENDPOINT = "http://localhost:5002/invocations"
 api_url = MLFLOW_ENDPOINT
 
 
-# Load movie titles with improved MLflow artifact handling
+MLFLOW_TRACKING_URI = "http://localhost:5000"
+
+
+def _mlflow_get(path: str, **params):
+    """GET request against the MLflow REST API."""
+    url = f"{MLFLOW_TRACKING_URI}/api/2.0/mlflow/{path}"
+    resp = requests.get(url, params=params, verify=False)
+    resp.raise_for_status()
+    return resp.json()
+
+
+# Load movie titles using the MLflow REST API (no mlflow Python package needed)
 @st.cache_data
 def load_movie_titles_from_mlflow():
-    """
-    Load movie titles from MLflow model artifacts using multiple fallback strategies.
-    This mimics the load_context behavior from your MLflow model.
-    """
-    import mlflow
-    from mlflow import MlflowClient
+    # Method 1: Check local relative paths
+    local_paths = [
+        "../../model_artifacts/movie_titles.csv",
+        "../../../model_artifacts/movie_titles.csv",
+        "/home/jovyan/datafabric/tutorial/Movie_Id_Titles.csv",
+    ]
+    for local_path in local_paths:
+        abs_path = os.path.abspath(local_path)
+        if os.path.exists(abs_path):
+            df = pd.read_csv(abs_path)
+            if not df.empty and "item_id" in df.columns and "title" in df.columns:
+                st.info(f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}")
+                return df
 
+    # Method 2: Query registered models via MLflow REST API
     try:
-        # Method 1: Check local relative paths
-        local_paths = [
-            "../../model_artifacts/movie_titles.csv",
-            "../../../model_artifacts/movie_titles.csv",
-            "/home/jovyan/datafabric/tutorial/Movie_Id_Titles.csv",
-        ]
+        for model_name in ["AIStudio-Model", "movie_titles"]:
+            try:
+                data = _mlflow_get(
+                    "registered-models/get-latest-versions",
+                    name=model_name,
+                    stages="None",
+                )
+                versions = data.get("model_versions", [])
+                if not versions:
+                    continue
+                run_id = versions[0]["run_id"]
 
-        for local_path in local_paths:
-            abs_path = os.path.abspath(local_path)
-            if os.path.exists(abs_path):
-                df = pd.read_csv(abs_path)
-                if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                    st.info(
-                        f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}"
-                    )
-                    return df
+                # List artifacts for that run
+                artifacts = _mlflow_get("artifacts/list", run_id=run_id, path="").get(
+                    "files", []
+                )
 
-        # Method 2: Try to load from the MLflow registered model
-        try:
-            mlflow.set_tracking_uri("/phoenix/mlflow")
-            client = MlflowClient()
+                # Search for movie_titles.csv recursively (one level deep)
+                candidate_paths = ["movie_titles.csv", "data/movie_titles.csv", "artifacts/movie_titles.csv"]
+                for artifact_path in candidate_paths:
+                    try:
+                        url = (
+                            f"{MLFLOW_TRACKING_URI}/get-artifact"
+                            f"?run_id={run_id}&path={artifact_path}"
+                        )
+                        resp = requests.get(url, verify=False)
+                        if resp.status_code == 200:
+                            import io
+                            df = pd.read_csv(io.StringIO(resp.text))
+                            if not df.empty and "item_id" in df.columns and "title" in df.columns:
+                                st.success(f"✅ Movie titles loaded from MLflow model: {model_name}")
+                                return df
+                    except Exception:
+                        continue
+            except Exception:
+                continue
+    except Exception as e:
+        st.warning(f"MLflow REST API not available: {str(e)}")
 
-            for model_name in ["AIStudio-Model", "movie_titles"]:
+    # Method 3: Search MLflow artifact directories with glob patterns
+    mlflow_paths = [
+        "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
+        "/phoenix/mlflow/*/*/artifacts/AIStudio-Model/data/movie_titles.csv",
+    ]
+    for pattern in mlflow_paths:
+        matching_paths = glob.glob(pattern)
+        if matching_paths:
+            matching_paths.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+            for mlflow_path in matching_paths:
                 try:
-                    model_metadata = client.get_latest_versions(
-                        model_name, stages=["None"]
-                    )
-                    if model_metadata:
-                        latest_version = model_metadata[0].version
-                        model_uri = f"models:/{model_name}/{latest_version}"
-
-                        # Download the model artifacts
-                        local_path = mlflow.artifacts.download_artifacts(model_uri)
-
-                        # Check multiple locations within the artifacts
-                        possible_paths = [
-                            os.path.join(local_path, "movie_titles.csv"),
-                            os.path.join(local_path, "data", "movie_titles.csv"),
-                            os.path.join(local_path, "artifacts", "movie_titles.csv"),
-                        ]
-
-                        for movie_titles_path in possible_paths:
-                            if os.path.exists(movie_titles_path):
-                                df = pd.read_csv(movie_titles_path)
-                                if (
-                                    not df.empty
-                                    and "item_id" in df.columns
-                                    and "title" in df.columns
-                                ):
-                                    st.success(
-                                        f"✅ Movie titles loaded from MLflow model: {model_name}"
-                                    )
-                                    return df
+                    df = pd.read_csv(mlflow_path)
+                    if not df.empty and "item_id" in df.columns and "title" in df.columns:
+                        st.info(f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}")
+                        return df
                 except Exception:
                     continue
-        except Exception as e:
-            st.warning(f"MLflow registry not available: {str(e)}")
 
-        # Method 3: Search MLflow artifact directories with glob patterns
-        mlflow_paths = [
-            "/phoenix/mlflow/*/*/artifacts/data/model_artifacts/movie_titles.csv",
-            "/phoenix/mlflow/*/*/artifacts/AIStudio-Model/data/movie_titles.csv",
-        ]
-
-        for pattern in mlflow_paths:
-            matching_paths = glob.glob(pattern)
-            if matching_paths:
-                # Sort by modification time to get the most recent
-                matching_paths.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-
-                for mlflow_path in matching_paths:
-                    if os.path.exists(mlflow_path):
-                        try:
-                            df = pd.read_csv(mlflow_path)
-                            if (
-                                not df.empty
-                                and "item_id" in df.columns
-                                and "title" in df.columns
-                            ):
-                                st.info(
-                                    f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}"
-                                )
-                                return df
-                        except Exception:
-                            continue
-
-        st.error("❌ Could not find movie titles file in any expected location.")
-        return None
-
-    except Exception as e:
-        st.error(f"❌ Error loading movie titles: {str(e)}")
-        return None
+    st.error("❌ Could not find movie titles file in any expected location.")
+    return None
 
 
 # Load movie titles using the enhanced method
