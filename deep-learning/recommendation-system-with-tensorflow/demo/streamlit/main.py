@@ -275,7 +275,9 @@ def load_movie_titles_from_mlflow():
         if os.path.exists(abs_path):
             df = pd.read_csv(abs_path)
             if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                st.info(f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}")
+                st.info(
+                    f"📁 Movie titles loaded from local path: {os.path.basename(abs_path)}"
+                )
                 return df
 
     # Method 2: Query registered models via MLflow REST API
@@ -298,7 +300,11 @@ def load_movie_titles_from_mlflow():
                 )
 
                 # Search for movie_titles.csv recursively (one level deep)
-                candidate_paths = ["movie_titles.csv", "data/movie_titles.csv", "artifacts/movie_titles.csv"]
+                candidate_paths = [
+                    "movie_titles.csv",
+                    "data/movie_titles.csv",
+                    "artifacts/movie_titles.csv",
+                ]
                 for artifact_path in candidate_paths:
                     try:
                         url = (
@@ -308,9 +314,16 @@ def load_movie_titles_from_mlflow():
                         resp = requests.get(url, verify=False)
                         if resp.status_code == 200:
                             import io
+
                             df = pd.read_csv(io.StringIO(resp.text))
-                            if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                                st.success(f"✅ Movie titles loaded from MLflow model: {model_name}")
+                            if (
+                                not df.empty
+                                and "item_id" in df.columns
+                                and "title" in df.columns
+                            ):
+                                st.success(
+                                    f"✅ Movie titles loaded from MLflow model: {model_name}"
+                                )
                                 return df
                     except Exception:
                         continue
@@ -331,8 +344,14 @@ def load_movie_titles_from_mlflow():
             for mlflow_path in matching_paths:
                 try:
                     df = pd.read_csv(mlflow_path)
-                    if not df.empty and "item_id" in df.columns and "title" in df.columns:
-                        st.info(f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}")
+                    if (
+                        not df.empty
+                        and "item_id" in df.columns
+                        and "title" in df.columns
+                    ):
+                        st.info(
+                            f"📁 Movie titles loaded from MLflow artifact: {mlflow_path}"
+                        )
                         return df
                 except Exception:
                     continue
