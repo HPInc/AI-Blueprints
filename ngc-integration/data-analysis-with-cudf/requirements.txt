@@ -2,4 +2,4 @@
 # This image includes all the required libraries to run the sample project.
 
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.14.0
+mlflow==3.15.0
