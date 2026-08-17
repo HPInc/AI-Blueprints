@@ -5,4 +5,4 @@ evaluate==0.4.6
 accelerate==1.5.2
 datasets==4.0.0
 huggingface_hub==1.25.1
-mlflow==3.14.0
+mlflow==3.15.0
