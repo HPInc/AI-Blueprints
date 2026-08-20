@@ -2,7 +2,7 @@
 # This image includes all the required libraries to run the sample project.
 
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.14.0
+mlflow==3.15.1
 
 onnxruntime==1.24.4
 huggingface_hub==0.34.4
