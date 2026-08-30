@@ -7,6 +7,6 @@ repos:
       - id: check-yaml
       - id: check-toml
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.3.1 # Use the latest stable version
+    rev: 26.5.1 # Use the latest stable version
     hooks:
       - id: black
