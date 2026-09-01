@@ -2,7 +2,7 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.15.1
+mlflow==3.15.2
 
 
 chromadb==1.5.9

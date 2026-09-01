@@ -22,4 +22,4 @@ langchain-classic==1.0.7
 langchain-text-splitters==1.1.2
 langchain-huggingface==1.2.2
 sentence-transformers==5.6.1
-mlflow==3.15.1
+mlflow==3.15.2
