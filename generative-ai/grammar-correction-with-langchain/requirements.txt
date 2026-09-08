@@ -1,7 +1,7 @@
 # Create the workspace using the Local GenAI image.
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 ai-studio-blueprint-kit==0.1.1
-mlflow==3.15.1
+mlflow==3.16.0
 
 requests==2.33.0
 markdown-it-py==3.0.0
@@ -11,7 +11,7 @@ langchain-classic==1.0.7
 langchain-core==1.4.6
 langchain_huggingface==1.2.1
 PyYAML==6.0.3
-transformers==5.5.0
+transformers==5.10.1
 
 # Added to fix version mismatches
 scikit-learn==1.6.1

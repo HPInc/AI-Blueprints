@@ -11,7 +11,7 @@ langchain-huggingface==1.2.2
 hf-xet==1.1.4
 opencv-python-headless==4.13.0.92
 jq==1.9.1
-transformers==5.5.0
+transformers==5.10.1
 sentence-transformers==5.0.0
 tf-keras==2.19.0
 einops==0.8.1
@@ -23,7 +23,7 @@ rank-bm25==0.2.2
 qwen-vl-utils==0.0.11
 # vllm==0.24.0 removed because it doesn't support torch 2.13.0
 flashinfer-python==0.6.11.post2
-mlflow==3.15.1
+mlflow==3.16.0
 opentelemetry-instrumentation-asgi==0.63b1
 opentelemetry-instrumentation==0.63b1
 opentelemetry-semantic-conventions==0.63b1
