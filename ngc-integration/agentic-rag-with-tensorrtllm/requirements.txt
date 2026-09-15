@@ -11,7 +11,7 @@ promptquality==1.11.1
 PyYAML==6.0.2
 pymupdf==1.26.0
 langgraph==1.2.4
-unstructured==0.18.18
+unstructured==0.24.0
 chromadb==1.5.9
 fastapi==0.115.4
 protobuf>=5.29.6
