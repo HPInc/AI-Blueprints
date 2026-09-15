@@ -2,7 +2,7 @@
 # This image includes all the required libraries to run the sample project, except for the ones explicitly listed below.
 
 langgraph==1.2.4
-unstructured==0.18.18
+unstructured==0.24.0
 tqdm>=4.66.4
 pydantic<3
 transformers==5.5.0
